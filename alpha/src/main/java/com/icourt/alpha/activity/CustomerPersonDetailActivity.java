@@ -23,6 +23,7 @@ import com.icourt.alpha.entity.bean.ContactDeatilBean;
 import com.icourt.alpha.entity.event.UpdateCustomerEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
 import com.umeng.analytics.MobclickAgent;
@@ -37,6 +38,12 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
+import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -86,6 +93,8 @@ public class CustomerPersonDetailActivity extends BaseActivity {
     private boolean isShowRightView;
     private ContactDeatilBean contactDeatilBean;
     private List<ContactDeatilBean> liaisonsList;
+    boolean hasLookPermission = false;//查看权限
+    boolean hasEditPermission = false;//编辑权限
 
     public static void launch(@NonNull Context context, @NonNull String contact_id, @NonNull String contact_name, @NonNull boolean isShowRightView) {
         if (context == null) return;
@@ -119,35 +128,80 @@ public class CustomerPersonDetailActivity extends BaseActivity {
         if (!TextUtils.isEmpty(contact_name)) {
             setTitle(contact_name);
         }
-        checkHasCustomerPemissions();
+        getContactDetail(contact_id);
     }
 
     /**
-     * 检查ha
+     * 获取联系人详情
+     * @param contact_id
      */
-    private void checkHasCustomerPemissions() {
-        callEnqueue(getApi().permissionQuery(
-                getLoginUserId(),
-                "CON",
-                getIntent().getStringExtra("contact_id")),
-                new SimpleCallBack<List<String>>() {
+    private void getContactDetail(final String contact_id) {
+        showLoadingDialog(null);
+        Observable.just(contact_id)
+                .flatMap(new Function<String, ObservableSource<List<String>>>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
-                        if (response.body().result == null) return;
-                        boolean hasLookPermission = false;
-                        for (String permission : response.body().result) {
-                            if (TextUtils.equals("CON:contact.detail:edit", permission)) {
-                                titleAction2.setVisibility(isShowRightView ? View.VISIBLE : View.INVISIBLE);
-                            }
-
-                            if (TextUtils.equals("CON:contact.detail:view", permission)) {
-                                hasLookPermission = true;
-                                getContact();
-                            }
-                        }
+                    public ObservableSource<List<String>> apply(@NonNull String s) throws Exception {
+                        return getApi().permissionQueryObservable(getLoginUserId(), "CON", s)
+                                .map(new Function<ResEntity<List<String>>, List<String>>() {
+                                    @Override
+                                    public List<String> apply(@NonNull ResEntity<List<String>> listResEntity) throws Exception {
+                                        return listResEntity != null ? listResEntity.result : new ArrayList<String>();
+                                    }
+                                });
+                    }
+                })
+                .filter(new Predicate<List<String>>() {
+                    @Override
+                    public boolean test(@NonNull List<String> list) throws Exception {
+                        hasLookPermission = list.contains("CON:contact.detail:view");
+                        hasEditPermission = list.contains("CON:contact.detail:edit");
+                        return hasLookPermission;
+                    }
+                })
+                .flatMap(new Function<List<String>, ObservableSource<ResEntity<List<ContactDeatilBean>>>>() {
+                    @Override
+                    public ObservableSource<ResEntity<List<ContactDeatilBean>>> apply(@NonNull List<String> list) throws Exception {
+                        return getApi().customerDetailQueryObservable(contact_id);
+                    }
+                })
+                .filter(new Predicate<ResEntity<List<ContactDeatilBean>>>() {
+                    @Override
+                    public boolean test(@NonNull ResEntity<List<ContactDeatilBean>> contactDeatilBeens) throws Exception {
+                        return !contactDeatilBeens.result.isEmpty() && contactDeatilBeens.result.get(0) != null && contactDeatilBeens.result.get(0).getContact() != null;
+                    }
+                })
+                .flatMap(new Function<ResEntity<List<ContactDeatilBean>>, ObservableSource<ResEntity<List<ContactDeatilBean>>>>() {
+                    @Override
+                    public ObservableSource<ResEntity<List<ContactDeatilBean>>> apply(@NonNull ResEntity<List<ContactDeatilBean>> list) throws Exception {
+                        contactDeatilBean = list.result.get(0);
+                        return getApi().customerLiaisonsQueryObservable(contactDeatilBean.getContact().getPkid());
+                    }
+                })
+                .compose(this.<ResEntity<List<ContactDeatilBean>>>bindToLifecycle())
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new BaseObserver<ResEntity<List<ContactDeatilBean>>>() {
+                    @Override
+                    public void onNext(@NonNull ResEntity<List<ContactDeatilBean>> contactDeatilBeens) {
                         if (!hasLookPermission) {
                             showTopSnackBar("暂无权限查看联系人信息");
                         }
+                        titleAction2.setVisibility(hasEditPermission && isShowRightView ? View.VISIBLE : View.INVISIBLE);
+                        setDataToView();
+                        liaisonsList = contactDeatilBeens.result;
+                        setLiaisonsView();
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable throwable) {
+                        super.onError(throwable);
+                        dismissLoadingDialog();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        super.onComplete();
+                        dismissLoadingDialog();
                     }
                 });
     }
@@ -185,7 +239,6 @@ public class CustomerPersonDetailActivity extends BaseActivity {
                 } else {
                     titleAction.setImageResource(R.mipmap.header_icon_star_line);
                 }
-                getLiaisons(contactDeatilBean.getContact().getPkid());
                 activityPersonContactDetailNameView.setText(contactDeatilBean.getContact().getName());
                 if ("P".equals(contactDeatilBean.getContact().getContactType())) {
                     if ("女".equals(contactDeatilBean.getContact().getSex())) {
@@ -641,47 +694,6 @@ public class CustomerPersonDetailActivity extends BaseActivity {
     }
 
     /**
-     * 获取联系人详情
-     */
-    private void getContact() {
-        showLoadingDialog(null);
-        callEnqueue(getApi().customerDetailQuery(contact_id),
-                new SimpleCallBack<List<ContactDeatilBean>>() {
-            @Override
-            public void onSuccess(Call<ResEntity<List<ContactDeatilBean>>> call, Response<ResEntity<List<ContactDeatilBean>>> response) {
-                dismissLoadingDialog();
-                if (response.body().result != null) {
-                    if (response.body().result.size() > 0) {
-                        contactDeatilBean = response.body().result.get(0);
-                        setDataToView();
-                    }
-                }
-
-            }
-
-            @Override
-            public void onFailure(Call<ResEntity<List<ContactDeatilBean>>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
-    }
-
-    /**
-     * 获取企业联络人
-     */
-    private void getLiaisons(String id) {
-        callEnqueue(getApi().customerLiaisonsQuery(id),
-                new SimpleCallBack<List<ContactDeatilBean>>() {
-            @Override
-            public void onSuccess(Call<ResEntity<List<ContactDeatilBean>>> call, Response<ResEntity<List<ContactDeatilBean>>> response) {
-                liaisonsList = response.body().result;
-                setLiaisonsView();
-            }
-        });
-    }
-
-    /**
      * 添加关注
      *
      * @param contact_id
@@ -740,7 +752,7 @@ public class CustomerPersonDetailActivity extends BaseActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void updateCustEvent(UpdateCustomerEvent event) {
         if (event != null) {
-            getContact();
+            getContactDetail(contact_id);
         }
     }
 }
