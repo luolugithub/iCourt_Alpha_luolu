@@ -31,8 +31,8 @@
     <string name="project_clients">客户</string>
     <string name="project_litigants_format">当事人(%s)</string>
     <string name="project_litigants">当事人</string>
-    <string name="project_groups_format">负责部门(%s)</string>
-    <string name="project_groups">负责部门</string>
+    <string name="project_groups_format">所属部门(%s)</string>
+    <string name="project_groups">所属部门</string>
     <string name="project_attorneys_format">案源律师(%s)</string>
     <string name="project_attorneys">案源律师</string>
     <string name="project_info">项目信息</string>
