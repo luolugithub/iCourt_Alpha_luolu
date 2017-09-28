@@ -37,7 +37,7 @@
     <string-array name="repo_action_menus_r_array">
         <item>查看资料库详情</item>
         <item>@string/str_rename</item>
-        <item>内部共享</item>
+        <item>@string/repo_share</item>
     </string-array>
 
     <string name="repo_delete_confirm">删除后不可恢复, 确定删除吗?</string>
