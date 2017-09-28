@@ -720,4 +720,23 @@ public class DateUtils {
         return builder.toString();
     }
 
+    /**
+     * 获取当前时间的时间戳（秒数为0）
+     * 比如：当前时间为12:10:30，返回的是12:10:00的时间戳
+     *
+     * @param timeMillis
+     * @return
+     */
+    public static long getFormatMillis(long timeMillis) {
+        Calendar instance = Calendar.getInstance();
+        instance.setTimeInMillis(timeMillis);
+        int currentYear = instance.get(Calendar.YEAR);
+        int currentMonth = instance.get(Calendar.MONTH);
+        int currentDay = instance.get(Calendar.DAY_OF_MONTH);
+        int currentHour = instance.get(Calendar.HOUR_OF_DAY);
+        int currentMinute = instance.get(Calendar.MINUTE);
+        //记录当前时间，精确到分钟，秒数置为0。
+        instance.set(currentYear, currentMonth, currentDay, currentHour, currentMinute, 0);
+        return instance.getTimeInMillis();
+    }
 }

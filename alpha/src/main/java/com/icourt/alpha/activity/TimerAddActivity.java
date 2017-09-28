@@ -212,6 +212,13 @@ public class TimerAddActivity extends BaseTimerActivity
             }
 
             @Override
+            public void onTimerTouchValueChanged(long time) {
+                log("---------->onTimerSetValueChanged:" + time);
+                selectedEndDate.setTimeInMillis(selectedStartDate.getTimeInMillis() + time * 1000);
+                stopTimeMinTv.setText(DateUtils.getHHmm(selectedEndDate.getTimeInMillis()));
+            }
+
+            @Override
             public void onTimerSetValueChanged(long time) {
                 log("---------->onTimerSetValueChanged:" + time);
                 selectedEndDate.setTimeInMillis(selectedStartDate.getTimeInMillis() + time * 1000);

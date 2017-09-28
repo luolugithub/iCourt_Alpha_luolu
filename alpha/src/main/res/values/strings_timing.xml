@@ -7,4 +7,13 @@
     <string name="timing_finish">完成</string>
     <string name="timing_please_select_start_time">选择计时开始时间</string>
     <string name="timing_please_select_end_time">选择计时结束时间</string>
+    <string name="timing_donot_select_future_time">未来还未来，请勿记录未来时间～</string>
+    <string name="timing_detail">计时详情</string>
+    <string name="timing_not_set">未设置</string>
+    <string name="timing_not_relevance">未关联</string>
+    <string name="timing_not_select">未选择</string>
+    <string name="timing_delete">删除</string>
+    <string name="timing_select_project">选择项目</string>
+    <string name="timing_check_project">查看项目</string>
+    <string name="timing_add_days">+%d天</string>
 </resources>
