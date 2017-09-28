@@ -228,6 +228,8 @@ public class ProjectRangeFragment extends BaseFragment implements BaseRecyclerAd
                 if (itemEntity.positionBean == null) return;
                 if (!TextUtils.isEmpty(itemEntity.positionBean.contactType) && !TextUtils.isEmpty(itemEntity.positionBean.contactPkid)) {
                     gotoCustiomer(itemEntity);
+                } else {
+                    ProjectBasicTextInfoActivity.launch(view.getContext(), itemEntity.key, itemEntity.value, itemEntity.type);
                 }
                 break;
         }
