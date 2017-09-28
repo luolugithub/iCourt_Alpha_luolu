@@ -106,6 +106,11 @@ public class TaskEverydayFragment extends BaseFragment
                 } else if (isAllDayTask2) {
                     return 1;
                 } else {
+                    //到期时间不同
+                    long dueTimeDistance = calendarTask1.getTimeInMillis() - calendarTask2.getTimeInMillis();
+                    if (dueTimeDistance != 0) {
+                        return (int) dueTimeDistance;
+                    }
                     //同一时间到期的任务，应该按修改时间刷新排序
                     long distanceCreateTime = calendarTask1.getTimeInMillis() - calendarTask1.getTimeInMillis();
                     if (distanceCreateTime == 0) {

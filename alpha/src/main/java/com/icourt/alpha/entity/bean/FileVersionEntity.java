@@ -47,6 +47,7 @@ public class FileVersionEntity implements ILongFieldEntity, ISeaFile {
     public String rev_file_id;
     public SFileUserInfo user_info;
     public String seaFileFullPath;
+    public String seaFilePermission;
 
     @Override
     public Long getCompareLongField() {
@@ -81,7 +82,7 @@ public class FileVersionEntity implements ILongFieldEntity, ISeaFile {
 
     @Override
     public String getSeaFilePermission() {
-        return null;
+        return seaFilePermission;
     }
 
     public static class SFileUserInfo implements Serializable {
