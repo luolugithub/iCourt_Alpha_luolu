@@ -22,6 +22,7 @@ import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack2;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
@@ -45,6 +46,7 @@ import retrofit2.HttpException;
 import retrofit2.Response;
 
 import static com.icourt.alpha.constants.SFileConfig.PERMISSION_R;
+import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
 import static com.icourt.alpha.constants.SFileConfig.REPO_LAWFIRM;
 import static com.icourt.alpha.constants.SFileConfig.REPO_MINE;
 import static com.icourt.alpha.constants.SFileConfig.REPO_PROJECT;
@@ -184,7 +186,7 @@ public class RepoSelectListFragment extends RepoBaseFragment
             }
             break;
             case REPO_LAWFIRM: {
-                getDocumentRoot(null, filterOnlyReadRepo);
+                getLawyerRepo();
             }
             break;
             case REPO_PROJECT: {
@@ -208,10 +210,26 @@ public class RepoSelectListFragment extends RepoBaseFragment
     }
 
 
-    private void getLawyerRepo()
-    {
+    /**
+     * 带读写权限的资料库
+     */
+    private void getLawyerRepo() {
+        getApi().getOfficeLibs(filterOnlyReadRepo ? PERMISSION_RW : PERMISSION_R)
+                .enqueue(new SFileCallBack<ResEntity<List<RepoEntity>>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<RepoEntity>>> call, Response<ResEntity<List<RepoEntity>>> response) {
+                        stopRefresh();
+                        repoAdapter.bindData(true, response.body().result);
+                    }
 
+                    @Override
+                    public void onFailure(Call<ResEntity<List<RepoEntity>>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        stopRefresh();
+                    }
+                });
     }
+
     /**
      * 获取资料库
      * 不分页获取所有

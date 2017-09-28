@@ -1040,7 +1040,7 @@ public class FolderListActivity extends FolderBaseActivity
                 getSeaFileRepoId(),
                 getSeaFileDirPath(),
                 getSeaFileRepoId(),
-                getSeaFileDirPath(),
+                "/",
                 folderDocumentEntities)
                 .show(mFragTransaction, tag);
     }
