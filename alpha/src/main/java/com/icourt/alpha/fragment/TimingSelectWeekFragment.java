@@ -15,7 +15,6 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TimingWeekEntity;
 import com.icourt.alpha.utils.DateUtils;
-import com.icourt.alpha.utils.LogUtils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -115,10 +114,7 @@ public class TimingSelectWeekFragment extends BaseFragment {
             @Override
             public void onItemSelected(int i) {
                 TimingWeekEntity item = adapter.getItem(i);
-                LogUtils.i("haha，时间段所在年份" + item.getYear());
-                if (item.endTimeMillios > System.currentTimeMillis()) {
-                    wheelView.setCurrentItem(currentCount);
-                }
+                titleContent.setText(dateFormatForMonth.format(item.endTimeMillios));
             }
         });
     }
@@ -137,7 +133,7 @@ public class TimingSelectWeekFragment extends BaseFragment {
             long weekEndTime;
             Calendar cal = Calendar.getInstance();
             cal.setTime(new SimpleDateFormat("yyyy-MM-dd").parse("2015-01-01"));
-            while (weekStartTime < System.currentTimeMillis()) {
+            while (weekStartTime < (System.currentTimeMillis())) {
                 int d = 0;
                 if (cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {//如果是周日，则在当前日期上减去6天，就是周一了
                     d = -6;
@@ -236,12 +232,14 @@ public class TimingSelectWeekFragment extends BaseFragment {
         switch (v.getId()) {
             case R.id.titleBack:
                 position -= 1;
+                getBeforeOrLastMonth(position);
                 break;
             case R.id.titleForward:
-
+                position += 1;
+                getBeforeOrLastMonth(position);
                 break;
             case R.id.titleAction:
-
+                scrollToToday();
                 break;
             default:
                 super.onClick(v);
@@ -250,7 +248,16 @@ public class TimingSelectWeekFragment extends BaseFragment {
     }
 
     /**
+     * 滚动到今天所在周
+     */
+    private void scrollToToday() {
+        titleContent.setText(dateFormatForMonth.format(System.currentTimeMillis()));
+        wheelView.setCurrentItem(currentCount);
+    }
+
+    /**
      * 获取前／后n个月
+     *
      * @param position
      * @return
      */
