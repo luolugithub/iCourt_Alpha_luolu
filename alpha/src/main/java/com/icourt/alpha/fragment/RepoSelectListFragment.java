@@ -207,6 +207,11 @@ public class RepoSelectListFragment extends RepoBaseFragment
         }
     }
 
+
+    private void getLawyerRepo()
+    {
+
+    }
     /**
      * 获取资料库
      * 不分页获取所有
