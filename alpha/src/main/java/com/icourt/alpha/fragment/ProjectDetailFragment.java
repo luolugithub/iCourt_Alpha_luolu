@@ -205,7 +205,6 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
             setKeyValueData(basicItemEntities, getString(R.string.project_remark), projectDetailBean.remark, Const.PROJECT_REMARK_TYPE);
 
 
-
             projectBasicInfoAdapter.setClientsBeens(projectDetailBean.clients);
             projectBasicInfoAdapter.bindData(true, basicItemEntities);
             projectBasicInfoAdapter.setOnItemClickListener(this);
@@ -467,24 +466,39 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
             if (!hasCustomerPermission()) return;
             if (customerDbService == null) return;
             ProjectDetailEntity.ClientsBean clientsBean = (ProjectDetailEntity.ClientsBean) adapter.getItem(position);
-            CustomerDbModel customerDbModel = customerDbService.queryFirst("pkid", clientsBean.contactPkid);
-            if (customerDbModel == null) {
-                showTopSnackBar(R.string.project_not_look_info_premission);
-                return;
+            if (!TextUtils.isEmpty(clientsBean.contactPkid) && !TextUtils.isEmpty(clientsBean.type)) {
+                gotoCustiomer(clientsBean);
+            } else {
+                ProjectBasicTextInfoActivity.launch(view.getContext(), getString(R.string.project_clients), clientsBean.contactName, Const.PROJECT_CLIENT_TYPE);
             }
-            CustomerEntity customerEntity = customerDbModel.convert2Model();
-            if (customerEntity == null) {
-                showTopSnackBar(R.string.project_not_look_info_premission);
-                return;
-            }
-            if (!TextUtils.isEmpty(customerEntity.contactType)) {
-                MobclickAgent.onEvent(getContext(), UMMobClickAgent.look_client_click_id);
-                //公司
-                if (TextUtils.equals(customerEntity.contactType.toUpperCase(), "C")) {
-                    CustomerCompanyDetailActivity.launch(getContext(), customerEntity.pkid, customerEntity.name, false);
-                } else if (TextUtils.equals(customerEntity.contactType.toUpperCase(), "P")) {
-                    CustomerPersonDetailActivity.launch(getContext(), customerEntity.pkid, customerEntity.name, false);
-                }
+        }
+    }
+
+    /**
+     * 跳转到客户详情
+     *
+     * @param clientsBean
+     */
+    private void gotoCustiomer(ProjectDetailEntity.ClientsBean clientsBean) {
+        if (!hasCustomerPermission()) return;
+        if (customerDbService == null) return;
+        CustomerDbModel customerDbModel = customerDbService.queryFirst("pkid", clientsBean.contactPkid);
+        if (customerDbModel == null) {
+            showTopSnackBar(R.string.project_not_look_info_premission);
+            return;
+        }
+        CustomerEntity customerEntity = customerDbModel.convert2Model();
+        if (customerEntity == null) {
+            showTopSnackBar(R.string.project_not_look_info_premission);
+            return;
+        }
+        if (!TextUtils.isEmpty(customerEntity.contactType)) {
+            MobclickAgent.onEvent(getContext(), UMMobClickAgent.look_client_click_id);
+            //公司
+            if (TextUtils.equals(customerEntity.contactType.toUpperCase(), "C")) {
+                CustomerCompanyDetailActivity.launch(getContext(), customerEntity.pkid, customerEntity.name, false);
+            } else if (TextUtils.equals(customerEntity.contactType.toUpperCase(), "P")) {
+                CustomerPersonDetailActivity.launch(getContext(), customerEntity.pkid, customerEntity.name, false);
             }
         }
     }
