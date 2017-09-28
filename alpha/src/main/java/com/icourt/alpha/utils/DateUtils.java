@@ -721,6 +721,62 @@ public class DateUtils {
     }
 
     /**
+     * 根据提供的年月日获取该月份的第一天
+     *
+     * @param year
+     * @param monthOfYear
+     * @return
+     */
+    public static Date getSupportBeginDayofMonth(int year, int monthOfYear) {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.YEAR, year);
+        cal.set(Calendar.MONTH, monthOfYear-1);
+        cal.set(Calendar.DAY_OF_MONTH, 1);
+        return cal.getTime();
+    }
+
+    /**
+     * 根据提供的年月获取该月份的最后一天
+     *
+     * @param year
+     * @param monthOfYear
+     * @return
+     */
+    public static Date getSupportEndDayofMonth(int year, int monthOfYear) {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.YEAR, year);
+        cal.set(Calendar.MONTH, monthOfYear-1);
+        cal.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH));
+
+        return cal.getTime();
+    }
+
+    /**
+     * 根据提供的年月日获取该月份的第一天
+     *
+     * @param year
+     * @return
+     */
+    public static Date getSupportBeginDayofYear(int year) {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.YEAR, year);
+        cal.set(Calendar.DAY_OF_YEAR, 1);
+        return cal.getTime();
+    }
+
+    /**
+     * 根据提供的年月获取该月份的最后一天
+     *
+     * @param year
+     * @return
+     */
+    public static Date getSupportEndDayofYear(int year) {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.YEAR, year);
+        cal.set(Calendar.DAY_OF_YEAR, cal.getActualMaximum(Calendar.DAY_OF_YEAR));
+        return cal.getTime();
+    }
+    /**
      * 获取当前时间的时间戳（秒数为0）
      * 比如：当前时间为12:10:30，返回的是12:10:00的时间戳
      *

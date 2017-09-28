@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -31,6 +33,7 @@ import com.icourt.alpha.entity.bean.SelectGroupBean;
 import com.icourt.alpha.entity.bean.UserDataEntity;
 import com.icourt.alpha.entity.event.ServerTimingEvent;
 import com.icourt.alpha.entity.event.TimingEvent;
+import com.icourt.alpha.fragment.dialogfragment.TimingSelectDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.http.observer.BaseObserver;
@@ -291,6 +294,7 @@ public class TabMineFragment extends BaseFragment {
                 break;
             case R.id.menu_test:
 //                test1();
+                showTimingSelectDialogFragment();
                 break;
         }
     }
@@ -555,5 +559,19 @@ public class TabMineFragment extends BaseFragment {
         super.onDestroy();
         EventBus.getDefault().unregister(this);
         unbinder.unbind();
+    }
+
+    /**
+     * 展示时间选择对话框
+     */
+    private void showTimingSelectDialogFragment() {
+        String tag = TimingSelectDialogFragment.class.getSimpleName();
+        FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
+        Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        TimingSelectDialogFragment.newInstance()
+                .show(mFragTransaction, tag);
     }
 }

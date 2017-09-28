@@ -21,10 +21,17 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 
 /**
  * 计时模块时间选择器的周选择器
@@ -39,6 +46,8 @@ public class TimingSelectWeekFragment extends BaseFragment {
 
     @BindView(R.id.wheelview_week)
     WheelView wheelView;
+    TimeWheelAdapter adapter;
+    int currentCount = 0;
 
     @Nullable
     @Override
@@ -52,21 +61,18 @@ public class TimingSelectWeekFragment extends BaseFragment {
     @Override
     protected void initView() {
         wheelView.setTextSize(20);
-        wheelView.setOnItemSelectedListener(new OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(int i) {
-
-            }
-        });
         final List<TimingWeekEntity> list = new ArrayList<>();
+
         try {
+            adapter = new TimeWheelAdapter();
+            ArrayList<TimingWeekEntity> tempMenus = new ArrayList<>();
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(new SimpleDateFormat("yyyy-MM-dd").parse("2015-01-01"));
             //当前周的开始时间
             long weekStartTime = 0;
             //当前周的结束时间
             long weekEndTime;
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(new SimpleDateFormat("yyyy-MM-dd").parse("2015-01-01"));
-            while (weekStartTime < System.currentTimeMillis()) {
+            for (int i = 0; i < 10; i++) {
                 int d = 0;
                 if (cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {//如果是周日，则在当前日期上减去6天，就是周一了
                     d = -6;
@@ -79,38 +85,104 @@ public class TimingSelectWeekFragment extends BaseFragment {
                 //所在周结束日期
 //            cal.add(Calendar.DAY_OF_WEEK, 6);
                 weekEndTime = weekStartTime + ONE_WEEK_MILLIOS;
-                LogUtils.i("haha开始时间：" + DateUtils.getyyyyMMddHHmm(weekStartTime));
-                LogUtils.i("haha结束时间：" + DateUtils.getyyyyMMddHHmm(weekEndTime));
-
                 TimingWeekEntity timingWeekEntity = new TimingWeekEntity();
                 timingWeekEntity.startTimeMillios = weekStartTime;
                 timingWeekEntity.endTimeMillios = weekEndTime;
-                list.add(timingWeekEntity);
-                cal.setTime(new Date(weekEndTime + 1));
+                timingWeekEntity.startTimeStr = DateUtils.getyyyy_MM_dd(weekStartTime);
+                timingWeekEntity.endTimeStr = DateUtils.getyyyy_MM_dd(weekEndTime);
+                cal.add(Calendar.DAY_OF_YEAR, 1);
+                tempMenus.add(timingWeekEntity);
             }
+            adapter.setTimeList(tempMenus);
+            wheelView.setAdapter(adapter);
         } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        LogUtils.i("haha，list的长度" + list.size());
 
-        final TimeWheelAdapter adapter = new TimeWheelAdapter(list);
-        wheelView.setAdapter(adapter);
-        wheelView.setCyclic(false);
+        }
+        setWeekData();
+
         wheelView.setOnItemSelectedListener(new OnItemSelectedListener() {
             @Override
             public void onItemSelected(int i) {
                 TimingWeekEntity item = adapter.getItem(i);
                 LogUtils.i("haha，时间段所在年份" + item.getYear());
                 if (item.endTimeMillios > System.currentTimeMillis()) {
-                    wheelView.setCurrentItem(list.size() - 10);
+                    wheelView.setCurrentItem(currentCount);
                 }
             }
         });
     }
 
+    private void setWeekData() {
+        Observable.create(new ObservableOnSubscribe<List<TimingWeekEntity>>() {
+            @Override
+            public void subscribe(@io.reactivex.annotations.NonNull ObservableEmitter<List<TimingWeekEntity>> e) throws Exception {
+                List<TimingWeekEntity> dayList = new ArrayList<>();//显示日期的list
+                //当前周的开始时间
+                long weekStartTime = 0;
+                //当前周的结束时间
+                long weekEndTime;
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(new SimpleDateFormat("yyyy-MM-dd").parse("2015-01-01"));
+                while (weekStartTime < System.currentTimeMillis()) {
+                    int d = 0;
+                    if (cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {//如果是周日，则在当前日期上减去6天，就是周一了
+                        d = -6;
+                    } else {//如果不是周日，周一的起始值是减去今天所对应周几，得出这周的第一天。
+                        d = Calendar.MONDAY - cal.get(Calendar.DAY_OF_WEEK);
+                    }
+                    //所在周开始日期
+                    cal.add(Calendar.DAY_OF_WEEK, d);
+                    weekStartTime = cal.getTimeInMillis();
+                    //所在周结束日期
+//            cal.add(Calendar.DAY_OF_WEEK, 6);
+                    weekEndTime = weekStartTime + ONE_WEEK_MILLIOS;
+                    LogUtils.i("haha开始时间：" + DateUtils.getyyyyMMddHHmm(weekStartTime));
+                    LogUtils.i("haha结束时间：" + DateUtils.getyyyyMMddHHmm(weekEndTime));
+
+                    TimingWeekEntity timingWeekEntity = new TimingWeekEntity();
+                    timingWeekEntity.startTimeMillios = weekStartTime;
+                    timingWeekEntity.endTimeMillios = weekEndTime;
+                    timingWeekEntity.startTimeStr = DateUtils.getyyyy_MM_dd(weekStartTime);
+                    timingWeekEntity.endTimeStr = DateUtils.getyyyy_MM_dd(weekEndTime);
+                    dayList.add(timingWeekEntity);
+                    if (weekStartTime <= System.currentTimeMillis() && weekEndTime >= System.currentTimeMillis()) {
+                        currentCount = dayList.indexOf(timingWeekEntity);
+                    }
+                    cal.setTime(new Date(weekEndTime + 1));
+
+                }
+                e.onNext(dayList);
+                e.onComplete();
+            }
+        }).delay(300, TimeUnit.MILLISECONDS)
+                .compose(this.<List<TimingWeekEntity>>bindToLifecycle())
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<List<TimingWeekEntity>>() {
+                    @Override
+                    public void accept(@io.reactivex.annotations.NonNull final List<TimingWeekEntity> timingDateEntities) throws Exception {
+                        adapter.setTimeList(timingDateEntities);
+                        wheelView.invalidate();
+                        wheelView.setCyclic(false);
+                        wheelView.setCurrentItem(currentCount);
+                    }
+                });
+    }
+
 
     private class TimeWheelAdapter implements WheelAdapter<TimingWeekEntity> {
         List<TimingWeekEntity> timeList = new ArrayList<>();
+
+        public TimeWheelAdapter() {
+        }
+
+        public List<TimingWeekEntity> getTimeList() {
+            return timeList;
+        }
+
+        public void setTimeList(List<TimingWeekEntity> timeList) {
+            this.timeList = timeList;
+        }
 
         public TimeWheelAdapter(List<TimingWeekEntity> data) {
             this.timeList = data;
@@ -131,6 +203,16 @@ public class TimingSelectWeekFragment extends BaseFragment {
             return timeList.indexOf(o);
         }
 
+    }
+
+    @Override
+    public Bundle getFragmentData(int type, Bundle inBundle) {
+        Bundle arguments = new Bundle();
+        TimingWeekEntity timingWeekEntity = adapter.getItem(wheelView.getCurrentItem());
+        if (timingWeekEntity != null) {
+            arguments.putSerializable(KEY_FRAGMENT_RESULT, timingWeekEntity);
+        }
+        return arguments;
     }
 
     @Override

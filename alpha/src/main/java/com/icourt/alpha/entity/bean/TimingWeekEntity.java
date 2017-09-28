@@ -2,10 +2,8 @@ package com.icourt.alpha.entity.bean;
 
 import android.text.TextUtils;
 
-import com.icourt.alpha.utils.DateUtils;
-
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Locale;
 
 /**
@@ -16,7 +14,11 @@ import java.util.Locale;
  * version 2.1.1
  */
 
-public class TimingWeekEntity {
+public class TimingWeekEntity implements Serializable{
+
+    public String startTimeStr;//开始日期： eg：2017-01－11
+
+    public String endTimeStr;//结束日期： eg：2017-01－11
 
     public long startTimeMillios;//周的开始时间毫秒数
 
