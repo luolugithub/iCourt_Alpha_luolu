@@ -237,7 +237,7 @@ public class FileDownloadActivity extends ImageViewBaseActivity {
                     SFileConfig.convert2FileFrom(fileFrom),
                     seaFileImages,
                     0,
-                    getIntent().getBooleanExtra(KEY_INTERCEPT_LOOK_FILE_DETAILS,false)
+                    getIntent().getBooleanExtra(KEY_INTERCEPT_LOOK_FILE_DETAILS, false)
             );
             finish();
         }
@@ -414,6 +414,11 @@ public class FileDownloadActivity extends ImageViewBaseActivity {
         //聊天文件 任务附件 暂时不要文件详情
         if (fileFrom == FILE_FROM_TASK
                 || fileFrom == FILE_FROM_IM) {
+            menus.remove(getString(R.string.sfile_file_details));
+        }
+
+        //拦截查看文件详情
+        if (getIntent().getBooleanExtra(KEY_INTERCEPT_LOOK_FILE_DETAILS, false)) {
             menus.remove(getString(R.string.sfile_file_details));
         }
         new BottomActionDialog(getContext(),
