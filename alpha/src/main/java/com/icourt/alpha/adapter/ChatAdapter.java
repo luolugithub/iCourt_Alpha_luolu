@@ -549,7 +549,6 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
             }*/
             try {
                 textView.setText(imMessageCustomBody.content);
-                textView.setText(imMessageCustomBody.content + " t:" + DateUtils.getHHmm(imMessageCustomBody.send_time));
             } catch (Throwable e) {
                 BugUtils.bugSync("文本中Link崩溃2", e);
                 BugUtils.bugSync("文本中Link崩溃2:txt:", imMessageCustomBody.toString());
