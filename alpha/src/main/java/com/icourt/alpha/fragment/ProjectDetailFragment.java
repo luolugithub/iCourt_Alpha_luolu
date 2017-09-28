@@ -181,35 +181,30 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
             setKeyValueData(basicItemEntities, getString(R.string.project_type), projectDetailBean.matterTypeName, Const.PROJECT_TYPE_TYPE);
             setKeyValueData(basicItemEntities, getString(R.string.project_name), projectDetailBean.name, Const.PROJECT_NAME_TYPE);
             setKeyValueData(basicItemEntities, getString(R.string.project_number), projectDetailBean.matterNo, Const.PROJECT_NUMBER_TYPE);
-            if (projectDetailBean.matterType == Const.PROJECT_NON_LAWSUIT_TYPE) {
-                if (!TextUtils.isEmpty(projectDetailBean.lawField)) {
-                    setKeyValueData(basicItemEntities, getString(R.string.project_server_content), projectDetailBean.lawField, Const.PROJECT_SERVER_CONTENT_TYPE);
-                }
-            }
+
             setClientData(basicItemEntities);//客户
             if (projectDetailBean.matterType != Const.PROJECT_TRANSACTION_TYPE) { //所内事务不显示当事人item
                 setLitigantData(basicItemEntities);//当事人
             }
             setGroupsData(basicItemEntities);//负责部门
             setAttorneysData(basicItemEntities);//案源律师
+
+            if (projectDetailBean.beginDate > 0) {
+                setKeyValueData(basicItemEntities, getString(R.string.project_start_date), String.format("%s",
+                        DateUtils.getTimeDateFormatYearDot(projectDetailBean.beginDate)), Const.PROJECT_TIME_TYPE);
+            }
+            if (projectDetailBean.endDate > 0) {
+                setKeyValueData(basicItemEntities, getString(R.string.project_end_date), String.format("%s",
+                        DateUtils.getTimeDateFormatYearDot(projectDetailBean.endDate)), Const.PROJECT_TIME_TYPE);
+            }
+            if (projectDetailBean.matterType == Const.PROJECT_NON_LAWSUIT_TYPE) {
+                if (!TextUtils.isEmpty(projectDetailBean.lawField)) {
+                    setKeyValueData(basicItemEntities, getString(R.string.project_server_content), projectDetailBean.lawField, Const.PROJECT_SERVER_CONTENT_TYPE);
+                }
+            }
             setKeyValueData(basicItemEntities, getString(R.string.project_remark), projectDetailBean.remark, Const.PROJECT_REMARK_TYPE);
 
-            if (projectDetailBean.beginDate > 0 || projectDetailBean.endDate > 0) {
-                if (projectDetailBean.beginDate > 0 && projectDetailBean.endDate > 0) {
-                    setKeyValueData(basicItemEntities, getString(R.string.project_date), String.format("%s - %s",
-                            DateUtils.getTimeDateFormatYearDot(projectDetailBean.beginDate),
-                            DateUtils.getTimeDateFormatYearDot(projectDetailBean.endDate)), Const.PROJECT_TIME_TYPE);
-                } else {
-                    if (projectDetailBean.beginDate > 0 && projectDetailBean.endDate <= 0) {
-                        setKeyValueData(basicItemEntities, getString(R.string.project_date), String.format("%s",
-                                DateUtils.getTimeDateFormatYearDot(projectDetailBean.beginDate)), Const.PROJECT_TIME_TYPE);
-                    } else if (projectDetailBean.beginDate <= 0 && projectDetailBean.endDate > 0) {
-                        setKeyValueData(basicItemEntities, getString(R.string.project_date), String.format("%s",
-                                DateUtils.getTimeDateFormatYearDot(projectDetailBean.endDate)), Const.PROJECT_TIME_TYPE);
-                    }
-                }
 
-            }
 
             projectBasicInfoAdapter.setClientsBeens(projectDetailBean.clients);
             projectBasicInfoAdapter.bindData(true, basicItemEntities);

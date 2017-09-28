@@ -222,6 +222,7 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
 
     @Override
     protected Fragment addOrShowFragment(@NonNull Fragment targetFragment, Fragment currentFragment, @IdRes int containerViewId) {
+        if (isDetached()) return currentFragment;
         if (targetFragment == null) return currentFragment;
         if (targetFragment == currentFragment) return currentFragment;
         FragmentManager fm = getChildFragmentManager();

@@ -28,6 +28,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack2;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
+import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 
@@ -227,7 +228,7 @@ public class FileInnerShareFragment extends BaseFragment
                         @Override
                         public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
                             dismissLoadingDialog();
-                            if (response.body().has("success")) {
+                            if (JsonUtils.getBoolValue(response.body(),"success")) {
                                 getData(true);
                             }
                         }
