@@ -2,6 +2,7 @@ package com.icourt.alpha.activity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -129,7 +130,7 @@ public class SetingActivity extends BaseAppUpdateActivity {
             R.id.setting_loginout_layout})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
+
         switch (v.getId()) {
             case R.id.setting_clear_cache_layout:
                 showClearCacheDialog();
@@ -146,6 +147,9 @@ public class SetingActivity extends BaseAppUpdateActivity {
             case R.id.setting_loginout_layout:
                 showLoginOutConfirmDialog();
                 break;
+            default:
+                super.onClick(v);
+                break;
         }
     }
 
@@ -159,7 +163,9 @@ public class SetingActivity extends BaseAppUpdateActivity {
             public void onSuccess(Call<ResEntity<String>> call, Response<ResEntity<String>> response) {
                 dismissLoadingDialog();
                 if (!TextUtils.isEmpty(response.body().message)) {
-                    WebViewActivity.launch(SetingActivity.this, getString(R.string.mine_helper_center), response.body().message);
+                    WebViewActivity.launch(getActivity(), getString(R.string.mine_helper_center), response.body().message);
+                } else {
+                    showTopSnackBar("获取url为null");
                 }
             }
 
@@ -179,7 +185,7 @@ public class SetingActivity extends BaseAppUpdateActivity {
                 getString(R.string.mine_sure_loginout),
                 Arrays.asList(getString(R.string.mine_sure)),
                 0,
-                0xFFFF0000,
+                Color.RED,
                 new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
@@ -201,7 +207,7 @@ public class SetingActivity extends BaseAppUpdateActivity {
                 getString(R.string.mine_sure_clear),
                 Arrays.asList(getString(R.string.mine_sure)),
                 0,
-                0xFFFF0000,
+                Color.RED,
                 new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
@@ -220,7 +226,6 @@ public class SetingActivity extends BaseAppUpdateActivity {
     }
 
     /**
-     * by youxuan
      * 删除缓存
      * * 考虑量级:1.资料库 2.任务项目文档 3.IM文件 多层路径
      */
@@ -263,7 +268,6 @@ public class SetingActivity extends BaseAppUpdateActivity {
     }
 
     /**
-     * by youxuan
      * 获取缓存文件大小
      * 考虑量级:1.资料库 2.任务项目文档 3.IM文件 多层路径
      */
