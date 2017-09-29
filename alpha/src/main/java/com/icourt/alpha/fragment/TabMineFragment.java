@@ -266,7 +266,6 @@ public class TabMineFragment extends BaseFragment {
             R.id.menu_test})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.set_image://设置
                 SettingActivity.launch(getContext());
@@ -291,6 +290,9 @@ public class TabMineFragment extends BaseFragment {
                 break;
             case R.id.menu_test:
 //                test1();
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }

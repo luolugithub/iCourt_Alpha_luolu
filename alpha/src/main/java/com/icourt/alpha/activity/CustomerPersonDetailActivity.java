@@ -133,6 +133,7 @@ public class CustomerPersonDetailActivity extends BaseActivity {
 
     /**
      * 获取联系人详情
+     *
      * @param contact_id
      */
     private void getContactDetail(final String contact_id) {
@@ -209,7 +210,6 @@ public class CustomerPersonDetailActivity extends BaseActivity {
     @OnClick({R.id.titleAction, R.id.titleAction2})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.titleAction:
                 if (contactDeatilBean != null) {
@@ -225,6 +225,9 @@ public class CustomerPersonDetailActivity extends BaseActivity {
             case R.id.titleAction2:
                 MobclickAgent.onEvent(getContext(), UMMobClickAgent.creat_client_click_id);
                 CustomerPersonCreateActivity.launch(this, contactDeatilBean, CustomerPersonCreateActivity.UPDATE_CUSTOMER_ACTION);
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }
@@ -258,7 +261,7 @@ public class CustomerPersonDetailActivity extends BaseActivity {
                 if (!TextUtils.isEmpty(contactDeatilBean.getContact().getCrtUserName()) && contactDeatilBean.getContact().getCrtTime() > 0) {
                     activityPersonContactDetailCreatParentLayout.setVisibility(View.VISIBLE);
                     activityPersonContactDetailCreatNameView.setText(contactDeatilBean.getContact().getCrtUserName());
-                    activityPersonContactDetailCreatDateView.setText(String.format(" 创建于 %s",DateUtils.getTimeDateFormatYear(contactDeatilBean.getContact().getCrtTime())));
+                    activityPersonContactDetailCreatDateView.setText(String.format(" 创建于 %s", DateUtils.getTimeDateFormatYear(contactDeatilBean.getContact().getCrtTime())));
                 } else {
                     activityPersonContactDetailCreatParentLayout.setVisibility(View.GONE);
                 }
@@ -702,20 +705,20 @@ public class CustomerPersonDetailActivity extends BaseActivity {
         showLoadingDialog(null);
         callEnqueue(getApi().customerAddStar(contact_id),
                 new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                titleAction.setImageResource(R.mipmap.header_icon_star_solid);
-                contactDeatilBean.getContact().setIsView(1);
-            }
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        dismissLoadingDialog();
+                        titleAction.setImageResource(R.mipmap.header_icon_star_solid);
+                        contactDeatilBean.getContact().setIsView(1);
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-                showTopSnackBar("关注失败");
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                        showTopSnackBar("关注失败");
+                    }
+                });
     }
 
     /**
@@ -727,20 +730,20 @@ public class CustomerPersonDetailActivity extends BaseActivity {
         showLoadingDialog(null);
         callEnqueue(getApi().customerDeleteStar(contact_id),
                 new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                titleAction.setImageResource(R.mipmap.header_icon_star_line);
-                contactDeatilBean.getContact().setIsView(0);
-            }
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        dismissLoadingDialog();
+                        titleAction.setImageResource(R.mipmap.header_icon_star_line);
+                        contactDeatilBean.getContact().setIsView(0);
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-                showTopSnackBar("取消关注失败");
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                        showTopSnackBar("取消关注失败");
+                    }
+                });
     }
 
     @Override

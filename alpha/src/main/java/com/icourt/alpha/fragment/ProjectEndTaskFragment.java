@@ -32,7 +32,6 @@ import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.umeng.analytics.MobclickAgent;
 
-import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
@@ -155,10 +154,12 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
 
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.rl_comm_search:
                 SearchTaskActivity.launchFinishTask(getContext(), "", 0, 1, projectId);
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }

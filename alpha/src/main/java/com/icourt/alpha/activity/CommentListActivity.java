@@ -263,8 +263,10 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
             case R.id.send_tv:
                 sendComment();
                 break;
+            default:
+                super.onClick(v);
+                break;
         }
-        super.onClick(v);
     }
 
     private void enableLoadMore(List result) {
