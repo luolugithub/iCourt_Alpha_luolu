@@ -107,7 +107,7 @@ public class ProjectJudgeActivity extends BaseActivity {
                         callPhone(phoneview.getText());
                     } else if (type == Const.PROJECT_PERSON_TYPE) {//当事人
                         ProjectDetailEntity.LitigantsBean litigantsBean = (ProjectDetailEntity.LitigantsBean) projectJudgeAdapter.getItem(position);
-                        if (!TextUtils.isEmpty(litigantsBean.type) && !TextUtils.isEmpty(litigantsBean.contactPkid)) {
+                        if (!TextUtils.isEmpty(litigantsBean.type) && !TextUtils.isEmpty(litigantsBean.contactPkid) && !TextUtils.equals("L1", litigantsBean.type)) {
                             gotoContactActivity(litigantsBean);
                         }
                     }
