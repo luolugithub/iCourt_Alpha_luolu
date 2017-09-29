@@ -115,7 +115,7 @@ public class AlphaClient extends SimpleClient implements HttpLoggingInterceptor.
                 .addHeader("osVer", String.valueOf(Build.VERSION.SDK_INT))
                 .addHeader("osType", HConst.OS_TYPE)
                 .addHeader("appVer", BuildConfig.VERSION_NAME)
-                .addHeader("appVersion", BuildConfig.VERSION_NAME)
+                .addHeader("appVersion", "v2.1.0")
                 .addHeader("buildVer", String.valueOf(BuildConfig.VERSION_CODE))
                 .build();
         Response response = chain.proceed(requestBuilder);

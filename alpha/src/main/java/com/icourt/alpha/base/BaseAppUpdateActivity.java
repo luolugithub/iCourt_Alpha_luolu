@@ -62,8 +62,16 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
     private ProgressDialog updateProgressDialog;
     public static final int REQUEST_FILE_PERMISSION = 9999;
 
+    private static final int UPGRADE_STRATEGY_NO_TYPE = -1;//无更新
     private static final int UPGRADE_STRATEGY_UNCOMPEL_TYPE = 1;//非强制升级
     private static final int UPGRADE_STRATEGY_COMPEL_TYPE = 2;//强制升级
+
+    @CallSuper
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        pauseDownloadApk();
+    }
 
     @Override
     public final boolean hasFilePermission(@NonNull Context context) {
@@ -141,20 +149,18 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
         Window window = updateNoticeDialog.getWindow();
         window.setBackgroundDrawableResource(android.R.color.transparent);
         window.setContentView(R.layout.dialog_update_app_layout);
-        TextView lastVersionTv = (TextView) window.findViewById(R.id.last_version_tv);
-        TextView uploadTimeTv = (TextView) window.findViewById(R.id.last_version_uploadtime_tv);
+        TextView titleTv = (TextView) window.findViewById(R.id.last_version_title_tv);
         RecyclerView recyclerView = (RecyclerView) window.findViewById(R.id.last_version_content_recyclerview);
         TextView noUpdateTv = (TextView) window.findViewById(R.id.last_version_no_update_tv);
         TextView updateTv = (TextView) window.findViewById(R.id.last_version_update_tv);
 
-        lastVersionTv.setText(appVersionEntity.appVersion);
-        uploadTimeTv.setText(DateUtils.getTimeDateFormatYearDot(appVersionEntity.gmtCreate));
 
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
         VersionDescAdapter versionDescAdapter = null;
         HeaderFooterAdapter headerFooterAdapter = new HeaderFooterAdapter<>(
                 versionDescAdapter = new VersionDescAdapter());
-        addFooterView(headerFooterAdapter,recyclerView);
+        addHeaderView(headerFooterAdapter, recyclerView, appVersionEntity);
+        addFooterView(headerFooterAdapter, recyclerView);
         recyclerView.setAdapter(headerFooterAdapter);
         versionDescAdapter.bindData(true, appVersionEntity.versionDescs);
 
@@ -163,9 +169,11 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
             noUpdateTv.setVisibility(View.GONE);
             updateTv.setVisibility(View.VISIBLE);
             updateTv.setText("关闭");
+            titleTv.setText("更新日志");
         } else {
             noUpdateTv.setVisibility(shouldForceUpdate(appVersionEntity) ? View.GONE : View.VISIBLE);
             updateTv.setVisibility(View.VISIBLE);
+            titleTv.setText("发现新版本");
         }
         noUpdateTv.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -192,12 +200,36 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
             }
         });
     }
-    private void addFooterView(HeaderFooterAdapter headerFooterAdapter,RecyclerView recyclerView) {
+
+    /**
+     * 添加底部view
+     *
+     * @param headerFooterAdapter
+     * @param recyclerView
+     */
+    private void addFooterView(HeaderFooterAdapter headerFooterAdapter, RecyclerView recyclerView) {
         View footerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_update_dialog_list_layout, recyclerView);
-        TextView footerTv = (TextView)footerView.findViewById(R.id.footer_textview);
+        TextView footerTv = (TextView) footerView.findViewById(R.id.footer_textview);
         headerFooterAdapter.addFooter(footerView);
         footerTv.setText("升级是小阿的信仰，我们下次见！");
     }
+
+    /**
+     * 添加头部view
+     *
+     * @param headerFooterAdapter
+     * @param recyclerView
+     * @param appVersionEntity
+     */
+    private void addHeaderView(HeaderFooterAdapter headerFooterAdapter, RecyclerView recyclerView, AppVersionEntity appVersionEntity) {
+        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_update_dialog_list_layout, recyclerView);
+        TextView lastVersionTv = (TextView) headerView.findViewById(R.id.last_version_tv);
+        TextView uploadTimeTv = (TextView) headerView.findViewById(R.id.last_version_uploadtime_tv);
+        headerFooterAdapter.addHeader(headerView);
+        lastVersionTv.setText(appVersionEntity.appVersion);
+        uploadTimeTv.setText(DateUtils.getTimeDateFormatYearDot(appVersionEntity.gmtCreate));
+    }
+
     /**
      * 是否强制更新
      * VERSION_CODE 如果大于本地版本 就强制更新
@@ -227,7 +259,9 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
      * @return
      */
     public boolean isUpdateApp(@NonNull AppVersionEntity appVersionEntity) {
-        return appVersionEntity != null && !TextUtils.equals(appVersionEntity.appVersion, BuildConfig.VERSION_NAME);
+        return appVersionEntity != null
+                && !TextUtils.equals(appVersionEntity.appVersion, BuildConfig.VERSION_NAME)
+                && appVersionEntity.upgradeStrategy != UPGRADE_STRATEGY_NO_TYPE;
     }
 
     private ProgressDialog getUpdateProgressDialog() {
@@ -374,10 +408,4 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
         }
     }
 
-    @CallSuper
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        pauseDownloadApk();
-    }
 }

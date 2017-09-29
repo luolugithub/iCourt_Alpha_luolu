@@ -315,7 +315,6 @@ public class TabMineFragment extends BaseFragment {
     }
 
     /**
-     * by youxuan
      * 删除缓存
      * * 考虑量级:1.资料库 2.任务项目文档 3.IM文件 多层路径
      */
@@ -358,7 +357,6 @@ public class TabMineFragment extends BaseFragment {
     }
 
     /**
-     * by youxuan
      * 获取缓存文件大小
      * 考虑量级:1.资料库 2.任务项目文档 3.IM文件 多层路径
      */
