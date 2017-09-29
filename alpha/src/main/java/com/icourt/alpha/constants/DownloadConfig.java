@@ -27,7 +27,7 @@ public class DownloadConfig {
     public static final String FILE_DOWNLOAD_ROOT_DIR = "alpha_download";
 
     //App更新的文件根目录
-    private static final String FILE_DOWNLOAD_APK_DIR = FILE_DOWNLOAD_ROOT_DIR + File.separator + "new_apk";
+    public static final String FILE_DOWNLOAD_APK_DIR = FILE_DOWNLOAD_ROOT_DIR + File.separator + "new_apk";
 
 
     /**

@@ -20,12 +20,12 @@ import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.VersionDescAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
+import com.icourt.alpha.constants.DownloadConfig;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.http.callback.BaseCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.UpdateAppDialogNoticeImp;
-import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.ApkUtils;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.FileUtils;
@@ -349,9 +349,7 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
     private String getApkSavePath() {
         StringBuilder pathBuilder = new StringBuilder(Environment.getExternalStorageDirectory().getAbsolutePath());
         pathBuilder.append(File.separator);
-        pathBuilder.append(ActionConstants.FILE_DOWNLOAD_PATH);
-        pathBuilder.append(File.separator);
-        pathBuilder.append(ActionConstants.APK_DOWNLOAD_PATH);
+        pathBuilder.append(DownloadConfig.FILE_DOWNLOAD_APK_DIR);
         log("pathBuilder ----  " + pathBuilder.toString());
         return pathBuilder.toString();
     }
