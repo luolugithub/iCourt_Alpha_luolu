@@ -17,8 +17,9 @@ import com.icourt.alpha.entity.bean.MsgConvert2Task;
 import com.icourt.alpha.entity.bean.PageEntity;
 import com.icourt.alpha.entity.bean.ProjectDetailEntity;
 import com.icourt.alpha.entity.bean.ProjectEntity;
-import com.icourt.alpha.entity.bean.RepoAdmin;
 import com.icourt.alpha.entity.bean.ProjectProcessesEntity;
+import com.icourt.alpha.entity.bean.RepoAdmin;
+import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.entity.bean.RepoIdResEntity;
 import com.icourt.alpha.entity.bean.RepoMatterEntity;
 import com.icourt.alpha.entity.bean.SFileLinkInfoEntity;
@@ -1531,6 +1532,14 @@ public interface ApiAlphaService {
      */
     @GET("ilaw/api/v1/matters/{matterId}/processes")
     Call<ResEntity<List<ProjectProcessesEntity>>> projectProcessesQuery(@Path("matterId") String matterId);
+
+    /**
+     * 获取律所资料库下面的资料库
+     *
+     * @return
+     */
+    @GET("ilaw/api/v2/documents/my/officeLibs")
+    Call<ResEntity<List<RepoEntity>>> getOfficeLibs(@Query("permissionType") String permissionType);
 }
 
 

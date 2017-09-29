@@ -208,7 +208,6 @@ public class CustomerCompanyDetailActivity extends BaseActivity {
     @OnClick({R.id.titleAction, R.id.titleAction2})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.titleAction:
                 if (contactDeatilBean != null) {
@@ -224,6 +223,9 @@ public class CustomerCompanyDetailActivity extends BaseActivity {
             case R.id.titleAction2:
                 MobclickAgent.onEvent(getContext(), UMMobClickAgent.creat_client_click_id);
                 CustomerCompanyCreateActivity.launch(this, contactDeatilBean, CustomerCompanyCreateActivity.UPDATE_CUSTOMER_ACTION);
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }

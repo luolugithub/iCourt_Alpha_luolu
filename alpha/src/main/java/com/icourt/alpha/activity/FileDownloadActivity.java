@@ -67,6 +67,7 @@ public class FileDownloadActivity extends ImageViewBaseActivity {
 
     private static final String KEY_SEA_FILE_FROM = "key_sea_file_from";
     private static final String KEY_SEA_FILE = "key_sea_file";
+    private static final String KEY_INTERCEPT_LOOK_FILE_DETAILS = "key_intercept_look_file_details";//是否拦截查看文件详情
 
     @BindView(R.id.download_notice_tv)
     TextView downloadNoticeTv;
@@ -100,14 +101,21 @@ public class FileDownloadActivity extends ImageViewBaseActivity {
 
 
     public static <T extends ISeaFile> void launch(@NonNull Context context, T seaFile, @SFileConfig.FILE_FROM int fileFrom) {
+        launch(context, seaFile, fileFrom, false);
+    }
+
+    public static <T extends ISeaFile> void launch(@NonNull Context context,
+                                                   T seaFile,
+                                                   @SFileConfig.FILE_FROM int fileFrom,
+                                                   boolean interceptLookFileDetails) {
         if (context == null) return;
         if (seaFile == null) return;
         Intent intent = new Intent(context, FileDownloadActivity.class);
         intent.putExtra(KEY_SEA_FILE, seaFile);
         intent.putExtra(KEY_SEA_FILE_FROM, fileFrom);
+        intent.putExtra(KEY_INTERCEPT_LOOK_FILE_DETAILS, interceptLookFileDetails);
         context.startActivity(intent);
     }
-
 
     int fileFrom;
     ISeaFile iSeaFile;
@@ -228,7 +236,8 @@ public class FileDownloadActivity extends ImageViewBaseActivity {
                     getContext(),
                     SFileConfig.convert2FileFrom(fileFrom),
                     seaFileImages,
-                    0
+                    0,
+                    getIntent().getBooleanExtra(KEY_INTERCEPT_LOOK_FILE_DETAILS, false)
             );
             finish();
         }
@@ -407,6 +416,11 @@ public class FileDownloadActivity extends ImageViewBaseActivity {
                 || fileFrom == FILE_FROM_IM) {
             menus.remove(getString(R.string.sfile_file_details));
         }
+
+        //拦截查看文件详情
+        if (getIntent().getBooleanExtra(KEY_INTERCEPT_LOOK_FILE_DETAILS, false)) {
+            menus.remove(getString(R.string.sfile_file_details));
+        }
         new BottomActionDialog(getContext(),
                 null,
                 menus,
@@ -418,12 +432,8 @@ public class FileDownloadActivity extends ImageViewBaseActivity {
                         if (TextUtils.equals(action, getString(R.string.sfile_file_details))) {
                             FileDetailDialogFragment.show(
                                     SFileConfig.REPO_UNKNOW,
-                                    iSeaFile.getSeaFileRepoId(),
-                                    FileUtils.getFileParentDir(iSeaFile.getSeaFileFullPath()),
-                                    fileName,
-                                    iSeaFile.getSeaFileSize(),
+                                    iSeaFile,
                                     0,
-                                    iSeaFile.getSeaFilePermission(),
                                     getSupportFragmentManager());
                         } else if (TextUtils.equals(action, "转发给同事")) {
                             showContactShareDialogFragment(fileCachePath);

@@ -36,11 +36,11 @@ public class TimeEntity implements Serializable {
         public static final int TIMER_STATE_START = 0;
         public static final int TIMER_STATE_STOP = 1;
 
-        public static final int STATE_BUBBLE_ON = 0;
-        public static final int STATE_BUBBLE_OFF = 1;
+        public static final int STATE_BUBBLE_OFF = 1;//计时泡泡提醒已关闭
+        public static final int STATE_BUBBLE_ON = 0;//计时泡泡提醒已开启
 
-        public static final int STATE_NO_REMIND_ON = 1;
-        public static final int STATE_NO_REMIND_OFF = 0;
+        public static final int STATE_REMIND_OFF = 1;//计时提醒已关闭
+        public static final int STATE_REMIND_ON = 0;//计时提醒已开启
 
 
         public String suspensionTag;

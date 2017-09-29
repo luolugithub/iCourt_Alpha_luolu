@@ -879,11 +879,11 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                             mHandler.addOverTimingRemind(event.content);
                             break;
                         case ServerTimingEvent.TIMING_SYNC_CLOSE_BUBBLE://关闭该计时任务超长提醒泡泡的通知
-                            dismissOverTimingRemindDialogFragment(false);
+                            dismissOverTimingRemindDialogFragment(true);
                             TimerManager.getInstance().setOverBubbleRemind(false);
                             break;
                         case ServerTimingEvent.TIMING_SYNC_NO_REMIND://该计时任务不再提醒泡泡的通知
-                            dismissOverTimingRemindDialogFragment(false);
+                            dismissOverTimingRemindDialogFragment(true);
                             TimerManager.getInstance().setOverTimingRemind(false);
                             break;
                     }
@@ -954,10 +954,7 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
 
         switch (event.action) {
             case OverTimingRemindEvent.ACTION_TIMING_REMIND_NO_REMIND:
-                dismissOverTimingRemindDialogFragment(false);
-                break;
-            case OverTimingRemindEvent.ACTION_SHOW_TIMING_REMIND:
-                mHandler.addOverTimingRemind(getOverTimingRemindContent(event.timeSec));
+                dismissOverTimingRemindDialogFragment(true);
                 break;
             case OverTimingRemindEvent.ACTION_SYNC_BUBBLE_CLOSE_TO_SERVER:
                 TimerManager.getInstance().setOverTimingRemindClose(TimerManager.OVER_TIME_REMIND_BUBBLE_OFF);
@@ -975,18 +972,12 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
         if (event == null) return;
         switch (event.action) {
             case TimingEvent.TIMING_ADD:
-                //如果添加的计时大于2个小时，弹出提示
-                if (TimeUnit.SECONDS.toHours(TimerManager.getInstance().getTimingSeconds()) > 2) {
-                    if (TimerManager.getInstance().isOverTimingRemind() && TimerManager.getInstance().isBubbleRemind()) {
-                        mHandler.addOverTimingRemind(getOverTimingRemindContent(TimerManager.getInstance().getTimingSeconds()));
-                    }
-                } else {
-                    dismissTimingDialogFragment();
-                }
                 tabTimingIcon.setImageResource(R.mipmap.ic_tab_timing);
                 tabTimingIcon.clearAnimation();
                 timingAnim = getTimingAnimation(0f, 359f);
                 tabTimingIcon.startAnimation(timingAnim);
+                //如果添加的计时大于2个小时，弹出提示
+                outTwoHourShowRemind();
                 break;
             case TimingEvent.TIMING_UPDATE_PROGRESS:
                 if (timingAnim == null) {
@@ -1000,7 +991,7 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                 tabTimingTv.setText(toTime(event.timingSecond));
                 break;
             case TimingEvent.TIMING_STOP:
-                dismissOverTimingRemindDialogFragment(false);
+                dismissOverTimingRemindDialogFragment(true);
                 dismissTimingDialogFragment();
                 tabTimingTv.setText("开始计时");
                 tabTimingIcon.setImageResource(R.mipmap.ic_time_start);
@@ -1008,13 +999,22 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                 timingAnim = null;
                 dismissOverTimingRemindDialogFragment(true);
                 break;
-            case TimingEvent.TIMING_SYNC_SUCCESS:
-                if (TimeUnit.SECONDS.toHours(TimerManager.getInstance().getTimingSeconds()) > 2) {
-                    if (TimerManager.getInstance().isBubbleRemind() && TimerManager.getInstance().isOverTimingRemind()) {
-                        mHandler.addOverTimingRemind(getOverTimingRemindContent(TimerManager.getInstance().getTimingSeconds()));
-                    }
-                }
+            case TimingEvent.TIMING_SYNC_SUCCESS://同步计时，如果计时大于两个小时，弹出提示
+                outTwoHourShowRemind();
                 break;
+        }
+    }
+
+    /**
+     * 判断是否超过2小时，是否提醒。
+     */
+    private void outTwoHourShowRemind() {
+        if (TimeUnit.SECONDS.toHours(TimerManager.getInstance().getTimingSeconds()) >= 2) {
+            if (TimerManager.getInstance().isBubbleRemind() && TimerManager.getInstance().isOverTimingRemind()) {
+                mHandler.addOverTimingRemind(getOverTimingRemindContent(TimerManager.getInstance().getTimingSeconds()));
+            }
+        } else {
+            dismissTimingDialogFragment();
         }
     }
 

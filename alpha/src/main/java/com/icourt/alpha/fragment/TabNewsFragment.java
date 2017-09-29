@@ -141,10 +141,12 @@ public class TabNewsFragment extends BaseFragment
     @OnClick({R.id.titleAction})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.titleAction:
                 GroupCreateActivity.launch(getContext());
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }

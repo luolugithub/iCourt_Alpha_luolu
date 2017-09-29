@@ -87,11 +87,6 @@ public class ProjectEndTaskActivity extends BaseActivity {
     @Override
     public void onClick(View v) {
         super.onClick(v);
-        switch (v.getId()) {
-            default:
-                super.onClick(v);
-                break;
-        }
     }
 
     @Override

@@ -219,7 +219,8 @@ public class Const {
             PROJECT_NUMBER_TYPE,
             PROJECT_REMARK_TYPE,
             PROJECT_CASE_TYPE,
-            PROJECT_CASENUMBER_TYPE})
+            PROJECT_CASENUMBER_TYPE,
+            PROJECT_CLIENT_TYPE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface PROJECT_INFO_TEXT_TYPE { //查看text内容（名称、类型、编号、案由...）
 
