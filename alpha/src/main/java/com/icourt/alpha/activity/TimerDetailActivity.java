@@ -211,7 +211,7 @@ public class TimerDetailActivity extends BaseTimerActivity
                  */
                 @Override
                 public void onTimerSetValueChanged(long time) {
-                    selectedEndDate.setTimeInMillis(selectedStartDate.getTimeInMillis() + time * 1000);
+//                    selectedEndDate.setTimeInMillis(selectedStartDate.getTimeInMillis() + time * 1000);
                 }
 
                 @Override
@@ -370,7 +370,7 @@ public class TimerDetailActivity extends BaseTimerActivity
         startTimeMinTv.setText(DateUtils.getHHmm(selectedStartDate.getTimeInMillis()));
         stopTimeMinTv.setText(DateUtils.getHHmm(selectedEndDate.getTimeInMillis()));
 
-        int differentDay = differentDays(selectedStartDate.getTimeInMillis(), selectedEndDate.getTimeInMillis());
+        int differentDay = DateUtils.differentDays(selectedStartDate.getTimeInMillis(), selectedEndDate.getTimeInMillis());
         if (differentDay >= 1) {
             tvSurpassDay.setText(getString(R.string.timing_add_days, differentDay));
         } else {
@@ -382,39 +382,6 @@ public class TimerDetailActivity extends BaseTimerActivity
                 - selectedStartDate.getTimeInMillis() / one_minutes_millis * one_minutes_millis);
         int time = (int) (rangeTime / 1000);
         circleTimerView.setCurrentTime(time);
-    }
-
-    /**
-     * date2比date1多的天数
-     *
-     * @param startMillis
-     * @param endMillis
-     * @return
-     */
-    private static int differentDays(long startMillis, long endMillis) {
-        Calendar cal1 = Calendar.getInstance();
-        cal1.setTimeInMillis(startMillis);
-
-        Calendar cal2 = Calendar.getInstance();
-        cal2.setTimeInMillis(endMillis);
-        int day1 = cal1.get(Calendar.DAY_OF_YEAR);
-        int day2 = cal2.get(Calendar.DAY_OF_YEAR);
-
-        int year1 = cal1.get(Calendar.YEAR);
-        int year2 = cal2.get(Calendar.YEAR);
-        if (year1 != year2) {//同一年
-            int timeDistance = 0;
-            for (int i = year1; i < year2; i++) {
-                if (i % 4 == 0 && i % 100 != 0 || i % 400 == 0) {//闰年
-                    timeDistance += 366;
-                } else {//不是闰年
-                    timeDistance += 365;
-                }
-            }
-            return timeDistance + (day2 - day1);
-        } else {//不同年
-            return day2 - day1;
-        }
     }
 
     @Override
