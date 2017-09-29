@@ -249,7 +249,7 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
      */
     @Override
     public final boolean shouldUpdate(@NonNull AppVersionEntity appVersionEntity) {
-        return appVersionEntity != null && appVersionEntity.upgradeStrategy == UPGRADE_STRATEGY_UNCOMPEL_TYPE;
+        return appVersionEntity != null && appVersionEntity.upgradeStrategy != UPGRADE_STRATEGY_COMPEL_TYPE;
     }
 
     /**

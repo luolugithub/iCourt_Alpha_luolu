@@ -471,7 +471,7 @@ public class TabMineFragment extends BaseFragment {
                 @Override
                 public void onSuccess(Call<ResEntity<AppVersionEntity>> call, Response<ResEntity<AppVersionEntity>> response) {
                     if (myCenterAboutCountView == null) return;
-                    myCenterAboutCountView.setVisibility(baseAppUpdateActivity.shouldUpdate(response.body().result) ? View.VISIBLE : View.INVISIBLE);
+                    myCenterAboutCountView.setVisibility(baseAppUpdateActivity.isUpdateApp(response.body().result) ? View.VISIBLE : View.INVISIBLE);
                 }
 
                 @Override
