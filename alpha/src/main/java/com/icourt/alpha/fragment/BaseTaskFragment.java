@@ -69,10 +69,13 @@ import static com.umeng.socialize.utils.DeviceConfig.context;
 
 public abstract class BaseTaskFragment extends BaseFragment implements OnFragmentCallBackListener, ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener {
 
+    //TODO 默认值就是false
     protected boolean isEditTask = false;//编辑任务权限
     protected boolean isDeleteTask = false;//删除任务权限
     protected boolean isAddTime = false;//添加计时权限
 
+
+    //TODO 静态常量的作用域有问题
     public static final int CHANGE_STATUS = 1;//修改任务完成状态
     public static final int CHANGE_PROJECT = 2;//修改任务所属项目/任务组
     public static final int CHANGE_ALLOT = 3;//将任务分配给其他负责人
@@ -181,6 +184,9 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
      * @param state      true：完成状态；false：未完成状态。
      */
     protected void updateTaskState(final TaskEntity.TaskItemEntity itemEntity, final boolean state) {
+
+        //TODO  参数没校验
+
         showLoadingDialog(null);
         itemEntity.state = state;
         callEnqueue(
@@ -246,6 +252,7 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
         if (taskItemEntity == null) return;
         String json = getReminderJson(taskReminderEntity);
         if (TextUtils.isEmpty(json)) return;
+        //TODO  不用的onFailure 去掉
         callEnqueue(
                 getApi().taskReminderAdd(taskItemEntity.id, RequestUtils.createJsonBody(json)),
                 new SimpleCallBack<TaskReminderEntity>() {
@@ -269,6 +276,7 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
      */
     protected void deleteTask(final TaskEntity.TaskItemEntity itemEntity) {
         showLoadingDialog(null);
+        //TODO  context 有问题
         MobclickAgent.onEvent(context, UMMobClickAgent.delete_task_click_id);
         callEnqueue(
                 getApi().taskDelete(itemEntity.id),
@@ -412,6 +420,7 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
             if (centerMenuDialog != null)
                 centerMenuDialog.dismiss();
             if (adapter instanceof CenterMenuDialog.MenuAdapter) {
+                //TODO 强转逻辑  menuAdapter没有用
                 final ItemsEntity entity = (ItemsEntity) adapter.getItem(position);
                 final CenterMenuDialog.MenuAdapter menuAdapter = (CenterMenuDialog.MenuAdapter) adapter;
                 if (taskItemEntity != null) {
@@ -471,6 +480,7 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
      * @param itemEntity
      */
     protected void showFinishDialog(final Context context, String message, final TaskEntity.TaskItemEntity itemEntity, @DialogType final int type) {
+        //TODO 取消按钮的点击事件垃圾
         //先new出一个监听器，设置好监听
         DialogInterface.OnClickListener dialogOnclicListener = new DialogInterface.OnClickListener() {
 
@@ -501,6 +511,7 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
         builder.setMessage(message); //设置内容
         builder.setPositiveButton(R.string.task_confirm, dialogOnclicListener);
         builder.setNegativeButton(R.string.task_cancel, dialogOnclicListener);
+        //TODO 直接show 重复运算 看源码
         builder.create().show();
     }
 
