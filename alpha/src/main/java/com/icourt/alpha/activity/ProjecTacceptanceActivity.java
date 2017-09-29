@@ -119,7 +119,8 @@ public class ProjecTacceptanceActivity extends BaseActivity implements BaseRecyc
             ProjectProcessesEntity.ExtraBean.ValuesBean valuesBean = (ProjectProcessesEntity.ExtraBean.ValuesBean) adapter.getItem(position);
             if (valuesBean == null) return;
             if (TextUtils.isEmpty(valuesBean.id)) return;
-            if (!TextUtils.isEmpty(valuesBean.type) && !TextUtils.isEmpty(valuesBean.id)) {
+            //type ＝ L0 ：自定义当事人
+            if (!TextUtils.isEmpty(valuesBean.type) && !TextUtils.isEmpty(valuesBean.id) && !TextUtils.equals("L0", valuesBean.type)) {
                 gotoCustiomer(valuesBean);
             }
 

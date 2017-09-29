@@ -446,10 +446,7 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
         } else if (adapter instanceof ProjectBasicInfoAdapter) {
             ProjectBasicItemEntity entity = (ProjectBasicItemEntity) adapter.getItem(position);
             switch (entity.type) {
-                case Const.PROJECT_NAME_TYPE:
-                case Const.PROJECT_REMARK_TYPE:
                 case Const.PROJECT_NUMBER_TYPE:
-                case Const.PROJECT_SERVER_CONTENT_TYPE:
                     ProjectBasicTextInfoActivity.launch(view.getContext(), entity.key, entity.value, entity.type);
                     break;
                 case Const.PROJECT_ANYUAN_LAWYER_TYPE://案源律师
@@ -463,13 +460,19 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
                     break;
             }
         } else if (adapter instanceof ProjectClientAdapter) {
-            if (!hasCustomerPermission()) return;
-            if (customerDbService == null) return;
-            ProjectDetailEntity.ClientsBean clientsBean = (ProjectDetailEntity.ClientsBean) adapter.getItem(position);
-            if (!TextUtils.isEmpty(clientsBean.contactPkid) && !TextUtils.isEmpty(clientsBean.type)) {
-                gotoCustiomer(clientsBean);
-            } else {
-                ProjectBasicTextInfoActivity.launch(view.getContext(), getString(R.string.project_clients), clientsBean.contactName, Const.PROJECT_CLIENT_TYPE);
+            Object object = adapter.getItem(position);
+            if (object instanceof ProjectDetailEntity.ClientsBean) {
+                ProjectDetailEntity.ClientsBean clientsBean = (ProjectDetailEntity.ClientsBean) object;
+                if (!hasCustomerPermission()) return;
+                if (customerDbService == null) return;
+                if (!TextUtils.isEmpty(clientsBean.contactPkid) && !TextUtils.isEmpty(clientsBean.type)) {
+                    gotoCustiomer(clientsBean);
+                } else {
+                    ProjectBasicTextInfoActivity.launch(view.getContext(), getString(R.string.project_clients), clientsBean.contactName, Const.PROJECT_CLIENT_TYPE);
+                }
+            }else if(object instanceof ProjectBasicItemEntity){
+                ProjectBasicItemEntity basicItemEntity = (ProjectBasicItemEntity) object;
+                ProjectBasicTextInfoActivity.launch(view.getContext(), basicItemEntity.key, basicItemEntity.value, basicItemEntity.type);
             }
         }
     }
