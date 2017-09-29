@@ -115,8 +115,6 @@ public class TimerTimingActivity extends BaseTimerActivity
     ViewGroup overTimingRemind;
     @BindView(R.id.over_timing_title_tv)
     TextView overTimingTitleTv;
-    @BindView(R.id.over_timing_close_tv)
-    TextView overTimingCloseTv;
 
     public static void launch(@NonNull Context context,
                               @NonNull TimeEntity.ItemEntity timeEntity) {
@@ -188,11 +186,6 @@ public class TimerTimingActivity extends BaseTimerActivity
             worktypeNameTv.setText(TextUtils.isEmpty(itemEntity.workTypeName) ? "未设置" : itemEntity.workTypeName);
             taskNameTv.setText(TextUtils.isEmpty(itemEntity.taskName) ? "未关联" : itemEntity.taskName);
 
-            Drawable[] drawables = overTimingCloseTv.getCompoundDrawables();
-            if (drawables[0] != null) {
-                int px = DensityUtil.dip2px(getContext(), 12);
-                drawables[0].setBounds(0, 0, px, px);
-            }
         }
     }
 
@@ -202,8 +195,8 @@ public class TimerTimingActivity extends BaseTimerActivity
      * @param isSyncServer true：同步到服务器，false：不同步
      */
     private void closeOverTimingRemind(boolean isSyncServer) {
-        viewMoveAnimation(false);
         itemEntity.noRemind = TimeEntity.ItemEntity.STATE_NO_REMIND_ON;
+        viewMoveAnimation(false);
         EventBus.getDefault().post(new OverTimingRemindEvent(OverTimingRemindEvent.ACTION_TIMING_REMIND_NO_REMIND));
         if (isSyncServer) {
             TimerManager.getInstance().setOverTimingRemindClose(TimerManager.OVER_TIME_REMIND_NO_REMIND);
@@ -216,7 +209,7 @@ public class TimerTimingActivity extends BaseTimerActivity
             R.id.task_layout,
             R.id.titleAction,
             R.id.stop_time_tv,
-            R.id.over_timing_close_tv})
+            R.id.over_timing_close_ll})
     @Override
     public void onClick(View view) {
         super.onClick(view);
@@ -224,7 +217,7 @@ public class TimerTimingActivity extends BaseTimerActivity
             case R.id.titleAction:
                 finish();
                 break;
-            case R.id.over_timing_close_tv:
+            case R.id.over_timing_close_ll:
                 closeOverTimingRemind(true);
                 break;
             case R.id.project_layout://所属项目

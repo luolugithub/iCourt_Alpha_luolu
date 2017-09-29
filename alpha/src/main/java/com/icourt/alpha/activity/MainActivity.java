@@ -879,11 +879,11 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                             mHandler.addOverTimingRemind(event.content);
                             break;
                         case ServerTimingEvent.TIMING_SYNC_CLOSE_BUBBLE://关闭该计时任务超长提醒泡泡的通知
-                            dismissOverTimingRemindDialogFragment(false);
+                            dismissOverTimingRemindDialogFragment(true);
                             TimerManager.getInstance().setOverBubbleRemind(false);
                             break;
                         case ServerTimingEvent.TIMING_SYNC_NO_REMIND://该计时任务不再提醒泡泡的通知
-                            dismissOverTimingRemindDialogFragment(false);
+                            dismissOverTimingRemindDialogFragment(true);
                             TimerManager.getInstance().setOverTimingRemind(false);
                             break;
                     }
@@ -954,7 +954,7 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
 
         switch (event.action) {
             case OverTimingRemindEvent.ACTION_TIMING_REMIND_NO_REMIND:
-                dismissOverTimingRemindDialogFragment(false);
+                dismissOverTimingRemindDialogFragment(true);
                 break;
             case OverTimingRemindEvent.ACTION_SHOW_TIMING_REMIND:
                 mHandler.addOverTimingRemind(getOverTimingRemindContent(event.timeSec));
@@ -1000,7 +1000,7 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                 tabTimingTv.setText(toTime(event.timingSecond));
                 break;
             case TimingEvent.TIMING_STOP:
-                dismissOverTimingRemindDialogFragment(false);
+                dismissOverTimingRemindDialogFragment(true);
                 dismissTimingDialogFragment();
                 tabTimingTv.setText("开始计时");
                 tabTimingIcon.setImageResource(R.mipmap.ic_time_start);
