@@ -4,7 +4,6 @@ import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -195,7 +194,7 @@ public class TimerTimingActivity extends BaseTimerActivity
      * @param isSyncServer true：同步到服务器，false：不同步
      */
     private void closeOverTimingRemind(boolean isSyncServer) {
-        itemEntity.noRemind = TimeEntity.ItemEntity.STATE_NO_REMIND_ON;
+        itemEntity.noRemind = TimeEntity.ItemEntity.STATE_REMIND_OFF;
         viewMoveAnimation(false);
         EventBus.getDefault().post(new OverTimingRemindEvent(OverTimingRemindEvent.ACTION_TIMING_REMIND_NO_REMIND));
         if (isSyncServer) {
@@ -386,7 +385,7 @@ public class TimerTimingActivity extends BaseTimerActivity
                 if (TextUtils.equals(event.timingId, itemEntity.pkId)) {
                     timingTv.setText(toTime(event.timingSecond));
 
-                    if (itemEntity.noRemind == TimeEntity.ItemEntity.STATE_NO_REMIND_OFF) {
+                    if (itemEntity.noRemind == TimeEntity.ItemEntity.STATE_REMIND_ON) {
                         if (TimeUnit.SECONDS.toHours(event.timingSecond) >= 2) {//如果该计时超过两小时，显示超过2小时的提醒。
 
                             if (overTimingRemind.getVisibility() != View.VISIBLE) {
