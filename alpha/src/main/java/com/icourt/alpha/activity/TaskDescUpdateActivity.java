@@ -138,7 +138,6 @@ public class TaskDescUpdateActivity extends BaseActivity {
     @OnClick({R.id.titleAction})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.titleAction:
                 if (StringUtils.isEmpty(descEditText.getText())) {
@@ -153,6 +152,9 @@ public class TaskDescUpdateActivity extends BaseActivity {
                 }
 
                 this.finish();
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }

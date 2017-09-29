@@ -309,7 +309,6 @@ public class TaskListFragment extends BaseTaskFragment implements
             R.id.next_task_cardview})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.rl_comm_search:
                 SearchTaskActivity.launchTask(getContext(), getLoginUserId(), type);

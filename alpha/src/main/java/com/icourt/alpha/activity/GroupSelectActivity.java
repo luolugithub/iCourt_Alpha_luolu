@@ -118,11 +118,13 @@ public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAda
     @OnClick({R.id.titleAction})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.titleAction:
                 CustomerPersonCreateActivity.launchSetResultFromGroup(GroupSelectActivity.this, selectGroupAdapter.getSelectedData());
                 finish();
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }

@@ -246,7 +246,6 @@ public class TaskDetailActivity extends BaseActivity
             R.id.task_time})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         SystemUtils.hideSoftKeyBoard(this);
         mainContent.setFocusable(true);
         mainContent.setFocusableInTouchMode(true);
@@ -387,6 +386,9 @@ public class TaskDetailActivity extends BaseActivity
                 if (taskItemEntity.timingSum > 0) {
                     showTimersDialogFragment();
                 }
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }

@@ -66,7 +66,6 @@ public class LoginWithPwdActivity extends LoginBaseActivity {
     @OnClick({R.id.pwd_login_rootview, R.id.pwd_login_btn, R.id.wechat_login_text})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.pwd_login_rootview:
                 SystemUtils.hideSoftKeyBoard(getActivity());
@@ -83,6 +82,9 @@ public class LoginWithPwdActivity extends LoginBaseActivity {
                 break;
             case R.id.wechat_login_text:
                 loginWithWeiXin();
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }

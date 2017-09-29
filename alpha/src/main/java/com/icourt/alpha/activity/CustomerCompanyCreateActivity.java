@@ -294,7 +294,6 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
             R.id.activity_add_group_contact_add_liaisons_layout})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         SystemUtils.hideSoftKeyBoard(this);
         switch (v.getId()) {
             case R.id.titleAction://完成
@@ -335,6 +334,9 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
                     pkid = contactDeatilBean.getContact().getPkid();
                 }
                 SelectLiaisonActivity.launchForResult(this, Const.SELECT_ENTERPRISE_LIAISONS_TAG_ACTION, pkid, liaisonsList, SELECT_OTHER_REQUEST);
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }

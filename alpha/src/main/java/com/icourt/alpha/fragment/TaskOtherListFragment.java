@@ -195,10 +195,12 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
 
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.rl_comm_search:
                 SearchTaskActivity.launchTask(getContext(), getAssignTos(), 0);
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }

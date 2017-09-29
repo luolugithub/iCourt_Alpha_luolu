@@ -43,8 +43,6 @@ import butterknife.OnClick;
 import retrofit2.Call;
 import retrofit2.Response;
 
-import static com.icourt.alpha.constants.SFileConfig.PERMISSION_R;
-
 /**
  * Description
  * Company Beijing icourt
@@ -306,12 +304,8 @@ public class SFileSearchActivity extends BaseActivity
         } else {
             FileDetailDialogFragment.show(
                     SFileConfig.REPO_UNKNOW,
-                    item.repo_id,
-                    getDirPath(item.fullpath),
-                    item.name,
-                    item.size,
+                    item,
                     0,
-                    PERMISSION_R,
                     getSupportFragmentManager());
         }
     }
