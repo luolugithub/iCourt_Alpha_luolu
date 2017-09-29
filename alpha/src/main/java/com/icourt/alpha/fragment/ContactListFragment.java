@@ -166,11 +166,13 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
 
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.rl_comm_search:
                 SearchPolymerizationActivity.launch(getContext(),
                         SearchPolymerizationActivity.SEARCH_PRIORITY_CONTACT);
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }

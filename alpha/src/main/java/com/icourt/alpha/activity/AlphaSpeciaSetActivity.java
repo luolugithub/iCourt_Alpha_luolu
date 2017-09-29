@@ -96,7 +96,6 @@ public class AlphaSpeciaSetActivity extends BaseActivity {
     @OnClick({R.id.set_top_switch})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.set_top_switch:
                 if (!setTopSwitch.isChecked()) {
@@ -105,6 +104,9 @@ public class AlphaSpeciaSetActivity extends BaseActivity {
                     setGroupTop();
                 }
                 break;
+            default:
+                super.onClick(v);
+                 break;
         }
     }
 

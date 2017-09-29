@@ -139,7 +139,6 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
 
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.rl_comm_search:
                 SearchTaskActivity.launchFinishTask(getContext(), "", 0, 0, projectId);
