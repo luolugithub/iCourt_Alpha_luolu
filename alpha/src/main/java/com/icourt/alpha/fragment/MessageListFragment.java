@@ -350,6 +350,7 @@ public class MessageListFragment extends BaseRecentContactFragment
 
     @Override
     protected void onlineClientEvent(List<OnlineClient> onlineClients) {
+        if(isDetached()) return;
         if (onlineClients == null || onlineClients.size() == 0) {
             updateLoginStateView(false, "");
         } else {
@@ -485,6 +486,7 @@ public class MessageListFragment extends BaseRecentContactFragment
 
     @Override
     protected void onUserStatusChanged(StatusCode code) {
+        if (isDetached()) return;
         log("------------>onUserStatusChanged:" + code);
         if (code.wontAutoLogin()) {
             bugSync("用户登陆状态:", "" + code + "  被踢出、账号被禁用、密码错误等情况，自动登录失败，需要返回到登录界面进行重新登录操作");
@@ -854,7 +856,7 @@ public class MessageListFragment extends BaseRecentContactFragment
      * 获取消息免打扰
      */
     private void getDontDisturbs() {
-        callEnqueue( getChatApi().sessionQueryAllNoDisturbingIds(),
+        callEnqueue(getChatApi().sessionQueryAllNoDisturbingIds(),
                 new SimpleCallBack<List<String>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {

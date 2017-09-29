@@ -4,14 +4,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
 import android.view.View;
@@ -25,40 +22,36 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
+import com.google.gson.JsonObject;
+import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BasePagerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.base.BaseUmengActivity;
-import com.icourt.alpha.fragment.dialogfragment.ContactShareDialogFragment;
-import com.icourt.alpha.fragment.dialogfragment.ProjectSaveFileDialogFragment;
+import com.icourt.alpha.constants.DownloadConfig;
+import com.icourt.alpha.constants.SFileConfig;
+import com.icourt.alpha.entity.bean.ISeaFile;
+import com.icourt.alpha.fragment.dialogfragment.FileDetailDialogFragment;
+import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.GlideUtils;
-import com.icourt.alpha.utils.Md5Utils;
-import com.icourt.alpha.utils.StringUtils;
+import com.icourt.alpha.utils.SFileTokenUtils;
+import com.icourt.alpha.utils.UrlUtils;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.liulishuo.filedownloader.BaseDownloadTask;
-import com.liulishuo.filedownloader.FileDownloadListener;
-import com.liulishuo.filedownloader.FileDownloader;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import cn.finalteam.galleryfinal.widget.zoonview.PhotoView;
 import cn.finalteam.galleryfinal.widget.zoonview.PhotoViewAttacher;
-import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.Observer;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
+import retrofit2.Call;
+import retrofit2.Response;
 
-import static com.icourt.alpha.utils.FileUtils.isFileExists;
+import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
+import static com.icourt.alpha.utils.GlideUtils.canLoadImage;
 
 /**
  * Description  图片查看器 区别于娱乐模式的查看
@@ -67,12 +60,11 @@ import static com.icourt.alpha.utils.FileUtils.isFileExists;
  * date createTime：2017/9/1
  * version 2.1.0
  */
-public class ImageViewerActivity extends BaseUmengActivity {
-    private static final String KEY_BIG_URLS = "key_big_urls";//多个大图地址
-    private static final String KEY_SMALL_URLS = "key_small_urls";//多个小图地址
+public class ImageViewerActivity extends ImageViewBaseActivity {
     private static final String KEY_SELECT_POS = "key_select_pos";//多个图片地址 跳转到某一条
-    private static final String CACHE_DIR = FileUtils.dirFilePath;
-
+    private static final String KEY_FILE_FROM = "key_file_from";  //文件来源
+    private static final String KEY_SEA_FILE_IMAGES = "key_sea_File_Images";//seafile图片
+    private static final String KEY_INTERCEPT_LOOK_FILE_DETAILS = "key_intercept_look_file_details";//是否拦截查看文件详情
     @BindView(R.id.titleAction)
     ImageView titleAction;
     @BindView(R.id.main_content)
@@ -80,21 +72,38 @@ public class ImageViewerActivity extends BaseUmengActivity {
     @BindView(R.id.download_img)
     ImageView downloadImg;
 
+
     public static void launch(@NonNull Context context,
-                              ArrayList<String> smallUrls,
-                              ArrayList<String> bigUrls,
+                              @SFileConfig.FILE_FROM int fileFrom,
+                              ArrayList<? extends ISeaFile> seaFileImages,
                               int selectPos) {
+        launch(context, fileFrom, seaFileImages, selectPos, false);
+    }
+
+    /**
+     * @param context
+     * @param fileFrom
+     * @param seaFileImages
+     * @param selectPos
+     * @param interceptLookFileDetails 是否拦截查看文件详情
+     */
+    public static void launch(@NonNull Context context,
+                              @SFileConfig.FILE_FROM int fileFrom,
+                              ArrayList<? extends ISeaFile> seaFileImages,
+                              int selectPos,
+                              boolean interceptLookFileDetails) {
         if (context == null) return;
-        if (smallUrls == null || smallUrls.isEmpty()) return;
+        if (seaFileImages == null || seaFileImages.isEmpty()) return;
         if (selectPos < 0) {
             selectPos = 0;
-        } else if (selectPos >= smallUrls.size()) {
-            selectPos = bigUrls.size() - 1;
+        } else if (selectPos >= seaFileImages.size()) {
+            selectPos = seaFileImages.size() - 1;
         }
         Intent intent = new Intent(context, ImageViewerActivity.class);
-        intent.putStringArrayListExtra(KEY_SMALL_URLS, smallUrls);
-        intent.putStringArrayListExtra(KEY_BIG_URLS, bigUrls);
+        intent.putExtra(KEY_FILE_FROM, fileFrom);
+        intent.putExtra(KEY_SEA_FILE_IMAGES, seaFileImages);
         intent.putExtra(KEY_SELECT_POS, selectPos);
+        intent.putExtra(KEY_INTERCEPT_LOOK_FILE_DETAILS, interceptLookFileDetails);
         context.startActivity(intent);
     }
 
@@ -106,86 +115,111 @@ public class ImageViewerActivity extends BaseUmengActivity {
     AppBarLayout titleView;
     @BindView(R.id.viewPager)
     ViewPager viewPager;
-    ArrayList<String> bigUrls;
-    ArrayList<String> smallUrls;
     int selectPos;
     ImagePagerAdapter imagePagerAdapter;
     Handler mHandler = new Handler();
-    private FileDownloadListener picDownloadListener = new FileDownloadListener() {
+    ArrayList<ISeaFile> seaFileImages;
+    @SFileConfig.FILE_FROM
+    int fileFrom;
 
-        @Override
-        protected void pending(BaseDownloadTask task, int soFarBytes, int totalBytes) {
-        }
-
-        @Override
-        protected void progress(BaseDownloadTask task, int soFarBytes, int totalBytes) {
-        }
-
-        @Override
-        protected void completed(BaseDownloadTask task) {
-            showTopSnackBar("保存成功!");
-            if (task != null && !TextUtils.isEmpty(task.getPath())) {
-                try {
-                    sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(new File(task.getPath()))));
-                } catch (NullPointerException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        @Override
-        protected void paused(BaseDownloadTask task, int soFarBytes, int totalBytes) {
-        }
-
-        @Override
-        protected void error(BaseDownloadTask task, Throwable e) {
-            log("----------->图片下载异常:" + StringUtils.throwable2string(e));
-            showTopSnackBar(String.format("下载异常!" + StringUtils.throwable2string(e)));
-        }
-
-        @Override
-        protected void warn(BaseDownloadTask task) {
-
-        }
-    };
+    /**
+     * 获取图片缩略图
+     *
+     * @param seaFileRepoId
+     * @param seaFileFullPath
+     * @param size
+     * @return
+     */
+    protected String getSFileImageUrl(String seaFileRepoId, String seaFileFullPath, int size) {
+        return String.format("%silaw/api/v2/documents/thumbnailImage?repoId=%s&seafileToken=%s&size=%s&p=%s",
+                BuildConfig.API_URL,
+                seaFileRepoId,
+                SFileTokenUtils.getSFileToken(),
+                size,
+                UrlUtils.encodeUrl(seaFileFullPath))
+                .toString();
+    }
 
     /**
      * 图片查看适配器
      */
-    class ImagePagerAdapter extends BasePagerAdapter<String> implements PhotoViewAttacher.OnViewTapListener {
+    class ImagePagerAdapter extends BasePagerAdapter<ISeaFile> implements PhotoViewAttacher.OnViewTapListener {
 
         /**
-         * 获取大图的地址
+         * 获取缩略图地址
+         *
+         * @param iSeaFile
+         * @return
+         */
+        public String getThumbImageUrl(ISeaFile iSeaFile) {
+            if (iSeaFile == null) return null;
+            return getSFileImageUrl(iSeaFile.getSeaFileRepoId(), iSeaFile.getSeaFileFullPath(), 800);
+        }
+
+        /**
+         * 获取原图地址
          *
          * @param pos
          * @return
          */
-        private String getBigImageUrl(int pos) {
-            if (bigUrls != null && pos < bigUrls.size()) {
-                return bigUrls.get(pos);
-            }
-            return null;
+        public String getOriginalImageUrl(int pos) {
+            ISeaFile iSeaFile = getItem(pos);
+            return getOriginalImageUrl(iSeaFile);
         }
 
+        /**
+         * 获取原图地址
+         *
+         * @param iSeaFile
+         * @return
+         */
+        public String getOriginalImageUrl(ISeaFile iSeaFile) {
+            if (iSeaFile == null) return null;
+            return getSFileImageUrl(iSeaFile.getSeaFileRepoId(), iSeaFile.getSeaFileFullPath(), Integer.MAX_VALUE);
+        }
+
+        /**
+         * 原图是否存在
+         *
+         * @param iSeaFile
+         * @return
+         */
+        private boolean isOriginalImageExists(ISeaFile iSeaFile) {
+            //已经缓存了原图
+            return FileUtils.isFileExists(getPicSavePath(iSeaFile));
+        }
+
+
         @Override
-        public void bindDataToItem(String s, ViewGroup container, final View itemView, int pos) {
+        public void bindDataToItem(final ISeaFile o, ViewGroup container, View itemView, int pos) {
             final PhotoView touchImageView = itemView.findViewById(R.id.imageView);
             touchImageView.setMaximumScale(5.0f);
             final View imgLookOriginalTv = itemView.findViewById(R.id.img_look_original_tv);
-            final String bigUrl = getBigImageUrl(pos);
+            final String OriginalImageUrl = getOriginalImageUrl(o);
             imgLookOriginalTv.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    loadBigImage(bigUrl, touchImageView, imgLookOriginalTv);
+                    //加载原图
+                    loadOriginalImage(o, touchImageView, imgLookOriginalTv);
                 }
             });
             touchImageView.setOnViewTapListener(this);
-            if (FileUtils.isGif(s)) {
-                GlideUtils.loadSFilePic(getContext(), s, touchImageView);
+
+            //已经缓存了原图
+            String picSavePath = getPicSavePath(o);
+            if (FileUtils.isFileExists(picSavePath)) {
+                imgLookOriginalTv.setVisibility(View.GONE);
+                GlideUtils.loadSFilePicWithoutPlaceholder(getContext(), picSavePath, touchImageView);
+                return;
+            }
+
+            String thumbImageUrl = getThumbImageUrl(o);
+            if (FileUtils.isGif(o.getSeaFileFullPath())) {
+                GlideUtils.loadSFilePicWithoutPlaceholder(getContext(), thumbImageUrl, touchImageView);
             } else {
-                if (GlideUtils.canLoadImage(getContext())) {
+                if (canLoadImage(getContext())) {
                     Glide.with(getContext())
-                            .load(s)
+                            .load(thumbImageUrl)
                             .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                             .error(R.mipmap.filetype_image)
                             .listener(new RequestListener<String, GlideDrawable>() {
@@ -196,11 +230,12 @@ public class ImageViewerActivity extends BaseUmengActivity {
 
                                 @Override
                                 public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                                    //有原图
-                                    if (!TextUtils.isEmpty(bigUrl)
+                                    //有原图  全屏模式才展示查看原图
+                                    if (isFullScreenMode()
+                                            && !TextUtils.isEmpty(OriginalImageUrl)
                                             && resource != null
                                             && (resource.getIntrinsicHeight() >= 800 || resource.getIntrinsicWidth() >= 800)) {
-                                        checkAndLoadBigImage(bigUrl, touchImageView, imgLookOriginalTv);
+                                        imgLookOriginalTv.setVisibility(View.VISIBLE);
                                     } else {
                                         imgLookOriginalTv.setVisibility(View.GONE);
                                     }
@@ -214,68 +249,25 @@ public class ImageViewerActivity extends BaseUmengActivity {
             }
         }
 
-        /**
-         * 检查和加载原图
-         *
-         * @param bigUrl
-         * @param imageView
-         */
-        private void checkAndLoadBigImage(final String bigUrl, final ImageView imageView, final View imgLookOriginalTv) {
-            Observable.create(new ObservableOnSubscribe<Boolean>() {
-                @Override
-                public void subscribe(ObservableEmitter<Boolean> e) throws Exception {
-                    if (e.isDisposed()) return;
-                    File file = null;
-                    try {
-                        file = Glide.with(getContext())
-                                .load(bigUrl)
-                                .downloadOnly(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
-                                .get(200, TimeUnit.MILLISECONDS);
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
-                    e.onNext(file != null && file.exists());
-                    e.onComplete();
-                }
-            }).compose(ImageViewerActivity.this.<Boolean>bindToLifecycle())
-                    .subscribeOn(Schedulers.newThread())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new io.reactivex.functions.Consumer<Boolean>() {
-                        @Override
-                        public void accept(Boolean aBoolean) throws Exception {
-                            if (!GlideUtils.canLoadImage(getContext())) return;
-
-                            //大图 已经缓存
-                            if (aBoolean != null && aBoolean.booleanValue()) {
-                                loadBigImage(bigUrl, imageView, imgLookOriginalTv);
-                            } else {
-                                if (isFullScreenMode()) {
-                                    imgLookOriginalTv.setVisibility(View.VISIBLE);
-                                } else {
-                                    imgLookOriginalTv.setVisibility(View.GONE);
-                                }
-                            }
-                        }
-                    });
-        }
 
         /**
-         * 加载大图
+         * 加载原图
          *
-         * @param bigUrl
+         * @param iSeaFile
          * @param imageView
          * @param imgLookOriginalTv
          */
-        private void loadBigImage(final String bigUrl, ImageView imageView, final View imgLookOriginalTv) {
+        private void loadOriginalImage(final ISeaFile iSeaFile, final ImageView imageView, final View imgLookOriginalTv) {
             imgLookOriginalTv.setVisibility(View.GONE);
-            if (GlideUtils.canLoadImage(getContext())) {
-                Glide.with(getContext())
-                        .load(bigUrl)
-                        .placeholder(imageView.getDrawable())
-                        .error(R.mipmap.filetype_image)
-                        .dontAnimate()
-                        .into(imageView);
-            }
+            final String picSavePath = getPicSavePath(iSeaFile);
+            String originalImageUrl = imagePagerAdapter.getOriginalImageUrl(iSeaFile);
+            downloadFile(originalImageUrl, picSavePath, new LoadingDownloadListener() {
+                @Override
+                protected void completed(BaseDownloadTask task) {
+                    super.completed(task);
+                    GlideUtils.loadSFilePicWithoutPlaceholder(getContext(), picSavePath, imageView);
+                }
+            });
         }
 
         @Override
@@ -322,17 +314,15 @@ public class ImageViewerActivity extends BaseUmengActivity {
     protected void initView() {
         super.initView();
         titleAction.setImageResource(R.mipmap.header_icon_more);
-        smallUrls = getIntent().getStringArrayListExtra(KEY_SMALL_URLS);
-        bigUrls = getIntent().getStringArrayListExtra(KEY_BIG_URLS);
+        fileFrom = SFileConfig.convert2FileFrom(getIntent().getIntExtra(KEY_FILE_FROM, 0));
+        seaFileImages = (ArrayList<ISeaFile>) getIntent().getSerializableExtra(KEY_SEA_FILE_IMAGES);
         selectPos = getIntent().getIntExtra(KEY_SELECT_POS, 0);
-        viewPager.setAdapter(imagePagerAdapter = new ImagePagerAdapter());
-        imagePagerAdapter.setCanupdateItem(true);
-        imagePagerAdapter.bindData(true, smallUrls);
+        initAdapter();
         viewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
-                setTitle(FileUtils.getFileName(smallUrls.get(position)));
+                setTitle(FileUtils.getFileName(seaFileImages.get(position).getSeaFileFullPath()));
             }
         });
         if (selectPos < imagePagerAdapter.getCount()) {
@@ -341,9 +331,15 @@ public class ImageViewerActivity extends BaseUmengActivity {
                 public void run() {
                     viewPager.setCurrentItem(selectPos, false);
                 }
-            }, 50);
+            }, 20);
         }
-        setTitle(FileUtils.getFileName(smallUrls.get(0)));
+        setTitle(FileUtils.getFileName(FileUtils.getFileName(seaFileImages.get(0).getSeaFileFullPath())));
+    }
+
+    private void initAdapter() {
+        viewPager.setAdapter(imagePagerAdapter = new ImagePagerAdapter());
+        imagePagerAdapter.setCanupdateItem(true);
+        imagePagerAdapter.bindData(true, seaFileImages);
     }
 
     @OnClick({R.id.titleAction,
@@ -355,7 +351,12 @@ public class ImageViewerActivity extends BaseUmengActivity {
                 showBottomMenuDialog();
                 break;
             case R.id.download_img:
-                checkPermissionOrDownload();
+                //下载原图
+                ISeaFile item = imagePagerAdapter.getItem(viewPager.getCurrentItem());
+                if (item != null) {
+                    String originalImageUrl = imagePagerAdapter.getOriginalImageUrl(item);
+                    downloadFile(originalImageUrl, getPicSavePath(item));
+                }
                 break;
             default:
                 super.onClick(v);
@@ -368,237 +369,161 @@ public class ImageViewerActivity extends BaseUmengActivity {
         final PhotoView imageView = itemView.findViewById(R.id.imageView);
         final Drawable drawable = imageView.getDrawable();
         if (drawable == null) return;
+
+        final ISeaFile item = imagePagerAdapter.getItem(viewPager.getCurrentItem());
+        if (item == null) {
+            return;
+        }
+
+        //使用原图
+        final String originalImageUrl = imagePagerAdapter.getOriginalImageUrl(item);
+        final String picSavePath = getPicSavePath(item);
+        ArrayList<String> menus = new ArrayList<>();
+        if (TextUtils.equals(item.getSeaFilePermission(), PERMISSION_RW)) {//有删除的权限
+            if (fileFrom == SFileConfig.FILE_FROM_TASK) {
+                //任务附件 暂时不要文件详情
+                menus.addAll(
+                        Arrays.asList(
+                                "转发给同事",
+                                "分享",
+                                "保存图片",
+                                "保存到文档",
+                                getString(R.string.str_delete)));
+            } else {
+                menus.addAll(
+                        Arrays.asList(
+                                getString(R.string.sfile_file_details),
+                                "转发给同事",
+                                "分享",
+                                "保存图片",
+                                "保存到项目",
+                                getString(R.string.str_delete)));
+            }
+        } else {
+            if (fileFrom == SFileConfig.FILE_FROM_TASK) {
+                //任务附件 暂时不要文件详情
+                //任务附件 暂时不要文件详情
+                menus.addAll(
+                        Arrays.asList(
+                                "转发给同事",
+                                "分享",
+                                "保存图片",
+                                "保存到文档"));
+            } else {
+                menus.addAll(
+                        Arrays.asList(
+                                getString(R.string.sfile_file_details),
+                                "转发给同事",
+                                "分享",
+                                "保存图片",
+                                "保存到项目"));
+            }
+        }
+        //拦截查看文件详情
+        if (getIntent().getBooleanExtra(KEY_INTERCEPT_LOOK_FILE_DETAILS, false)) {
+            menus.remove(getString(R.string.sfile_file_details));
+        }
         new BottomActionDialog(getContext(),
                 null,
-                Arrays.asList("保存图片", "转发给同事", "分享", "保存到项目资料库"),
+                menus,
                 new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                         dialog.dismiss();
-                        switch (position) {
-                            case 0:
-                                checkPermissionOrDownload();
-                                break;
-                            case 1:
-                                transformFriends(drawable);
-                                break;
-                            case 2:
-                                shareImage2WeiXin(drawable);
-                                break;
-                            case 3:
-                                savedImport2Project(drawable);
-                                break;
+                        String action = adapter.getItem(position);
+                        if (TextUtils.equals(action, getString(R.string.sfile_file_details))) {
+                            FileDetailDialogFragment.show(
+                                    SFileConfig.REPO_UNKNOW,
+                                    item,
+                                    0,
+                                    getSupportFragmentManager());
+
+                        } else if (TextUtils.equals(action, "保存图片")) {
+                            downloadFile(originalImageUrl, picSavePath);
+                        } else if (TextUtils.equals(action, "转发给同事")) {
+                            shareHttpFile2Friends(originalImageUrl, picSavePath);
+                        } else if (TextUtils.equals(action, "分享")) {
+                            shareHttpFile(originalImageUrl, picSavePath);
+                        } else if (TextUtils.equals(action, "保存到项目")) {
+                            shareHttpFile2Project(originalImageUrl, picSavePath);
+                        } else if (TextUtils.equals(action, "保存到文档")) {
+                            shareHttpFile2repo(originalImageUrl, picSavePath);
+                        } else if (TextUtils.equals(action, getString(R.string.str_delete))) {
+                            showDeleteConfirmDialog();
                         }
                     }
                 })
                 .show();
     }
 
-    protected void shareImage2WeiXin(@NonNull Drawable drawable) {
-        if (drawable == null) return;
-        shareImage2WeiXin(FileUtils.drawableToBitmap(drawable));
+    /**
+     * 展示删除确认对话框
+     */
+    private void showDeleteConfirmDialog() {
+        new BottomActionDialog(
+                getContext(),
+                getString(R.string.sfile_delete_confirm),
+                Arrays.asList(getString(R.string.str_ok)),
+                new BottomActionDialog.OnActionItemClickListener() {
+                    @Override
+                    public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                        dialog.dismiss();
+                        deleteFile();
+                    }
+                }).show();
     }
 
     /**
-     * 转发给同时
+     * 删除文件
      */
-    private void transformFriends(Drawable drawable) {
-        if (drawable == null) return;
-        if (!checkAcessFilePermission()) {
-            requestAcessFilePermission();
-            return;
-        }
-        //先保存
-        String url = imagePagerAdapter.getItem(viewPager.getCurrentItem());
-        saveDrawableIntoSD(drawable,
-                getEncodeName(url),
-                new Observer<String>() {
+    private void deleteFile() {
+        final int currentItem = viewPager.getCurrentItem();
+        final ISeaFile item = imagePagerAdapter.getItem(currentItem);
+        showLoadingDialog(R.string.str_executing);
+        callEnqueue(getSFileApi().fileDelete(
+                item.getSeaFileRepoId(),
+                item.getSeaFileFullPath()),
+                new SFileCallBack<JsonObject>() {
                     @Override
-                    public void onSubscribe(@io.reactivex.annotations.NonNull Disposable disposable) {
-
+                    public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
+                        dismissLoadingDialog();
+                        deletCachedSeaFile(item);
+                        if (imagePagerAdapter.getCount() > 1) {
+                            seaFileImages.remove(currentItem);
+                            initAdapter();
+                            viewPager.setCurrentItem(Math.min(currentItem + 1, seaFileImages.size() - 1));
+                        } else {
+                            //只剩一个 就关闭整个页面
+                            finish();
+                        }
                     }
 
                     @Override
-                    public void onNext(@io.reactivex.annotations.NonNull String s) {
-                        showContactShareDialogFragment(s);
-                    }
-
-                    @Override
-                    public void onError(@io.reactivex.annotations.NonNull Throwable throwable) {
-
-                    }
-
-                    @Override
-                    public void onComplete() {
-
+                    public void onFailure(Call<JsonObject> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
                     }
                 });
-
     }
 
     /**
-     * 展示联系人转发对话框
+     * 删除缓存的seafile
      *
-     * @param filePath
+     * @param item
      */
-    public void showContactShareDialogFragment(String filePath) {
-        String tag = ContactShareDialogFragment.class.getSimpleName();
-        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
-        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
-        if (fragment != null) {
-            mFragTransaction.remove(fragment);
-        }
-        ContactShareDialogFragment.newInstanceFile(filePath, true)
-                .show(mFragTransaction, tag);
+    private void deletCachedSeaFile(ISeaFile item) {
+        FileUtils.deleteFile(DownloadConfig.getSeaFileDownloadPath(getLoginUserId(), item));
     }
 
-    /**
-     * 检查权限或者下载
-     */
-    private void checkPermissionOrDownload() {
-        if (checkAcessFilePermission()) {
-            downloadFile(imagePagerAdapter.getItem(viewPager.getCurrentItem()));
-        } else {
-            requestAcessFilePermission();
-        }
-    }
 
     /**
-     * 图片下载
+     * 获取保存路径
      *
-     * @param url
-     */
-    private void downloadFile(String url) {
-        if (TextUtils.isEmpty(url)) {
-            showTopSnackBar("下载地址为null");
-            return;
-        }
-        if (!FileUtils.sdAvailable()) {
-            showTopSnackBar("sd卡不可用!");
-            return;
-        }
-        if (isFileExists(url)) {
-            showTopSnackBar("文件已保存");
-            return;
-        }
-        FileDownloader
-                .getImpl()
-                .create(url)
-                .setPath(getPicSavePath(url))
-                .setListener(picDownloadListener).start();
-    }
-
-    private String getPicSavePath(String url) {
-        if (url.startsWith("http")) {
-            StringBuilder pathBuilder = new StringBuilder(CACHE_DIR);
-            pathBuilder.append(File.separator);
-            pathBuilder.append(getEncodeName(url));
-            return pathBuilder.toString();
-        } else {
-            return url;
-        }
-    }
-
-    /**
-     * 获取加密的图片名称
-     *
-     * @param url
+     * @param item
      * @return
      */
-    private String getEncodeName(String url) {
-        String fileName = FileUtils.getFileName(url);
-        String fileNameWithoutSuffix = FileUtils.getFileNameWithoutSuffix(fileName);
-        String fileSuffix = FileUtils.getFileSuffix(fileName);
-        return String.format("%s_%s%s", fileNameWithoutSuffix, Md5Utils.md5(url, url), fileSuffix);
-    }
-
-
-    /**
-     * 分享到项目
-     *
-     * @param drawable
-     */
-    private void savedImport2Project(final Drawable drawable) {
-        if (drawable == null) return;
-        if (!checkAcessFilePermission()) {
-            requestAcessFilePermission();
-            return;
-        }
-        showLoadingDialog(null);
-        String url = imagePagerAdapter.getItem(viewPager.getCurrentItem());
-        saveDrawableIntoSD(drawable, getEncodeName(url), new Observer<String>() {
-            @Override
-            public void onSubscribe(@io.reactivex.annotations.NonNull Disposable disposable) {
-
-            }
-
-            @Override
-            public void onNext(@io.reactivex.annotations.NonNull String s) {
-                showProjectSaveFileDialogFragment(s);
-            }
-
-            @Override
-            public void onError(@io.reactivex.annotations.NonNull Throwable throwable) {
-                dismissLoadingDialog();
-            }
-
-            @Override
-            public void onComplete() {
-                dismissLoadingDialog();
-            }
-        });
-    }
-
-    /**
-     * 保存图片到sd
-     *
-     * @param drawable
-     * @param fileName
-     * @param observer
-     */
-    private void saveDrawableIntoSD(final Drawable drawable,
-                                    final String fileName,
-                                    Observer<String> observer) {
-        Observable
-                .create(new ObservableOnSubscribe<String>() {
-                    @Override
-                    public void subscribe(ObservableEmitter<String> e) throws Exception {
-                        if (e.isDisposed()) return;
-                        String path = String.format("%s/%s", CACHE_DIR, fileName);
-                        if (FileUtils.isFileExists(fileName)) {
-                            e.onNext(path);
-                        } else {
-                            boolean b = FileUtils.saveBitmap(getContext(), CACHE_DIR, fileName, FileUtils.drawableToBitmap(drawable));
-                            if (b) {
-                                e.onNext(path);
-                            } else {
-                                e.onError(new NullPointerException());
-                            }
-
-                        }
-                        e.onComplete();
-                    }
-                })
-                .compose(this.<String>bindToLifecycle())
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(observer);
-    }
-
-    /**
-     * 展示项目转发对话框
-     *
-     * @param filePath
-     */
-    public void showProjectSaveFileDialogFragment(String filePath) {
-        String tag = ProjectSaveFileDialogFragment.class.getSimpleName();
-        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
-        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
-        if (fragment != null) {
-            mFragTransaction.remove(fragment);
-        }
-        ProjectSaveFileDialogFragment.newInstance(filePath, ProjectSaveFileDialogFragment.ALPHA_TYPE)
-                .show(mFragTransaction, tag);
+    private String getPicSavePath(@NonNull ISeaFile item) {
+        return DownloadConfig.getSeaFileDownloadPath(getLoginUserId(), item);
     }
 
 

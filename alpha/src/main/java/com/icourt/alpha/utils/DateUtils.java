@@ -109,7 +109,7 @@ public class DateUtils {
     public static final String getStandardSimpleFormatTime(long milliseconds) {
         SimpleDateFormat sdf = new SimpleDateFormat();
         if (isOverToday(milliseconds)) {//1.未来
-            sdf.applyPattern("yyyy-MM-dd: hh:mm");
+            sdf.applyPattern("yyyy-MM-dd hh:mm");
             return sdf.format(milliseconds);
         } else if (isToday(milliseconds)) {//2.今天
             long distanceMilliseconds = System.currentTimeMillis() - milliseconds;
@@ -157,7 +157,7 @@ public class DateUtils {
     public static final String getStandardFormatTime(long milliseconds) {
         SimpleDateFormat sdf = new SimpleDateFormat();
         if (isOverToday(milliseconds)) {//1.未来
-            sdf.applyPattern("yyyy-MM-dd: hh:mm");
+            sdf.applyPattern("yyyy-MM-dd hh:mm");
             return sdf.format(milliseconds);
         } else if (isToday(milliseconds)) {//2.今天
             long distanceMilliseconds = System.currentTimeMillis() - milliseconds;

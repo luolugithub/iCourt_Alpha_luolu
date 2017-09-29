@@ -1,5 +1,6 @@
 package com.icourt;
 
+import java.io.File;
 import java.lang.ref.WeakReference;
 import java.text.CollationKey;
 import java.text.Collator;
@@ -58,8 +59,23 @@ public class MyClass {
         }
     }
 
+    /**
+     * 获取文件名
+     *
+     * @return
+     */
+    public static String getFileName(String path) {
+        int separatorIndex = path.lastIndexOf(File.separator);
+        if (separatorIndex >= 0
+                && separatorIndex < path.length() - 1) {
+            return path.substring(separatorIndex + 1, path.length());
+        }
+        return path;
+    }
 
     public static void main(String[] args) throws Exception {
+
+        log("-------->sub:" + getFileName("/hgjdjs.doc"));
         List<String> d = null;
         log("-------->app:" + new StringBuilder("sas").append(d).toString());
         List<String> list = Arrays.asList("v说", ",", ".", ".DD");

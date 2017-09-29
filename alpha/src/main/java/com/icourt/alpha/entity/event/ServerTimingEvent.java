@@ -71,6 +71,8 @@ public class ServerTimingEvent extends TimeEntity.ItemEntity {
 
     public String clientId;
 
+    public String content;//消息内容，如：计时已经超过20小时，请注意劳逸结合
+
     @Override
     public String toString() {
         return "ServerTimingEvent{" +

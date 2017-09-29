@@ -115,9 +115,6 @@
             android:windowSoftInputMode="adjustUnspecified|adjustResize|stateHidden" />
 
         <activity
-            android:name=".activity.TestActivity"
-            android:screenOrientation="portrait" />
-        <activity
             android:name=".activity.AboutActivity"
             android:screenOrientation="portrait" />
         <activity
@@ -172,6 +169,13 @@
             android:name=".activity.GroupSettingActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateAlwaysHidden" />
+
+        <activity
+            android:name=".activity.GroupChangeNameActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.GroupChangeDescActivity"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".activity.ChatActivity"
             android:alwaysRetainTaskState="true"
@@ -186,9 +190,6 @@
             android:name=".activity.ContactListActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateHidden" />
-        <activity
-            android:name=".activity.EditItemActivity"
-            android:screenOrientation="portrait" />
         <activity
             android:name=".activity.GroupMemberDelActivity"
             android:screenOrientation="portrait"
@@ -245,10 +246,6 @@
         <activity
             android:name=".activity.FolderboxSelectActivity"
             android:screenOrientation="portrait" />
-        <activity
-            android:name=".activity.FileBoxDownloadActivity"
-            android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateAlwaysHidden" />
         <activity
             android:name=".activity.SearchPolymerizationActivity"
             android:screenOrientation="portrait"

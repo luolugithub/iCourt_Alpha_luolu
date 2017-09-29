@@ -3,18 +3,18 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:color/white"
     android:orientation="vertical">
 
     <include layout="@layout/layout_title_type_0" />
 
 
-    <android.support.design.widget.TabLayout
+    <com.icourt.alpha.view.tab.AlphaTabLayout
         android:id="@+id/tabLayout"
-        style="@style/AlphaTabLayout"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="40dp"
-        android:background="@color/alpha_background_title"
-        app:tabMinWidth="70dp" />
+        android:layout_gravity="center_horizontal"
+        android:background="@color/alpha_background_title" />
 
     <View
         android:layout_width="match_parent"

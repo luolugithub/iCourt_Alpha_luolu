@@ -1,12 +1,12 @@
 package com.icourt.alpha.widget.manager;
 
-import android.content.Context;
 import android.os.Environment;
 
 import com.icourt.alpha.utils.FileUtils;
 
 import java.io.File;
-import java.math.BigDecimal;
+
+import static com.icourt.alpha.constants.DownloadConfig.FILE_DOWNLOAD_ROOT_DIR;
 
 /**
  * @author 创建人:lu.zhao
@@ -17,23 +17,42 @@ import java.math.BigDecimal;
 
 public class DataCleanManager {
 
-    public static String getTotalCacheSize(Context context) throws Exception {
-        long cacheSize = getFolderSize(context.getCacheDir());
-        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-            cacheSize += getFolderSize(context.getExternalCacheDir());
-        }
-//        cacheSize += getFolderSize(new File(FileUtils.getSDPath() + context.getPackageName()));
-        cacheSize += getFolderSize(new File(FileUtils.getSDPath() + "alpha_cache"));
-        return getFormatSize(cacheSize);
+    /**
+     * 获取本地缓存文件
+     *
+     * @param userId
+     * @return
+     */
+    private static File getCacheFile(String userId) {
+        String filename = new StringBuilder(Environment.getExternalStorageDirectory().getAbsolutePath())
+                .append(File.separator)
+                .append(FILE_DOWNLOAD_ROOT_DIR)
+                .append(File.separator)
+                .append(userId).toString();
+        return new File(filename);
     }
 
+    /**
+     * 获取本地缓存大小
+     *
+     * @param userId
+     * @return
+     * @throws Exception
+     */
+    public static String getTotalCacheSize(String userId) throws Exception {
+        long cacheSize = getFolderSize(getCacheFile(userId));
+        return FileUtils.bFormat(cacheSize);
+    }
 
-    public static boolean clearAllCache(Context context) {
-        boolean isSuccee = deleteDir(context.getCacheDir());
-        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-            isSuccee = deleteDir(context.getExternalCacheDir());
-        }
-        File file = new File(FileUtils.getSDPath() + "/" + FileUtils.ALPHA_PAGENAME_FILE);
+    /**
+     * 清除userid 用户本地缓存文件
+     *
+     * @param userId
+     * @return
+     */
+    public static boolean clearAllCache(String userId) {
+        boolean isSuccee = false;
+        File file = getCacheFile(userId);
         if (file.exists()) {
             isSuccee = deleteDir(file);
         } else {
@@ -79,43 +98,4 @@ public class DataCleanManager {
         }
         return size;
     }
-
-    /**
-     * 格式化单位
-     *
-     * @param size
-     * @return
-     */
-    public static String getFormatSize(double size) {
-        double kiloByte = size / 1024;
-        if (kiloByte < 1) {
-//            return size + "Byte";
-            return "0K";
-        }
-
-        double megaByte = kiloByte / 1024;
-        if (megaByte < 1) {
-            BigDecimal result1 = new BigDecimal(Double.toString(kiloByte));
-            return result1.setScale(2, BigDecimal.ROUND_HALF_UP)
-                    .toPlainString() + "K";
-        }
-
-        double gigaByte = megaByte / 1024;
-        if (gigaByte < 1) {
-            BigDecimal result2 = new BigDecimal(Double.toString(megaByte));
-            return result2.setScale(2, BigDecimal.ROUND_HALF_UP)
-                    .toPlainString() + "M";
-        }
-
-        double teraBytes = gigaByte / 1024;
-        if (teraBytes < 1) {
-            BigDecimal result3 = new BigDecimal(Double.toString(gigaByte));
-            return result3.setScale(2, BigDecimal.ROUND_HALF_UP)
-                    .toPlainString() + "G";
-        }
-        BigDecimal result4 = new BigDecimal(teraBytes);
-        return result4.setScale(2, BigDecimal.ROUND_HALF_UP).toPlainString()
-                + "T";
-    }
-
 }

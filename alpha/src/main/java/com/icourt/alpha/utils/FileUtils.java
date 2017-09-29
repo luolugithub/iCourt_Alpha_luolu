@@ -8,9 +8,11 @@ import android.graphics.drawable.Drawable;
 import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.support.annotation.DrawableRes;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.icourt.alpha.R;
+import com.icourt.alpha.constants.SFileConfig;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -30,7 +32,6 @@ import static com.icourt.alpha.utils.ImageUtils.addPictureToGallery;
  * version 1.0.0
  */
 public class FileUtils {
-    public static final String dirFilePath = FileUtils.getSDPath() + ActionConstants.FILE_DOWNLOAD_PATH;
 
     public static final String ALPHA_PAGENAME_FILE = "com.icourt.alpha";
     public static final String THUMB_IMAGE_ROOT_PATH = getSDPath() + "/" + ALPHA_PAGENAME_FILE + "/image";
@@ -169,8 +170,13 @@ public class FileUtils {
      */
     public static final boolean isFileExists(String path) {
         if (TextUtils.isEmpty(path)) return false;
-        File file = new File(path);
-        return file != null && file.exists();
+        try {
+            File file = new File(path);
+            return file != null && file.exists();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     /**
@@ -222,8 +228,8 @@ public class FileUtils {
     public static int getSFileIcon(String fileName) {
         if (!TextUtils.isEmpty(fileName) && fileName.length() > 0) {
             String type = fileName.substring(fileName.lastIndexOf(".") + 1);
-            if (ActionConstants.resourcesDocumentIcon.containsKey(type)) {
-                return ActionConstants.resourcesDocumentIcon.get(type);
+            if (SFileConfig.resourcesDocumentIcon.containsKey(type)) {
+                return SFileConfig.resourcesDocumentIcon.get(type);
             }
         }
         return R.mipmap.filetype_default;
@@ -264,18 +270,6 @@ public class FileUtils {
         return new File(filePath);
     }
 
-    //判断文件是否存在
-    public static boolean fileIsExists(String strFile) {
-        try {
-            File f = new File(strFile);
-            if (!f.exists()) {
-                return false;
-            }
-        } catch (Exception e) {
-            return false;
-        }
-        return true;
-    }
 
     /**
      * 根据文件后缀名获得对应的MIME类型。
@@ -320,6 +314,29 @@ public class FileUtils {
     }
 
     /**
+     * 获取文件的父路径
+     *
+     * @param filePath
+     * @return
+     */
+    public static final String getFileParentDir(String filePath) {
+        if (!TextUtils.isEmpty(filePath)) {
+            int separatorIndex = filePath.lastIndexOf(File.separator);
+            if (separatorIndex > 0) {
+                if (separatorIndex == filePath.length() - 1) {
+                    String temp = filePath.substring(0, filePath.length() - 2);
+                    separatorIndex = temp.lastIndexOf(File.separator);
+                    if (separatorIndex > 0) {
+                        return filePath.substring(0, separatorIndex);
+                    }
+                }
+                return filePath.substring(0, separatorIndex);
+            }
+        }
+        return File.separator;
+    }
+
+    /**
      * 获取文件名
      *
      * @return
@@ -327,7 +344,7 @@ public class FileUtils {
     public static String getFileName(String path) {
         if (!TextUtils.isEmpty(path)) {
             int separatorIndex = path.lastIndexOf(File.separator);
-            if (separatorIndex > 0
+            if (separatorIndex >= 0
                     && separatorIndex < path.length() - 1) {
                 return path.substring(separatorIndex + 1, path.length());
             }
@@ -422,12 +439,6 @@ public class FileUtils {
         return buffer;
     }
 
-    /**
-     * 保存方法
-     */
-    public static boolean saveBitmap(Context context, String picName, Bitmap bitmap) {
-        return saveBitmap(context, dirFilePath, picName, bitmap);
-    }
 
     /**
      * 保存drawable 到sd卡中...
@@ -480,6 +491,29 @@ public class FileUtils {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+            }
+        }
+    }
+
+    /**
+     * 删除文件
+     *
+     * @param filePath
+     */
+    public static void deleteFile(@Nullable String filePath) {
+        if (TextUtils.isEmpty(filePath)) {
+            try {
+                File file = new File(filePath);
+                if (file.exists() && file.isFile()) {
+                    file.delete();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                BugUtils.bugSync("删除文件异常", new StringBuilder("path\n")
+                        .append(filePath)
+                        .append("exception\n")
+                        .append(StringUtils.throwable2string(e))
+                        .toString());
             }
         }
     }

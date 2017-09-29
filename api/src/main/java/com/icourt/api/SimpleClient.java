@@ -24,40 +24,30 @@ import okhttp3.logging.HttpLoggingInterceptor;
  * @email xuanyouwu@163.com
  * @time 2016-06-02 14:26
  */
-public class SimpleClient extends BaseClient {
+public abstract class SimpleClient extends BaseClient implements Interceptor {
 
-    protected void attachBaseUrl(Context context, String baseUrl, HttpLoggingInterceptor.Logger logger, Interceptor interceptor) {
+    protected void attachBaseUrl(Context context, String baseUrl, HttpLoggingInterceptor httpLoggingInterceptor) {
         //okhttp3 cookie 持久化
         // ClearableCookieJar cookieJar = new PersistentCookieJar(new SetCookieCache(), new SharedPrefsCookiePersistor(context));
 
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
         //builder.retryOnConnectionFailure(true);
         //builder.cookieJar(cookieJar);
-        builder.addInterceptor(interceptor);
-        if (!isInterceptHttpLog()) {
-            builder.addInterceptor(new HttpLoggingInterceptor(logger).setLevel(HttpLoggingInterceptor.Level.BODY));
-        }
+        builder.addInterceptor(this);
+        builder.addInterceptor(httpLoggingInterceptor);
         builder.writeTimeout(apiConfig.SOCKET_WRITE_TIME_OUT, TimeUnit.MILLISECONDS);
         builder.connectTimeout(apiConfig.SOCKET_TIME_OUT, TimeUnit.MILLISECONDS);
         builder.readTimeout(apiConfig.SOCKET_RESPONSE_TIME_OUT, TimeUnit.MILLISECONDS);
-        builder.sslSocketFactory(createSSLSocketFactory());
+        builder.sslSocketFactory(createSSLSocketFactory(), new TrustAllManager());
         builder.hostnameVerifier(new TrustAllHostnameVerifier());
 
+        //正式证书
         /*int[] certificates = {R.raw.myssl};//cer文件
         String hosts[] = {HConst.BASE_DEBUG_URL, HConst.BASE_PREVIEW_URL, HConst.BASE_RELEASE_URL, HConst.BASE_RELEASE_SHARE_URL};
         builder.socketFactory(HttpsFactroy.getSSLSocketFactory(context, certificates));
         builder.hostnameVerifier(HttpsFactroy.getHostnameVerifier(hosts));*/
 
         super.attachBaseUrl(builder.build(), baseUrl);
-    }
-
-    /**
-     * default is not intercept http log
-     *
-     * @return
-     */
-    protected boolean isInterceptHttpLog() {
-        return false;
     }
 
 
@@ -82,6 +72,7 @@ public class SimpleClient extends BaseClient {
 
         return sSLSocketFactory;
     }
+
 
     private static class TrustAllManager implements X509TrustManager {
         @Override

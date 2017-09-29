@@ -33,6 +33,8 @@ import com.icourt.alpha.entity.event.ServerTimingEvent;
 import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.http.observer.BaseObserver;
+import com.icourt.alpha.interfaces.callback.AppUpdateCallBack;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
@@ -55,6 +57,12 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.annotations.NonNull;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
 import retrofit2.HttpException;
 import retrofit2.Response;
@@ -141,6 +149,7 @@ public class TabMineFragment extends BaseFragment {
     protected void initView() {
         EventBus.getDefault().register(this);
         getData(false);
+        getCacheFileSize();
 //        setDataToView(getLoginUserInfo());
         mShareAPI = UMShareAPI.get(getContext());
         menuTest.setVisibility(BuildConfig.IS_DEBUG ? View.VISIBLE : View.GONE);
@@ -150,7 +159,14 @@ public class TabMineFragment extends BaseFragment {
     public void onHiddenChanged(boolean hidden) {
         if (!hidden) {
             getData(false);
+            getCacheFileSize();
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getCacheFileSize();
     }
 
     /**
@@ -171,11 +187,6 @@ public class TabMineFragment extends BaseFragment {
                             .into(photoBigImage);
                     userNameTv.setText(alphaUserInfo.getName());
 //                officeNameTv.setText(getUserGroup(alphaUserInfo.getGroups()));
-                    try {
-                        myCenterClearCacheTextview.setText(DataCleanManager.getTotalCacheSize(getContext()));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
                 }
             }
         }
@@ -270,17 +281,7 @@ public class TabMineFragment extends BaseFragment {
                 MyFileTabActivity.launch(getContext());
                 break;
             case R.id.my_center_clear_cache_layout://清除缓存
-                new AlertDialog.Builder(getContext())
-                        .setMessage("确认清除?")
-                        .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                DataCleanManager.clearAllCache(getActivity());
-                                myCenterClearCacheTextview.setText("0K");
-                                showTopSnackBar(R.string.my_center_clear_cache_succee_text);
-                            }
-                        }).setNegativeButton("取消", null)
-                        .show();
+                showDeleteConfirmDialog();
                 break;
             case R.id.my_center_clear_about_layout://关于
                 AboutActivity.launch(getContext());
@@ -292,6 +293,93 @@ public class TabMineFragment extends BaseFragment {
 //                test1();
                 break;
         }
+    }
+
+    /**
+     * 删除确认对话框
+     */
+    private void showDeleteConfirmDialog() {
+        new AlertDialog.Builder(getContext())
+                .setMessage("确认清除?")
+                .setPositiveButton(R.string.str_ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        if (checkAcessFilePermission()) {
+                            deleteCahceFile();
+                        } else {
+                            requestAcessFilePermission();
+                        }
+                    }
+                }).setNegativeButton(R.string.str_cancel, null)
+                .show();
+    }
+
+    /**
+     * by youxuan
+     * 删除缓存
+     * * 考虑量级:1.资料库 2.任务项目文档 3.IM文件 多层路径
+     */
+    private void deleteCahceFile() {
+        Observable.just(getLoginUserId())
+                .map(new Function<String, Boolean>() {
+                    @Override
+                    public Boolean apply(@NonNull String s) throws Exception {
+                        return DataCleanManager.clearAllCache(s);
+                    }
+                })
+                .compose(this.<Boolean>bindToLifecycle())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new BaseObserver<Boolean>() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable disposable) {
+                        super.onSubscribe(disposable);
+                        showLoadingDialog(null);
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable throwable) {
+                        super.onError(throwable);
+                        dismissLoadingDialog();
+                    }
+
+                    @Override
+                    public void onNext(@NonNull Boolean aBoolean) {
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        dismissLoadingDialog();
+                        myCenterClearCacheTextview.setText("0B");
+                        showTopSnackBar(R.string.my_center_clear_cache_succee_text);
+                        super.onComplete();
+                    }
+                });
+    }
+
+    /**
+     * by youxuan
+     * 获取缓存文件大小
+     * 考虑量级:1.资料库 2.任务项目文档 3.IM文件 多层路径
+     */
+    private void getCacheFileSize() {
+        Observable.just(getLoginUserId())
+                .map(new Function<String, String>() {
+                    @Override
+                    public String apply(@NonNull String s) throws Exception {
+                        return DataCleanManager.getTotalCacheSize(s);
+                    }
+                })
+                .compose(this.<String>bindToLifecycle())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new BaseObserver<String>() {
+                    @Override
+                    public void onNext(@NonNull String sizeFormat) {
+                        myCenterClearCacheTextview.setText(sizeFormat);
+                    }
+                });
     }
 
 
@@ -382,15 +470,15 @@ public class TabMineFragment extends BaseFragment {
         getMyDoneTask();
         getGroupList();
         if (baseAppUpdateActivity != null) {
-            baseAppUpdateActivity.checkAppUpdate(new SimpleCallBack<AppVersionEntity>() {
+            baseAppUpdateActivity.checkAppUpdate(new AppUpdateCallBack() {
                 @Override
-                public void onSuccess(Call<ResEntity<AppVersionEntity>> call, Response<ResEntity<AppVersionEntity>> response) {
+                public void onSuccess(Call<AppVersionEntity> call, Response<AppVersionEntity> response) {
                     if (myCenterAboutCountView == null) return;
-                    myCenterAboutCountView.setVisibility(baseAppUpdateActivity.shouldUpdate(response.body().result) ? View.VISIBLE : View.INVISIBLE);
+                    myCenterAboutCountView.setVisibility(baseAppUpdateActivity.shouldUpdate(response.body()) ? View.VISIBLE : View.INVISIBLE);
                 }
 
                 @Override
-                public void onFailure(Call<ResEntity<AppVersionEntity>> call, Throwable t) {
+                public void onFailure(Call<AppVersionEntity> call, Throwable t) {
                     if (t instanceof HttpException) {
                         HttpException hx = (HttpException) t;
                         if (hx.code() == 401) {

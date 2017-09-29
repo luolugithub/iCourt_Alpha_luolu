@@ -126,7 +126,11 @@ public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAda
             @Override
             protected void updateUI() {
                 if (contentEmptyText != null) {
-                    contentEmptyText.setVisibility(taskAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+                    if (!TextUtils.isEmpty(etSearchName.getText())) {
+                        contentEmptyText.setVisibility(taskAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+                    } else {
+                        contentEmptyText.setVisibility(View.GONE);
+                    }
                 }
             }
         });
@@ -229,13 +233,13 @@ public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAda
                     searchTaskType,
                     projectId),
                     new SimpleCallBack<TaskEntity>() {
-                @Override
-                public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
-                    if (response.body().result != null && recyclerView != null) {
-                        taskAdapter.setNewData(response.body().result.items);
-                    }
-                }
-            });
+                        @Override
+                        public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
+                            if (response.body().result != null && recyclerView != null) {
+                                taskAdapter.setNewData(response.body().result.items);
+                            }
+                        }
+                    });
         } else {
             callEnqueue(getApi().taskQueryByNameFromMatter(
                     keyword,
@@ -243,13 +247,13 @@ public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAda
                     searchTaskType,
                     projectId),
                     new SimpleCallBack<TaskEntity>() {
-                @Override
-                public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
-                    if (response.body().result != null && recyclerView != null) {
-                        taskAdapter.setNewData(response.body().result.items);
-                    }
-                }
-            });
+                        @Override
+                        public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
+                            if (response.body().result != null && recyclerView != null) {
+                                taskAdapter.setNewData(response.body().result.items);
+                            }
+                        }
+                    });
         }
     }
 
@@ -263,18 +267,18 @@ public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAda
         showLoadingDialog(null);
         callEnqueue(getApi().taskRecoverById(itemEntity.id),
                 new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                getData(true);
-            }
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        dismissLoadingDialog();
+                        getData(true);
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
     }
 
     @Override

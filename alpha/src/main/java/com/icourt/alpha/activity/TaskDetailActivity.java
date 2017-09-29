@@ -157,6 +157,8 @@ public class TaskDetailActivity extends BaseActivity
     TaskEntity.TaskItemEntity taskItemEntity;
     TaskUsersAdapter usersAdapter;
     TaskDetailFragment taskDetailFragment;
+    TaskCheckItemFragment taskCheckItemFragment;
+    TaskAttachmentFragment taskAttachmentFragment;
 
     final SparseArray<CharSequence> tabTitles = new SparseArray<>();
 
@@ -206,6 +208,7 @@ public class TaskDetailActivity extends BaseActivity
                 taskTablayout.setFocusableInTouchMode(true);
                 taskTablayout.requestFocus();//请求焦点
                 taskTablayout.findFocus();//获取焦点
+                updateTabItemFragment();
             }
 
             @Override
@@ -261,33 +264,34 @@ public class TaskDetailActivity extends BaseActivity
                 showBottomMenu();
                 break;
             case R.id.task_name:
-                if (taskItemEntity != null)
-                    if (!taskItemEntity.state) {
-                        if (hasTaskEditPermission()) {
-                            TaskDescUpdateActivity.launch(getContext(), taskName.getText().toString(), TaskDescUpdateActivity.UPDATE_TASK_NAME);
-                        } else {
-                            showTopSnackBar("您没有编辑任务的权限");
-                        }
+                if (taskItemEntity == null) return;
+                if (!taskItemEntity.state) {
+                    if (hasTaskEditPermission()) {
+                        TaskDescUpdateActivity.launch(getContext(), taskName.getText().toString(), TaskDescUpdateActivity.UPDATE_TASK_NAME);
+                    } else {
+                        showTopSnackBar("您没有编辑任务的权限");
                     }
+                }
                 break;
             case R.id.task_user_layout:
             case R.id.task_users_layout:
-                if (taskItemEntity != null)
-                    if (!taskItemEntity.state) {
-                        if (hasTaskEditPermission()) {
-                            if (taskItemEntity.valid) {
-                                if (taskItemEntity.matter != null) {
-                                    showTaskAllotSelectDialogFragment(taskItemEntity.matter.id);
-                                } else {
-                                    showTopSnackBar("请先选择项目");
-                                }
+                if (taskItemEntity == null) return;
+                if (!taskItemEntity.state) {
+                    if (hasTaskEditPermission()) {
+                        if (taskItemEntity.valid) {
+                            if (taskItemEntity.matter != null) {
+                                showTaskAllotSelectDialogFragment(taskItemEntity.matter.id);
+                            } else {
+                                showTopSnackBar("请先选择项目");
                             }
-                        } else {
-                            showTopSnackBar("您没有编辑任务的权限");
                         }
+                    } else {
+                        showTopSnackBar("您没有编辑任务的权限");
                     }
+                }
                 break;
             case R.id.task_start_iamge://开始计时
+                if (taskItemEntity == null) return;
                 if (isStrat) {
                     MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
                     TimerManager.getInstance().stopTimer(new SimpleCallBack<TimeEntity.ItemEntity>() {
@@ -324,6 +328,7 @@ public class TaskDetailActivity extends BaseActivity
                 }
                 break;
             case R.id.task_checkbox://  完成／取消完成
+                if (taskItemEntity == null) return;
                 if (hasTaskEditPermission()) {
                     if (taskItemEntity.valid) {
                         if (taskItemEntity.state) {
@@ -358,23 +363,27 @@ public class TaskDetailActivity extends BaseActivity
                 }
                 break;
             case R.id.comment_tv:
+                if (taskItemEntity == null) return;
                 CommentListActivity.launchForResult(this,
                         taskItemEntity,
                         START_COMMENT_FORRESULT_CODE,
                         false);
                 break;
             case R.id.comment_layout://更多评论动态
+                if (taskItemEntity == null) return;
                 CommentListActivity.launchForResult(this,
                         taskItemEntity,
                         START_COMMENT_FORRESULT_CODE,
                         taskItemEntity.valid);
                 break;
             case R.id.task_time_sum_layout:
+                if (taskItemEntity == null) return;
                 if (taskItemEntity.timingSum > 0) {
                     showTimersDialogFragment();
                 }
                 break;
             case R.id.task_time:
+                if (taskItemEntity == null) return;
                 if (taskItemEntity.timingSum > 0) {
                     showTimersDialogFragment();
                 }
@@ -678,7 +687,7 @@ public class TaskDetailActivity extends BaseActivity
      */
     private boolean hasDocumentAddPermission() {
         if (taskItemEntity != null && taskItemEntity.right != null) {
-            return taskItemEntity.valid
+            return !taskItemEntity.state && taskItemEntity.valid
                     && taskItemEntity.right.contains("MAT:matter.document:readwrite");
         }
         return false;
@@ -809,17 +818,19 @@ public class TaskDetailActivity extends BaseActivity
                     tabTitles.get(2, "")));
             baseFragmentAdapter.bindData(true, Arrays.asList(
                     taskDetailFragment == null ? taskDetailFragment = TaskDetailFragment.newInstance(taskItemEntity) : taskDetailFragment,
-                    TaskCheckItemFragment.newInstance(taskItemEntity.id, hasTaskEditPermission(), taskItemEntity.valid),
-                    TaskAttachmentFragment.newInstance(
+                    taskCheckItemFragment == null ? taskCheckItemFragment = TaskCheckItemFragment.newInstance(
+                            taskItemEntity,
+                            hasTaskEditPermission()) : taskCheckItemFragment,
+                    taskAttachmentFragment == null ? taskAttachmentFragment = TaskAttachmentFragment.newInstance(
                             taskItemEntity.id,
                             taskItemEntity.matterId,
                             taskItemEntity.matter != null ? taskItemEntity.matter.name : "",
                             hasDocumentLookPermission(),
                             hasDocumentAddPermission(),
-                            hasTaskEditPermission())
+                            hasTaskEditPermission()) : taskAttachmentFragment
             ));
 
-            updateDetailFargment();
+            updateTabItemFragment();
 
             if (taskItemEntity.attendeeUsers != null) {
                 if (taskItemEntity.attendeeUsers.size() > 0) {
@@ -860,14 +871,22 @@ public class TaskDetailActivity extends BaseActivity
     }
 
     /**
-     * 更新任务详情fragment
+     * 更新tab的每个fragment
      */
-    private void updateDetailFargment() {
+    private void updateTabItemFragment() {
         Bundle bundle = new Bundle();
         bundle.putBoolean("isFinish", taskItemEntity.state);
         bundle.putBoolean("valid", taskItemEntity.valid);
         bundle.putSerializable("taskItemEntity", taskItemEntity);
-        taskDetailFragment.notifyFragmentUpdate(taskDetailFragment, 100, bundle);
+        if (taskDetailFragment != null) {
+            taskDetailFragment.notifyFragmentUpdate(taskDetailFragment, 100, bundle);
+        }
+        if (taskCheckItemFragment != null) {
+            taskCheckItemFragment.notifyFragmentUpdate(taskCheckItemFragment, 100, bundle);
+        }
+        if (taskAttachmentFragment != null) {
+            taskAttachmentFragment.notifyFragmentUpdate(taskAttachmentFragment, 100, bundle);
+        }
     }
 
     /**
@@ -903,7 +922,7 @@ public class TaskDetailActivity extends BaseActivity
                         taskUserArrowIv.setVisibility(View.VISIBLE);
                         taskStartIamge.setVisibility(View.VISIBLE);
                         taskItemEntity.valid = true;
-                        updateDetailFargment();
+                        updateTabItemFragment();
                         EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_DELETE_ACTION, taskItemEntity));
                     }
 

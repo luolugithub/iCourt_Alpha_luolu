@@ -15,7 +15,6 @@ import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonElement;
-import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.FolderAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
@@ -27,11 +26,9 @@ import com.icourt.alpha.http.IDefNotify;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.utils.IMUtils;
-import com.icourt.alpha.utils.SFileTokenUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UriUtils;
-import com.icourt.alpha.utils.UrlUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.comparators.FileSortComparator;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
@@ -42,6 +39,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -52,7 +50,6 @@ import cn.finalteam.galleryfinal.model.PhotoInfo;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
 import retrofit2.Response;
@@ -84,9 +81,6 @@ public class FileSimpleListActivity extends FolderBaseActivity
     FolderAdapter folderAdapter;
     int fileSortType = FILE_SORT_TYPE_DEFAULT;
 
-
-    final ArrayList<String> bigImageUrls = new ArrayList<>();
-    final ArrayList<String> smallImageUrls = new ArrayList<>();
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -235,7 +229,7 @@ public class FileSimpleListActivity extends FolderBaseActivity
                 new SFileCallBack<List<FolderDocumentEntity>>() {
                     @Override
                     public void onSuccess(Call<List<FolderDocumentEntity>> call, Response<List<FolderDocumentEntity>> response) {
-                        sortFile(wrapData(getSeaFileRepoId(),getSeaFileDirPath(),response.body()));
+                        sortFile(wrapData(getSeaFileRepoId(), getSeaFileDirPath(), response.body()));
                         stopRefresh();
                     }
 
@@ -345,22 +339,7 @@ public class FileSimpleListActivity extends FolderBaseActivity
      */
     private void sortFile(List<FolderDocumentEntity> datas) {
         seaFileSort(fileSortType, datas)
-                .map(new Function<List<FolderDocumentEntity>, List<FolderDocumentEntity>>() {
-                    @Override
-                    public List<FolderDocumentEntity> apply(@NonNull List<FolderDocumentEntity> folderDocumentEntities) throws Exception {
-                        bigImageUrls.clear();
-                        smallImageUrls.clear();
-                        for (int i = 0; i < folderDocumentEntities.size(); i++) {
-                            FolderDocumentEntity folderDocumentEntity = folderDocumentEntities.get(i);
-                            if (folderDocumentEntity == null) continue;
-                            if (IMUtils.isPIC(folderDocumentEntity.name)) {
-                                bigImageUrls.add(getSFileImageUrl(folderDocumentEntity.name, Integer.MAX_VALUE));
-                                smallImageUrls.add(getSFileImageUrl(folderDocumentEntity.name, 800));
-                            }
-                        }
-                        return folderDocumentEntities;
-                    }
-                })
+                .delay(500, TimeUnit.MILLISECONDS)
                 .compose(this.<List<FolderDocumentEntity>>bindToLifecycle())
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -378,14 +357,6 @@ public class FileSimpleListActivity extends FolderBaseActivity
                 });
     }
 
-    protected String getSFileImageUrl(String name, int size) {
-        return String.format("%silaw/api/v2/documents/thumbnailImage?repoId=%s&seafileToken=%s&size=%s&p=%s",
-                BuildConfig.API_URL,
-                getSeaFileRepoId(),
-                SFileTokenUtils.getSFileToken(),
-                size,
-                UrlUtils.encodeUrl(String.format("%s%s", getSeaFileDirPath(), name)));
-    }
 
 
     /**
@@ -484,20 +455,26 @@ public class FileSimpleListActivity extends FolderBaseActivity
         } else {
             //图片 直接预览
             if (IMUtils.isPIC(item.name)) {
-                int indexOf = bigImageUrls.indexOf(getSFileImageUrl(item.name, Integer.MAX_VALUE));
+
+                ArrayList<FolderDocumentEntity> imageDatas = new ArrayList<>();
+                for (int i = 0; i < folderAdapter.getItemCount(); i++) {
+                    FolderDocumentEntity folderDocumentEntity = folderAdapter.getItem(i);
+                    if (folderDocumentEntity == null) continue;
+                    if (IMUtils.isPIC(folderDocumentEntity.name)) {
+                        imageDatas.add(folderDocumentEntity);
+                    }
+                }
+                int indexOf = imageDatas.indexOf(item);
                 ImageViewerActivity.launch(
                         getContext(),
-                        smallImageUrls,
-                        bigImageUrls,
+                        SFileConfig.FILE_FROM_PROJECT,
+                        imageDatas,
                         indexOf);
             } else {
                 FileDownloadActivity.launch(
                         getContext(),
-                        getSeaFileRepoId(),
-                        item.name,
-                        item.size,
-                        String.format("%s%s", getSeaFileDirPath(), item.name),
-                        null);
+                        item,
+                        SFileConfig.FILE_FROM_REPO);
             }
         }
     }
