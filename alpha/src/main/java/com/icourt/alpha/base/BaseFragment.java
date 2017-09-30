@@ -26,7 +26,11 @@ import com.icourt.alpha.http.ApiChatService;
 import com.icourt.alpha.http.ApiProjectService;
 import com.icourt.alpha.http.ApiSFileService;
 import com.icourt.alpha.http.IContextCallQueue;
+import com.icourt.alpha.http.IContextObservable;
+import com.icourt.alpha.http.ResEntityFunction;
+import com.icourt.alpha.http.ResEntitySimpleFunction;
 import com.icourt.alpha.http.RetrofitServiceFactory;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.INotifyFragment;
 import com.icourt.alpha.interfaces.ProgressHUDImp;
 import com.icourt.alpha.utils.LogUtils;
@@ -63,6 +67,7 @@ public abstract class BaseFragment
         extends BasePermissionFragment
         implements ProgressHUDImp,
         IContextCallQueue,
+        IContextObservable,
         View.OnClickListener,
         INotifyFragment,
         LifecycleProvider<FragmentEvent> {
@@ -608,6 +613,35 @@ public abstract class BaseFragment
         }
     }
 
+    @Override
+    public <T> Observable<T> sendObservable(Observable<? extends ResEntity<T>> observable) {
+        if (observable != null) {
+            return observable
+                    .map(new ResEntitySimpleFunction<T>())
+                    .compose(this.<T>bindToLifecycle());
+        }
+        return null;
+    }
+
+    @Override
+    public <T> Observable<? extends ResEntity<T>> sendObservable2(Observable<? extends ResEntity<T>> observable) {
+        if (observable != null) {
+            return observable
+                    .map(new ResEntityFunction<ResEntity<T>>())
+                    .compose(this.<ResEntity<T>>bindToLifecycle());
+        }
+        return null;
+    }
+
+    @Override
+    public <T extends ResEntity> Observable<T> sendObservable3(Observable<T> observable) {
+        if (observable != null) {
+            return observable
+                    .map(new ResEntityFunction<T>())
+                    .compose(this.<T>bindToLifecycle());
+        }
+        return null;
+    }
 
     /**
      * 加入队列
