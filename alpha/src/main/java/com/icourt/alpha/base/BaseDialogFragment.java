@@ -717,8 +717,16 @@ public abstract class BaseDialogFragment extends DialogFragment
     }
 
 
+    /**
+     * 1.绑定生命周期
+     * 2.分发常规模型 {@link ResEntity#succeed}
+     *
+     * @param observable
+     * @param <T>
+     * @return
+     */
     @Override
-    public <T> Observable<T> sendObservable(Observable<? extends ResEntity<T>> observable) {
+    public final <T> Observable<T> sendObservable(Observable<? extends ResEntity<T>> observable) {
         if (observable != null) {
             return observable
                     .map(new ResEntitySimpleFunction<T>())
@@ -727,8 +735,16 @@ public abstract class BaseDialogFragment extends DialogFragment
         return null;
     }
 
+    /**
+     * 1.绑定生命周期
+     * 2.分发常规模型 {@link ResEntity#succeed}
+     *
+     * @param observable
+     * @param <T>
+     * @return
+     */
     @Override
-    public <T> Observable<? extends ResEntity<T>> sendObservable2(Observable<? extends ResEntity<T>> observable) {
+    public final <T> Observable<? extends ResEntity<T>> sendObservable2(Observable<? extends ResEntity<T>> observable) {
         if (observable != null) {
             return observable
                     .map(new ResEntityFunction<ResEntity<T>>())
@@ -737,8 +753,16 @@ public abstract class BaseDialogFragment extends DialogFragment
         return null;
     }
 
+    /**
+     * 1.绑定生命周期
+     * 2.分发常规模型 {@link ResEntity#succeed}
+     *
+     * @param observable
+     * @param <T>
+     * @return
+     */
     @Override
-    public <T extends ResEntity> Observable<T> sendObservable3(Observable<T> observable) {
+    public final <T extends ResEntity> Observable<T> sendObservable3(Observable<T> observable) {
         if (observable != null) {
             return observable
                     .map(new ResEntityFunction<T>())
@@ -746,6 +770,7 @@ public abstract class BaseDialogFragment extends DialogFragment
         }
         return null;
     }
+
     /**
      * 容易出现状态丢失
      *
