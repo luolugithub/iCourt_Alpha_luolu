@@ -28,7 +28,7 @@ import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.entity.bean.RepoIdResEntity;
 import com.icourt.alpha.http.IDefNotify;
-import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.http.exception.ResponseException;
 import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.interfaces.OnParentTitleBarClickListener;
 import com.icourt.alpha.utils.IMUtils;
@@ -190,13 +190,7 @@ public class ProjectFileFragment extends SeaFileBaseFragment
                 .flatMap(new Function<String, ObservableSource<List<String>>>() {
                     @Override
                     public ObservableSource<List<String>> apply(@NonNull String s) throws Exception {
-                        return getApi().permissionQueryObservable(getLoginUserId(), "MAT", s)
-                                .map(new Function<ResEntity<List<String>>, List<String>>() {
-                                    @Override
-                                    public List<String> apply(@NonNull ResEntity<List<String>> listResEntity) throws Exception {
-                                        return listResEntity != null ? listResEntity.result : new ArrayList<String>();
-                                    }
-                                });
+                        return sendObservable(getApi().permissionQueryObservable(getLoginUserId(), "MAT", s));
                     }
                 })
                 .filter(new Predicate<List<String>>() {  //2--->是否有可读或者可读写权限
@@ -209,23 +203,19 @@ public class ProjectFileFragment extends SeaFileBaseFragment
                 .flatMap(new Function<List<String>, ObservableSource<String>>() {//3--->项目id转换repoid
                     @Override
                     public ObservableSource<String> apply(@NonNull List<String> strings) throws Exception {
-                        return getApi().projectQueryDocumentIdObservable(projectId)
+                        return sendObservable3(getApi().projectQueryDocumentIdObservable(projectId))
                                 .map(new Function<RepoIdResEntity, String>() {
                                     @Override
                                     public String apply(@NonNull RepoIdResEntity repoIdResEntity) throws Exception {
-                                        return repoIdResEntity != null ? repoIdResEntity.seaFileRepoId : "";
+                                        if (TextUtils.isEmpty(repoIdResEntity.seaFileRepoId)) {
+                                            //1.反馈
+                                            bugSync("项目repoid 获取null", "projectid:" + projectId);
+                                            //2.阻止队列
+                                            throw new ResponseException(-1, "服务器 返回seaFileRepoId null");
+                                        }
+                                        return repoIdResEntity.seaFileRepoId;
                                     }
                                 });
-                    }
-                })
-                .filter(new Predicate<String>() {//4----->校验repoid不能为空
-                    @Override
-                    public boolean test(@NonNull String s) throws Exception {
-                        boolean canNext = !TextUtils.isEmpty(s);
-                        if (!canNext) {
-                            bugSync("项目repo 获取null", "projectid:" + projectId);
-                        }
-                        return canNext;
                     }
                 })
                 .flatMap(new Function<String, ObservableSource<List<FolderDocumentEntity>>>() {//5--->获取该repo下面的文件
@@ -236,7 +226,6 @@ public class ProjectFileFragment extends SeaFileBaseFragment
                     }
                 })
                 .compose(this.<List<FolderDocumentEntity>>bindToLifecycle())
-                .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new BaseObserver<List<FolderDocumentEntity>>() {
                     @Override
