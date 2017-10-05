@@ -17,6 +17,9 @@ import com.icourt.alpha.utils.SnackbarUtils;
 import com.icourt.alpha.utils.ToastUtils;
 import com.kaopiz.kprogresshud.KProgressHUD;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Description  适配器
  * Company Beijing icourt
@@ -29,6 +32,14 @@ public abstract class BaseAdapter<T>
         implements ProgressHUDImp {
     protected RecyclerView recyclerView;
     private KProgressHUD progressHUD;
+
+    public BaseAdapter(@Nullable List<T> data) {
+        super(data);
+    }
+
+    public BaseAdapter() {
+        this(new ArrayList<T>());
+    }
 
     @CallSuper
     @Override
