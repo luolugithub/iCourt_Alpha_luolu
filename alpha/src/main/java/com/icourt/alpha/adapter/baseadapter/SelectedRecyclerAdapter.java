@@ -7,8 +7,7 @@ package com.icourt.alpha.adapter.baseadapter;
  */
 
 /**
- * 新版本 @see {@link com.asange.recyclerviewadapter.SelectableBaseAdapter}
- *
+ * 新版本 @see {@link BaseSelectableAdapter}
  * @param <T>
  */
 @Deprecated

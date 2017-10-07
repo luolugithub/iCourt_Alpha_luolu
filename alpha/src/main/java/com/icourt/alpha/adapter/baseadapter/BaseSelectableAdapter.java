@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
 import android.support.v7.widget.RecyclerView;
 
+import com.asange.recyclerviewadapter.SelectableBaseAdapter;
 import com.icourt.alpha.base.BaseActionHelper;
 import com.icourt.alpha.http.ApiAlphaService;
 import com.icourt.alpha.http.ApiChatService;
@@ -16,22 +17,20 @@ import com.icourt.alpha.interfaces.ProgressHUDImp;
 import java.util.List;
 
 /**
- * Description  适配器
+ * Description
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
- * date createTime：2017/10/4
+ * date createTime：2017/10/7
  * version 2.1.0
  */
-public abstract class BaseAdapter<T>
-        extends com.asange.recyclerviewadapter.BaseRecyclerAdapter<T>
-        implements ProgressHUDImp {
+public abstract class BaseSelectableAdapter<T extends com.asange.recyclerviewadapter.SelectableEntity> extends SelectableBaseAdapter<T>  implements ProgressHUDImp{
     final BaseActionHelper baseActionHelper = new BaseActionHelper();
 
-    public BaseAdapter(@NonNull List<T> data) {
+    public BaseSelectableAdapter(@NonNull List<T> data) {
         super(data);
     }
 
-    public BaseAdapter() {
+    public BaseSelectableAdapter() {
     }
 
     @CallSuper
