@@ -120,10 +120,12 @@ public class ProjectTaskGroupActivity extends BaseActivity implements BaseRecycl
 
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.titleAction://添加任务组
                 TaskGroupCreateActivity.launchForResult(this, projectId, TaskGroupCreateActivity.CREAT_TASK_GROUP_TYPE, CREATE_GROUP_REQUEST_CODE);
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }

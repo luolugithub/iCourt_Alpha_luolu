@@ -79,12 +79,14 @@ public class SettingActivity extends BaseActivity {
     @OnClick({R.id.titleAction, R.id.photo_layout})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.titleAction:
                 updateInfo();
                 break;
             case R.id.photo_layout:
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }

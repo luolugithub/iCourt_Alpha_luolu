@@ -4,7 +4,6 @@ import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -117,8 +116,6 @@ public class TimerTimingActivity extends BaseTimerActivity
     ViewGroup overTimingRemind;
     @BindView(R.id.over_timing_title_tv)
     TextView overTimingTitleTv;
-    @BindView(R.id.over_timing_close_tv)
-    TextView overTimingCloseTv;
 
     TimeEntity.ItemEntity itemEntity;
     Calendar selectedStartDate = Calendar.getInstance();//选中的开始时间
@@ -200,11 +197,6 @@ public class TimerTimingActivity extends BaseTimerActivity
             worktypeNameTv.setText(TextUtils.isEmpty(itemEntity.workTypeName) ? getString(R.string.timing_not_set) : itemEntity.workTypeName);
             taskNameTv.setText(TextUtils.isEmpty(itemEntity.taskName) ? getString(R.string.timing_not_relevance) : itemEntity.taskName);
 
-            Drawable[] drawables = overTimingCloseTv.getCompoundDrawables();
-            if (drawables[0] != null) {
-                int px = DensityUtil.dip2px(getContext(), 12);
-                drawables[0].setBounds(0, 0, px, px);
-            }
         }
     }
 
@@ -222,8 +214,8 @@ public class TimerTimingActivity extends BaseTimerActivity
      * @param isSyncServer true：同步到服务器，false：不同步
      */
     private void closeOverTimingRemind(boolean isSyncServer) {
+        itemEntity.noRemind = TimeEntity.ItemEntity.STATE_REMIND_OFF;
         viewMoveAnimation(false);
-        itemEntity.noRemind = TimeEntity.ItemEntity.STATE_NO_REMIND_ON;
         EventBus.getDefault().post(new OverTimingRemindEvent(OverTimingRemindEvent.ACTION_TIMING_REMIND_NO_REMIND));
         if (isSyncServer) {
             TimerManager.getInstance().setOverTimingRemindClose(TimerManager.OVER_TIME_REMIND_NO_REMIND);
@@ -238,7 +230,7 @@ public class TimerTimingActivity extends BaseTimerActivity
             R.id.task_layout,
             R.id.titleAction,
             R.id.stop_time_tv,
-            R.id.over_timing_close_tv})
+            R.id.over_timing_close_ll})
     @Override
     public void onClick(View view) {
         super.onClick(view);
@@ -252,7 +244,7 @@ public class TimerTimingActivity extends BaseTimerActivity
             case R.id.titleAction:
                 finish();
                 break;
-            case R.id.over_timing_close_tv:
+            case R.id.over_timing_close_ll:
                 closeOverTimingRemind(true);
                 break;
             case R.id.project_layout://所属项目
@@ -439,7 +431,7 @@ public class TimerTimingActivity extends BaseTimerActivity
             case TimingEvent.TIMING_UPDATE_PROGRESS:
                 if (TextUtils.equals(event.timingId, itemEntity.pkId)) {
                     timingTv.setText(toTime(event.timingSecond));
-                    if (itemEntity.noRemind == TimeEntity.ItemEntity.STATE_NO_REMIND_OFF) {
+                    if (itemEntity.noRemind == TimeEntity.ItemEntity.STATE_REMIND_ON) {
                         if (TimeUnit.SECONDS.toHours(event.timingSecond) >= 2) {//如果该计时超过两小时，显示超过2小时的提醒。
                             if (overTimingRemind.getVisibility() != View.VISIBLE) {
                                 updateOverTimingRemindText(event.timingSecond);

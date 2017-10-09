@@ -81,7 +81,6 @@ public class RepoListFragment extends RepoBaseFragment
     int repoType;
 
     RepoAdapter repoAdapter;
-    boolean isLawfirmAdmin;//是否是律所的管理员
 
 
     /**
@@ -217,20 +216,7 @@ public class RepoListFragment extends RepoBaseFragment
             }
             break;
             case REPO_LAWFIRM: {
-                callEnqueue(getApi().getOfficeAdmin(getLoginUserId()),
-                        new SimpleCallBack2<String>() {
-                            @Override
-                            public void onSuccess(Call<String> call, Response<String> response) {
-                                isLawfirmAdmin = StringUtils.equalsIgnoreCase(getLoginUserId(), response.body(), false);
-                                getDocumentRoot(isRefresh, null);
-                            }
-
-                            @Override
-                            public void onFailure(Call<String> call, Throwable t) {
-                                super.onFailure(call, t);
-                                stopRefresh();
-                            }
-                        });
+                getDocumentRoot(isRefresh, null);
             }
             break;
             case REPO_PROJECT: {
@@ -441,9 +427,6 @@ public class RepoListFragment extends RepoBaseFragment
         String repo_permission = item.permission;
         if (repoType == REPO_MINE) {
             repo_permission = PERMISSION_RW;
-        } else if (repoType == REPO_LAWFIRM) {
-            //是否是超管
-            repo_permission = isLawfirmAdmin ? PERMISSION_RW : item.permission;
         }
         FolderListActivity.launch(getContext(),
                 SFileConfig.convert2RepoType(getArguments().getInt(KEY_REPO_TYPE, 0)),
@@ -491,7 +474,7 @@ public class RepoListFragment extends RepoBaseFragment
                             lookDetail(pos);
                         } else if (TextUtils.equals(s, getString(R.string.str_rename))) {//重命名
                             renameDocument(pos);
-                        } else if (TextUtils.equals(s, getString(R.string.repo_inner_share))) {//内部共享
+                        } else if (TextUtils.equals(s, getString(R.string.repo_share))) {//共享
                             shareDocument(pos);
                         } else if (TextUtils.equals(s, getString(R.string.str_delete))) {//删除
                             showDelConfirmDialog(pos);
@@ -558,7 +541,7 @@ public class RepoListFragment extends RepoBaseFragment
     private void showDelConfirmDialog(final int pos) {
         new BottomActionDialog(getContext(),
                 getString(R.string.repo_delete_confirm),
-                Arrays.asList(getString(R.string.str_delete)), new BottomActionDialog.OnActionItemClickListener() {
+                Arrays.asList(getString(R.string.str_ok)), new BottomActionDialog.OnActionItemClickListener() {
             @Override
             public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                 dialog.dismiss();

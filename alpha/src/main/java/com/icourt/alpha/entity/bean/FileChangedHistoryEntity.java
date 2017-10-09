@@ -113,4 +113,25 @@ public class FileChangedHistoryEntity implements ILongFieldEntity,ISeaFile {
     public Long getCompareLongField() {
         return date;
     }
+
+    @Override
+    public String toString() {
+        return "FileChangedHistoryEntity{" +
+                "id=" + id +
+                ", obj_type='" + obj_type + '\'' +
+                ", op_type='" + op_type + '\'' +
+                ", operator_id='" + operator_id + '\'' +
+                ", operator_name='" + operator_name + '\'' +
+                ", date=" + date +
+                ", repo_id='" + repo_id + '\'' +
+                ", repo_name='" + repo_name + '\'' +
+                ", path='" + path + '\'' +
+                ", size=" + size +
+                ", commit_id='" + commit_id + '\'' +
+                ", pre_commit_id='" + pre_commit_id + '\'' +
+                ", new_path='" + new_path + '\'' +
+                ", pic='" + pic + '\'' +
+                ", file_name='" + file_name + '\'' +
+                '}';
+    }
 }

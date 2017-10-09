@@ -29,6 +29,7 @@ import com.icourt.alpha.entity.bean.WorkType;
 import com.icourt.alpha.fragment.dialogfragment.CalendaerSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ProjectSimpleSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.TaskSelectDialogFragment;
+import com.icourt.alpha.fragment.dialogfragment.TimingChangeDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.WorkTypeSelectDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
@@ -45,6 +46,7 @@ import com.umeng.analytics.MobclickAgent;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -88,6 +90,8 @@ public class TimerAddActivity extends BaseTimerActivity
     TextView startTimeMinTv;
     @BindView(R.id.stop_time_min_tv)
     TextView stopTimeMinTv;
+    @BindView(R.id.tv_surpass_day)
+    TextView tvSurpassDay;
     @BindView(R.id.time_name_tv)
     EditText timeNameTv;
     @BindView(R.id.project_name_tv)
@@ -102,10 +106,12 @@ public class TimerAddActivity extends BaseTimerActivity
     TextView taskNameTv;
     @BindView(R.id.task_layout)
     LinearLayout taskLayout;
+
     private ProjectEntity selectedProjectEntity;
     private WorkType selectedWorkType;
     private TaskEntity.TaskItemEntity selectedTaskItem;
-    Calendar selectedStartDate, selectedEndDate;
+    Calendar selectedStartDate;//计时器选中的开始时间
+    Calendar selectedEndDate;//计时器选中的结束时间
     String projectId, projectName;
 
     public static void launch(@NonNull Context context) {
@@ -141,10 +147,10 @@ public class TimerAddActivity extends BaseTimerActivity
     @Override
     protected void initView() {
         super.initView();
-        setTitle("添加计时");
+        setTitle(R.string.timing_add_timer);
         TextView titleActionTextView = getTitleActionTextView();
         if (titleActionTextView != null) {
-            titleActionTextView.setText("完成");
+            titleActionTextView.setText(R.string.timing_finish);
         }
         projectId = getIntent().getStringExtra(KEY_PROJECT_ID);
         projectName = getIntent().getStringExtra(KEY_PROJECT_NAME);
@@ -170,12 +176,11 @@ public class TimerAddActivity extends BaseTimerActivity
             selectedProjectEntity.pkId = projectId;
         }
 
-        selectedStartDate = Calendar.getInstance();
         //默认开始时间 早上9点整开始
+        selectedStartDate = Calendar.getInstance();
         selectedStartDate.set(Calendar.HOUR_OF_DAY, 9);
         selectedStartDate.set(Calendar.MINUTE, 0);
         selectedStartDate.set(Calendar.SECOND, 0);
-
 
         //默认结束时间 9:15
         selectedEndDate = Calendar.getInstance();
@@ -183,13 +188,10 @@ public class TimerAddActivity extends BaseTimerActivity
         selectedEndDate.set(Calendar.MINUTE, 15);
         selectedEndDate.set(Calendar.SECOND, 0);
 
-        useTimeDate.setText(DateUtils.getyyyyMMdd(selectedStartDate.getTimeInMillis()));
-        startTimeMinTv.setText(DateUtils.getHHmm(selectedStartDate.getTimeInMillis()));
-        stopTimeMinTv.setText(DateUtils.getHHmm(selectedEndDate.getTimeInMillis()));
+        setTimeViewData();
 
         //circleTimerView.setOneCircle(true);
         circleTimerView.setMiniTime(70);
-        circleTimerView.setCurrentTime((int) ((selectedEndDate.getTimeInMillis() - selectedStartDate.getTimeInMillis()) / 1000));
         circleTimerView.setHintText("");
         circleTimerView.setCircleTimerListener(new CircleTimerView.CircleTimerListener() {
             @Override
@@ -248,6 +250,31 @@ public class TimerAddActivity extends BaseTimerActivity
         });
     }
 
+    /**
+     * 设置要显示的时间信息（时间圆盘的数据、开始时间年月日、开始时间分钟秒、结束时间分钟秒）
+     * 避免秒的差异 展示取分钟差距
+     */
+    private void setTimeViewData() {
+        if (selectedStartDate == null) return;
+        if (selectedEndDate == null) return;
+        useTimeDate.setText(DateUtils.getTimeDateFormatYear(selectedStartDate.getTimeInMillis()));
+        startTimeMinTv.setText(DateUtils.getHHmm(selectedStartDate.getTimeInMillis()));
+        stopTimeMinTv.setText(DateUtils.getHHmm(selectedEndDate.getTimeInMillis()));
+
+        int differentDay = DateUtils.differentDays(selectedStartDate.getTimeInMillis(), selectedEndDate.getTimeInMillis());
+        if (differentDay >= 1) {
+            tvSurpassDay.setText(getString(R.string.timing_add_days, differentDay));
+        } else {
+            tvSurpassDay.setText("");
+        }
+
+        long one_minutes_millis = TimeUnit.MINUTES.toMillis(1);
+        long rangeTime = (selectedEndDate.getTimeInMillis() / one_minutes_millis * one_minutes_millis
+                - selectedStartDate.getTimeInMillis() / one_minutes_millis * one_minutes_millis);
+        int time = (int) (rangeTime / 1000);
+        circleTimerView.setCurrentTime(time);
+    }
+
 
     @OnClick({R.id.minus_time_image,
             R.id.add_time_image,
@@ -265,24 +292,36 @@ public class TimerAddActivity extends BaseTimerActivity
             case R.id.titleAction:
                 addTimer();
                 break;
-            case R.id.minus_time_image://－时间
-                if (circleTimerView.getCurrentTime() >= 16 * 60) {
-                    circleTimerView.setCurrentTime(circleTimerView.getCurrentTime() - 15 * 60);
+            case R.id.minus_time_image://－时间，会有个最小值。
+                long useTime = selectedEndDate.getTimeInMillis() - selectedStartDate.getTimeInMillis();
+                if (useTime >= 16 * 60 * 1000) {
+                    useTime = useTime - 15 * 60 * 1000;
                 } else {
-                    circleTimerView.setCurrentTime(60);
+                    useTime = 60 * 1000;
+                }
+                selectedEndDate.clear();
+                selectedEndDate.setTimeInMillis(selectedStartDate.getTimeInMillis() + useTime);
+                setTimeViewData();
+                break;
+            case R.id.add_time_image://＋时间，不能超过当前时间。
+                long endTime = selectedEndDate.getTimeInMillis();
+                if (endTime + 15 * 60 * 1000 <= System.currentTimeMillis()) {
+                    endTime = endTime + 15 * 60 * 1000;
+                    selectedEndDate.clear();
+                    selectedEndDate.setTimeInMillis(endTime);
+                    setTimeViewData();
+                } else {
+                    showTopSnackBar(R.string.timing_donot_select_future_time);
                 }
                 break;
-            case R.id.add_time_image://＋时间
-                circleTimerView.setCurrentTime(circleTimerView.getCurrentTime() + 15 * 60);
+            case R.id.use_time_date://显示计时开始时间的日期
+                showDateTimeSelectDialogFragment(TimingChangeDialogFragment.TYPE_CHANGE_START_TIME, selectedStartDate.getTimeInMillis(), selectedEndDate.getTimeInMillis());
                 break;
-            case R.id.use_time_date:
-                showCalendaerSelectDialogFragment();
+            case R.id.start_time_min_tv://显示计时开始时间的时分
+                showDateTimeSelectDialogFragment(TimingChangeDialogFragment.TYPE_CHANGE_START_TIME, selectedStartDate.getTimeInMillis(), selectedEndDate.getTimeInMillis());
                 break;
-            case R.id.start_time_min_tv:
-                showDateSelectStart(startTimeMinTv);
-                break;
-            case R.id.stop_time_min_tv:
-                showDateSelectEnd(stopTimeMinTv);
+            case R.id.stop_time_min_tv://显示计时结束时间的时分
+                showDateTimeSelectDialogFragment(TimingChangeDialogFragment.TYPE_CHANGE_END_TIME, selectedStartDate.getTimeInMillis(), selectedEndDate.getTimeInMillis());
                 break;
             case R.id.project_layout://所属项目
                 showProjectSelectDialogFragment(selectedProjectEntity != null ? selectedProjectEntity.pkId : null);
@@ -380,6 +419,7 @@ public class TimerAddActivity extends BaseTimerActivity
      * 添加计时
      */
     public void addTimer() {
+
         TimeEntity.ItemEntity itemEntityCopy = new TimeEntity.ItemEntity();
         itemEntityCopy.createUserId = getLoginUserId();
         itemEntityCopy.startTime = selectedStartDate.getTimeInMillis();
@@ -392,6 +432,7 @@ public class TimerAddActivity extends BaseTimerActivity
         itemEntityCopy.taskPkId = selectedTaskItem != null ? selectedTaskItem.id : null;
         itemEntityCopy.name = TextUtils.isEmpty(timeNameTv.getText()) ? null : timeNameTv.getText().toString();
         JsonObject jsonObject = null;
+
         try {
             jsonObject = JsonUtils.object2JsonObject(itemEntityCopy);
         } catch (JsonParseException e) {
@@ -489,6 +530,25 @@ public class TimerAddActivity extends BaseTimerActivity
                 }
             }
 
+        }else if(fragment instanceof TimingChangeDialogFragment){
+            long resultTime = params.getLong(TimingChangeDialogFragment.TIME_RESULT_MILLIS);
+            if (type == TimingChangeDialogFragment.TYPE_CHANGE_START_TIME) {//修改开始时间
+                //修改开始时间，同时会修改结束时间（时长保持不变）。
+                long useTime = selectedEndDate.getTimeInMillis() - selectedStartDate.getTimeInMillis();
+                long endTime = resultTime + useTime;
+                //若用户选择的开始时间导致结束时间晚于当前时间，（点击【完成】后 ）toast 提示无法记录未来时间并回到编辑前状态。
+                if (endTime > System.currentTimeMillis()) {
+                    showTopSnackBar(getString(R.string.timing_donot_select_future_time));
+                    return;
+                }
+                selectedStartDate.clear();
+                selectedStartDate.setTimeInMillis(resultTime);
+                selectedEndDate.clear();
+                selectedEndDate.setTimeInMillis(endTime);
+            } else {//修改结束时间
+                selectedEndDate.clear();
+                selectedEndDate.setTimeInMillis(resultTime);
+            }
         }
     }
 }

@@ -16,6 +16,8 @@ import java.lang.annotation.RetentionPolicy;
 
 public class Const {
     public static final String SHARE_PREFERENCES_FILE_NAME = "icourt_cache_data";//SharedPreferences 文件名称
+    public static final String SHARE_PREFERENCES_TEMPORARY_CACHE_FILE_NAME = "icourt_temporary_cache_data";//SharedPreferences 临时缓存 会清空
+
     //下载文件
     public static final String HTTP_DOWNLOAD_FILE = "ilaw/api/v2/file/download";
     public static final String MSC_XUN_APPID = "581bee35";//讯飞语音识别appid
@@ -219,7 +221,8 @@ public class Const {
             PROJECT_NUMBER_TYPE,
             PROJECT_REMARK_TYPE,
             PROJECT_CASE_TYPE,
-            PROJECT_CASENUMBER_TYPE})
+            PROJECT_CASENUMBER_TYPE,
+            PROJECT_CLIENT_TYPE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface PROJECT_INFO_TEXT_TYPE { //查看text内容（名称、类型、编号、案由...）
 

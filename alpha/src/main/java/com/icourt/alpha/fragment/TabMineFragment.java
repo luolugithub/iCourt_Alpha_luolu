@@ -23,6 +23,7 @@ import com.icourt.alpha.activity.ChatMsgClassfyActivity;
 import com.icourt.alpha.activity.LoginSelectActivity;
 import com.icourt.alpha.activity.MyAtedActivity;
 import com.icourt.alpha.activity.MyFileTabActivity;
+import com.icourt.alpha.activity.MyTimingActivity;
 import com.icourt.alpha.activity.SettingActivity;
 import com.icourt.alpha.base.BaseAppUpdateActivity;
 import com.icourt.alpha.base.BaseFragment;
@@ -269,7 +270,6 @@ public class TabMineFragment extends BaseFragment {
             R.id.menu_test})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.set_image://设置
                 SettingActivity.launch(getContext());
@@ -293,8 +293,12 @@ public class TabMineFragment extends BaseFragment {
                 showLoginOutConfirmDialog();
                 break;
             case R.id.menu_test:
+                MyTimingActivity.launch(getContext());
 //                test1();
                 showTimingSelectDialogFragment();
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }

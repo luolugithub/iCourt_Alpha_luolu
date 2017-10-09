@@ -11,23 +11,39 @@
         android:id="@+id/over_timing_title_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:ellipsize="end"
-        android:maxLines="1"
-        android:textSize="12sp"
         android:layout_gravity="center_vertical"
         android:layout_marginLeft="18dp"
-        app:minTextSize="8sp"
-        android:text="@string/timer_over_timing_remind_text" />
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:text="@string/timer_over_timing_remind_text"
+        android:textSize="12sp"
+        app:minTextSize="8sp" />
 
-    <TextView
-        android:id="@+id/over_timing_close_tv"
+    <LinearLayout
+        android:id="@+id/over_timing_close_ll"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="right|center_vertical"
+        android:layout_gravity="center_vertical|right"
         android:layout_marginRight="16dp"
-        android:text="不再提醒"
-        android:textSize="12sp"
-        android:textColor="#fa8919"
-        android:drawableLeft="@mipmap/header_icon_close"
-        android:drawablePadding="1dp"/>
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingBottom="2dp"
+        android:paddingTop="2dp">
+
+        <ImageView
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_marginRight="1dp"
+            android:src="@mipmap/header_icon_close" />
+
+        <TextView
+            android:id="@+id/over_timing_close_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="不再提醒"
+            android:textColor="#fa8919"
+            android:textSize="12sp" />
+
+    </LinearLayout>
+
 </FrameLayout>

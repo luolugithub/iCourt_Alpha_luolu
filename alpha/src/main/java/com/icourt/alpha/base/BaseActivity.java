@@ -31,7 +31,11 @@ import com.icourt.alpha.http.ApiChatService;
 import com.icourt.alpha.http.ApiProjectService;
 import com.icourt.alpha.http.ApiSFileService;
 import com.icourt.alpha.http.IContextCallQueue;
+import com.icourt.alpha.http.IContextObservable;
+import com.icourt.alpha.http.ResEntityFunction;
+import com.icourt.alpha.http.ResEntitySimpleFunction;
 import com.icourt.alpha.http.RetrofitServiceFactory;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.IContextResourcesImp;
 import com.icourt.alpha.interfaces.ProgressHUDImp;
 import com.icourt.alpha.utils.LogUtils;
@@ -72,6 +76,7 @@ public class BaseActivity
         extends BasePermisionActivity
         implements ProgressHUDImp,
         IContextCallQueue,
+        IContextObservable,
         View.OnClickListener,
         IContextResourcesImp,
         LifecycleProvider<ActivityEvent> {
@@ -582,6 +587,7 @@ public class BaseActivity
      * @return 当前已经显示的fragment
      */
     protected final Fragment addOrShowFragment(@NonNull Fragment targetFragment, Fragment currentFragment, @IdRes int containerViewId) {
+        if (isDestroyOrFinishing()) return currentFragment;
         if (targetFragment == null) return currentFragment;
         if (targetFragment == currentFragment) return currentFragment;
         FragmentManager fm = getSupportFragmentManager();
@@ -810,4 +816,62 @@ public class BaseActivity
         }
         RequestUtils.cancelCall(call);
     }
+
+
+    /**
+     * 1.绑定生命周期
+     * 2.分发常规模型 {@link ResEntity#succeed}
+     *
+     * @param observable
+     * @param <T>
+     * @return
+     */
+    @Override
+    public final <T> Observable<T> sendObservable(Observable<? extends ResEntity<T>> observable) {
+        if (observable != null) {
+            return observable
+                    .map(new ResEntitySimpleFunction<T>())
+                    .compose(this.<T>bindToLifecycle());
+        }
+        return null;
+    }
+
+    /**
+     * 1.绑定生命周期
+     * 2.分发常规模型 {@link ResEntity#succeed}
+     *
+     * @param observable
+     * @param <T>
+     * @return
+     */
+    @Override
+    public final <T> Observable<? extends ResEntity<T>> sendObservable2(Observable<? extends ResEntity<T>> observable) {
+        if (observable != null) {
+            return observable
+                    .map(new ResEntityFunction<ResEntity<T>>())
+                    .compose(this.<ResEntity<T>>bindToLifecycle());
+        }
+        return null;
+    }
+
+    /**
+     * 1.绑定生命周期
+     * 2.分发常规模型 {@link ResEntity#succeed}
+     * 3.默认主线程接收数据
+     *
+     * @param observable
+     * @param <T>
+     * @return
+     */
+    @Override
+    public final <T extends ResEntity> Observable<T> sendObservable3(Observable<T> observable) {
+        if (observable != null) {
+            return observable
+                    .map(new ResEntityFunction<T>())
+                    .compose(this.<T>bindToLifecycle());
+        }
+        return null;
+    }
+
+
 }

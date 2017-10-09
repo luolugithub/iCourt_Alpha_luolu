@@ -359,7 +359,6 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
             R.id.titleCalendar})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         postDismissPop();
         switch (v.getId()) {
             case R.id.titleCalendar:
@@ -430,6 +429,9 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                                 }
                             }
                         }).show();
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }

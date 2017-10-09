@@ -25,6 +25,11 @@ import com.icourt.alpha.adapter.ProjectMemberAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.base.BaseAppUpdateActivity;
+import com.icourt.alpha.db.convertor.IConvertModel;
+import com.icourt.alpha.db.convertor.ListConvertor;
+import com.icourt.alpha.db.dbmodel.ContactDbModel;
+import com.icourt.alpha.db.dbservice.ContactDbService;
+import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.ProjectDetailEntity;
 import com.icourt.alpha.fragment.dialogfragment.ContactDialogFragment;
 import com.icourt.alpha.utils.StringUtils;
@@ -38,6 +43,14 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
+import io.realm.Case;
+import io.realm.RealmResults;
 
 import static com.icourt.alpha.constants.Const.PROJECT_ANYUAN_LAWYER_TYPE;
 import static com.icourt.alpha.constants.Const.PROJECT_MEMBER_TYPE;
@@ -177,24 +190,48 @@ public class ProjectMembersActivity extends BaseAppUpdateActivity {
      *
      * @param name
      */
-    private void searchUserByName(String name) {
+    private void searchUserByName(final String name) {
         if (TextUtils.isEmpty(name)) return;
         if (list != null) {
-            List memberEntities = new ArrayList();
-            for (int i = 0; i < list.size(); i++) {
-                if (list.get(i) instanceof ProjectDetailEntity.MembersBean) {
-                    ProjectDetailEntity.MembersBean membersBean = (ProjectDetailEntity.MembersBean) list.get(i);
-                    if (membersBean.userName.contains(name)) {
-                        memberEntities.add(membersBean);
+            Observable.create(new ObservableOnSubscribe<List<Object>>() {
+                @Override
+                public void subscribe(ObservableEmitter<List<Object>> e) throws Exception {
+                    if (e.isDisposed()) return;
+                    List memberEntities = new ArrayList();
+                    //查询联系人
+                    ContactDbService contactDbService = new ContactDbService(getLoginUserId());
+                    RealmResults<ContactDbModel> nameModel = contactDbService.contains("name", name, "nameCharacter", name, Case.INSENSITIVE);
+                    List<GroupContactBean> contactBeens = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(nameModel));
+                    for (int i = 0; i < list.size(); i++) {
+                        for (GroupContactBean contactBeen : contactBeens) {
+                            if (list.get(i) instanceof ProjectDetailEntity.MembersBean) {
+                                ProjectDetailEntity.MembersBean membersBean = (ProjectDetailEntity.MembersBean) list.get(i);
+                                if (TextUtils.equals(contactBeen.userId, membersBean.userId)) {
+                                    memberEntities.add(membersBean);
+                                    break;
+                                }
+                            } else if (list.get(i) instanceof ProjectDetailEntity.AttorneysBean) {
+                                ProjectDetailEntity.AttorneysBean attorneysBean = (ProjectDetailEntity.AttorneysBean) list.get(i);
+                                if (TextUtils.equals(contactBeen.userId, attorneysBean.attorneyPkid)) {
+                                    memberEntities.add(attorneysBean);
+                                    break;
+                                }
+                            }
+                        }
                     }
-                } else if (list.get(i) instanceof ProjectDetailEntity.AttorneysBean) {
-                    ProjectDetailEntity.AttorneysBean attorneysBean = (ProjectDetailEntity.AttorneysBean) list.get(i);
-                    if (attorneysBean.attorneyName.contains(name)) {
-                        memberEntities.add(attorneysBean);
-                    }
+                    contactDbService.releaseService();
+                    e.onNext(memberEntities);
+                    e.onComplete();
                 }
-            }
-            projectMemberAdapter.bindData(true, memberEntities);
+            }).compose(this.<List<Object>>bindToLifecycle())
+                    .subscribeOn(Schedulers.newThread())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Consumer<List<Object>>() {
+                        @Override
+                        public void accept(List<Object> memberEntities) throws Exception {
+                            projectMemberAdapter.bindData(true, memberEntities);
+                        }
+                    });
         }
     }
 
