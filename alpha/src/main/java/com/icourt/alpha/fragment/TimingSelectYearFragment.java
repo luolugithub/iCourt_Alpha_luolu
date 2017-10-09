@@ -34,6 +34,10 @@ public class TimingSelectYearFragment extends BaseFragment {
     WheelView wheelviewYear;
     TimeWheelAdapter yearAdapter;
 
+    public static TimingSelectYearFragment newInstance() {
+        return new TimingSelectYearFragment();
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {

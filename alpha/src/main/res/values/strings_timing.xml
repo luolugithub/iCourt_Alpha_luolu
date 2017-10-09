@@ -17,6 +17,9 @@
     <string name="timing_check_project">查看项目</string>
     <string name="timing_add_days">+%d天</string>
     <string name="timing_add_timer">添加计时</string>
+    <string name="timing_please_select_project">请选择项目</string>
+    <string name="timing_add_timer_success">添加计时成功</string>
+    <string name="timing_cannot_select_time_out_now">不能选择超过当前时间,请重新选择</string>
 
     <string name="timing_my_timing">我的计时</string>
     <string name="timing_accumulative_total">累计计时</string>

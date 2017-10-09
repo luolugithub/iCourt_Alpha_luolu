@@ -64,8 +64,7 @@ public class TimingSelectDialogFragment extends BaseDialogFragment {
     OnFragmentCallBackListener onFragmentCallBackListener;
 
     public static TimingSelectDialogFragment newInstance() {
-        TimingSelectDialogFragment timingSelectDialogFragment = new TimingSelectDialogFragment();
-        return timingSelectDialogFragment;
+        return new TimingSelectDialogFragment();
     }
 
     @Nullable
@@ -104,12 +103,12 @@ public class TimingSelectDialogFragment extends BaseDialogFragment {
         }
 
         viewpager.setAdapter(baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager()));
-
+        viewpager.setOffscreenPageLimit(3);
         baseFragmentAdapter.bindData(true,
-                Arrays.asList(new TimingSelectDayFragment(),
-                        new TimingSelectWeekFragment(),
-                        new TimingSelectMonthFragment(),
-                        new TimingSelectYearFragment()));
+                Arrays.asList(TimingSelectDayFragment.newInstance(),
+                        TimingSelectWeekFragment.newInstance(),
+                        TimingSelectMonthFragment.newInstance(),
+                        TimingSelectYearFragment.newInstance()));
         viewpager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {

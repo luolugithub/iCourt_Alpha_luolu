@@ -38,6 +38,10 @@ public class TimingSelectMonthFragment extends BaseFragment {
     TimeWheelAdapter yearAdapter;
     TimeWheelAdapter monthAdapter;
 
+    public static TimingSelectMonthFragment newInstance() {
+        return new TimingSelectMonthFragment();
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {

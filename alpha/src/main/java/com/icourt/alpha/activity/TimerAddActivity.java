@@ -17,7 +17,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.bigkoo.pickerview.TimePickerView;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.icourt.alpha.R;
@@ -36,6 +35,7 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.JsonUtils;
+import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
@@ -45,7 +45,6 @@ import com.umeng.analytics.MobclickAgent;
 
 import java.io.Serializable;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
@@ -66,9 +65,20 @@ public class TimerAddActivity extends BaseTimerActivity
         implements
         OnFragmentCallBackListener {
 
-    private static final String KEY_PROJECT_ID = "key_project_id";
-    private static final String KEY_PROJECT_NAME = "key_project_name";
-    private static final String KEY_TASKITEMENTITY = "key_taskItemEntity";
+    private static final String KEY_LAUNCH_TYPE = "key_launch_type";//启动方式，如果是没有携带参数的启动，则从缓存里取数据。
+    private static final String KEY_PROJECT_ID = "key_project_id";//用来传递项目id的key。
+    private static final String KEY_PROJECT_NAME = "key_project_name";//用来传递项目名称的key。
+    private static final String KEY_TASKITEMENTITY = "key_taskItemEntity";//用来传递任务实体的key。
+
+    private static final int LAUNCH_TYPE_NORMAL = 1;//说明是默认的启动方式，没有携带数据，需要从本地取缓存。
+    private static final int LAUNCH_TYPE_OTHER = 2;//说明是其他携带参数的启动方式，有携带数据。
+
+    private static final String CACHE_NAME = "cache_name";
+    private static final String CACHE_PROJECT = "cache_project";
+    private static final String CACHE_WORKTYPE = "cache_worktype";
+    private static final String CACHE_TASK = "cache_task";
+    private static final String CACHE_START_TIME = "cache_start_time";
+    private static final String CACHE_END_TIME = "cache_end_time";
 
     @BindView(R.id.titleBack)
     CheckedTextView titleBack;
@@ -107,22 +117,24 @@ public class TimerAddActivity extends BaseTimerActivity
     @BindView(R.id.task_layout)
     LinearLayout taskLayout;
 
-    private ProjectEntity selectedProjectEntity;
-    private WorkType selectedWorkType;
-    private TaskEntity.TaskItemEntity selectedTaskItem;
+    private ProjectEntity selectedProjectEntity;//用来记录计时选中的项目信息
+    private WorkType selectedWorkType;//用来记录计时选中的工作类型
+    private TaskEntity.TaskItemEntity selectedTaskItem;//用来记录计时选中的任务信息
     Calendar selectedStartDate;//计时器选中的开始时间
     Calendar selectedEndDate;//计时器选中的结束时间
-    String projectId, projectName;
+    String projectId, projectName;//用来记录计时的项目id和项目名称
 
     public static void launch(@NonNull Context context) {
         if (context == null) return;
         Intent intent = new Intent(context, TimerAddActivity.class);
+        intent.putExtra(KEY_LAUNCH_TYPE, LAUNCH_TYPE_NORMAL);
         context.startActivity(intent);
     }
 
     public static void launch(@NonNull Context context, @NonNull String projectId, @NonNull String projectName) {
         if (context == null) return;
         Intent intent = new Intent(context, TimerAddActivity.class);
+        intent.putExtra(KEY_LAUNCH_TYPE, LAUNCH_TYPE_OTHER);
         intent.putExtra(KEY_PROJECT_ID, projectId);
         intent.putExtra(KEY_PROJECT_NAME, projectName);
         context.startActivity(intent);
@@ -131,6 +143,7 @@ public class TimerAddActivity extends BaseTimerActivity
     public static void launch(@NonNull Context context, TaskEntity.TaskItemEntity taskItemEntity) {
         if (context == null) return;
         Intent intent = new Intent(context, TimerAddActivity.class);
+        intent.putExtra(KEY_LAUNCH_TYPE, LAUNCH_TYPE_OTHER);
         intent.putExtra(KEY_TASKITEMENTITY, taskItemEntity);
         context.startActivity(intent);
     }
@@ -152,9 +165,22 @@ public class TimerAddActivity extends BaseTimerActivity
         if (titleActionTextView != null) {
             titleActionTextView.setText(R.string.timing_finish);
         }
-        projectId = getIntent().getStringExtra(KEY_PROJECT_ID);
-        projectName = getIntent().getStringExtra(KEY_PROJECT_NAME);
-        selectedTaskItem = (TaskEntity.TaskItemEntity) getIntent().getSerializableExtra(KEY_TASKITEMENTITY);
+        int launchType = getIntent().getIntExtra(KEY_LAUNCH_TYPE, LAUNCH_TYPE_NORMAL);
+        String cacheName = null;
+        //根据启动方式，判断是从缓存取数据，还是取传递过来的数据。
+        if (launchType == LAUNCH_TYPE_NORMAL) {//取本地缓存的数据。
+            cacheName = SpUtils.getTemporaryCache().getStringData(CACHE_NAME, null);
+            selectedProjectEntity = SpUtils.getTemporaryCache().getObjectData(CACHE_PROJECT, ProjectEntity.class);
+            selectedWorkType = SpUtils.getTemporaryCache().getObjectData(CACHE_WORKTYPE, WorkType.class);
+            selectedTaskItem = SpUtils.getTemporaryCache().getObjectData(CACHE_TASK, TaskEntity.TaskItemEntity.class);
+            selectedStartDate = SpUtils.getTemporaryCache().getObjectData(CACHE_START_TIME, Calendar.class);
+            selectedEndDate = SpUtils.getTemporaryCache().getObjectData(CACHE_END_TIME, Calendar.class);
+        } else {
+            projectId = getIntent().getStringExtra(KEY_PROJECT_ID);
+            projectName = getIntent().getStringExtra(KEY_PROJECT_NAME);
+            selectedTaskItem = (TaskEntity.TaskItemEntity) getIntent().getSerializableExtra(KEY_TASKITEMENTITY);
+        }
+
         if (selectedProjectEntity == null) {
             selectedProjectEntity = new ProjectEntity();
         }
@@ -165,28 +191,36 @@ public class TimerAddActivity extends BaseTimerActivity
             }
             if (!TextUtils.isEmpty(selectedTaskItem.name)) {
                 timeNameTv.setText(selectedTaskItem.name);
-                taskNameTv.setText(selectedTaskItem.name);
+                if (!TextUtils.isEmpty(cacheName)) {//如果缓存的名字不为空，则显示缓存的名字
+                    timeNameTv.setText(cacheName);
+                } else {//如果缓存的名字为空，则显示任务的名字
+                    taskNameTv.setText(selectedTaskItem.name);
+                }
             }
         }
         if (!TextUtils.isEmpty(projectName)) {
-            projectNameTv.setText(projectName);
             selectedProjectEntity.name = projectName;
         }
         if (!TextUtils.isEmpty(projectId)) {
             selectedProjectEntity.pkId = projectId;
         }
+        projectNameTv.setText(selectedProjectEntity.name);
 
         //默认开始时间 早上9点整开始
-        selectedStartDate = Calendar.getInstance();
-        selectedStartDate.set(Calendar.HOUR_OF_DAY, 9);
-        selectedStartDate.set(Calendar.MINUTE, 0);
-        selectedStartDate.set(Calendar.SECOND, 0);
+        if (selectedStartDate == null) {
+            selectedStartDate = Calendar.getInstance();
+            selectedStartDate.set(Calendar.HOUR_OF_DAY, 9);
+            selectedStartDate.set(Calendar.MINUTE, 0);
+            selectedStartDate.set(Calendar.SECOND, 0);
+        }
 
         //默认结束时间 9:15
-        selectedEndDate = Calendar.getInstance();
-        selectedEndDate.set(Calendar.HOUR_OF_DAY, 9);
-        selectedEndDate.set(Calendar.MINUTE, 15);
-        selectedEndDate.set(Calendar.SECOND, 0);
+        if (selectedEndDate == null) {
+            selectedEndDate = Calendar.getInstance();
+            selectedEndDate.set(Calendar.HOUR_OF_DAY, 9);
+            selectedEndDate.set(Calendar.MINUTE, 15);
+            selectedEndDate.set(Calendar.SECOND, 0);
+        }
 
         setTimeViewData();
 
@@ -215,16 +249,19 @@ public class TimerAddActivity extends BaseTimerActivity
 
             @Override
             public void onTimerTouchValueChanged(long time) {
-                log("---------->onTimerSetValueChanged:" + time);
-                selectedEndDate.setTimeInMillis(selectedStartDate.getTimeInMillis() + time * 1000);
-                stopTimeMinTv.setText(DateUtils.getHHmm(selectedEndDate.getTimeInMillis()));
+                //如果选中的时间超过当前时间，则记录为当前时间。
+                if (selectedStartDate.getTimeInMillis() + time * 1000 > System.currentTimeMillis()) {
+                    showTopSnackBar(getString(R.string.timing_donot_select_future_time));
+                    selectedEndDate.clear();
+                    selectedEndDate.setTimeInMillis(System.currentTimeMillis());
+                } else {
+                    selectedEndDate.setTimeInMillis(selectedStartDate.getTimeInMillis() + time * 1000);
+                }
+                setTimeViewData();
             }
 
             @Override
             public void onTimerSetValueChanged(long time) {
-                log("---------->onTimerSetValueChanged:" + time);
-                selectedEndDate.setTimeInMillis(selectedStartDate.getTimeInMillis() + time * 1000);
-                stopTimeMinTv.setText(DateUtils.getHHmm(selectedEndDate.getTimeInMillis()));
             }
 
             @Override
@@ -287,8 +324,11 @@ public class TimerAddActivity extends BaseTimerActivity
             R.id.titleAction})
     @Override
     public void onClick(View view) {
-        super.onClick(view);
         switch (view.getId()) {
+            case R.id.titleBack:
+                cacheData();
+                finish();
+                break;
             case R.id.titleAction:
                 addTimer();
                 break;
@@ -328,7 +368,7 @@ public class TimerAddActivity extends BaseTimerActivity
                 break;
             case R.id.worktype_layout://工作类型
                 if (selectedProjectEntity == null) {
-                    showTopSnackBar("请选择项目");
+                    showTopSnackBar(R.string.timing_please_select_project);
                     return;
                 }
                 showWorkTypeSelectDialogFragment(selectedProjectEntity.pkId, selectedWorkType != null ? selectedWorkType.pkId : null);
@@ -337,36 +377,16 @@ public class TimerAddActivity extends BaseTimerActivity
                 showTaskSelectDialogFragment(selectedProjectEntity != null ? selectedProjectEntity.pkId : null,
                         selectedTaskItem != null ? selectedTaskItem.id : null);
                 break;
+            default:
+                super.onClick(view);
+                break;
         }
     }
 
-
-    /**
-     * 时间选择
-     *
-     * @param text
-     */
-    private void showDateSelectStart(final TextView text) {
-        //时间选择器
-        TimePickerView pvTime = new TimePickerView.Builder(this, new TimePickerView.OnTimeSelectListener() {
-            @Override
-            public void onTimeSelect(Date date, View v) {//选中事件回调
-                if (date == null) return;
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTime(date);
-                selectedStartDate.set(Calendar.HOUR_OF_DAY, calendar.get(Calendar.HOUR_OF_DAY));
-                selectedStartDate.set(Calendar.MINUTE, calendar.get(Calendar.MINUTE));
-                text.setText(DateUtils.getHHmm(selectedStartDate.getTime().getTime()));
-
-                selectedEndDate.setTimeInMillis(circleTimerView.getCurrentTime() * 1_000 + selectedStartDate.getTimeInMillis());
-                stopTimeMinTv.setText(DateUtils.getHHmm(selectedEndDate.getTimeInMillis()));
-
-            }
-        }).setType(TimePickerView.Type.HOURS_MINS)
-                .build();
-//        pvTime.setDate(Calendar.getInstance());
-        pvTime.setDate(selectedStartDate);
-        pvTime.show();
+    @Override
+    public void onBackPressed() {
+        cacheData();
+        super.onBackPressed();
     }
 
     @Override
@@ -380,46 +400,33 @@ public class TimerAddActivity extends BaseTimerActivity
     }
 
     /**
-     * 时间选择
-     *
-     * @param text
+     * 缓存数据
      */
-    private void showDateSelectEnd(final TextView text) {
-        //时间选择器
-        TimePickerView pvTime = new TimePickerView.Builder(this, new TimePickerView.OnTimeSelectListener() {
-            @Override
-            public void onTimeSelect(Date date, View v) {//选中事件回调
-                if (date == null) return;
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTime(date);
-                if (calendar.get(Calendar.HOUR_OF_DAY) == selectedStartDate.get(Calendar.HOUR_OF_DAY)) {
-                    if (calendar.get(Calendar.MINUTE) <= selectedStartDate.get(Calendar.MINUTE)) {
-                        showTopSnackBar("结束时间不能小于开始时间");
-                        return;
-                    }
-                } else if (calendar.get(Calendar.HOUR_OF_DAY) < selectedStartDate.get(Calendar.HOUR_OF_DAY)) {
-                    showTopSnackBar("结束时间不能小于开始时间");
-                    return;
-                }
-                selectedEndDate.set(Calendar.HOUR_OF_DAY, calendar.get(Calendar.HOUR_OF_DAY));
-                selectedEndDate.set(Calendar.MINUTE, calendar.get(Calendar.MINUTE));
+    private void cacheData() {
+        SpUtils.getTemporaryCache().putData(CACHE_NAME, timeNameTv.getText().toString());
+        SpUtils.getTemporaryCache().putObjectData(CACHE_PROJECT, selectedProjectEntity);
+        SpUtils.getTemporaryCache().putObjectData(CACHE_WORKTYPE, selectedWorkType);
+        SpUtils.getTemporaryCache().putObjectData(CACHE_TASK, selectedTaskItem);
+        SpUtils.getTemporaryCache().putObjectData(CACHE_START_TIME, selectedStartDate);
+        SpUtils.getTemporaryCache().putObjectData(CACHE_END_TIME, selectedEndDate);
+    }
 
-                long rangeTime = (selectedEndDate.getTimeInMillis() - selectedStartDate.getTimeInMillis());
-                log("------------>endTime:" + (rangeTime / 1000));
-                circleTimerView.setCurrentTime((int) (rangeTime / 1000));
-            }
-        }).setType(TimePickerView.Type.HOURS_MINS)
-                .build();
-//        pvTime.setDate(Calendar.getInstance());
-        pvTime.setDate(selectedEndDate);
-        pvTime.show();
+    /**
+     * 清除历史记录
+     */
+    private void clearCache() {
+        SpUtils.getTemporaryCache().remove(CACHE_NAME);
+        SpUtils.getTemporaryCache().remove(CACHE_PROJECT);
+        SpUtils.getTemporaryCache().remove(CACHE_WORKTYPE);
+        SpUtils.getTemporaryCache().remove(CACHE_TASK);
+        SpUtils.getTemporaryCache().remove(CACHE_START_TIME);
+        SpUtils.getTemporaryCache().remove(CACHE_END_TIME);
     }
 
     /**
      * 添加计时
      */
     public void addTimer() {
-
         TimeEntity.ItemEntity itemEntityCopy = new TimeEntity.ItemEntity();
         itemEntityCopy.createUserId = getLoginUserId();
         itemEntityCopy.startTime = selectedStartDate.getTimeInMillis();
@@ -432,7 +439,6 @@ public class TimerAddActivity extends BaseTimerActivity
         itemEntityCopy.taskPkId = selectedTaskItem != null ? selectedTaskItem.id : null;
         itemEntityCopy.name = TextUtils.isEmpty(timeNameTv.getText()) ? null : timeNameTv.getText().toString();
         JsonObject jsonObject = null;
-
         try {
             jsonObject = JsonUtils.object2JsonObject(itemEntityCopy);
         } catch (JsonParseException e) {
@@ -456,7 +462,8 @@ public class TimerAddActivity extends BaseTimerActivity
                         @Override
                         public void onSuccess(Call<ResEntity<String>> call, Response<ResEntity<String>> response) {
                             dismissLoadingDialog();
-                            showToast("添加计时成功");
+                            showToast(R.string.timing_add_timer_success);
+                            clearCache();
                             finish();
                         }
 
@@ -487,7 +494,7 @@ public class TimerAddActivity extends BaseTimerActivity
                     if (selectedProjectEntity != null
                             && !StringUtils.equalsIgnoreCase(projectEntity.pkId, selectedProjectEntity.pkId, false)) {
                         selectedWorkType = null;
-                        worktypeNameTv.setText("未选择");
+                        worktypeNameTv.setText(R.string.timing_not_select);
                     }
                     selectedProjectEntity = projectEntity;
                     projectNameTv.setText(selectedProjectEntity.name);
@@ -498,7 +505,7 @@ public class TimerAddActivity extends BaseTimerActivity
             long aLong = params.getLong(BaseDialogFragment.KEY_FRAGMENT_RESULT);
             if (aLong > 0) {
                 if (DateUtils.isOverToday(aLong)) {
-                    showTopSnackBar("不能选择超过当前时间,请重写选择");
+                    showTopSnackBar(R.string.timing_cannot_select_time_out_now);
                 } else {
                     Calendar calendar = Calendar.getInstance();
                     calendar.setTimeInMillis(aLong);
@@ -520,8 +527,8 @@ public class TimerAddActivity extends BaseTimerActivity
                     if (!TextUtils.equals(this.selectedProjectEntity.pkId, projectEntity.pkId)) {
                         this.selectedWorkType = null;
                         this.selectedTaskItem = null;
-                        worktypeNameTv.setText("未选择");
-                        taskNameTv.setText("未关联");
+                        worktypeNameTv.setText(R.string.timing_not_select);
+                        taskNameTv.setText(R.string.timing_not_relevance);
                     }
                 }
                 this.selectedProjectEntity = projectEntity;
@@ -530,7 +537,7 @@ public class TimerAddActivity extends BaseTimerActivity
                 }
             }
 
-        }else if(fragment instanceof TimingChangeDialogFragment){
+        } else if (fragment instanceof TimingChangeDialogFragment) {
             long resultTime = params.getLong(TimingChangeDialogFragment.TIME_RESULT_MILLIS);
             if (type == TimingChangeDialogFragment.TYPE_CHANGE_START_TIME) {//修改开始时间
                 //修改开始时间，同时会修改结束时间（时长保持不变）。
@@ -549,6 +556,7 @@ public class TimerAddActivity extends BaseTimerActivity
                 selectedEndDate.clear();
                 selectedEndDate.setTimeInMillis(resultTime);
             }
+            setTimeViewData();
         }
     }
 }
