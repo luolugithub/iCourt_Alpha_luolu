@@ -21,6 +21,7 @@ import com.icourt.alpha.activity.ChatMsgClassfyActivity;
 import com.icourt.alpha.activity.LoginSelectActivity;
 import com.icourt.alpha.activity.MyAtedActivity;
 import com.icourt.alpha.activity.MyFileTabActivity;
+import com.icourt.alpha.activity.MyTimingActivity;
 import com.icourt.alpha.activity.SettingActivity;
 import com.icourt.alpha.base.BaseAppUpdateActivity;
 import com.icourt.alpha.base.BaseFragment;
@@ -289,6 +290,7 @@ public class TabMineFragment extends BaseFragment {
                 showLoginOutConfirmDialog();
                 break;
             case R.id.menu_test:
+                MyTimingActivity.launch(getContext());
 //                test1();
                 break;
             default:

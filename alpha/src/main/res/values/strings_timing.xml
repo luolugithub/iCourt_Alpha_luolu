@@ -17,4 +17,8 @@
     <string name="timing_check_project">查看项目</string>
     <string name="timing_add_days">+%d天</string>
     <string name="timing_add_timer">添加计时</string>
+
+    <string name="timing_my_timing">我的计时</string>
+    <string name="timing_accumulative_total">累计计时</string>
+    <string name="timing_today">今天</string>
 </resources>

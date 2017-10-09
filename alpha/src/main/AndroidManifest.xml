@@ -353,6 +353,10 @@
             android:name=".activity.FileSimpleListActivity"
             android:screenOrientation="portrait" />
 
+        <activity
+            android:name=".activity.MyTimingActivity"
+            android:screenOrientation="portrait" />
+
         <meta-data
             android:name="com.icourt.alpha.utils.glide.MyGlideModule"
             android:value="GlideModule" />
