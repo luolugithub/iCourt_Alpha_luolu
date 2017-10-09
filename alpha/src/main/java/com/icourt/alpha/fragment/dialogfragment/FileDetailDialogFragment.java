@@ -228,31 +228,52 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
             fileVersionEntities.clear();
             try {
                 fileVersionEntities.addAll((List<FileVersionEntity>) o);
-                Collections.sort(fileVersionEntities, new LongFieldEntityComparator<FileVersionEntity>(ORDER.DESC));
+                Collections.sort(fileVersionEntities, new LongFieldEntityComparator<FileVersionEntity>(ORDER.ASC));
             } catch (Exception e) {
             }
-            if (fileUpdateInfoTv != null) {
-                FileVersionEntity fileVersionEntityCreate = null, fileVersionEntityNewly = null;
-                if (fileVersionEntities.size() > 1) {
-                    fileVersionEntityCreate = fileVersionEntities.get(fileVersionEntities.size() - 1);
-                    fileVersionEntityNewly = fileVersionEntities.get(0);
-                } else if (fileVersionEntities.size() == 1) {
+            if (fileCreateInfoTv == null) return;
+            fileCreateInfoTv.setText("");
+            fileUpdateInfoTv.setText("");
+            if (fileVersionEntities.isEmpty()) return;
+            FileVersionEntity fileVersionEntityCreate = null;
+            FileVersionEntity fileVersionEntityUpdate = null;
+            switch (fileVersionEntities.size()) {
+                case 1:
                     fileVersionEntityCreate = fileVersionEntities.get(0);
-                }
-                if (fileVersionEntityCreate != null) {
-                    fileCreateInfoTv.setText(String.format("%s 创建于 %s",
-                            StringUtils.getEllipsizeText(fileVersionEntityCreate.user_info != null ? fileVersionEntityCreate.user_info.name : "", 8),
-                            DateUtils.getyyyyMMddHHmm(fileVersionEntityCreate.ctime * 1_000)));
-                } else {
-                    fileCreateInfoTv.setText("");
-                }
-                if (fileVersionEntityNewly != null) {
-                    fileUpdateInfoTv.setText(String.format("%s 更新于 %s",
-                            StringUtils.getEllipsizeText(fileVersionEntityCreate.user_info != null ? fileVersionEntityNewly.user_info.name : "", 8),
-                            DateUtils.getyyyyMMddHHmm(fileVersionEntityNewly.ctime * 1_000)));
-                } else {
-                    fileUpdateInfoTv.setText("");
-                }
+                    if (fileVersionEntityCreate != null) {
+                        fileCreateInfoTv.setText(String.format("%s 创建于 %s",
+                                StringUtils.getEllipsizeText(fileVersionEntityCreate.user_info != null ? fileVersionEntityCreate.user_info.name : "", 8),
+                                DateUtils.getyyyyMMddHHmm(fileVersionEntityCreate.ctime * 1_000)));
+                    }
+                    break;
+                case 2:
+                    fileVersionEntityCreate = fileVersionEntities.get(0);
+                    if (fileVersionEntityCreate != null) {
+                        fileCreateInfoTv.setText(String.format("%s 创建于 %s",
+                                StringUtils.getEllipsizeText(fileVersionEntityCreate.user_info != null ? fileVersionEntityCreate.user_info.name : "", 8),
+                                DateUtils.getyyyyMMddHHmm(fileVersionEntityCreate.ctime * 1_000)));
+                    }
+                    fileVersionEntityUpdate = fileVersionEntities.get(1);
+                    if (fileVersionEntityUpdate != null) {
+                        fileUpdateInfoTv.setText(String.format("%s 更新于 %s",
+                                StringUtils.getEllipsizeText(fileVersionEntityUpdate.user_info != null ? fileVersionEntityUpdate.user_info.name : "", 8),
+                                DateUtils.getyyyyMMddHHmm(fileVersionEntityUpdate.ctime * 1_000)));
+                    }
+                    break;
+                default:
+                    fileVersionEntityCreate = fileVersionEntities.get(fileVersionEntities.size() - 2);
+                    if (fileVersionEntityCreate != null) {
+                        fileCreateInfoTv.setText(String.format("%s 更新于 %s",
+                                StringUtils.getEllipsizeText(fileVersionEntityCreate.user_info != null ? fileVersionEntityCreate.user_info.name : "", 8),
+                                DateUtils.getyyyyMMddHHmm(fileVersionEntityCreate.ctime * 1_000)));
+                    }
+                    fileVersionEntityUpdate = fileVersionEntities.get(fileVersionEntities.size() - 1);
+                    if (fileVersionEntityUpdate != null) {
+                        fileUpdateInfoTv.setText(String.format("%s 更新于 %s",
+                                StringUtils.getEllipsizeText(fileVersionEntityUpdate.user_info != null ? fileVersionEntityUpdate.user_info.name : "", 8),
+                                DateUtils.getyyyyMMddHHmm(fileVersionEntityUpdate.ctime * 1_000)));
+                    }
+                    break;
             }
             fileVersionTv.setText(String.format("v%s", fileVersionEntities.size()));
         }
