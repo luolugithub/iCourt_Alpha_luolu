@@ -38,6 +38,7 @@ import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.interfaces.callback.AppUpdateCallBack;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
+import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.utils.transformations.BlurTransformation;
 import com.icourt.alpha.widget.manager.DataCleanManager;
@@ -329,6 +330,7 @@ public class TabMineFragment extends BaseFragment {
                 .map(new Function<String, Boolean>() {
                     @Override
                     public Boolean apply(@NonNull String s) throws Exception {
+                        SpUtils.getTemporaryCache().clear();//清除临时缓存，计时、任务、项目等的缓存。
                         return DataCleanManager.clearAllCache(s);
                     }
                 })

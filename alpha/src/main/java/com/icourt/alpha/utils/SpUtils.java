@@ -183,7 +183,7 @@ public class SpUtils {
         try {
             String stringData = getStringData(key, null);
             if (!TextUtils.isEmpty(stringData)) {
-                return JsonUtils.Gson2Bean(key, c);
+                return JsonUtils.Gson2Bean(stringData, c);
             }
         } catch (JsonParseException e) {
             e.printStackTrace();
