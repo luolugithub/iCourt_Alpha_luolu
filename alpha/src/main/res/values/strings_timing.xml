@@ -21,4 +21,5 @@
     <string name="timing_my_timing">我的计时</string>
     <string name="timing_accumulative_total">累计计时</string>
     <string name="timing_today">今天</string>
+    <string name="timing_empty">暂无计时</string>
 </resources>

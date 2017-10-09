@@ -303,6 +303,14 @@ public class TabMineFragment extends BaseFragment {
         }
     }
 
+    class TestBean {
+        public String name;
+
+        public TestBean(String name) {
+            this.name = name;
+        }
+    }
+
     /**
      * 删除确认对话框
      */
