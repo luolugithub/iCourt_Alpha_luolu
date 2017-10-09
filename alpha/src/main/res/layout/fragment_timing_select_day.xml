@@ -46,7 +46,7 @@
                 android:layout_height="match_parent"
                 android:paddingLeft="10dp"
                 android:paddingRight="10dp"
-                android:src="@mipmap/arrow_right" />
+                android:src="@mipmap/arrow_right_14" />
         </LinearLayout>
 
         <TextView
@@ -72,7 +72,8 @@
         android:layout_height="@dimen/alpha_height_divider"
         android:background="@color/alpha_divider_color" />
 
-    <com.github.sundeepk.compactcalendarview.CompactCalendarView xmlns:app="http://schemas.android.com/apk/res-auto"
+    <com.github.sundeepk.compactcalendarview.CompactCalendarView
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/compactcalendar_view"
         android:layout_width="fill_parent"
         android:layout_height="200dp"
@@ -86,7 +87,7 @@
         app:compactCalendarCurrentSelectedDayTextColor="@android:color/white"
         app:compactCalendarDisplayOtherMonthDays="true"
         app:compactCalendarOtherMonthDaysTextColor="#D9D9D9"
-        app:compactCalendarShouldSelectFirstDayOfMonthOnScroll="false"
+        app:compactCalendarShouldSelectFirstDayOfMonthOnScroll="true"
         app:compactCalendarTargetHeight="200dp"
         app:compactCalendarTextColor="@color/alpha_font_color_black"
         app:compactCalendarTextSize="@dimen/alpha_font_size_comm" />

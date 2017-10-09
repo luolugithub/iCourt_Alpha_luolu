@@ -2,6 +2,7 @@ package com.icourt.alpha.fragment;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,8 +11,11 @@ import com.bigkoo.pickerview.adapter.WheelAdapter;
 import com.bigkoo.pickerview.lib.WheelView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.entity.bean.TimingWeekEntity;
+import com.icourt.alpha.utils.DateUtils;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import butterknife.BindView;
@@ -30,6 +34,13 @@ public class TimingSelectMonthFragment extends BaseFragment {
     WheelView wheelviewYear;
     @BindView(R.id.wheelview_month)
     WheelView wheelviewMonth;
+
+    TimeWheelAdapter yearAdapter;
+    TimeWheelAdapter monthAdapter;
+
+    public static TimingSelectMonthFragment newInstance() {
+        return new TimingSelectMonthFragment();
+    }
 
     @Nullable
     @Override
@@ -50,17 +61,32 @@ public class TimingSelectMonthFragment extends BaseFragment {
         List<String> yearList = new ArrayList<>();
         List<String> monthList = new ArrayList<>();
 
-        yearList.add("2015");
-        yearList.add("2016");
-        yearList.add("2017");
+        Calendar calendar = Calendar.getInstance();
+        int year = calendar.get(Calendar.YEAR);
+        for (int i = year - 20; i < year + 20; i++) {//当前年的前后20年
+            yearList.add(String.valueOf(i));
+        }
 
         for (int i = 1; i <= 12; i++) {
             monthList.add(String.valueOf(i));
         }
 
-        wheelviewYear.setAdapter(new TimeWheelAdapter(yearList));
-        wheelviewMonth.setAdapter(new TimeWheelAdapter(monthList));
+        wheelviewYear.setAdapter(yearAdapter = new TimeWheelAdapter(yearList));
+        wheelviewMonth.setAdapter(monthAdapter = new TimeWheelAdapter(monthList));
 
+        int currentYearCount = 0, currentMonthCount = 0;
+        for (int i = 0; i < yearList.size(); i++) {
+            if (TextUtils.equals(yearList.get(i), String.valueOf(calendar.get(Calendar.YEAR)))) {
+                currentYearCount = i;
+            }
+        }
+        for (int i = 0; i < monthList.size(); i++) {
+            if (TextUtils.equals(monthList.get(i), String.valueOf(calendar.get(Calendar.MONTH)))) {
+                currentMonthCount = i;
+            }
+        }
+        wheelviewYear.setCurrentItem(currentYearCount);
+        wheelviewMonth.setCurrentItem(currentMonthCount + 1);
     }
 
     private class TimeWheelAdapter implements WheelAdapter<String> {
@@ -87,6 +113,19 @@ public class TimingSelectMonthFragment extends BaseFragment {
 
     }
 
+    @Override
+    public Bundle getFragmentData(int type, Bundle inBundle) {
+        Bundle arguments = new Bundle();
+        TimingWeekEntity timingWeekEntity = new TimingWeekEntity();
+        int currentYear = Integer.valueOf(yearAdapter.getItem(wheelviewYear.getCurrentItem()));
+        int currentMonth = Integer.valueOf(monthAdapter.getItem(wheelviewMonth.getCurrentItem()));
+        timingWeekEntity.startTimeMillios = DateUtils.getSupportBeginDayofMonth(currentYear, currentMonth).getTime();
+        timingWeekEntity.endTimeMillios = DateUtils.getSupportEndDayofMonth(currentYear, currentMonth).getTime();
+        timingWeekEntity.startTimeStr = DateUtils.getyyyy_MM_dd(timingWeekEntity.startTimeMillios);
+        timingWeekEntity.endTimeStr = DateUtils.getyyyy_MM_dd(timingWeekEntity.endTimeMillios);
+        arguments.putSerializable(KEY_FRAGMENT_RESULT, timingWeekEntity);
+        return arguments;
+    }
 
     @Override
     public void onDestroyView() {

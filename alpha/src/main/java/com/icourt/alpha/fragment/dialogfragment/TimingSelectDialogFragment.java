@@ -1,6 +1,7 @@
 package com.icourt.alpha.fragment.dialogfragment;
 
 import android.app.Dialog;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
@@ -15,14 +16,16 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.base.BaseDialogFragment;
+import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.entity.bean.TimingWeekEntity;
 import com.icourt.alpha.fragment.TimingSelectDayFragment;
 import com.icourt.alpha.fragment.TimingSelectMonthFragment;
 import com.icourt.alpha.fragment.TimingSelectWeekFragment;
 import com.icourt.alpha.fragment.TimingSelectYearFragment;
+import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.view.NoScrollViewPager;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 import butterknife.BindView;
@@ -58,7 +61,11 @@ public class TimingSelectDialogFragment extends BaseDialogFragment {
     TextView tvFinish;
 
     private BaseFragmentAdapter baseFragmentAdapter;
+    OnFragmentCallBackListener onFragmentCallBackListener;
 
+    public static TimingSelectDialogFragment newInstance() {
+        return new TimingSelectDialogFragment();
+    }
 
     @Nullable
     @Override
@@ -66,6 +73,17 @@ public class TimingSelectDialogFragment extends BaseDialogFragment {
         View view = super.onCreateView(R.layout.dialog_fragment_timer_select, inflater, container, savedInstanceState);
         bind = ButterKnife.bind(this, view);
         return view;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        try {
+            onFragmentCallBackListener = (OnFragmentCallBackListener) context;
+        } catch (ClassCastException e) {
+            e.printStackTrace();
+            bugSync("选择计时时间：onFragmentCallBackListener", e);
+        }
     }
 
     @Override
@@ -85,12 +103,12 @@ public class TimingSelectDialogFragment extends BaseDialogFragment {
         }
 
         viewpager.setAdapter(baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager()));
-
+        viewpager.setOffscreenPageLimit(3);
         baseFragmentAdapter.bindData(true,
-                Arrays.asList(new TimingSelectDayFragment(),
-                        new TimingSelectWeekFragment(),
-                        new TimingSelectMonthFragment(),
-                        new TimingSelectYearFragment()));
+                Arrays.asList(TimingSelectDayFragment.newInstance(),
+                        TimingSelectWeekFragment.newInstance(),
+                        TimingSelectMonthFragment.newInstance(),
+                        TimingSelectYearFragment.newInstance()));
         viewpager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -139,7 +157,12 @@ public class TimingSelectDialogFragment extends BaseDialogFragment {
         }
     }
 
-    @OnClick({R.id.tv_date_day, R.id.tv_date_week, R.id.tv_date_month, R.id.tv_date_year})
+    @OnClick({R.id.tv_cancel,
+            R.id.tv_finish,
+            R.id.tv_date_day,
+            R.id.tv_date_week,
+            R.id.tv_date_month,
+            R.id.tv_date_year})
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.tv_date_day:
@@ -158,7 +181,18 @@ public class TimingSelectDialogFragment extends BaseDialogFragment {
                 dismiss();
                 break;
             case R.id.tv_finish:
-
+                if (onFragmentCallBackListener == null) {
+                    onFragmentCallBackListener = (OnFragmentCallBackListener) getParentFragment();
+                }
+                BaseFragment fragment = (BaseFragment) baseFragmentAdapter.getItem(viewpager.getCurrentItem());
+                Bundle fragmentData = fragment.getFragmentData(0, null);
+                if (fragmentData == null) return;
+                TimingWeekEntity timingWeekEntity = (TimingWeekEntity) fragmentData.getSerializable(KEY_FRAGMENT_RESULT);
+                if (timingWeekEntity != null) {
+                    onFragmentCallBackListener.onFragmentCallBack(fragment, 0, fragmentData);
+                    log("开始时间： －－－－  "+timingWeekEntity.startTimeStr);
+                    log("结束时间： －－－－  "+timingWeekEntity.endTimeStr);
+                }
                 break;
 
         }

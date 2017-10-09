@@ -11,15 +11,18 @@ import android.widget.TextView;
 import com.github.sundeepk.compactcalendarview.CompactCalendarView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.entity.bean.TimingWeekEntity;
+import com.icourt.alpha.utils.DateUtils;
 
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import butterknife.Unbinder;
 
 /**
@@ -42,9 +45,13 @@ public class TimingSelectDayFragment extends BaseFragment {
 
     Unbinder unbinder;
 
-    Date selectedDate;
+    Date selectedDate = new Date();
 
     private SimpleDateFormat dateFormatForMonth = new SimpleDateFormat("yyyy年MMM", Locale.getDefault());
+
+    public static TimingSelectDayFragment newInstance() {
+        return new TimingSelectDayFragment();
+    }
 
     @Nullable
     @Override
@@ -64,7 +71,6 @@ public class TimingSelectDayFragment extends BaseFragment {
         compactcalendarView.setLocale(TimeZone.getDefault(), Locale.CHINESE);
         compactcalendarView.setUseThreeLetterAbbreviation(true);
         compactcalendarView.setDayColumnNames(new String[]{"一", "二", "三", "四", "五", "六", "日"});
-        final Calendar instance = Calendar.getInstance();
         compactcalendarView.setListener(new CompactCalendarView.CompactCalendarViewListener() {
             @Override
             public void onDayClick(Date date) {
@@ -74,17 +80,50 @@ public class TimingSelectDayFragment extends BaseFragment {
             @Override
             public void onMonthScroll(Date date) {
                 titleContent.setText(dateFormatForMonth.format(date));
-//                instance.setTime(date);
-//                if (instance.get(Calendar.YEAR) == 2017 && instance.get(Calendar.MONTH) > 8) {
-//                    compactcalendarView.showPreviousMonth();
-//                }
             }
         });
-        compactcalendarView.shouldScrollMonth(false);
         titleContent.setText(dateFormatForMonth.format(System.currentTimeMillis()));
-
         compactcalendarView.removeAllEvents();
+    }
 
+    @OnClick({R.id.titleBack,
+            R.id.titleForward,
+            R.id.titleAction})
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.titleBack:
+                compactcalendarView.showPreviousMonth();
+                break;
+            case R.id.titleForward:
+                compactcalendarView.showNextMonth();
+                break;
+            case R.id.titleAction:
+                scrollToToday();
+                break;
+            default:
+                super.onClick(v);
+                break;
+        }
+    }
+
+    private void scrollToToday() {
+        titleContent.setText(dateFormatForMonth.format(System.currentTimeMillis()));
+        compactcalendarView.setCurrentDate(new Date());
+        compactcalendarView.invalidate();
+        selectedDate = new Date();
+    }
+
+    @Override
+    public Bundle getFragmentData(int type, Bundle inBundle) {
+        Bundle arguments = new Bundle();
+        TimingWeekEntity timingWeekEntity = new TimingWeekEntity();
+        timingWeekEntity.startTimeMillios = selectedDate.getTime();
+        timingWeekEntity.endTimeMillios = selectedDate.getTime() + TimeUnit.DAYS.toMillis(1);
+        timingWeekEntity.startTimeStr = DateUtils.getyyyy_MM_dd(timingWeekEntity.startTimeMillios);
+        timingWeekEntity.endTimeStr = DateUtils.getyyyy_MM_dd(timingWeekEntity.endTimeMillios);
+        arguments.putSerializable(KEY_FRAGMENT_RESULT, timingWeekEntity);
+        return arguments;
     }
 
     @Override
