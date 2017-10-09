@@ -114,8 +114,6 @@ public class TimerAddActivity extends BaseTimerActivity
     Calendar selectedEndDate;//计时器选中的结束时间
     String projectId, projectName;
 
-    TimeEntity.ItemEntity itemEntity = new TimeEntity.ItemEntity();//用来存储计时的信息
-
     public static void launch(@NonNull Context context) {
         if (context == null) return;
         Intent intent = new Intent(context, TimerAddActivity.class);
@@ -149,10 +147,10 @@ public class TimerAddActivity extends BaseTimerActivity
     @Override
     protected void initView() {
         super.initView();
-        setTitle("添加计时");
+        setTitle(R.string.timing_add_timer);
         TextView titleActionTextView = getTitleActionTextView();
         if (titleActionTextView != null) {
-            titleActionTextView.setText("完成");
+            titleActionTextView.setText(R.string.timing_finish);
         }
         projectId = getIntent().getStringExtra(KEY_PROJECT_ID);
         projectName = getIntent().getStringExtra(KEY_PROJECT_NAME);
@@ -189,9 +187,6 @@ public class TimerAddActivity extends BaseTimerActivity
         selectedEndDate.set(Calendar.HOUR_OF_DAY, 9);
         selectedEndDate.set(Calendar.MINUTE, 15);
         selectedEndDate.set(Calendar.SECOND, 0);
-
-        itemEntity.startTime = selectedStartDate.getTimeInMillis();
-        itemEntity.endTime = selectedEndDate.getTimeInMillis();
 
         setTimeViewData();
 
@@ -320,13 +315,13 @@ public class TimerAddActivity extends BaseTimerActivity
                 }
                 break;
             case R.id.use_time_date://显示计时开始时间的日期
-                showDateTimeSelectDialogFragment(TimingChangeDialogFragment.TYPE_CHANGE_START_TIME, itemEntity.startTime, itemEntity.endTime);
+                showDateTimeSelectDialogFragment(TimingChangeDialogFragment.TYPE_CHANGE_START_TIME, selectedStartDate.getTimeInMillis(), selectedEndDate.getTimeInMillis());
                 break;
             case R.id.start_time_min_tv://显示计时开始时间的时分
-                showDateTimeSelectDialogFragment(TimingChangeDialogFragment.TYPE_CHANGE_START_TIME, itemEntity.startTime, itemEntity.endTime);
+                showDateTimeSelectDialogFragment(TimingChangeDialogFragment.TYPE_CHANGE_START_TIME, selectedStartDate.getTimeInMillis(), selectedEndDate.getTimeInMillis());
                 break;
             case R.id.stop_time_min_tv://显示计时结束时间的时分
-                showDateTimeSelectDialogFragment(TimingChangeDialogFragment.TYPE_CHANGE_END_TIME, itemEntity.startTime, itemEntity.endTime);
+                showDateTimeSelectDialogFragment(TimingChangeDialogFragment.TYPE_CHANGE_END_TIME, selectedStartDate.getTimeInMillis(), selectedEndDate.getTimeInMillis());
                 break;
             case R.id.project_layout://所属项目
                 showProjectSelectDialogFragment(selectedProjectEntity != null ? selectedProjectEntity.pkId : null);
@@ -425,19 +420,21 @@ public class TimerAddActivity extends BaseTimerActivity
      */
     public void addTimer() {
 
-        itemEntity.createUserId = getLoginUserId();
-        itemEntity.startTime = selectedStartDate.getTimeInMillis();
-        itemEntity.useTime = selectedEndDate.getTimeInMillis() - selectedStartDate.getTimeInMillis();
-        itemEntity.endTime = selectedEndDate.getTimeInMillis();
-        itemEntity.state = 1;
-        itemEntity.workDate = selectedStartDate.getTimeInMillis();
-        itemEntity.matterPkId = selectedProjectEntity != null ? selectedProjectEntity.pkId : "";
-        itemEntity.workTypeId = selectedWorkType != null ? selectedWorkType.pkId : null;
-        itemEntity.taskPkId = selectedTaskItem != null ? selectedTaskItem.id : null;
-        itemEntity.name = TextUtils.isEmpty(timeNameTv.getText()) ? null : timeNameTv.getText().toString();
+        TimeEntity.ItemEntity itemEntityCopy = new TimeEntity.ItemEntity();
+        itemEntityCopy.createUserId = getLoginUserId();
+        itemEntityCopy.startTime = selectedStartDate.getTimeInMillis();
+        itemEntityCopy.useTime = selectedEndDate.getTimeInMillis() - selectedStartDate.getTimeInMillis();
+        itemEntityCopy.endTime = selectedEndDate.getTimeInMillis();
+        itemEntityCopy.state = 1;
+        itemEntityCopy.workDate = selectedStartDate.getTimeInMillis();
+        itemEntityCopy.matterPkId = selectedProjectEntity != null ? selectedProjectEntity.pkId : "";
+        itemEntityCopy.workTypeId = selectedWorkType != null ? selectedWorkType.pkId : null;
+        itemEntityCopy.taskPkId = selectedTaskItem != null ? selectedTaskItem.id : null;
+        itemEntityCopy.name = TextUtils.isEmpty(timeNameTv.getText()) ? null : timeNameTv.getText().toString();
         JsonObject jsonObject = null;
+
         try {
-            jsonObject = JsonUtils.object2JsonObject(itemEntity);
+            jsonObject = JsonUtils.object2JsonObject(itemEntityCopy);
         } catch (JsonParseException e) {
             e.printStackTrace();
         }
@@ -533,6 +530,25 @@ public class TimerAddActivity extends BaseTimerActivity
                 }
             }
 
+        }else if(fragment instanceof TimingChangeDialogFragment){
+            long resultTime = params.getLong(TimingChangeDialogFragment.TIME_RESULT_MILLIS);
+            if (type == TimingChangeDialogFragment.TYPE_CHANGE_START_TIME) {//修改开始时间
+                //修改开始时间，同时会修改结束时间（时长保持不变）。
+                long useTime = selectedEndDate.getTimeInMillis() - selectedStartDate.getTimeInMillis();
+                long endTime = resultTime + useTime;
+                //若用户选择的开始时间导致结束时间晚于当前时间，（点击【完成】后 ）toast 提示无法记录未来时间并回到编辑前状态。
+                if (endTime > System.currentTimeMillis()) {
+                    showTopSnackBar(getString(R.string.timing_donot_select_future_time));
+                    return;
+                }
+                selectedStartDate.clear();
+                selectedStartDate.setTimeInMillis(resultTime);
+                selectedEndDate.clear();
+                selectedEndDate.setTimeInMillis(endTime);
+            } else {//修改结束时间
+                selectedEndDate.clear();
+                selectedEndDate.setTimeInMillis(resultTime);
+            }
         }
     }
 }
