@@ -49,6 +49,10 @@ public class TimingSelectDayFragment extends BaseFragment {
 
     private SimpleDateFormat dateFormatForMonth = new SimpleDateFormat("yyyy年MMM", Locale.getDefault());
 
+    public static TimingSelectDayFragment newInstance() {
+        return new TimingSelectDayFragment();
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {

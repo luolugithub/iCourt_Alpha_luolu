@@ -45,7 +45,7 @@ import io.reactivex.schedulers.Schedulers;
 public class TimingSelectWeekFragment extends BaseFragment {
 
     public static final long ONE_WEEK_MILLIOS = 7 * 24 * 60 * 60 * 1000 - 1;
-
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
     Unbinder unbinder;
 
     @BindView(R.id.wheelview_week)
@@ -61,7 +61,11 @@ public class TimingSelectWeekFragment extends BaseFragment {
     @BindView(R.id.titleAction)
     TextView titleAction;
     int position;//当前时间 为0；
-    private SimpleDateFormat dateFormatForMonth = new SimpleDateFormat("yyyy年MMM", Locale.getDefault());
+    private SimpleDateFormat dateFormatForMonth = new SimpleDateFormat("yyyy年MM", Locale.getDefault());
+
+    public static TimingSelectWeekFragment newInstance() {
+        return new TimingSelectWeekFragment();
+    }
 
     @Nullable
     @Override
@@ -78,29 +82,32 @@ public class TimingSelectWeekFragment extends BaseFragment {
         try {//预加载10条数据
             adapter = new TimeWheelAdapter();
             ArrayList<TimingWeekEntity> tempMenus = new ArrayList<>();
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(new SimpleDateFormat("yyyy-MM-dd").parse("2015-01-01"));
+            Calendar beforeCal = Calendar.getInstance();
+            Calendar laterCal = Calendar.getInstance();
+            int year = beforeCal.get(Calendar.YEAR);
+            beforeCal.setTime(simpleDateFormat.parse((year - 20) + "-01-01"));
+            laterCal.setTime(simpleDateFormat.parse((year + 20) + "-01-01"));
             //当前周的开始时间
             long weekStartTime = 0;
             //当前周的结束时间
             long weekEndTime;
             for (int i = 0; i < 10; i++) {
                 int d = 0;
-                if (cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {//如果是周日，则在当前日期上减去6天，就是周一了
+                if (beforeCal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {//如果是周日，则在当前日期上减去6天，就是周一了
                     d = -6;
                 } else {//如果不是周日，周一的起始值是减去今天所对应周几，得出这周的第一天。
-                    d = Calendar.MONDAY - cal.get(Calendar.DAY_OF_WEEK);
+                    d = Calendar.MONDAY - beforeCal.get(Calendar.DAY_OF_WEEK);
                 }
                 //所在周开始日期
-                cal.add(Calendar.DAY_OF_WEEK, d);
-                weekStartTime = cal.getTimeInMillis();
+                beforeCal.add(Calendar.DAY_OF_WEEK, d);
+                weekStartTime = beforeCal.getTimeInMillis();
                 weekEndTime = weekStartTime + ONE_WEEK_MILLIOS;
                 TimingWeekEntity timingWeekEntity = new TimingWeekEntity();
                 timingWeekEntity.startTimeMillios = weekStartTime;
                 timingWeekEntity.endTimeMillios = weekEndTime;
                 timingWeekEntity.startTimeStr = DateUtils.getyyyy_MM_dd(weekStartTime);
                 timingWeekEntity.endTimeStr = DateUtils.getyyyy_MM_dd(weekEndTime);
-                cal.add(Calendar.DAY_OF_YEAR, 1);
+                beforeCal.add(Calendar.DAY_OF_YEAR, 1);
                 tempMenus.add(timingWeekEntity);
             }
             adapter.setTimeList(tempMenus);
@@ -131,18 +138,22 @@ public class TimingSelectWeekFragment extends BaseFragment {
             long weekStartTime = 0;
             //当前周的结束时间
             long weekEndTime;
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(new SimpleDateFormat("yyyy-MM-dd").parse("2015-01-01"));
-            while (weekStartTime < (System.currentTimeMillis())) {
+            Calendar beforeCal = Calendar.getInstance();
+            Calendar laterCal = Calendar.getInstance();
+            int year = beforeCal.get(Calendar.YEAR);
+            beforeCal.setTime(simpleDateFormat.parse((year - 20) + "-01-01"));
+            laterCal.setTime(simpleDateFormat.parse((year + 20) + "-01-01"));
+
+            while (weekStartTime < laterCal.getTimeInMillis()) {
                 int d = 0;
-                if (cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {//如果是周日，则在当前日期上减去6天，就是周一了
+                if (beforeCal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {//如果是周日，则在当前日期上减去6天，就是周一了
                     d = -6;
                 } else {//如果不是周日，周一的起始值是减去今天所对应周几，得出这周的第一天。
-                    d = Calendar.MONDAY - cal.get(Calendar.DAY_OF_WEEK);
+                    d = Calendar.MONDAY - beforeCal.get(Calendar.DAY_OF_WEEK);
                 }
                 //所在周开始日期
-                cal.add(Calendar.DAY_OF_WEEK, d);
-                weekStartTime = cal.getTimeInMillis();
+                beforeCal.add(Calendar.DAY_OF_WEEK, d);
+                weekStartTime = beforeCal.getTimeInMillis();
                 weekEndTime = weekStartTime + ONE_WEEK_MILLIOS;
 
                 TimingWeekEntity timingWeekEntity = new TimingWeekEntity();
@@ -154,7 +165,7 @@ public class TimingSelectWeekFragment extends BaseFragment {
                 if (weekStartTime <= System.currentTimeMillis() && weekEndTime >= System.currentTimeMillis()) {
                     currentCount = dayList.indexOf(timingWeekEntity);
                 }
-                cal.setTime(new Date(weekEndTime + 1));
+                beforeCal.setTime(new Date(weekEndTime + 1));
             }
             return dayList;
         } catch (ParseException e) {
@@ -232,11 +243,11 @@ public class TimingSelectWeekFragment extends BaseFragment {
         switch (v.getId()) {
             case R.id.titleBack:
                 position -= 1;
-                getBeforeOrLastMonth(position);
+                titleContent.setText(getBeforeOrLastMonth(position));
                 break;
             case R.id.titleForward:
                 position += 1;
-                getBeforeOrLastMonth(position);
+                titleContent.setText(getBeforeOrLastMonth(position));
                 break;
             case R.id.titleAction:
                 scrollToToday();
@@ -265,7 +276,25 @@ public class TimingSelectWeekFragment extends BaseFragment {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
         calendar.add(Calendar.MONTH, position);//正数：往前推1月、2月、3月；负数：往后推1月／2月
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
+        selectMonthItem(calendar);
         return dateFormatForMonth.format(calendar.getTime());
+    }
+
+    /**
+     * 滚动到指定的月份
+     * @param calendar
+     */
+    private void selectMonthItem(Calendar calendar) {
+        if (adapter == null || adapter.getTimeList().isEmpty()) return;
+        int position = 0;
+        for (int i = 0; i < adapter.getTimeList().size(); i++) {
+            TimingWeekEntity timingWeekEntity = adapter.getTimeList().get(i);
+            if (calendar.getTimeInMillis() <= timingWeekEntity.endTimeMillios && calendar.getTimeInMillis() > timingWeekEntity.startTimeMillios) {
+                position = i;
+            }
+        }
+        wheelView.setCurrentItem(position);
     }
 
     @Override
