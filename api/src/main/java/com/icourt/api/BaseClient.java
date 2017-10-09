@@ -40,7 +40,7 @@ public class BaseClient implements IRetrofit {
                 .baseUrl(baseUrl)
                 //.addConverterFactory(ProtoConverterFactory.create())//适合数据同步
                 .addConverterFactory(GsonConverterFactory.create(createGson()))
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                .addCallAdapterFactory(RxJava2CallAdapterFactory.createAsync())
                 .client(client)
                 .build();
     }

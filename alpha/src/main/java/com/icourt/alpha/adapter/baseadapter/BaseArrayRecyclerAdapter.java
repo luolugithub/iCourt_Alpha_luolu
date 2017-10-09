@@ -13,6 +13,12 @@ import java.util.List;
  * date createTime：2015/9/16 9:22
  * version
  */
+
+/**
+ * 新版本 @see {@link BaseAdapter}
+ * @param <T>
+ */
+@Deprecated
 public abstract class BaseArrayRecyclerAdapter<T> extends BaseRecyclerAdapter {
     private final List<T> dataList = new ArrayList<T>();
 

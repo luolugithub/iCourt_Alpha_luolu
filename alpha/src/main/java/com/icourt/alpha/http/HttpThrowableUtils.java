@@ -3,6 +3,7 @@ package com.icourt.alpha.http;
 import android.app.Activity;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.NetworkOnMainThreadException;
 import android.support.annotation.UiThread;
 import android.text.TextUtils;
 
@@ -90,6 +91,8 @@ public class HttpThrowableUtils {
             } else if (t instanceof FileNotFoundException) {
                 defNotify(iDefNotify, "文件权限被拒绝或文件找不到");
                 sendHttpLog(t, "文件权限被拒绝或文件找不到");
+            } else if (t instanceof NetworkOnMainThreadException) {
+                defNotify(iDefNotify, "在主线程操作网络");
             } else {
                 defNotify(iDefNotify, "未知异常");
                 sendHttpLog(t, "未知异常");
