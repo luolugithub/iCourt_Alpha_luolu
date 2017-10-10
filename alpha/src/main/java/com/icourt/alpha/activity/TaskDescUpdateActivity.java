@@ -41,6 +41,7 @@ import static com.icourt.alpha.entity.event.TaskActionEvent.TASK_UPDATE_NAME_ACT
  * version 2.0.0
  */
 
+@Deprecated
 public class TaskDescUpdateActivity extends BaseActivity {
     private static final String KEY_TASK_UPDATE = "key_task_update";
     private static final String KEY_TASK_TYPE = "key_task_type";

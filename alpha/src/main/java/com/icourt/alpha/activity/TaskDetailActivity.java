@@ -266,7 +266,9 @@ public class TaskDetailActivity extends BaseActivity
                 if (taskItemEntity == null) return;
                 if (!taskItemEntity.state) {
                     if (hasTaskEditPermission()) {
-                        TaskDescUpdateActivity.launch(getContext(), taskName.getText().toString(), TaskDescUpdateActivity.UPDATE_TASK_NAME);
+                        TaskRenameActivity.launch(
+                                getContext(),
+                                taskItemEntity);
                     } else {
                         showTopSnackBar("您没有编辑任务的权限");
                     }

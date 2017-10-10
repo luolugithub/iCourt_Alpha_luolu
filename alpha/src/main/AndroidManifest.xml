@@ -357,6 +357,13 @@
             android:name=".activity.MyTimingActivity"
             android:screenOrientation="portrait" />
 
+        <activity
+            android:name=".activity.TaskRenameActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.TaskDescChangeActivity"
+            android:screenOrientation="portrait" />
+
         <meta-data
             android:name="com.icourt.alpha.utils.glide.MyGlideModule"
             android:value="GlideModule" />
