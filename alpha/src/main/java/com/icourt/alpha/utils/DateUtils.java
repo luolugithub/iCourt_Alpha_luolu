@@ -391,6 +391,16 @@ public class DateUtils {
     }
 
     /**
+     * MM-dd HH:mm 格式
+     *
+     * @param milliseconds
+     * @return
+     */
+    public static String getMM_dd_HH_mm(long milliseconds) {
+        SimpleDateFormat formatter = new SimpleDateFormat("MM-dd HH:mm");
+        return formatter.format(milliseconds);
+    }
+    /**
      * @param milliseconds
      * @return
      */

@@ -1,7 +1,8 @@
 package com.icourt.alpha.adapter;
 
 import android.graphics.Color;
-import android.text.SpannableString;
+import android.text.Html;
+import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
@@ -11,9 +12,12 @@ import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.entity.bean.SFileSearchEntity;
+import com.icourt.alpha.utils.BugUtils;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.IMUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,7 +57,7 @@ public class SFileSearchAdapter extends SeaFileImageBaseAdapter<SFileSearchEntit
             folder_type_iv.setImageResource(R.mipmap.folder);
         } else {//文件是图片加载缩略图
             if (IMUtils.isPIC(sFileSearchEntity.name)) {
-                loadSFileImage(sFileSearchEntity,folder_type_iv);
+                loadSFileImage(sFileSearchEntity, folder_type_iv);
             } else {
                 folder_type_iv.setImageResource(FileUtils.getSFileIcon(sFileSearchEntity.name));
             }
@@ -80,31 +84,44 @@ public class SFileSearchAdapter extends SeaFileImageBaseAdapter<SFileSearchEntit
         }
     }
 
-    private SpannableString getSpanForKeyWord(String content) {
-        CharSequence originalText = content;
+    private SpannableStringBuilder getSpanForKeyWord(String content) {
+        CharSequence originalText = TextUtils.isEmpty(content) ? "" : content;
         String targetText = "<b>.*?</b>";
         String targetStartStr = "<b>";
         String targetEndStr = "</b>";
-        SpannableString spannableString = new SpannableString(originalText);
+        SpannableStringBuilder spannableString = new SpannableStringBuilder();
         try {
-            Pattern pattern = Pattern.compile(targetText, Pattern.CASE_INSENSITIVE);
-            Matcher matcher = pattern.matcher(originalText);
+            String[] split = Pattern.compile(targetText, Pattern.CASE_INSENSITIVE).split(originalText);
+
+            List<String> filterStrings = new ArrayList<>();
+            Matcher matcher = Pattern.compile(targetText, Pattern.CASE_INSENSITIVE).matcher(originalText);
             while (matcher.find()) {
-                try {
-                    int start = matcher.start() + targetStartStr.length();
-                    int end = matcher.end() - targetEndStr.length();
-                    //循环改变所有的颜色
-                    spannableString.setSpan(
-                            new ForegroundColorSpan(Color.RED),
-                            start,
-                            end,
-                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                } catch (Exception e) {
-                    break;
-                }
+                String group = matcher.group();
+                filterStrings.add(group.substring(targetStartStr.length(), group.length() - targetEndStr.length()));
             }
-        } catch (Exception e) {
+
+            for (int i = 0; i < split.length; i++) {
+                String splitei = split[i];
+                if (!TextUtils.isEmpty(splitei)) {
+                    //需要转义 否则空格太多
+                    splitei = Html.fromHtml(splitei).toString();
+                }
+                spannableString.append(splitei);
+                int start = spannableString.length();
+                String unitStr = i >= filterStrings.size() ? "" : filterStrings.get(i);
+                spannableString.append(unitStr);
+                int end = spannableString.length();
+                spannableString.setSpan(
+                        new ForegroundColorSpan(Color.RED),
+                        start,
+                        end,
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+        } catch (Throwable e) {
             e.printStackTrace();
+            BugUtils.bugSync("文档搜索描红错误", e);
+
+            return new SpannableStringBuilder(content);
         }
         return spannableString;
     }
