@@ -6,7 +6,6 @@ import java.text.CollationKey;
 import java.text.Collator;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -73,15 +72,34 @@ public class MyClass {
         return path;
     }
 
-    public static void main(String[] args) throws Exception {
+    /**
+     * 获取文件的父路径
+     *
+     * @param filePath
+     * @return
+     */
+    public static final String getFileParentDir(String filePath) {
+        try {
+            int separatorIndex = filePath.lastIndexOf(File.separator);
+            if (separatorIndex > 0) {
+                if (separatorIndex == filePath.length() - 1) {
+                    String temp = filePath.substring(0, filePath.length() - 2);
+                    separatorIndex = temp.lastIndexOf(File.separator);
+                    if (separatorIndex > 0) {
+                        return filePath.substring(0, separatorIndex + 1);
+                    }
+                }
+                return filePath.substring(0, separatorIndex + 1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return File.separator;
+    }
 
-        log("-------->sub:" + getFileName("/hgjdjs.doc"));
-        List<String> d = null;
-        log("-------->app:" + new StringBuilder("sas").append(d).toString());
-        List<String> list = Arrays.asList("v说", ",", ".", ".DD");
-        log("--------->sort before:" + list);
-        Collections.sort(list, new ChinaComparator());
-        log("--------->sort after:" + list);
+    public static void main(String[] args) throws Exception {
+        String s = "/";
+        log("-------->sub:" + getFileParentDir(s));
 
 
         String abc = new String("abc");
