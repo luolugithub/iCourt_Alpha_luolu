@@ -8,8 +8,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.TimeZone;
-
-import static cn.finalteam.toolsfinal.DateUtils.date;
+import java.util.concurrent.TimeUnit;
 
 public class DateUtils {
 
@@ -421,36 +420,59 @@ public class DateUtils {
         return currentDate.getTime().getTime();
     }
 
+
     /**
      * 获取本周的开始时间 毫秒
      *
      * @return
      */
     public static long getCurrWeekStartTime() {
-        Calendar currentDate = Calendar.getInstance(TimeZone.getTimeZone("GMT+:08:00"));
-        currentDate.setFirstDayOfWeek(Calendar.MONDAY);
-        currentDate.set(Calendar.HOUR_OF_DAY, 0);
-        currentDate.set(Calendar.MINUTE, 0);
-        currentDate.set(Calendar.SECOND, 0);
-        currentDate.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
-        return currentDate.getTimeInMillis();
+        return getWeekStartTime(System.currentTimeMillis());
     }
 
 
-    /* 获取本周的开始时间 毫秒
+    /**
+     * 获取本周的开始时间 毫秒
+     *
      * @return
      */
     public static long getCurrWeekEndTime() {
-        Calendar currentDate = Calendar.getInstance(TimeZone.getTimeZone("GMT+:08:00"));
-        // currentDate.setFirstDayOfWeek(Calendar.SUNDAY);
-        currentDate.setFirstDayOfWeek(Calendar.MONDAY);
-        currentDate.set(Calendar.HOUR_OF_DAY, 23);
-        currentDate.set(Calendar.MINUTE, 59);
-        currentDate.set(Calendar.SECOND, 59);
-        currentDate.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY);
-        return currentDate.getTime().getTime();
+        return getWeekEndTime(System.currentTimeMillis());
     }
 
+    /**
+     * 获取周的开始时间
+     *
+     * @param timeMillis
+     * @return
+     */
+    public static long getWeekStartTime(long timeMillis) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(timeMillis);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        int d = 0;
+        if (calendar.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {//如果是周日，则在当前日期上减去6天，就是周一了
+            d = -6;
+        } else {//如果不是周日，周一的起始值是减去今天所对应周几，得出这周的第一天。
+            d = Calendar.MONDAY - calendar.get(Calendar.DAY_OF_WEEK);
+        }
+        //所在周开始日期
+        calendar.add(Calendar.DAY_OF_WEEK, d);
+        return calendar.getTimeInMillis();
+    }
+
+    /**
+     * 获取周的结束时间
+     *
+     * @param timeMillis
+     * @return
+     */
+    public static long getWeekEndTime(long timeMillis) {
+        return getWeekStartTime(timeMillis) + TimeUnit.DAYS.toMillis(7) - 1;
+    }
 
     public static boolean isToday(long millis) {
         Calendar current = Calendar.getInstance();
