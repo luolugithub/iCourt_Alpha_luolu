@@ -997,7 +997,6 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                 tabTimingIcon.setImageResource(R.mipmap.ic_time_start);
                 tabTimingIcon.clearAnimation();
                 timingAnim = null;
-                dismissOverTimingRemindDialogFragment(true);
                 break;
             case TimingEvent.TIMING_SYNC_SUCCESS://同步计时，如果计时大于两个小时，弹出提示
                 outTwoHourShowRemind();
@@ -1280,7 +1279,6 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
             tabTimingIcon.setImageResource(R.mipmap.ic_tab_timing);
         } else {
             tabTimingIcon.setImageResource(R.mipmap.ic_time_start);
-
         }
     }
 

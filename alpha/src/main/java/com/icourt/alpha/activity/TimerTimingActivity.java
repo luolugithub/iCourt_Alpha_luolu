@@ -26,6 +26,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.icourt.alpha.R;
+import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.ProjectEntity;
@@ -48,6 +49,7 @@ import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
+import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
 import com.umeng.analytics.MobclickAgent;
@@ -57,6 +59,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
@@ -84,8 +87,6 @@ public class TimerTimingActivity extends BaseTimerActivity
     ImageView titleBack;
     @BindView(R.id.titleContent)
     TextView titleContent;
-    @BindView(R.id.titleAction)
-    CheckedTextView titleAction;
     @BindView(R.id.titleView)
     AppBarLayout titleView;
     @BindView(R.id.timing_tv)
@@ -147,11 +148,10 @@ public class TimerTimingActivity extends BaseTimerActivity
     protected void initView() {
         super.initView();
         itemEntity = (TimeEntity.ItemEntity) getIntent().getSerializableExtra(KEY_TIME);
-        titleAction.setVisibility(View.INVISIBLE);
         setTitle(R.string.timing_detail);
-        TextView titleActionTextView = getTitleActionTextView();
-        if (titleActionTextView != null) {
-            titleActionTextView.setText(R.string.timing_finish);
+        ImageView titleActionImage = getTitleActionImage();
+        if (titleActionImage != null) {
+            titleActionImage.setImageResource(R.mipmap.header_icon_more);
         }
         initTimingView();
 
@@ -233,16 +233,28 @@ public class TimerTimingActivity extends BaseTimerActivity
             R.id.over_timing_close_ll})
     @Override
     public void onClick(View view) {
-        super.onClick(view);
         switch (view.getId()) {
+            case R.id.titleBack:
+                saveTiming(false);
+                finish();
+                break;
+            case R.id.titleAction:
+                new BottomActionDialog(getContext(),
+                        null,
+                        Arrays.asList(getString(R.string.timing_delete)),
+                        new BottomActionDialog.OnActionItemClickListener() {
+                            @Override
+                            public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                                dialog.dismiss();
+                                deleteTiming(itemEntity.pkId);
+                            }
+                        }).show();
+                break;
             case R.id.tv_start_date:
                 showDateTimeSelectDialogFragment(TimingChangeDialogFragment.TYPE_CHANGE_START_TIME, itemEntity.startTime, 0);
                 break;
             case R.id.start_time_tv:
                 showDateTimeSelectDialogFragment(TimingChangeDialogFragment.TYPE_CHANGE_START_TIME, itemEntity.startTime, 0);
-                break;
-            case R.id.titleAction:
-                finish();
                 break;
             case R.id.over_timing_close_ll:
                 closeOverTimingRemind(true);
@@ -287,13 +299,16 @@ public class TimerTimingActivity extends BaseTimerActivity
                     }
                 });
                 break;
+            default:
+                super.onClick(view);
+                break;
         }
     }
 
     @Override
-    protected void onPause() {
+    public void onBackPressed() {
         saveTiming(false);
-        super.onPause();
+        super.onBackPressed();
     }
 
     @Override
@@ -448,8 +463,10 @@ public class TimerTimingActivity extends BaseTimerActivity
                 }
                 break;
             case TimingEvent.TIMING_STOP:
-                TimerDetailActivity.launch(getContext(), itemEntity);
-                finish();
+                if (!isDelete) {
+                    TimerDetailActivity.launch(getContext(), itemEntity);
+                    finish();
+                }
                 break;
             case TimingEvent.TIMING_SYNC_SUCCESS://计时同步成功后的回调
                 if (TimeUnit.SECONDS.toHours(TimerManager.getInstance().getTimingSeconds()) < 2) {//计时成功后的回调小于2小时，隐藏计时提醒的窗体

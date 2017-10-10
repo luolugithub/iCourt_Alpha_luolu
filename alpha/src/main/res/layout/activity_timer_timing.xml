@@ -7,7 +7,7 @@
     android:focusableInTouchMode="true"
     android:orientation="vertical">
 
-    <include layout="@layout/layout_title_type_2" />
+    <include layout="@layout/layout_title_type_1" />
 
     <com.andview.refreshview.XScrollView
         android:layout_width="match_parent"

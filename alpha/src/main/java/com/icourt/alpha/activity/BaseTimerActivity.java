@@ -31,6 +31,9 @@ import retrofit2.Response;
  */
 public class BaseTimerActivity extends BaseActivity {
 
+    //这个标记位是用来判断是否是进行了删除操作的标记位
+    protected boolean isDelete = false;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,6 +60,7 @@ public class BaseTimerActivity extends BaseActivity {
                                     @Override
                                     public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                                         dismissLoadingDialog();
+                                        isDelete = true;
                                         finish();
                                     }
 
@@ -64,6 +68,7 @@ public class BaseTimerActivity extends BaseActivity {
                                     public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
                                         super.onFailure(call, t);
                                         dismissLoadingDialog();
+                                        isDelete = false;
                                     }
                                 });
                     }
