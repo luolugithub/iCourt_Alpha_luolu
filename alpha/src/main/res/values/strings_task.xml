@@ -39,5 +39,7 @@
     <string name="task_add_check_fail">添加检查项失败</string>
     <string name="task_add_attachment">添加附件</string>
     <string name="task_attachment_size_limit" formatted="false">文件大小限制在%sM内</string>
+    <string name="task_create_task">新建任务</string>
+    <string name="task_notice_select_project">请先选择项目</string>
 
 </resources>

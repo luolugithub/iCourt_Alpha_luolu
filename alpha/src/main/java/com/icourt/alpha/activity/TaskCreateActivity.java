@@ -1,8 +1,6 @@
 package com.icourt.alpha.activity;
 
-import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -10,7 +8,6 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -18,7 +15,6 @@ import android.text.InputFilter;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.view.KeyEvent;
 import android.view.View;
 import android.widget.CheckedTextView;
 import android.widget.EditText;
@@ -31,7 +27,6 @@ import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.TaskUsersAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TaskGroupEntity;
@@ -44,8 +39,8 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.StringUtils;
-import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.api.RequestUtils;
 import com.umeng.analytics.MobclickAgent;
@@ -71,8 +66,20 @@ import static com.icourt.alpha.base.BaseDialogFragment.KEY_FRAGMENT_RESULT;
  * date createTime：2017/5/4
  * version 2.0.0
  */
-public class TaskCreateActivity extends BaseActivity implements ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener, OnFragmentCallBackListener, BaseRecyclerAdapter.OnItemClickListener {
+public class TaskCreateActivity extends ListenBackActivity
+        implements ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener, OnFragmentCallBackListener, BaseRecyclerAdapter.OnItemClickListener {
 
+
+    private static final String KEY_TASK_TITLE = "taskTitle";
+    private static final String KEY_TASK_DUE_TIME = "taskDueTime";
+    private static final String KEY_TASK_DESC = "taskDesc";
+    private static final String KEY_PROJECT_ID = "projectId";
+    private static final String KEY_PROJECT_NAME = "projectName";
+
+    private static final String KEY_CACHE_TITLE = String.format("%s_%s", TaskCreateActivity.class.getSimpleName(), "cacheTitle");
+    private static final String KEY_CACHE_DESC = String.format("%s_%s", TaskCreateActivity.class.getSimpleName(), "cacheDesc");
+
+    private static final String ACTION_FROM_PROJECT = "fromProject";
 
     @BindView(R.id.titleBack)
     CheckedTextView titleBack;
@@ -102,7 +109,7 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
     LinearLayout owerLayout;
 
     List<TaskEntity.TaskItemEntity.AttendeeUserEntity> attendeeUserEntities = new ArrayList<>();
-    String content;
+    String taskTitle, taskDesc;
     String projectId, taskGroupId;
     long dueTime;
     TaskUsersAdapter usersAdapter;
@@ -113,36 +120,45 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
     LinearLayout taskGroupLayout;
 
     TaskReminderEntity taskReminderEntity;
-    private int MAX_NAME_LENGTH = 200;
+    private static final int MAX_NAME_LENGTH = 200;
 
-    public static void launch(@NonNull Context context, @NonNull String content, String startTime) {
+
+    /**
+     * 如果name  desc 为空 从缓存中拿
+     *
+     * @param context
+     * @param taskTitle
+     * @param dueTime
+     */
+    public static void launch(@NonNull Context context,
+                              @NonNull String taskTitle,
+                              long dueTime) {
         if (context == null) return;
         Intent intent = new Intent(context, TaskCreateActivity.class);
-        intent.putExtra("content", content);
-        intent.putExtra("startTime", startTime);
-        context.startActivity(intent);
-    }
-
-    public static void launch(@NonNull Context context, @NonNull String content, long dueTime) {
-        if (context == null) return;
-        Intent intent = new Intent(context, TaskCreateActivity.class);
-        intent.putExtra("content", content);
-        intent.putExtra("dueTime", dueTime);
+        intent.putExtra(KEY_TASK_TITLE, TextUtils.isEmpty(taskTitle) ? SpUtils.getTemporaryCache().getStringData(KEY_CACHE_TITLE, "") : taskTitle);
+        intent.putExtra(KEY_TASK_DUE_TIME, dueTime);
+        //标题超过200以内,整个内容作为详情
+        intent.putExtra(KEY_TASK_DESC, StringUtils.length(taskTitle) > MAX_NAME_LENGTH ? taskTitle : SpUtils.getTemporaryCache().getStringData(KEY_CACHE_DESC, ""));
         context.startActivity(intent);
     }
 
     /**
      * 项目详情创建任务
+     * name  desc 不从缓存中拿
      *
      * @param context
      * @param projectId
      * @param projectName
      */
-    public static void launchFomProject(@NonNull Context context, @NonNull String projectId, @NonNull String projectName) {
+    public static void launchFomProject(@NonNull Context context,
+                                        @NonNull String projectId,
+                                        @NonNull String projectName) {
         if (context == null) return;
+        if (TextUtils.isEmpty(projectId)) return;
         Intent intent = new Intent(context, TaskCreateActivity.class);
-        intent.putExtra("projectId", projectId);
-        intent.putExtra("projectName", projectName);
+        intent.putExtra(KEY_PROJECT_ID, projectId);
+        intent.putExtra(KEY_PROJECT_NAME, projectName);
+        intent.setAction(ACTION_FROM_PROJECT);
         context.startActivity(intent);
     }
 
@@ -157,7 +173,7 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
     @Override
     protected void initView() {
         super.initView();
-        setTitle("新建任务");
+        setTitle(R.string.task_create_task);
 
         taskNameEt.setFilters(new InputFilter[]{new InputFilter.LengthFilter(MAX_NAME_LENGTH) {
             @Override
@@ -168,6 +184,7 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
                 return super.filter(source, start, end, dest, dstart, dend);
             }
         }});
+        titleAction.setEnabled(!StringUtils.isEmpty(taskNameEt.getText()));
         taskNameEt.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -184,43 +201,40 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
                 titleAction.setEnabled(!StringUtils.isEmpty(s));
             }
         });
-        content = getIntent().getStringExtra("content");
-//        startTime = getIntent().getStringExtra("startTime");
-        dueTime = getIntent().getLongExtra("dueTime", 0);
-        projectId = getIntent().getStringExtra("projectId");
-        projectName = getIntent().getStringExtra("projectName");
-        if (!TextUtils.isEmpty(content)) {
-            if (content.length() > 200) {
-                taskNameEt.setText(content.substring(0, 200));
-                taskDescEt.setText(content);
-            } else {
-                taskNameEt.setText(content);
+
+        if (TextUtils.equals(getIntent().getAction(), ACTION_FROM_PROJECT)) {
+            projectId = getIntent().getStringExtra(KEY_PROJECT_ID);
+            projectName = getIntent().getStringExtra(KEY_PROJECT_NAME);
+
+            projectNameTv.setText(projectName);
+            taskGroupLayout.setVisibility(View.VISIBLE);
+        } else {
+            taskTitle = getIntent().getStringExtra(KEY_TASK_TITLE);
+            taskDesc = getIntent().getStringExtra(KEY_TASK_DESC);
+            dueTime = getIntent().getLongExtra(KEY_TASK_DUE_TIME, 0);
+
+            //如果标题超过200 就把标题截取200以内
+            if (StringUtils.length(taskTitle) > MAX_NAME_LENGTH) {
+                taskTitle = taskTitle.substring(0, 200);
             }
-            taskNameEt.setSelection(taskNameEt.getText().length());
+            taskNameEt.setText(taskTitle);
+            taskNameEt.setSelection(StringUtils.length(taskNameEt.getText()));
+            taskDescEt.setText(taskDesc);
         }
+
         if (dueTime > 0) {
             setDueTime();
         }
-//        if (!TextUtils.isEmpty(startTime)) {
-//            taskDuetimeTv.setText(startTime);
-//        }
-        if (!TextUtils.isEmpty(projectName)) {
-            projectNameTv.setText(projectName);
-        }
-        if (!TextUtils.isEmpty(projectId)) {
-            taskGroupLayout.setVisibility(View.VISIBLE);
-        }
     }
 
-    @OnClick({R.id.titleAction, R.id.project_layout, R.id.task_group_layout, R.id.duetime_layout, R.id.ower_layout})
+    @OnClick({R.id.titleAction,
+            R.id.project_layout,
+            R.id.task_group_layout,
+            R.id.duetime_layout,
+            R.id.ower_layout})
     @Override
     public void onClick(View v) {
-
         switch (v.getId()) {
-            case R.id.titleBack:
-                SystemUtils.hideSoftKeyBoard(this);
-                checkIsSave();
-                break;
             case R.id.titleAction://保存
                 createNewTask();
                 break;
@@ -237,12 +251,21 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
                 if (!TextUtils.isEmpty(projectId))
                     showTaskAllotSelectDialogFragment(projectId);
                 else
-                    showTopSnackBar("请先选择项目");
+                    showTopSnackBar(R.string.task_notice_select_project);
                 break;
             default:
                 super.onClick(v);
                 break;
         }
+    }
+
+
+    @Override
+    protected boolean onPageBackClick(@FROM_BACK int from) {
+        //记录输入历史:名字和详情
+        SpUtils.getTemporaryCache().putData(KEY_CACHE_TITLE, getTextString(taskNameEt, ""));
+        SpUtils.getTemporaryCache().putData(KEY_CACHE_DESC, getTextString(taskDescEt, ""));
+        return false;
     }
 
     /**
@@ -293,7 +316,6 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-
         TaskAllotSelectDialogFragment.newInstance(projectId, attendeeUserEntities)
                 .show(mFragTransaction, tag);
     }
@@ -383,7 +405,6 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
      * 新建任务
      */
     private void createNewTask() {
-
         String bodyStr = getNewTaskJson();
         if (!TextUtils.isEmpty(bodyStr)) {
             MobclickAgent.onEvent(this, UMMobClickAgent.creat_task_click_id);
@@ -395,6 +416,12 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
                         public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
                             if (response.body().result != null) {
                                 showToast("新建任务成功");
+
+                                //1 清除输入记录
+                                SpUtils.getTemporaryCache().remove(KEY_CACHE_TITLE);
+                                SpUtils.getTemporaryCache().remove(KEY_CACHE_DESC);
+
+                                //2 体检提醒
                                 if (taskReminderEntity != null) {
                                     addReminders(response.body().result, taskReminderEntity);
                                 } else {
@@ -417,18 +444,8 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
     private String getNewTaskJson() {
         JsonObject jsonObject = new JsonObject();
         String name = taskNameEt.getText().toString().trim();
-        if (!TextUtils.isEmpty(name)) {
-            if (taskNameEt.getText().length() <= 200) {
-                jsonObject.addProperty("name", taskNameEt.getText().toString());
-            } else {
-                showTopSnackBar("任务名称不能超过200个字符");
-                return null;
-            }
-        } else {
-            showTopSnackBar("请输入任务名称");
-            return null;
-        }
-        jsonObject.addProperty("description", taskDescEt.getText().toString());
+        jsonObject.addProperty("name", name);
+        jsonObject.addProperty("description", getTextString(taskDescEt, ""));
         if (!TextUtils.isEmpty(projectId)) {
             jsonObject.addProperty("matterId", projectId);
         }
@@ -509,53 +526,6 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
         if (!TextUtils.isEmpty(projectId))
             showTaskAllotSelectDialogFragment(projectId);
         else
-            showTopSnackBar("请优先选择项目");
-    }
-
-    private void showSaveDialog(String message) {
-        //先new出一个监听器，设置好监听
-        DialogInterface.OnClickListener dialogOnclicListener = new DialogInterface.OnClickListener() {
-
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-                switch (which) {
-                    case Dialog.BUTTON_POSITIVE://确定
-                        TaskCreateActivity.this.finish();
-                        break;
-                    case Dialog.BUTTON_NEGATIVE://取消
-
-                        break;
-                }
-            }
-        };
-        //dialog参数设置
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);  //先得到构造器
-        builder.setTitle("提示"); //设置标题
-        builder.setMessage(message); //设置内容
-        builder.setPositiveButton("确认", dialogOnclicListener);
-        builder.setNegativeButton("取消", dialogOnclicListener);
-        builder.create().show();
-    }
-
-    public void checkIsSave() {
-        if (!TextUtils.isEmpty(taskNameEt.getText().toString()) ||
-                !TextUtils.isEmpty(projectId) ||
-                !TextUtils.isEmpty(taskGroupId) ||
-                !TextUtils.isEmpty(taskDescEt.getText().toString()) ||
-                !TextUtils.isEmpty(taskDuetimeTv.getText().toString()))
-            showSaveDialog(getString(R.string.timer_is_save_timer_text));
-        else
-            finish();
-
-    }
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-            checkIsSave();
-            return true;
-        }
-        return super.onKeyDown(keyCode, event);
+            showTopSnackBar(R.string.task_notice_select_project);
     }
 }
