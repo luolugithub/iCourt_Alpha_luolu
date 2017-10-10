@@ -166,7 +166,7 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
         }
         titleContent.setText(R.string.repo_details);
         fileVersionTv.setVisibility(View.GONE);
-        fileCreateInfoTv.setVisibility(View.GONE);
+        fileCreateInfoTv.setText("");
         fileTypeIv.setImageResource(R.mipmap.ic_document);
         fileUpdateInfoTv.setText("");
 
@@ -311,19 +311,41 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
             List<FileChangedHistoryEntity> fileVersionEntities = new ArrayList<>();
             try {
                 fileVersionEntities.addAll((List<FileChangedHistoryEntity>) o);
-                Collections.sort(fileVersionEntities, new LongFieldEntityComparator<FileChangedHistoryEntity>(ORDER.DESC));
+                Collections.sort(fileVersionEntities, new LongFieldEntityComparator<FileChangedHistoryEntity>(ORDER.ASC));
             } catch (Exception e) {
             }
-            if (fileUpdateInfoTv != null
-                    && !fileVersionEntities.isEmpty()
-                    && fileVersionEntities.get(0) != null) {
-                FileChangedHistoryEntity fileVersionEntity = fileVersionEntities.get(0);
-                fileUpdateInfoTv.setText(String.format("%s 更新于 %s",
-                        StringUtils.getEllipsizeText(fileVersionEntity.operator_name, 8),
-                        DateUtils.getyyyyMMddHHmm(fileVersionEntity.date)));
-            } else {
-                if (fileUpdateInfoTv != null) {
-                    fileUpdateInfoTv.setText("");
+            if (fileCreateInfoTv == null) return;
+            fileCreateInfoTv.setText("");
+            fileUpdateInfoTv.setText("");
+            FileChangedHistoryEntity fileChangedHistoryEntityFirst = null;
+            if (!fileVersionEntities.isEmpty()) {
+                switch (fileVersionEntities.size()) {
+                    case 1:
+                        fileChangedHistoryEntityFirst = fileVersionEntities.get(0);
+                        if (fileChangedHistoryEntityFirst != null) {
+                            fileCreateInfoTv.setText(String.format("%s 更新于 %s",
+                                    StringUtils.getEllipsizeText(fileChangedHistoryEntityFirst.operator_name, 8),
+                                    DateUtils.getyyyyMMddHHmm(fileChangedHistoryEntityFirst.date)));
+                        }
+                        break;
+                    default: {
+                        fileChangedHistoryEntityFirst = fileVersionEntities.get(fileVersionEntities.size() - 2);
+                        if (fileChangedHistoryEntityFirst != null) {
+                            fileCreateInfoTv.setText(String.format("%s 更新于 %s",
+                                    StringUtils.getEllipsizeText(fileChangedHistoryEntityFirst.operator_name, 8),
+                                    DateUtils.getyyyyMMddHHmm(fileChangedHistoryEntityFirst.date)));
+                        }
+
+                        if (fileVersionEntities.size() > 1) {
+                            FileChangedHistoryEntity fileChangedHistoryEntitySecond = fileVersionEntities.get(fileVersionEntities.size() - 1);
+                            if (fileChangedHistoryEntitySecond != null) {
+                                fileUpdateInfoTv.setText(String.format("%s 更新于 %s",
+                                        StringUtils.getEllipsizeText(fileChangedHistoryEntitySecond.operator_name, 8),
+                                        DateUtils.getyyyyMMddHHmm(fileChangedHistoryEntitySecond.date)));
+                            }
+                        }
+                    }
+                    break;
                 }
             }
         }

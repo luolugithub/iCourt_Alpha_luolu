@@ -214,9 +214,9 @@ public class TimerManager {
 
                         SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), response.body().result);
                         SpUtils.getInstance().putData(String.format(KEY_TIMER_TASK_ID, getUid()), response.body().result.taskPkId);
-                        broadTimingEvent(response.body().result.pkId, TimingEvent.TIMING_ADD);
                         setBase(0);
                         startTimingTask();
+                        broadTimingEvent(response.body().result.pkId, TimingEvent.TIMING_ADD);
                         if (callBack != null) {
                             callBack.onResponse(null, Response.success(response.body().result));
                         }
