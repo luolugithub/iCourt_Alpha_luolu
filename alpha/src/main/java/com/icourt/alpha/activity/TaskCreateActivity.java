@@ -13,7 +13,11 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.InputFilter;
+import android.text.Spanned;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.CheckedTextView;
@@ -40,6 +44,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.api.RequestUtils;
@@ -108,6 +113,7 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
     LinearLayout taskGroupLayout;
 
     TaskReminderEntity taskReminderEntity;
+    private int MAX_NAME_LENGTH = 200;
 
     public static void launch(@NonNull Context context, @NonNull String content, String startTime) {
         if (context == null) return;
@@ -152,6 +158,32 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
     protected void initView() {
         super.initView();
         setTitle("新建任务");
+
+        taskNameEt.setFilters(new InputFilter[]{new InputFilter.LengthFilter(MAX_NAME_LENGTH) {
+            @Override
+            public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+                if (StringUtils.length(taskNameEt.getText()) + StringUtils.length(source) > MAX_NAME_LENGTH) {
+                    showToast(String.format("任务名称不能超过%s个字符", MAX_NAME_LENGTH));
+                }
+                return super.filter(source, start, end, dest, dstart, dend);
+            }
+        }});
+        taskNameEt.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                titleAction.setEnabled(!StringUtils.isEmpty(s));
+            }
+        });
         content = getIntent().getStringExtra("content");
 //        startTime = getIntent().getStringExtra("startTime");
         dueTime = getIntent().getLongExtra("dueTime", 0);
