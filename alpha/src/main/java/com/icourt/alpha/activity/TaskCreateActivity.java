@@ -11,8 +11,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
-import android.text.InputFilter;
-import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.View;
@@ -42,6 +40,7 @@ import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
+import com.icourt.alpha.widget.filter.LengthListenFilter;
 import com.icourt.api.RequestUtils;
 import com.umeng.analytics.MobclickAgent;
 
@@ -120,7 +119,8 @@ public class TaskCreateActivity extends ListenBackActivity
     LinearLayout taskGroupLayout;
 
     TaskReminderEntity taskReminderEntity;
-    private static final int MAX_NAME_LENGTH = 200;
+    private static final int MAX_TASK_NAME_LENGTH = 200;
+    private static final int MAX_TASK_DESC_LENGTH = 3000;
 
 
     /**
@@ -138,7 +138,7 @@ public class TaskCreateActivity extends ListenBackActivity
         intent.putExtra(KEY_TASK_TITLE, TextUtils.isEmpty(taskTitle) ? SpUtils.getTemporaryCache().getStringData(KEY_CACHE_TITLE, "") : taskTitle);
         intent.putExtra(KEY_TASK_DUE_TIME, dueTime);
         //标题超过200以内,整个内容作为详情
-        intent.putExtra(KEY_TASK_DESC, StringUtils.length(taskTitle) > MAX_NAME_LENGTH ? taskTitle : SpUtils.getTemporaryCache().getStringData(KEY_CACHE_DESC, ""));
+        intent.putExtra(KEY_TASK_DESC, StringUtils.length(taskTitle) > MAX_TASK_NAME_LENGTH ? taskTitle : SpUtils.getTemporaryCache().getStringData(KEY_CACHE_DESC, ""));
         context.startActivity(intent);
     }
 
@@ -175,15 +175,18 @@ public class TaskCreateActivity extends ListenBackActivity
         super.initView();
         setTitle(R.string.task_create_task);
 
-        taskNameEt.setFilters(new InputFilter[]{new InputFilter.LengthFilter(MAX_NAME_LENGTH) {
+        taskNameEt.setFilters(LengthListenFilter.createSingleInputFilter(new LengthListenFilter(MAX_TASK_NAME_LENGTH) {
             @Override
-            public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
-                if (StringUtils.length(taskNameEt.getText()) + StringUtils.length(source) > MAX_NAME_LENGTH) {
-                    showToast(String.format("任务名称不能超过%s个字符", MAX_NAME_LENGTH));
-                }
-                return super.filter(source, start, end, dest, dstart, dend);
+            public void onInputOverLength(int maxLength) {
+                showToast(String.format("任务名称不能超过%s个字符", maxLength));
             }
-        }});
+        }));
+        taskDescEt.setFilters(LengthListenFilter.createSingleInputFilter(new LengthListenFilter(MAX_TASK_DESC_LENGTH) {
+            @Override
+            public void onInputOverLength(int maxLength) {
+                showToast(String.format("任务详情不能超过%s个字符", maxLength));
+            }
+        }));
         titleAction.setEnabled(!StringUtils.isEmpty(taskNameEt.getText()));
         taskNameEt.addTextChangedListener(new TextWatcher() {
             @Override
@@ -214,7 +217,7 @@ public class TaskCreateActivity extends ListenBackActivity
             dueTime = getIntent().getLongExtra(KEY_TASK_DUE_TIME, 0);
 
             //如果标题超过200 就把标题截取200以内
-            if (StringUtils.length(taskTitle) > MAX_NAME_LENGTH) {
+            if (StringUtils.length(taskTitle) > MAX_TASK_NAME_LENGTH) {
                 taskTitle = taskTitle.substring(0, 200);
             }
             taskNameEt.setText(taskTitle);
