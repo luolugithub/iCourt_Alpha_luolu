@@ -5,7 +5,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
 
 /**
- * Description  屏蔽会车
+ * Description  屏蔽回车键
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/10/11
