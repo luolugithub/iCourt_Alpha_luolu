@@ -294,9 +294,8 @@ public class TabMineFragment extends BaseFragment {
                 showLoginOutConfirmDialog();
                 break;
             case R.id.menu_test:
-//                MyTimingActivity.launch(getContext());
+                MyTimingActivity.launch(getContext());
 //                test1();
-                showTimingSelectDialogFragment();
                 break;
             default:
                 super.onClick(v);
@@ -575,17 +574,4 @@ public class TabMineFragment extends BaseFragment {
         unbinder.unbind();
     }
 
-    /**
-     * 展示时间选择对话框
-     */
-    private void showTimingSelectDialogFragment() {
-        String tag = TimingSelectDialogFragment.class.getSimpleName();
-        FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
-        Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
-        if (fragment != null) {
-            mFragTransaction.remove(fragment);
-        }
-        TimingSelectDialogFragment.newInstance()
-                .show(mFragTransaction, tag);
-    }
 }

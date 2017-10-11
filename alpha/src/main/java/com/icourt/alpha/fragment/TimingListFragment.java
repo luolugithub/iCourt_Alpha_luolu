@@ -81,13 +81,13 @@ public class TimingListFragment extends BaseFragment {
         queryType = TimingConfig.convert2timingQueryType(getArguments().getInt(KEY_QUERY_TYPE));
         startTimeMillis = getArguments().getLong(KEY_START_TIME);
         if (queryType == TimingConfig.TIMING_QUERY_BY_DAY) {//日
-            endTimeMillis = startTimeMillis + TimeUnit.DAYS.toMillis(1) - 1;
+            endTimeMillis = DateUtils.getDayEndTime(startTimeMillis);
         } else if (queryType == TimingConfig.TIMING_QUERY_BY_WEEK) {//周
-            endTimeMillis = startTimeMillis + TimeUnit.DAYS.toMillis(7) - 1;
+            endTimeMillis = DateUtils.getWeekEndTime(startTimeMillis);
         } else if (queryType == TimingConfig.TIMING_QUERY_BY_MONTH) {//月
             endTimeMillis = DateUtils.getMonthLastDay(startTimeMillis);
         } else if (queryType == TimingConfig.TIMING_QUERY_BY_YEAR) {//年
-
+            endTimeMillis = DateUtils.getYearLastDay(startTimeMillis);
         }
         recyclerView.setBackgroundColor(Color.WHITE);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -104,7 +104,6 @@ public class TimingListFragment extends BaseFragment {
         });
         refreshLayout.setPullRefreshEnable(false);
         boolean canLoadMore = (queryType != TimingConfig.TIMING_QUERY_BY_DAY && queryType != TimingConfig.TIMING_QUERY_BY_WEEK); //年月可以上拉加载
-        canLoadMore = true;
         refreshLayout.setPullLoadEnable(canLoadMore);
         getData(true);
     }
@@ -112,12 +111,12 @@ public class TimingListFragment extends BaseFragment {
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-        long dividerTime = (pageIndex * TimeUnit.DAYS.toMillis(7));
-        long weekStartTimeMillSecond = startTimeMillis - dividerTime;
-        long weekEndTimeMillSecond = weekStartTimeMillSecond + TimeUnit.DAYS.toMillis(7);
-
-        String weekStartTime = DateUtils.getyyyy_MM_dd(weekStartTimeMillSecond);
-        String weekEndTime = DateUtils.getyyyy_MM_dd(weekEndTimeMillSecond);
+//        long dividerTime = (pageIndex * TimeUnit.DAYS.toMillis(7));
+//        long weekStartTimeMillSecond = startTimeMillis - dividerTime;
+//        long weekEndTimeMillSecond = weekStartTimeMillSecond + TimeUnit.DAYS.toMillis(7);
+//
+        String weekStartTime = DateUtils.getyyyy_MM_dd(startTimeMillis);
+        String weekEndTime = DateUtils.getyyyy_MM_dd(endTimeMillis);
 
         timingListQueryByTime(weekStartTime, weekEndTime);
     }

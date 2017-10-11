@@ -18,6 +18,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.constants.TimingConfig;
 import com.icourt.alpha.entity.bean.TimingSelectEntity;
 import com.icourt.alpha.fragment.TimingSelectDayFragment;
 import com.icourt.alpha.fragment.TimingSelectMonthFragment;
@@ -195,18 +196,28 @@ public class TimingSelectDialogFragment extends BaseDialogFragment implements On
                 dismiss();
                 break;
             case R.id.tv_finish:
-                if (onFragmentCallBackListener == null) {
-                    onFragmentCallBackListener = (OnFragmentCallBackListener) getParentFragment();
-                }
                 BaseFragment fragment = (BaseFragment) baseFragmentAdapter.getItem(viewpager.getCurrentItem());
                 Bundle fragmentData = fragment.getFragmentData(0, null);
                 if (fragmentData == null) return;
                 TimingSelectEntity timingSelectEntity = (TimingSelectEntity) fragmentData.getSerializable(KEY_FRAGMENT_RESULT);
                 if (timingSelectEntity != null) {
-                    onFragmentCallBackListener.onFragmentCallBack(fragment, 0, fragmentData);
+                    int currentItem = viewpager.getCurrentItem();
+                    int type = TimingConfig.TIMING_QUERY_BY_DAY;
+                    if (currentItem == 0) {//日
+                        type = TimingConfig.TIMING_QUERY_BY_DAY;
+                    } else if (currentItem == 1) {//周
+                        type = TimingConfig.TIMING_QUERY_BY_WEEK;
+                    } else if (currentItem == 2) {//月
+                        type = TimingConfig.TIMING_QUERY_BY_MONTH;
+                    } else if (currentItem == 3) {//年
+                        type = TimingConfig.TIMING_QUERY_BY_YEAR;
+                    }
+                    if (onFragmentCallBackListener != null)
+                        onFragmentCallBackListener.onFragmentCallBack(this, type, fragmentData);
                     log("开始时间： －－－－  " + timingSelectEntity.startTimeStr);
                     log("结束时间： －－－－  " + timingSelectEntity.endTimeStr);
                 }
+                dismiss();
                 break;
 
         }

@@ -52,11 +52,12 @@ public class TimingDayListFragment extends BaseFragment {
 
     long startTimeMillis;//传递进来的开始时间
 
-    public static void newInstance(long startTimeMillis) {
+    public static TimingDayListFragment newInstance(long startTimeMillis) {
         TimingDayListFragment fragment = new TimingDayListFragment();
         Bundle bundle = new Bundle();
         bundle.putLong(KEY_START_TIME, startTimeMillis);
         fragment.setArguments(bundle);
+        return fragment;
     }
 
     @Nullable
@@ -87,7 +88,7 @@ public class TimingDayListFragment extends BaseFragment {
 
             @Override
             public int getCount() {
-                return DateUtils.differentDays(calendar.getTimeInMillis(), System.currentTimeMillis());
+                return DateUtils.differentDays(calendar.getTimeInMillis(), System.currentTimeMillis()) + 1;
             }
         });
 

@@ -11,15 +11,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@android:color/white"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:padding="10dp">
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingBottom="5dp"
-            android:paddingTop="5dp">
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/timing_date_title_tv"
@@ -31,96 +29,110 @@
                 android:text="4月13-4月20" />
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="right"
-                android:text="@string/timing_today" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
                 android:id="@+id/timing_count_total_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_marginBottom="5dp"
+                android:layout_marginTop="5dp"
                 android:maxLines="1"
                 android:text="63:02"
                 android:textColor="@color/alpha_font_color_title"
                 android:textSize="24sp" />
 
+        </LinearLayout>
+
+        <android.support.v4.widget.Space
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="right"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="right"
+                android:text="@string/timing_today" />
+
             <TextView
                 android:id="@+id/timing_today_total"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"
+                android:layout_marginTop="5dp"
                 android:text="8:12"
                 android:textColor="@color/alpha_font_color_title"
                 android:textSize="24sp" />
         </LinearLayout>
 
-
     </LinearLayout>
 
-    <android.support.design.widget.CoordinatorLayout
+    <FrameLayout
+        android:id="@+id/fl_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent" />
 
-        <android.support.design.widget.AppBarLayout
-            style="@style/AlphaTitleAppBarLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/alpha_background_title">
+    <!--<android.support.design.widget.CoordinatorLayout-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent">-->
 
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="150dp"
-                android:layout_margin="10dp"
-                app:layout_scrollFlags="scroll|enterAlways|snap">
+    <!--<android.support.design.widget.AppBarLayout-->
+    <!--style="@style/AlphaTitleAppBarLayout"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:background="@color/alpha_background_title">-->
 
-                <lecho.lib.hellocharts.view.LineChartView
-                    android:id="@+id/timing_chart_view"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:paddingLeft="5dp"
-                    android:paddingRight="10dp"
-                    android:paddingTop="10dp" />
+    <!--<FrameLayout-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="150dp"-->
+    <!--android:layout_margin="10dp"-->
+    <!--app:layout_scrollFlags="scroll|enterAlways|snap">-->
 
-                <LinearLayout
-                    android:id="@+id/timing_text_show_timing_ll"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:orientation="vertical">
+    <!--<lecho.lib.hellocharts.view.LineChartView-->
+    <!--android:id="@+id/timing_chart_view"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:paddingLeft="5dp"-->
+    <!--android:paddingRight="10dp"-->
+    <!--android:paddingTop="10dp" />-->
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/timing_accumulative_total"
-                        android:textSize="@dimen/alpha_font_size_mini" />
+    <!--<LinearLayout-->
+    <!--android:id="@+id/timing_text_show_timing_ll"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:gravity="center"-->
+    <!--android:orientation="vertical">-->
 
-                    <TextView
-                        android:id="@+id/timing_count_total2_tv"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:maxLines="1"
-                        android:text="63:02"
-                        android:textColor="@color/alpha_font_color_title"
-                        android:textSize="36sp" />
-                </LinearLayout>
-            </FrameLayout>
-        </android.support.design.widget.AppBarLayout>
+    <!--<TextView-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:text="@string/timing_accumulative_total"-->
+    <!--android:textSize="@dimen/alpha_font_size_mini" />-->
 
-        <android.support.v4.view.ViewPager
-            android:id="@+id/viewPager"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior" />
-    </android.support.design.widget.CoordinatorLayout>
+    <!--<TextView-->
+    <!--android:id="@+id/timing_count_total2_tv"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:maxLines="1"-->
+    <!--android:text="63:02"-->
+    <!--android:textColor="@color/alpha_font_color_title"-->
+    <!--android:textSize="36sp" />-->
+    <!--</LinearLayout>-->
+    <!--</FrameLayout>-->
+    <!--</android.support.design.widget.AppBarLayout>-->
+
+    <!--<android.support.v4.view.ViewPager-->
+    <!--android:id="@+id/viewPager"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_weight="1"-->
+    <!--app:layout_behavior="@string/appbar_scrolling_view_behavior" />-->
+    <!--</android.support.design.widget.CoordinatorLayout>-->
 
 
 </LinearLayout>
