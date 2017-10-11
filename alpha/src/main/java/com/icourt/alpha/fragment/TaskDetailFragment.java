@@ -18,7 +18,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.ProjectDetailActivity;
-import com.icourt.alpha.activity.TaskDescUpdateActivity;
+import com.icourt.alpha.activity.TaskDescChangeActivity;
 import com.icourt.alpha.activity.TaskDetailActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
@@ -195,8 +195,10 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
                             showDateSelectDialogFragment(taskItemEntity.dueTime, taskItemEntity.id);
                         break;
                     case R.id.task_desc_tv://添加任务详情
-                        TaskDescUpdateActivity.launch(getContext(), taskDescTv.getText().toString(), TaskDescUpdateActivity.UPDATE_TASK_DESC);
-                        break;
+                        TaskDescChangeActivity.launch(
+                                getContext(),
+                                taskItemEntity);
+                          break;
                 }
             } else {
                 showTopSnackBar("您没有编辑任务的权限");

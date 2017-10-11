@@ -6,9 +6,12 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
+import android.text.InputFilter;
 
 import com.google.gson.JsonElement;
+import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseActivity;
+import com.icourt.alpha.constants.TimingConfig;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.fragment.dialogfragment.CalendaerSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ProjectSimpleSelectDialogFragment;
@@ -18,6 +21,7 @@ import com.icourt.alpha.fragment.dialogfragment.WorkTypeSelectDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.widget.filter.LengthListenFilter;
 
 import retrofit2.Call;
 import retrofit2.Response;
@@ -30,7 +34,13 @@ import retrofit2.Response;
  * version 1.0.0
  */
 public class BaseTimerActivity extends BaseActivity {
-
+    //计时长度 输入提示
+    protected final InputFilter[] timingNameInputFilters = LengthListenFilter.createSingleInputFilter(new LengthListenFilter(TimingConfig.TIMING_NAME_MAX_LENGTH) {
+        @Override
+        public void onInputOverLength(int maxLength) {
+            showToast(getString(R.string.timing_name_limit_format, String.valueOf(maxLength)));
+        }
+    });
     //这个标记位是用来判断是否是进行了删除操作的标记位
     protected boolean isDelete = false;
 
@@ -152,5 +162,6 @@ public class BaseTimerActivity extends BaseActivity {
         }
         TimingChangeDialogFragment.newInstance(type, timeStartMillis, timeEndMillis).show(mFragTransaction, tag);
     }
+
 
 }

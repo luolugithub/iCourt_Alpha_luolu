@@ -1,10 +1,14 @@
 package com.icourt.alpha.entity.bean;
 
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.chad.library.adapter.base.entity.MultiItemEntity;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.google.gson.annotations.SerializedName;
 import com.icourt.alpha.db.convertor.IConvertModel;
+import com.icourt.alpha.utils.DateUtils;
 
 import java.io.Serializable;
 import java.util.List;
@@ -27,6 +31,65 @@ public class TaskEntity implements Serializable {
     public List<TaskItemEntity> items;
 
     public static class TaskItemEntity implements Serializable, MultiItemEntity {
+
+
+        /**
+         * 构建更新任务标题的json
+         *
+         * @return
+         */
+        @NonNull
+        public static JsonObject createUpdateNameParam(@NonNull TaskItemEntity itemEntity, @NonNull String taskName) {
+            JsonObject jsonObject = new JsonObject();
+            if (itemEntity == null) return jsonObject;
+            jsonObject.addProperty("id", itemEntity.id);
+            jsonObject.addProperty("state", itemEntity.state);
+            jsonObject.addProperty("name", TextUtils.isEmpty(taskName) ? "" : taskName);
+            jsonObject.addProperty("parentId", itemEntity.parentId);
+            jsonObject.addProperty("valid", true);
+            jsonObject.addProperty("updateTime", DateUtils.millis());
+            JsonArray jsonarr = new JsonArray();
+            if (itemEntity.attendeeUsers != null) {
+                if (itemEntity.attendeeUsers.size() > 0) {
+                    for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
+                        if (attendeeUser == null) continue;
+                        jsonarr.add(attendeeUser.userId);
+                    }
+                }
+                jsonObject.add("attendees", jsonarr);
+            }
+            return jsonObject;
+        }
+
+        /**
+         * 构建更新任务描述的json
+         *
+         * @return
+         */
+        @NonNull
+        public static JsonObject createUpdateDescParam(@NonNull TaskItemEntity itemEntity, @NonNull String taskDesc) {
+            JsonObject jsonObject = new JsonObject();
+            if (itemEntity == null) return jsonObject;
+            jsonObject.addProperty("id", itemEntity.id);
+            jsonObject.addProperty("state", itemEntity.state);
+            jsonObject.addProperty("name", itemEntity.name);
+            jsonObject.addProperty("parentId", itemEntity.parentId);
+            jsonObject.addProperty("valid", true);
+            jsonObject.addProperty("updateTime", DateUtils.millis());
+            jsonObject.addProperty("description", TextUtils.isEmpty(taskDesc) ? "" : taskDesc);
+            JsonArray jsonarr = new JsonArray();
+            if (itemEntity.attendeeUsers != null) {
+                if (itemEntity.attendeeUsers.size() > 0) {
+                    for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
+                        jsonarr.add(attendeeUser.userId);
+                    }
+                }
+                jsonObject.add("attendees", jsonarr);
+            }
+            return jsonObject;
+        }
+
+
         public String groupName;//任务所在分组名称
         public String groupId;//分组id
         public int groupTaskCount;//分组有多少个任务

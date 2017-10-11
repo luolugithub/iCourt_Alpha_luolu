@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!--项目模块-->
+    <!--项目模块    包含foramt的字符如s% 用_format结尾 -->
     <string name="project_tab_detail">概览</string>
     <string name="project_tab_task">任务</string>
     <string name="project_tab_time">计时</string>

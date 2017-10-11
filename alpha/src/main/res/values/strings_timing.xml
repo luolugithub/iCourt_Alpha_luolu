@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- 计时模块 字符串资源定义 timing_开头 -->
+    <!-- 计时模块 字符串资源定义 timing_开头  包含foramt的字符如s% 用_format结尾 -->
 
     <string name="timing_select_time">选择时间</string>
     <string name="timing_cancel">取消</string>
@@ -25,4 +25,5 @@
     <string name="timing_accumulative_total">累计计时</string>
     <string name="timing_today">今天</string>
     <string name="timing_empty">暂无计时</string>
+    <string name="timing_name_limit_format" formatted="false">计时标题不能超过%s个字符</string>
 </resources>
