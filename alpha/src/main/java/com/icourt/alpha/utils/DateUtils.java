@@ -115,7 +115,10 @@ public class DateUtils {
             long distanceMilliseconds = System.currentTimeMillis() - milliseconds;
             if (distanceMilliseconds < TimeUnit.HOURS.toMillis(1)) {//3.x分钟前
                 long distanceSeconds = TimeUnit.MILLISECONDS.toMinutes(distanceMilliseconds);
-                if (distanceSeconds == 0) {
+                if (distanceMilliseconds < 0) {
+                    sdf.applyPattern("yyyy-MM-dd hh:mm");
+                    return sdf.format(milliseconds);
+                } else if (distanceSeconds == 0) {
                     return "刚刚";
                 } else {
                     return String.format("%s分钟前", TimeUnit.MILLISECONDS.toMinutes(distanceMilliseconds));
@@ -163,7 +166,10 @@ public class DateUtils {
             long distanceMilliseconds = System.currentTimeMillis() - milliseconds;
             if (distanceMilliseconds < TimeUnit.HOURS.toMillis(1)) {//3.x分钟前
                 long distanceSeconds = TimeUnit.MILLISECONDS.toMinutes(distanceMilliseconds);
-                if (distanceSeconds == 0) {
+                if (distanceMilliseconds < 0) {
+                    sdf.applyPattern("yyyy-MM-dd hh:mm");
+                    return sdf.format(milliseconds);
+                } else if (distanceSeconds == 0) {
                     return "刚刚";
                 } else {
                     return String.format("%s分钟前", TimeUnit.MILLISECONDS.toMinutes(distanceMilliseconds));
@@ -400,6 +406,7 @@ public class DateUtils {
         SimpleDateFormat formatter = new SimpleDateFormat("MM-dd HH:mm");
         return formatter.format(milliseconds);
     }
+
     /**
      * @param milliseconds
      * @return
