@@ -5,7 +5,7 @@
  3. 将gitlab的代码导入AS(时间可能持续很长) https://code.alphalawyer.cn/users/sign_in  
  4. 下载zeplin客户端(UI设计图)并注册账号,让管理员(李方明)邀请加入Android项目;
  5. 下载享聊客户端活着手机客户端 找李珊珊邀请加入jira bug管理系统 (http://jira.alphalawyer.cn/secure/BrowseProjects.jspa#all)  
- 6. 需求文档(wiki http://wiki.alphalawyer.cn) 找吕东东开一个账户;  
+ 6. 需求文档(wiki http://wiki.alphalawyer.cn) 找吴佑炫开一个账户;  
  7. app bug监控系统 bugtags,请自行注册,然后让吴佑炫邀请加入;  
  8. 查看app gradle环境与打包,安装好app,试用并测试和熟悉功能与业务;
  9. 接口文档地址:https://dev.alphalawyer.cn/ilaw/swagger/index.html#/ 
