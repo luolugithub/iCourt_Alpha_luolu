@@ -48,4 +48,9 @@ public class TimingConfig {
         }
     }
 
+    /**
+     * 计时标题最大长度
+     */
+    public static final int TIMING_NAME_MAX_LENGTH=200;
+
 }

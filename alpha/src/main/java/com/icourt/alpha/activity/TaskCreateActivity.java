@@ -25,6 +25,7 @@ import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.TaskUsersAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.constants.TaskConfig;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TaskGroupEntity;
@@ -119,8 +120,6 @@ public class TaskCreateActivity extends ListenBackActivity
     LinearLayout taskGroupLayout;
 
     TaskReminderEntity taskReminderEntity;
-    private static final int MAX_TASK_NAME_LENGTH = 200;
-    private static final int MAX_TASK_DESC_LENGTH = 3000;
 
 
     /**
@@ -138,7 +137,7 @@ public class TaskCreateActivity extends ListenBackActivity
         intent.putExtra(KEY_TASK_TITLE, TextUtils.isEmpty(taskTitle) ? SpUtils.getTemporaryCache().getStringData(KEY_CACHE_TITLE, "") : taskTitle);
         intent.putExtra(KEY_TASK_DUE_TIME, dueTime);
         //标题超过200以内,整个内容作为详情
-        intent.putExtra(KEY_TASK_DESC, StringUtils.length(taskTitle) > MAX_TASK_NAME_LENGTH ? taskTitle : SpUtils.getTemporaryCache().getStringData(KEY_CACHE_DESC, ""));
+        intent.putExtra(KEY_TASK_DESC, StringUtils.length(taskTitle) > TaskConfig.TASK_NAME_MAX_LENGTH ? taskTitle : SpUtils.getTemporaryCache().getStringData(KEY_CACHE_DESC, ""));
         context.startActivity(intent);
     }
 
@@ -175,16 +174,16 @@ public class TaskCreateActivity extends ListenBackActivity
         super.initView();
         setTitle(R.string.task_create_task);
 
-        taskNameEt.setFilters(LengthListenFilter.createSingleInputFilter(new LengthListenFilter(MAX_TASK_NAME_LENGTH) {
+        taskNameEt.setFilters(LengthListenFilter.createSingleInputFilter(new LengthListenFilter(TaskConfig.TASK_NAME_MAX_LENGTH) {
             @Override
             public void onInputOverLength(int maxLength) {
-                showToast(String.format("任务名称不能超过%s个字符", maxLength));
+                showToast(getString(R.string.task_name_limit_format, String.valueOf(maxLength)));
             }
         }));
-        taskDescEt.setFilters(LengthListenFilter.createSingleInputFilter(new LengthListenFilter(MAX_TASK_DESC_LENGTH) {
+        taskDescEt.setFilters(LengthListenFilter.createSingleInputFilter(new LengthListenFilter(TaskConfig.TASK_DESC_MAX_LENGTH) {
             @Override
             public void onInputOverLength(int maxLength) {
-                showToast(String.format("任务详情不能超过%s个字符", maxLength));
+                showToast(getString(R.string.task_desc_limit_format, String.valueOf(maxLength)));
             }
         }));
         titleAction.setEnabled(!StringUtils.isEmpty(taskNameEt.getText()));
@@ -217,7 +216,7 @@ public class TaskCreateActivity extends ListenBackActivity
             dueTime = getIntent().getLongExtra(KEY_TASK_DUE_TIME, 0);
 
             //如果标题超过200 就把标题截取200以内
-            if (StringUtils.length(taskTitle) > MAX_TASK_NAME_LENGTH) {
+            if (StringUtils.length(taskTitle) > TaskConfig.TASK_NAME_MAX_LENGTH) {
                 taskTitle = taskTitle.substring(0, 200);
             }
             taskNameEt.setText(taskTitle);

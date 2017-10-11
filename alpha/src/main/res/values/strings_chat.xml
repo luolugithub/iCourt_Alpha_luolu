@@ -3,4 +3,6 @@
     <!-- 享聊模块 字符串资源定义 chat_开头 -->
     <string name="chat_news">消息</string>
     <string name="chat_create_group">创建讨论组</string>
+    <string name="chat_group_name_limit_format" formatted="false">讨论组名称不能超过%s个字符</string>
+    <string name="chat_group_desc_limit_format" formatted="false">讨论组目标不能超过%s个字符</string>
 </resources>

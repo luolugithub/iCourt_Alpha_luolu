@@ -8,7 +8,6 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
-import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.CheckedTextView;
@@ -40,6 +39,7 @@ import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.view.CircleTimerView;
+import com.icourt.alpha.widget.filter.InputActionNextFilter;
 import com.icourt.api.RequestUtils;
 import com.umeng.analytics.MobclickAgent;
 
@@ -279,12 +279,8 @@ public class TimerAddActivity extends BaseTimerActivity
                 return false;
             }
         });
-        timeNameTv.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                return (event.getKeyCode() == KeyEvent.KEYCODE_ENTER);
-            }
-        });
+        timeNameTv.setFilters(timingNameInputFilters);
+        timeNameTv.setOnEditorActionListener(new InputActionNextFilter());
     }
 
     /**

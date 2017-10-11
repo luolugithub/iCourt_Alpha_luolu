@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- 资料库 sfile相关的字符串资源 -->
+    <!-- 资料库 sfile相关的字符串资源    包含foramt的字符如s% 用_format结尾 -->
     <string name="repo_empty">暂无资料库</string>
     <string name="repo_share_empty">没有共享给我的资料库</string>
     <string name="repo_lawfirm_empty">尚未建立资料库</string>

@@ -10,7 +10,6 @@ import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
@@ -42,6 +41,7 @@ import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.CircleTimerView;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
+import com.icourt.alpha.widget.filter.InputActionNextFilter;
 import com.icourt.api.RequestUtils;
 
 import java.io.Serializable;
@@ -241,12 +241,8 @@ public class TimerDetailActivity extends BaseTimerActivity
             });
         }
 
-        timeNameTv.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                return (event.getKeyCode() == KeyEvent.KEYCODE_ENTER);
-            }
-        });
+        timeNameTv.setFilters(timingNameInputFilters);
+        timeNameTv.setOnEditorActionListener(new InputActionNextFilter());
     }
 
     @OnClick({R.id.minus_time_image,

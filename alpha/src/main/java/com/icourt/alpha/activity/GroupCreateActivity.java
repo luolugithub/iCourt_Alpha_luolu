@@ -29,6 +29,7 @@ import com.icourt.alpha.adapter.IMContactAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseDialogFragment;
+import com.icourt.alpha.constants.ChatConfig;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
@@ -64,9 +65,6 @@ public class GroupCreateActivity extends ListenBackActivity implements OnFragmen
     private static final int REQ_CODE_DEL_USER = 1002;
     private static final String KEY_CACHE_TITLE = String.format("%s_%s", GroupCreateActivity.class.getSimpleName(), "cacheTitle");
     private static final String KEY_CACHE_DESC = String.format("%s_%s", GroupCreateActivity.class.getSimpleName(), "cacheDesc");
-
-    private static final int MAX_GROUP_NAME_LENGTH = 50;
-    private static final int MAX_GROUP_DESC_LENGTH = 140;
 
 
     @BindView(R.id.titleBack)
@@ -145,16 +143,16 @@ public class GroupCreateActivity extends ListenBackActivity implements OnFragmen
             }
         });
 
-        groupNameEt.setFilters(LengthListenFilter.createSingleInputFilter(new LengthListenFilter(MAX_GROUP_NAME_LENGTH) {
+        groupNameEt.setFilters(LengthListenFilter.createSingleInputFilter(new LengthListenFilter(ChatConfig.GROUP_NAME_MAX_LENGTH) {
             @Override
             public void onInputOverLength(int maxLength) {
-                showToast(String.format("讨论组名称不能超过%s个字符", maxLength));
+                showToast(getString(R.string.chat_group_name_limit_format, String.valueOf(maxLength)));
             }
         }));
-        groupDescEt.setFilters(LengthListenFilter.createSingleInputFilter(new LengthListenFilter(MAX_GROUP_DESC_LENGTH) {
+        groupDescEt.setFilters(LengthListenFilter.createSingleInputFilter(new LengthListenFilter(ChatConfig.GROUP_DESC_MAX_LENGTH) {
             @Override
             public void onInputOverLength(int maxLength) {
-                showToast(String.format("讨论组目标不能超过%s个字符", maxLength));
+                showToast(getString(R.string.chat_group_desc_limit_format, String.valueOf(maxLength)));
             }
         }));
         groupNameEt.addTextChangedListener(new TextWatcher() {
