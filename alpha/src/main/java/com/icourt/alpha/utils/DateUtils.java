@@ -1,6 +1,5 @@
 package com.icourt.alpha.utils;
 
-import android.os.SystemClock;
 import android.text.TextUtils;
 
 import java.text.SimpleDateFormat;
@@ -8,11 +7,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
-import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
-
-import static cn.finalteam.toolsfinal.DateUtils.date;
-import static cn.finalteam.toolsfinal.DateUtils.reformatTime;
 
 public class DateUtils {
 
@@ -504,11 +499,7 @@ public class DateUtils {
      * @return
      */
     public static long getTodayStartTime() {
-        Calendar currentDate = new GregorianCalendar();
-        currentDate.set(Calendar.HOUR_OF_DAY, 0);
-        currentDate.set(Calendar.MINUTE, 0);
-        currentDate.set(Calendar.SECOND, 0);
-        return currentDate.getTime().getTime();
+        return getDayStartTime(System.currentTimeMillis());
     }
 
     /**
@@ -517,11 +508,38 @@ public class DateUtils {
      * @return
      */
     public static long getTodayEndTime() {
+        return getDayEndTime(System.currentTimeMillis());
+    }
+
+    /**
+     * 获取时间戳所在天的开始时间
+     *
+     * @param timeMillis
+     * @return
+     */
+    public static long getDayStartTime(long timeMillis) {
         Calendar currentDate = new GregorianCalendar();
+        currentDate.setTimeInMillis(timeMillis);
+        currentDate.set(Calendar.HOUR_OF_DAY, 0);
+        currentDate.set(Calendar.MINUTE, 0);
+        currentDate.set(Calendar.SECOND, 0);
+        currentDate.set(Calendar.MILLISECOND, 0);
+        return currentDate.getTimeInMillis();
+    }
+
+    /**
+     * 获取时间戳所在天的结束时间
+     *
+     * @param timeMillis
+     * @return
+     */
+    public static long getDayEndTime(long timeMillis) {
+        Calendar currentDate = new GregorianCalendar();
+        currentDate.setTimeInMillis(timeMillis);
         currentDate.set(Calendar.HOUR_OF_DAY, 23);
         currentDate.set(Calendar.MINUTE, 59);
         currentDate.set(Calendar.SECOND, 59);
-        return currentDate.getTime().getTime();
+        return currentDate.getTimeInMillis();
     }
 
     /**
@@ -754,7 +772,7 @@ public class DateUtils {
     public static Date getSupportBeginDayofMonth(int year, int monthOfYear) {
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.YEAR, year);
-        cal.set(Calendar.MONTH, monthOfYear-1);
+        cal.set(Calendar.MONTH, monthOfYear - 1);
         cal.set(Calendar.DAY_OF_MONTH, 1);
         return cal.getTime();
     }
@@ -769,7 +787,7 @@ public class DateUtils {
     public static Date getSupportEndDayofMonth(int year, int monthOfYear) {
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.YEAR, year);
-        cal.set(Calendar.MONTH, monthOfYear-1);
+        cal.set(Calendar.MONTH, monthOfYear - 1);
         cal.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH));
 
         return cal.getTime();
@@ -800,6 +818,7 @@ public class DateUtils {
         cal.set(Calendar.DAY_OF_YEAR, cal.getActualMaximum(Calendar.DAY_OF_YEAR));
         return cal.getTime();
     }
+
     /**
      * 获取当前时间的时间戳（秒数为0）
      * 比如：当前时间为12:10:30，返回的是12:10:00的时间戳
@@ -838,7 +857,7 @@ public class DateUtils {
 
         int year1 = cal1.get(Calendar.YEAR);
         int year2 = cal2.get(Calendar.YEAR);
-        if (year1 != year2) {//同一年
+        if (year1 != year2) {//不同年
             int timeDistance = 0;
             for (int i = year1; i < year2; i++) {
                 if (i % 4 == 0 && i % 100 != 0 || i % 400 == 0) {//闰年
@@ -848,8 +867,76 @@ public class DateUtils {
                 }
             }
             return timeDistance + (day2 - day1);
-        } else {//不同年
+        } else {//同一年
             return day2 - day1;
         }
+    }
+
+    /**
+     * 获取时间戳所在月份的第一天的起始时间
+     *
+     * @param millis
+     * @return
+     */
+    public static long getMonthFirstDay(long millis) {
+        Calendar instance = Calendar.getInstance();
+        instance.setTimeInMillis(millis);
+        instance.set(Calendar.DAY_OF_MONTH, 1);
+        instance.set(Calendar.HOUR_OF_DAY, 0);
+        instance.set(Calendar.MINUTE, 0);
+        instance.set(Calendar.SECOND, 0);
+        instance.set(Calendar.MILLISECOND, 0);
+        return instance.getTimeInMillis();
+    }
+
+    /**
+     * 获取时间戳所在月份的最后一天的最后一秒
+     *
+     * @param millis
+     * @return
+     */
+    public static long getMonthLastDay(long millis) {
+        Calendar instance = Calendar.getInstance();
+        instance.setTimeInMillis(millis);
+        instance.set(Calendar.DAY_OF_MONTH, instance.getActualMaximum(Calendar.DAY_OF_MONTH));
+        instance.set(Calendar.HOUR_OF_DAY, 23);
+        instance.set(Calendar.MINUTE, 59);
+        instance.set(Calendar.SECOND, 59);
+        return instance.getTimeInMillis();
+    }
+
+    /**
+     * 获取时间戳所在年的第一天的起始时间
+     *
+     * @param millis
+     * @return
+     */
+    public static long getYearStartDay(long millis) {
+        Calendar instance = Calendar.getInstance();
+        instance.setTimeInMillis(millis);
+        instance.set(Calendar.MONTH, Calendar.JANUARY);
+        instance.set(Calendar.DAY_OF_MONTH, 1);
+        instance.set(Calendar.HOUR_OF_DAY, 0);
+        instance.set(Calendar.MINUTE, 0);
+        instance.set(Calendar.SECOND, 0);
+        instance.set(Calendar.MILLISECOND, 0);
+        return instance.getTimeInMillis();
+    }
+
+    /**
+     * 获取时间戳所在年份的最后一天最后一秒
+     *
+     * @param millis
+     * @return
+     */
+    public static long getYearLastDay(long millis) {
+        Calendar instance = Calendar.getInstance();
+        instance.setTimeInMillis(millis);
+        instance.set(Calendar.MONTH, Calendar.DECEMBER);
+        instance.set(Calendar.DAY_OF_MONTH, 31);
+        instance.set(Calendar.HOUR_OF_DAY, 23);
+        instance.set(Calendar.MINUTE, 59);
+        instance.set(Calendar.SECOND, 59);
+        return instance.getTimeInMillis();
     }
 }

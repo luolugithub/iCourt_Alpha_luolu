@@ -2,23 +2,24 @@ package com.icourt.alpha.fragment;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.github.sundeepk.compactcalendarview.CompactCalendarView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseFragment;
-import com.icourt.alpha.entity.bean.TimingWeekEntity;
+import com.icourt.alpha.entity.bean.TimingSelectEntity;
+import com.icourt.alpha.interfaces.OnDateSelectedListener;
 import com.icourt.alpha.utils.DateUtils;
+import com.jeek.calendar.widget.calendar.OnCalendarClickListener;
+import com.jeek.calendar.widget.calendar.month.MonthCalendarView;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.Calendar;
 import java.util.Locale;
-import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -32,6 +33,8 @@ import butterknife.Unbinder;
 
 public class TimingSelectDayFragment extends BaseFragment {
 
+    Unbinder unbinder;
+
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -40,14 +43,14 @@ public class TimingSelectDayFragment extends BaseFragment {
     ImageView titleForward;
     @BindView(R.id.titleAction)
     TextView titleAction;
-    @BindView(R.id.compactcalendar_view)
-    CompactCalendarView compactcalendarView;
+    @BindView(R.id.mcvCalendar)
+    MonthCalendarView mcvCalendar;
 
-    Unbinder unbinder;
+    OnDateSelectedListener onDateSelectedListener;
 
-    Date selectedDate = new Date();
+    Calendar selectedDate = Calendar.getInstance();
 
-    private SimpleDateFormat dateFormatForMonth = new SimpleDateFormat("yyyy年MMM", Locale.getDefault());
+    private SimpleDateFormat dateFormatForMonth = new SimpleDateFormat("yyyy年MM月", Locale.getDefault());
 
     public static TimingSelectDayFragment newInstance() {
         return new TimingSelectDayFragment();
@@ -63,27 +66,44 @@ public class TimingSelectDayFragment extends BaseFragment {
 
     @Override
     protected void initView() {
-        initCompactCalendar();
+
+        Fragment parentFragment = getParentFragment();
+        if (parentFragment instanceof OnDateSelectedListener) {
+            onDateSelectedListener = (OnDateSelectedListener) parentFragment;
+        }
+        initCalendar();
     }
 
-    private void initCompactCalendar() {
-        compactcalendarView.setUseThreeLetterAbbreviation(false);
-        compactcalendarView.setLocale(TimeZone.getDefault(), Locale.CHINESE);
-        compactcalendarView.setUseThreeLetterAbbreviation(true);
-        compactcalendarView.setDayColumnNames(new String[]{"一", "二", "三", "四", "五", "六", "日"});
-        compactcalendarView.setListener(new CompactCalendarView.CompactCalendarViewListener() {
+    private void initCalendar() {
+
+        scrollToToday();
+
+        mcvCalendar.setOnCalendarClickListener(new OnCalendarClickListener() {
             @Override
-            public void onDayClick(Date date) {
-                selectedDate = date;
+            public void onClickDate(int year, int month, int day) {
+                setYearMonthToView(year, month, day);
             }
 
             @Override
-            public void onMonthScroll(Date date) {
-                titleContent.setText(dateFormatForMonth.format(date));
+            public void onPageChange(int year, int month, int day) {
+                setYearMonthToView(year, month, day);
             }
         });
-        titleContent.setText(dateFormatForMonth.format(System.currentTimeMillis()));
-        compactcalendarView.removeAllEvents();
+    }
+
+    private void setYearMonthToView(int year, int month, int day) {
+        selectedDate.set(Calendar.YEAR, year);
+        selectedDate.set(Calendar.MONTH, month);
+        selectedDate.set(Calendar.DAY_OF_MONTH, day);
+        selectedDate.set(Calendar.HOUR_OF_DAY, 0);
+        selectedDate.set(Calendar.MINUTE, 0);
+        selectedDate.set(Calendar.SECOND, 0);
+        selectedDate.set(Calendar.MILLISECOND, 0);
+        setTitleContent(selectedDate.getTimeInMillis());
+
+        if (onDateSelectedListener != null) {
+            onDateSelectedListener.onDateSelected(selectedDate.getTimeInMillis());
+        }
     }
 
     @OnClick({R.id.titleBack,
@@ -93,10 +113,14 @@ public class TimingSelectDayFragment extends BaseFragment {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.titleBack:
-                compactcalendarView.showPreviousMonth();
+                if (mcvCalendar.getCurrentItem() > 0) {
+                    mcvCalendar.setCurrentItem(mcvCalendar.getCurrentItem() - 1);
+                }
                 break;
             case R.id.titleForward:
-                compactcalendarView.showNextMonth();
+                if (mcvCalendar.getCurrentItem() < mcvCalendar.getAdapter().getCount() - 1) {
+                    mcvCalendar.setCurrentItem(mcvCalendar.getCurrentItem() + 1);
+                }
                 break;
             case R.id.titleAction:
                 scrollToToday();
@@ -108,21 +132,32 @@ public class TimingSelectDayFragment extends BaseFragment {
     }
 
     private void scrollToToday() {
-        titleContent.setText(dateFormatForMonth.format(System.currentTimeMillis()));
-        compactcalendarView.setCurrentDate(new Date());
-        compactcalendarView.invalidate();
-        selectedDate = new Date();
+        selectedDate.setTimeInMillis(DateUtils.getDayStartTime(System.currentTimeMillis()));
+        setTitleContent(selectedDate.getTimeInMillis());
+        mcvCalendar.setTodayToView();
+
+        if (onDateSelectedListener != null) {
+            onDateSelectedListener.onDateSelected(selectedDate.getTimeInMillis());
+        }
+    }
+
+    private void setTitleContent(long timeMillis) {
+        titleContent.setText(dateFormatForMonth.format(timeMillis));
+    }
+
+    public long getSelectedTime() {
+        return selectedDate.getTimeInMillis();
     }
 
     @Override
     public Bundle getFragmentData(int type, Bundle inBundle) {
         Bundle arguments = new Bundle();
-        TimingWeekEntity timingWeekEntity = new TimingWeekEntity();
-        timingWeekEntity.startTimeMillios = selectedDate.getTime();
-        timingWeekEntity.endTimeMillios = selectedDate.getTime() + TimeUnit.DAYS.toMillis(1);
-        timingWeekEntity.startTimeStr = DateUtils.getyyyy_MM_dd(timingWeekEntity.startTimeMillios);
-        timingWeekEntity.endTimeStr = DateUtils.getyyyy_MM_dd(timingWeekEntity.endTimeMillios);
-        arguments.putSerializable(KEY_FRAGMENT_RESULT, timingWeekEntity);
+        TimingSelectEntity timingSelectEntity = new TimingSelectEntity();
+        timingSelectEntity.startTimeMillis = selectedDate.getTimeInMillis();
+        timingSelectEntity.endTimeMillis = DateUtils.getDayEndTime(selectedDate.getTimeInMillis());
+        timingSelectEntity.startTimeStr = DateUtils.getyyyy_MM_dd(timingSelectEntity.startTimeMillis);
+        timingSelectEntity.endTimeStr = DateUtils.getyyyy_MM_dd(timingSelectEntity.endTimeMillis);
+        arguments.putSerializable(KEY_FRAGMENT_RESULT, timingSelectEntity);
         return arguments;
     }
 

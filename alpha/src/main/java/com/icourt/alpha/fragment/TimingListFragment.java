@@ -64,6 +64,7 @@ public class TimingListFragment extends BaseFragment {
     @TimingConfig.TIMINGQUERYTYPE
     int queryType;
     long startTimeMillis;
+    long endTimeMillis;
     TimeAdapter timeAdapter;
     int pageIndex = 0;
 
@@ -79,6 +80,15 @@ public class TimingListFragment extends BaseFragment {
     protected void initView() {
         queryType = TimingConfig.convert2timingQueryType(getArguments().getInt(KEY_QUERY_TYPE));
         startTimeMillis = getArguments().getLong(KEY_START_TIME);
+        if (queryType == TimingConfig.TIMING_QUERY_BY_DAY) {//日
+            endTimeMillis = startTimeMillis + TimeUnit.DAYS.toMillis(1) - 1;
+        } else if (queryType == TimingConfig.TIMING_QUERY_BY_WEEK) {//周
+            endTimeMillis = startTimeMillis + TimeUnit.DAYS.toMillis(7) - 1;
+        } else if (queryType == TimingConfig.TIMING_QUERY_BY_MONTH) {//月
+            endTimeMillis = DateUtils.getMonthLastDay(startTimeMillis);
+        } else if (queryType == TimingConfig.TIMING_QUERY_BY_YEAR) {//年
+
+        }
         recyclerView.setBackgroundColor(Color.WHITE);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(timeAdapter = new TimeAdapter(true));

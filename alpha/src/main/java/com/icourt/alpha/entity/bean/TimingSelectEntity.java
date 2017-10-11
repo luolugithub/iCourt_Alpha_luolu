@@ -14,21 +14,21 @@ import java.util.Locale;
  * version 2.1.1
  */
 
-public class TimingWeekEntity implements Serializable{
+public class TimingSelectEntity implements Serializable{
 
     public String startTimeStr;//开始日期： eg：2017-01－11
 
     public String endTimeStr;//结束日期： eg：2017-01－11
 
-    public long startTimeMillios;//周的开始时间毫秒数
+    public long startTimeMillis;//周的开始时间毫秒数
 
-    public long endTimeMillios;//周的结束时间毫秒数
+    public long endTimeMillis;//周的结束时间毫秒数
 
     private String year;
 
     @Override
     public String toString() {
-        return formatDate(startTimeMillios) + " - " + formatDate(endTimeMillios);
+        return formatDate(startTimeMillis) + " - " + formatDate(endTimeMillis);
     }
 
 
@@ -40,7 +40,7 @@ public class TimingWeekEntity implements Serializable{
     public String getYear() {
         String formatStr = "yyyy";
         SimpleDateFormat formatter = new SimpleDateFormat(formatStr, Locale.CHINA);
-        return formatter.format(endTimeMillios);
+        return formatter.format(endTimeMillis);
     }
 
     /**

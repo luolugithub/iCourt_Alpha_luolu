@@ -9,9 +9,10 @@ import android.view.ViewGroup;
 
 import com.bigkoo.pickerview.adapter.WheelAdapter;
 import com.bigkoo.pickerview.lib.WheelView;
+import com.bigkoo.pickerview.listener.OnItemSelectedListener;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseFragment;
-import com.icourt.alpha.entity.bean.TimingWeekEntity;
+import com.icourt.alpha.entity.bean.TimingSelectEntity;
 import com.icourt.alpha.utils.DateUtils;
 
 import java.util.ArrayList;
@@ -30,6 +31,7 @@ import butterknife.Unbinder;
 public class TimingSelectMonthFragment extends BaseFragment {
 
     Unbinder unbinder;
+
     @BindView(R.id.wheelview_year)
     WheelView wheelviewYear;
     @BindView(R.id.wheelview_month)
@@ -37,6 +39,9 @@ public class TimingSelectMonthFragment extends BaseFragment {
 
     TimeWheelAdapter yearAdapter;
     TimeWheelAdapter monthAdapter;
+
+    private int selectedYearPosition;//选中的年所在的position
+    private int selectedMonthPosition;//选中的月所在的position
 
     public static TimingSelectMonthFragment newInstance() {
         return new TimingSelectMonthFragment();
@@ -61,39 +66,86 @@ public class TimingSelectMonthFragment extends BaseFragment {
         List<String> yearList = new ArrayList<>();
         List<String> monthList = new ArrayList<>();
 
-        Calendar calendar = Calendar.getInstance();
+        final Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(System.currentTimeMillis());
         int year = calendar.get(Calendar.YEAR);
-        for (int i = year - 20; i < year + 20; i++) {//当前年的前后20年
+        for (int i = 2015; i <= year; i++) {//2015年-当前年
             yearList.add(String.valueOf(i));
         }
 
-        for (int i = 1; i <= 12; i++) {
+        for (int i = 1; i <= 12; i++) {//1-12月
             monthList.add(String.valueOf(i));
         }
 
         wheelviewYear.setAdapter(yearAdapter = new TimeWheelAdapter(yearList));
         wheelviewMonth.setAdapter(monthAdapter = new TimeWheelAdapter(monthList));
 
-        int currentYearCount = 0, currentMonthCount = 0;
+        wheelviewYear.setOnItemSelectedListener(new OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(int i) {
+                verifyDate(i, selectedMonthPosition);
+            }
+        });
+
+        wheelviewMonth.setOnItemSelectedListener(new OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(int i) {
+                verifyDate(selectedYearPosition, i);
+            }
+        });
+
         for (int i = 0; i < yearList.size(); i++) {
             if (TextUtils.equals(yearList.get(i), String.valueOf(calendar.get(Calendar.YEAR)))) {
-                currentYearCount = i;
+                selectedYearPosition = i;
             }
         }
         for (int i = 0; i < monthList.size(); i++) {
-            if (TextUtils.equals(monthList.get(i), String.valueOf(calendar.get(Calendar.MONTH)))) {
-                currentMonthCount = i;
+            if (TextUtils.equals(monthList.get(i), String.valueOf(calendar.get(Calendar.MONTH) + 1))) {//因为Calendar的月份是以0开始的，所以这里要加1。
+                selectedMonthPosition = i;
             }
         }
-        wheelviewYear.setCurrentItem(currentYearCount);
-        wheelviewMonth.setCurrentItem(currentMonthCount + 1);
+        wheelviewYear.setCurrentItem(selectedYearPosition);
+        wheelviewMonth.setCurrentItem(selectedMonthPosition);
     }
+
+
+    /**
+     * 校验选中的年、月是否是符合时间范围内的
+     *
+     * @param yearPosition
+     * @param monthPosition
+     */
+    private void verifyDate(int yearPosition, int monthPosition) {
+        selectedYearPosition = yearPosition;
+        final Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        String monthItem = monthAdapter.getItem(monthPosition);
+        if (Integer.valueOf(yearAdapter.getItem(selectedYearPosition)) == year && Integer.valueOf(monthItem) > (month + 1)) {//如果选中的年份、月份大于当前日期所在的年份、月份。
+            List<String> monthList = monthAdapter.getTimeList();
+            for (int i = 0; i < monthList.size(); i++) {
+                if (Integer.valueOf(monthList.get(i)) == month + 1) {
+                    selectedMonthPosition = i;
+                    break;
+                }
+            }
+            wheelviewMonth.setCurrentItem(selectedMonthPosition);
+        } else {
+            selectedMonthPosition = monthPosition;
+        }
+    }
+
 
     private class TimeWheelAdapter implements WheelAdapter<String> {
         List<String> timeList = new ArrayList<>();
 
         public TimeWheelAdapter(List<String> data) {
             this.timeList = data;
+        }
+
+        public List<String> getTimeList() {
+            return timeList;
         }
 
         @Override
@@ -116,14 +168,14 @@ public class TimingSelectMonthFragment extends BaseFragment {
     @Override
     public Bundle getFragmentData(int type, Bundle inBundle) {
         Bundle arguments = new Bundle();
-        TimingWeekEntity timingWeekEntity = new TimingWeekEntity();
-        int currentYear = Integer.valueOf(yearAdapter.getItem(wheelviewYear.getCurrentItem()));
-        int currentMonth = Integer.valueOf(monthAdapter.getItem(wheelviewMonth.getCurrentItem()));
-        timingWeekEntity.startTimeMillios = DateUtils.getSupportBeginDayofMonth(currentYear, currentMonth).getTime();
-        timingWeekEntity.endTimeMillios = DateUtils.getSupportEndDayofMonth(currentYear, currentMonth).getTime();
-        timingWeekEntity.startTimeStr = DateUtils.getyyyy_MM_dd(timingWeekEntity.startTimeMillios);
-        timingWeekEntity.endTimeStr = DateUtils.getyyyy_MM_dd(timingWeekEntity.endTimeMillios);
-        arguments.putSerializable(KEY_FRAGMENT_RESULT, timingWeekEntity);
+        TimingSelectEntity timingSelectEntity = new TimingSelectEntity();
+        int currentYear = Integer.valueOf(yearAdapter.getItem(selectedYearPosition));
+        int currentMonth = Integer.valueOf(monthAdapter.getItem(selectedMonthPosition));
+        timingSelectEntity.startTimeMillis = DateUtils.getSupportBeginDayofMonth(currentYear, currentMonth).getTime();
+        timingSelectEntity.endTimeMillis = DateUtils.getSupportEndDayofMonth(currentYear, currentMonth).getTime();
+        timingSelectEntity.startTimeStr = DateUtils.getyyyy_MM_dd(timingSelectEntity.startTimeMillis);
+        timingSelectEntity.endTimeStr = DateUtils.getyyyy_MM_dd(timingSelectEntity.endTimeMillis);
+        arguments.putSerializable(KEY_FRAGMENT_RESULT, timingSelectEntity);
         return arguments;
     }
 

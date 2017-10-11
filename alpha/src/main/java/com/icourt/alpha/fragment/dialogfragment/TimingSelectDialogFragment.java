@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -17,14 +18,16 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.base.BaseFragment;
-import com.icourt.alpha.entity.bean.TimingWeekEntity;
+import com.icourt.alpha.entity.bean.TimingSelectEntity;
 import com.icourt.alpha.fragment.TimingSelectDayFragment;
 import com.icourt.alpha.fragment.TimingSelectMonthFragment;
 import com.icourt.alpha.fragment.TimingSelectWeekFragment;
 import com.icourt.alpha.fragment.TimingSelectYearFragment;
+import com.icourt.alpha.interfaces.OnDateSelectedListener;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.view.NoScrollViewPager;
+import com.icourt.alpha.widget.manager.TimerDateManager;
 
 import java.util.Arrays;
 
@@ -41,7 +44,7 @@ import butterknife.Unbinder;
  * version 1.0.0
  */
 
-public class TimingSelectDialogFragment extends BaseDialogFragment {
+public class TimingSelectDialogFragment extends BaseDialogFragment implements OnDateSelectedListener {
 
     private Unbinder bind;
 
@@ -155,6 +158,17 @@ public class TimingSelectDialogFragment extends BaseDialogFragment {
                 tvDateYear.setChecked(true);
                 break;
         }
+
+        if (position == 0) {//如果是日的选择时间，需要判断选择的时间是否在有效范围内
+            Fragment fragment = baseFragmentAdapter.getItem(position);
+            if (fragment != null && fragment instanceof TimingSelectDayFragment) {
+                TimingSelectDayFragment dayFragment = (TimingSelectDayFragment) fragment;
+                onDateSelected(dayFragment.getSelectedTime());
+            }
+        } else {
+            tvFinish.setBackgroundResource(R.drawable.bg_round_orange);
+            tvFinish.setEnabled(true);
+        }
     }
 
     @OnClick({R.id.tv_cancel,
@@ -187,11 +201,11 @@ public class TimingSelectDialogFragment extends BaseDialogFragment {
                 BaseFragment fragment = (BaseFragment) baseFragmentAdapter.getItem(viewpager.getCurrentItem());
                 Bundle fragmentData = fragment.getFragmentData(0, null);
                 if (fragmentData == null) return;
-                TimingWeekEntity timingWeekEntity = (TimingWeekEntity) fragmentData.getSerializable(KEY_FRAGMENT_RESULT);
-                if (timingWeekEntity != null) {
+                TimingSelectEntity timingSelectEntity = (TimingSelectEntity) fragmentData.getSerializable(KEY_FRAGMENT_RESULT);
+                if (timingSelectEntity != null) {
                     onFragmentCallBackListener.onFragmentCallBack(fragment, 0, fragmentData);
-                    log("开始时间： －－－－  "+timingWeekEntity.startTimeStr);
-                    log("结束时间： －－－－  "+timingWeekEntity.endTimeStr);
+                    log("开始时间： －－－－  " + timingSelectEntity.startTimeStr);
+                    log("结束时间： －－－－  " + timingSelectEntity.endTimeStr);
                 }
                 break;
 
@@ -202,5 +216,19 @@ public class TimingSelectDialogFragment extends BaseDialogFragment {
     public void onDestroyView() {
         super.onDestroyView();
         bind.unbind();
+    }
+
+    @Override
+    public void onDateSelected(long timeMillis) {
+        if (timeMillis < TimerDateManager.getStartDate().getTimeInMillis()) {//如果选中的时间小于2015年1月1日，则完成按钮不可点击
+            tvFinish.setEnabled(false);
+            tvFinish.setBackgroundResource(R.drawable.bg_round_gray);
+        } else if (timeMillis > System.currentTimeMillis()) {//如果选中的时间大于当前时间，则完成按钮不可点击
+            tvFinish.setEnabled(false);
+            tvFinish.setBackgroundResource(R.drawable.bg_round_gray);
+        } else {//可点击
+            tvFinish.setEnabled(true);
+            tvFinish.setBackgroundResource(R.drawable.bg_round_orange);
+        }
     }
 }

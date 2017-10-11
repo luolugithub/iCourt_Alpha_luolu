@@ -22,6 +22,7 @@ import com.icourt.alpha.entity.bean.TimingDateEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
+import com.icourt.alpha.widget.manager.TimerDateManager;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -170,22 +171,17 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
         wheelviewMinute.setTextSize(20);
         wheelviewMinute.setCyclic(false);
 
-        try {
-            dateWheelAdapter = new DateWheelAdapter();
-            ArrayList<TimingDateEntity> tempMenus = new ArrayList<>();
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(new SimpleDateFormat("yyyy-MM-dd").parse("2015-01-01"));
-            for (int i = 0; i < 10; i++) {
-                TimingDateEntity timingDateEntity = new TimingDateEntity();
-                timingDateEntity.timeMillios = cal.getTimeInMillis();
-                tempMenus.add(timingDateEntity);
-                cal.add(Calendar.DAY_OF_YEAR, 1);
-            }
-            dateWheelAdapter.setTimeList(tempMenus);
-            wheelviewDate.setAdapter(dateWheelAdapter);
-        } catch (ParseException e) {
-
+        dateWheelAdapter = new DateWheelAdapter();
+        ArrayList<TimingDateEntity> tempMenus = new ArrayList<>();
+        Calendar cal = TimerDateManager.getStartDate();
+        for (int i = 0; i < 10; i++) {
+            TimingDateEntity timingDateEntity = new TimingDateEntity();
+            timingDateEntity.timeMillios = cal.getTimeInMillis();
+            tempMenus.add(timingDateEntity);
+            cal.add(Calendar.DAY_OF_YEAR, 1);
         }
+        dateWheelAdapter.setTimeList(tempMenus);
+        wheelviewDate.setAdapter(dateWheelAdapter);
 
         //显示小时的list
         List<String> hourList = new ArrayList<>();
@@ -207,8 +203,7 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
             @Override
             public void subscribe(@io.reactivex.annotations.NonNull ObservableEmitter<List<TimingDateEntity>> e) throws Exception {
                 List<TimingDateEntity> dayList = new ArrayList<>();//显示日期的list
-                Calendar cal = Calendar.getInstance();
-                cal.setTime(new SimpleDateFormat("yyyy-MM-dd").parse("2015-01-01"));
+                Calendar cal = TimerDateManager.getStartDate();
                 while (cal.getTimeInMillis() < System.currentTimeMillis()) {
                     TimingDateEntity dateEntity = new TimingDateEntity();
                     dateEntity.timeMillios = cal.getTimeInMillis();

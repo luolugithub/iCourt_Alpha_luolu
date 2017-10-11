@@ -11,7 +11,7 @@ import com.bigkoo.pickerview.adapter.WheelAdapter;
 import com.bigkoo.pickerview.lib.WheelView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseFragment;
-import com.icourt.alpha.entity.bean.TimingWeekEntity;
+import com.icourt.alpha.entity.bean.TimingSelectEntity;
 import com.icourt.alpha.utils.DateUtils;
 
 import java.util.ArrayList;
@@ -51,9 +51,10 @@ public class TimingSelectYearFragment extends BaseFragment {
         wheelviewYear.setCyclic(false);
         wheelviewYear.setTextSize(20);
         Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(System.currentTimeMillis());
         int year = calendar.get(Calendar.YEAR);
         List<String> yearList = new ArrayList<>();
-        for (int i = year - 20; i < year + 20; i++) {
+        for (int i = 2015; i <= year; i++) {
             yearList.add(String.valueOf(i));
         }
 
@@ -95,13 +96,13 @@ public class TimingSelectYearFragment extends BaseFragment {
     @Override
     public Bundle getFragmentData(int type, Bundle inBundle) {
         Bundle arguments = new Bundle();
-        TimingWeekEntity timingWeekEntity = new TimingWeekEntity();
+        TimingSelectEntity timingSelectEntity = new TimingSelectEntity();
         int currentYear = Integer.valueOf(yearAdapter.getItem(wheelviewYear.getCurrentItem()));
-        timingWeekEntity.startTimeMillios = DateUtils.getSupportBeginDayofYear(currentYear).getTime();
-        timingWeekEntity.endTimeMillios = DateUtils.getSupportEndDayofYear(currentYear).getTime();
-        timingWeekEntity.startTimeStr = DateUtils.getyyyy_MM_dd(timingWeekEntity.startTimeMillios);
-        timingWeekEntity.endTimeStr = DateUtils.getyyyy_MM_dd(timingWeekEntity.endTimeMillios);
-        arguments.putSerializable(KEY_FRAGMENT_RESULT, timingWeekEntity);
+        timingSelectEntity.startTimeMillis = DateUtils.getSupportBeginDayofYear(currentYear).getTime();
+        timingSelectEntity.endTimeMillis = DateUtils.getSupportEndDayofYear(currentYear).getTime();
+        timingSelectEntity.startTimeStr = DateUtils.getyyyy_MM_dd(timingSelectEntity.startTimeMillis);
+        timingSelectEntity.endTimeStr = DateUtils.getyyyy_MM_dd(timingSelectEntity.endTimeMillis);
+        arguments.putSerializable(KEY_FRAGMENT_RESULT, timingSelectEntity);
         return arguments;
     }
 

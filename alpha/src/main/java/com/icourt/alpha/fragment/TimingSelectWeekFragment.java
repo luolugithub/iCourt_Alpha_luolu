@@ -13,14 +13,13 @@ import com.bigkoo.pickerview.lib.WheelView;
 import com.bigkoo.pickerview.listener.OnItemSelectedListener;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseFragment;
-import com.icourt.alpha.entity.bean.TimingWeekEntity;
+import com.icourt.alpha.entity.bean.TimingSelectEntity;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.widget.manager.TimerDateManager;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
@@ -44,14 +43,10 @@ import io.reactivex.schedulers.Schedulers;
 
 public class TimingSelectWeekFragment extends BaseFragment {
 
-    public static final long ONE_WEEK_MILLIOS = 7 * 24 * 60 * 60 * 1000 - 1;
-    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
     Unbinder unbinder;
 
     @BindView(R.id.wheelview_week)
     WheelView wheelView;
-    TimeWheelAdapter adapter;
-    int currentCount = 0;
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -60,8 +55,10 @@ public class TimingSelectWeekFragment extends BaseFragment {
     ImageView titleForward;
     @BindView(R.id.titleAction)
     TextView titleAction;
-    int position;//当前时间 为0；
-    private SimpleDateFormat dateFormatForMonth = new SimpleDateFormat("yyyy年MM", Locale.getDefault());
+
+    TimeWheelAdapter adapter;
+    Calendar currentMonthDate;//用来记录当前选中的月的时间戳。
+    private SimpleDateFormat dateFormatForMonth = new SimpleDateFormat("yyyy年MM月", Locale.getDefault());
 
     public static TimingSelectWeekFragment newInstance() {
         return new TimingSelectWeekFragment();
@@ -78,144 +75,99 @@ public class TimingSelectWeekFragment extends BaseFragment {
 
     @Override
     protected void initView() {
+        currentMonthDate = Calendar.getInstance();
+        currentMonthDate.setTimeInMillis(System.currentTimeMillis());
+        setMonthData(currentMonthDate);
+
         wheelView.setTextSize(20);
         try {//预加载10条数据
             adapter = new TimeWheelAdapter();
-            ArrayList<TimingWeekEntity> tempMenus = new ArrayList<>();
-            Calendar beforeCal = Calendar.getInstance();
-            Calendar laterCal = Calendar.getInstance();
-            int year = beforeCal.get(Calendar.YEAR);
-            beforeCal.setTime(simpleDateFormat.parse((year - 20) + "-01-01"));
-            laterCal.setTime(simpleDateFormat.parse((year + 20) + "-01-01"));
+            ArrayList<TimingSelectEntity> tempMenus = new ArrayList<>();
+            //起始时间是2015年1月1日
+            Calendar instance = TimerDateManager.getStartDate();
             //当前周的开始时间
-            long weekStartTime = 0;
+            long weekStartTime;
             //当前周的结束时间
             long weekEndTime;
+            //先预加载10条，如果一下子把数据全部加载出来，会导致DialogFragment弹出过慢。
             for (int i = 0; i < 10; i++) {
-                int d = 0;
-                if (beforeCal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {//如果是周日，则在当前日期上减去6天，就是周一了
-                    d = -6;
-                } else {//如果不是周日，周一的起始值是减去今天所对应周几，得出这周的第一天。
-                    d = Calendar.MONDAY - beforeCal.get(Calendar.DAY_OF_WEEK);
-                }
                 //所在周开始日期
-                beforeCal.add(Calendar.DAY_OF_WEEK, d);
-                weekStartTime = beforeCal.getTimeInMillis();
-                weekEndTime = weekStartTime + ONE_WEEK_MILLIOS;
-                TimingWeekEntity timingWeekEntity = new TimingWeekEntity();
-                timingWeekEntity.startTimeMillios = weekStartTime;
-                timingWeekEntity.endTimeMillios = weekEndTime;
-                timingWeekEntity.startTimeStr = DateUtils.getyyyy_MM_dd(weekStartTime);
-                timingWeekEntity.endTimeStr = DateUtils.getyyyy_MM_dd(weekEndTime);
-                beforeCal.add(Calendar.DAY_OF_YEAR, 1);
-                tempMenus.add(timingWeekEntity);
+                weekStartTime = DateUtils.getWeekStartTime(instance.getTimeInMillis());
+                weekEndTime = DateUtils.getWeekEndTime(instance.getTimeInMillis());
+                TimingSelectEntity timingSelectEntity = new TimingSelectEntity();
+                timingSelectEntity.startTimeMillis = weekStartTime;
+                timingSelectEntity.endTimeMillis = weekEndTime;
+                timingSelectEntity.startTimeStr = DateUtils.getyyyy_MM_dd(weekStartTime);
+                timingSelectEntity.endTimeStr = DateUtils.getyyyy_MM_dd(weekEndTime);
+                instance.add(Calendar.DAY_OF_YEAR, 1);
+                tempMenus.add(timingSelectEntity);
             }
             adapter.setTimeList(tempMenus);
             wheelView.setAdapter(adapter);
-        } catch (ParseException e) {
+        } catch (Exception e) {
 
         }
         setWeekData();
-        titleContent.setText(dateFormatForMonth.format(System.currentTimeMillis()));
         wheelView.setOnItemSelectedListener(new OnItemSelectedListener() {
             @Override
             public void onItemSelected(int i) {
-                TimingWeekEntity item = adapter.getItem(i);
-                titleContent.setText(dateFormatForMonth.format(item.endTimeMillios));
+                TimingSelectEntity item = adapter.getItem(i);
+                currentMonthDate.setTimeInMillis(item.endTimeMillis);
+                setMonthData(currentMonthDate);
             }
         });
     }
 
     /**
-     * 获取周数据
+     * 设置显示年／月的日期
      *
-     * @return
+     * @param calendar
      */
-    private List<TimingWeekEntity> getWeekData() {
-        List<TimingWeekEntity> dayList = new ArrayList<>();//显示日期的list
-        try {
-            //当前周的开始时间
-            long weekStartTime = 0;
-            //当前周的结束时间
-            long weekEndTime;
-            Calendar beforeCal = Calendar.getInstance();
-            Calendar laterCal = Calendar.getInstance();
-            int year = beforeCal.get(Calendar.YEAR);
-            beforeCal.setTime(simpleDateFormat.parse((year - 20) + "-01-01"));
-            laterCal.setTime(simpleDateFormat.parse((year + 20) + "-01-01"));
-
-            while (weekStartTime < laterCal.getTimeInMillis()) {
-                int d = 0;
-                if (beforeCal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {//如果是周日，则在当前日期上减去6天，就是周一了
-                    d = -6;
-                } else {//如果不是周日，周一的起始值是减去今天所对应周几，得出这周的第一天。
-                    d = Calendar.MONDAY - beforeCal.get(Calendar.DAY_OF_WEEK);
-                }
-                //所在周开始日期
-                beforeCal.add(Calendar.DAY_OF_WEEK, d);
-                weekStartTime = beforeCal.getTimeInMillis();
-                weekEndTime = weekStartTime + ONE_WEEK_MILLIOS;
-
-                TimingWeekEntity timingWeekEntity = new TimingWeekEntity();
-                timingWeekEntity.startTimeMillios = weekStartTime;
-                timingWeekEntity.endTimeMillios = weekEndTime;
-                timingWeekEntity.startTimeStr = DateUtils.getyyyy_MM_dd(weekStartTime);
-                timingWeekEntity.endTimeStr = DateUtils.getyyyy_MM_dd(weekEndTime);
-                dayList.add(timingWeekEntity);
-                if (weekStartTime <= System.currentTimeMillis() && weekEndTime >= System.currentTimeMillis()) {
-                    currentCount = dayList.indexOf(timingWeekEntity);
-                }
-                beforeCal.setTime(new Date(weekEndTime + 1));
-            }
-            return dayList;
-        } catch (ParseException e) {
-
-        }
-        return dayList;
+    private void setMonthData(Calendar calendar) {
+        if (titleContent == null)
+            return;
+        titleContent.setText(dateFormatForMonth.format(calendar.getTimeInMillis()));
     }
+
 
     /**
      * 设置周数据
      */
     private void setWeekData() {
-        Observable.create(new ObservableOnSubscribe<List<TimingWeekEntity>>() {
+        Observable.create(new ObservableOnSubscribe<List<TimingSelectEntity>>() {
             @Override
-            public void subscribe(@NonNull ObservableEmitter<List<TimingWeekEntity>> e) throws Exception {
-                e.onNext(getWeekData());
+            public void subscribe(@NonNull ObservableEmitter<List<TimingSelectEntity>> e) throws Exception {
+                e.onNext(TimerDateManager.getWeekData());
                 e.onComplete();
             }
         }).delay(300, TimeUnit.MILLISECONDS)
-                .compose(this.<List<TimingWeekEntity>>bindToLifecycle())
+                .compose(this.<List<TimingSelectEntity>>bindToLifecycle())
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<List<TimingWeekEntity>>() {
+                .subscribe(new Consumer<List<TimingSelectEntity>>() {
                     @Override
-                    public void accept(@NonNull final List<TimingWeekEntity> timingDateEntities) throws Exception {
+                    public void accept(@NonNull final List<TimingSelectEntity> timingDateEntities) throws Exception {
                         adapter.setTimeList(timingDateEntities);
                         wheelView.invalidate();
                         wheelView.setCyclic(false);
-                        wheelView.setCurrentItem(currentCount);
+                        scrollToToday();
                     }
                 });
     }
 
 
-    private class TimeWheelAdapter implements WheelAdapter<TimingWeekEntity> {
-        List<TimingWeekEntity> timeList = new ArrayList<>();
+    private class TimeWheelAdapter implements WheelAdapter<TimingSelectEntity> {
+        List<TimingSelectEntity> timeList = new ArrayList<>();
 
         public TimeWheelAdapter() {
         }
 
-        public List<TimingWeekEntity> getTimeList() {
+        public List<TimingSelectEntity> getTimeList() {
             return timeList;
         }
 
-        public void setTimeList(List<TimingWeekEntity> timeList) {
+        public void setTimeList(List<TimingSelectEntity> timeList) {
             this.timeList = timeList;
-        }
-
-        public TimeWheelAdapter(List<TimingWeekEntity> data) {
-            this.timeList = data;
         }
 
         @Override
@@ -224,12 +176,12 @@ public class TimingSelectWeekFragment extends BaseFragment {
         }
 
         @Override
-        public TimingWeekEntity getItem(int i) {
+        public TimingSelectEntity getItem(int i) {
             return timeList.get(i);
         }
 
         @Override
-        public int indexOf(TimingWeekEntity o) {
+        public int indexOf(TimingSelectEntity o) {
             return timeList.indexOf(o);
         }
 
@@ -242,12 +194,10 @@ public class TimingSelectWeekFragment extends BaseFragment {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.titleBack:
-                position -= 1;
-                titleContent.setText(getBeforeOrLastMonth(position));
+                setBeforeOrLastMonth(false);
                 break;
             case R.id.titleForward:
-                position += 1;
-                titleContent.setText(getBeforeOrLastMonth(position));
+                setBeforeOrLastMonth(true);
                 break;
             case R.id.titleAction:
                 scrollToToday();
@@ -262,35 +212,50 @@ public class TimingSelectWeekFragment extends BaseFragment {
      * 滚动到今天所在周
      */
     private void scrollToToday() {
-        titleContent.setText(dateFormatForMonth.format(System.currentTimeMillis()));
-        wheelView.setCurrentItem(currentCount);
+        currentMonthDate.clear();
+        currentMonthDate.setTimeInMillis(System.currentTimeMillis());
+        setMonthData(currentMonthDate);
+        selectMonthItem(currentMonthDate);
     }
 
     /**
-     * 获取前／后n个月
+     * 获取前／后一个月
      *
-     * @param position
+     * @param isNext false，前一个月；true，后一个月。
      * @return
      */
-    private String getBeforeOrLastMonth(int position) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(new Date());
-        calendar.add(Calendar.MONTH, position);//正数：往前推1月、2月、3月；负数：往后推1月／2月
-        calendar.set(Calendar.DAY_OF_MONTH, 1);
-        selectMonthItem(calendar);
-        return dateFormatForMonth.format(calendar.getTime());
+    private void setBeforeOrLastMonth(boolean isNext) {
+        int year = currentMonthDate.get(Calendar.YEAR);
+        int month = currentMonthDate.get(Calendar.MONTH);
+        if (!isNext && year == 2015 && month == Calendar.JANUARY)//如果是减月份，并且当前已经到了2015年1月1日，说明到最起始时间了，不能再减了
+            return;
+        Calendar instance = Calendar.getInstance();
+        instance.setTimeInMillis(System.currentTimeMillis());
+        int lastYear = instance.get(Calendar.YEAR);
+        int lastMonth = instance.get(Calendar.MONTH);
+        if (isNext && year == lastYear && month == lastMonth)//如果是加月份，并且当前已经到了当前时间的最后一个月，不能再加了
+            return;
+        if (isNext) {
+            currentMonthDate.add(Calendar.MONTH, 1);
+        } else {
+            currentMonthDate.add(Calendar.MONTH, -1);
+        }
+        currentMonthDate.set(Calendar.DAY_OF_MONTH, 1);
+        setMonthData(currentMonthDate);
+        selectMonthItem(currentMonthDate);
     }
 
     /**
      * 滚动到指定的月份
+     *
      * @param calendar
      */
     private void selectMonthItem(Calendar calendar) {
         if (adapter == null || adapter.getTimeList().isEmpty()) return;
         int position = 0;
         for (int i = 0; i < adapter.getTimeList().size(); i++) {
-            TimingWeekEntity timingWeekEntity = adapter.getTimeList().get(i);
-            if (calendar.getTimeInMillis() <= timingWeekEntity.endTimeMillios && calendar.getTimeInMillis() > timingWeekEntity.startTimeMillios) {
+            TimingSelectEntity timingSelectEntity = adapter.getTimeList().get(i);
+            if (calendar.getTimeInMillis() <= timingSelectEntity.endTimeMillis && calendar.getTimeInMillis() > timingSelectEntity.startTimeMillis) {
                 position = i;
             }
         }
@@ -300,9 +265,9 @@ public class TimingSelectWeekFragment extends BaseFragment {
     @Override
     public Bundle getFragmentData(int type, Bundle inBundle) {
         Bundle arguments = new Bundle();
-        TimingWeekEntity timingWeekEntity = adapter.getItem(wheelView.getCurrentItem());
-        if (timingWeekEntity != null) {
-            arguments.putSerializable(KEY_FRAGMENT_RESULT, timingWeekEntity);
+        TimingSelectEntity timingSelectEntity = adapter.getItem(wheelView.getCurrentItem());
+        if (timingSelectEntity != null) {
+            arguments.putSerializable(KEY_FRAGMENT_RESULT, timingSelectEntity);
         }
         return arguments;
     }

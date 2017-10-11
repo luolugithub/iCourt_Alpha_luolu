@@ -23,6 +23,7 @@ import com.icourt.alpha.activity.ChatMsgClassfyActivity;
 import com.icourt.alpha.activity.LoginSelectActivity;
 import com.icourt.alpha.activity.MyAtedActivity;
 import com.icourt.alpha.activity.MyFileTabActivity;
+import com.icourt.alpha.activity.MyTimingActivity;
 import com.icourt.alpha.activity.SettingActivity;
 import com.icourt.alpha.base.BaseAppUpdateActivity;
 import com.icourt.alpha.base.BaseFragment;
