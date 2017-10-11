@@ -94,6 +94,7 @@ public class DateUtils {
 
     /**
      * 格式1
+     * http://wiki.alphalawyer.cn/pages/viewpage.action?pageId=1773098
      * 注意:别轻易修改
      * 文档地址:http://wiki.alphalawyer.cn/pages/viewpage.action?pageId=1773098
      * 获取标准的时间格式化:
@@ -130,10 +131,18 @@ public class DateUtils {
         } else if (isYesterday(milliseconds)) {
             return "昨天";//5.昨天
         } else {
+            int todayOfYear = Calendar.getInstance().get(Calendar.DAY_OF_YEAR);
+            Calendar targetCalendar = Calendar.getInstance();
+            targetCalendar.setTimeInMillis(milliseconds);
+
+            int targetDayOfYear = targetCalendar.get(Calendar.DAY_OF_YEAR);
+            long distanceDayInt = todayOfYear - targetDayOfYear;
+
             long distanceMilliseconds = System.currentTimeMillis() - milliseconds;
             long distanceDay = TimeUnit.MILLISECONDS.toDays(distanceMilliseconds);
-            if (distanceDay <= 5) {//x天前（x = 2～5）
-                return String.format("%s天前", distanceDay);
+            //避免相差年份的问题
+            if (distanceDay < 10 && distanceDayInt <= 5) {//x天前（x = 2～5）
+                return String.format("%s天前", distanceDayInt);
             } else {//yyyy-mm-dd
                 sdf.applyPattern("yyyy-MM-dd");
                 return sdf.format(milliseconds);
@@ -143,6 +152,7 @@ public class DateUtils {
 
     /**
      * 格式2
+     * http://wiki.alphalawyer.cn/pages/viewpage.action?pageId=1773098
      * 注意:别轻易修改
      * 文档地址:http://wiki.alphalawyer.cn/pages/viewpage.action?pageId=1773098
      * 获取标准的时间格式化:
@@ -182,8 +192,22 @@ public class DateUtils {
             sdf.applyPattern("昨天 hh:mm");
             return sdf.format(milliseconds);
         } else {
-            sdf.applyPattern("yyyy-MM-dd hh:mm");
-            return sdf.format(milliseconds);
+            int todayOfYear = Calendar.getInstance().get(Calendar.DAY_OF_YEAR);
+            Calendar targetCalendar = Calendar.getInstance();
+            targetCalendar.setTimeInMillis(milliseconds);
+
+            int targetDayOfYear = targetCalendar.get(Calendar.DAY_OF_YEAR);
+            long distanceDayInt = todayOfYear - targetDayOfYear;//相差的天 不是间隔的时间/每天的毫秒
+
+            long distanceMilliseconds = System.currentTimeMillis() - milliseconds;
+            long distanceDay = TimeUnit.MILLISECONDS.toDays(distanceMilliseconds);
+            //避免相差年份的问题
+            if (distanceDay < 10 && distanceDayInt <= 5) {//x天前（x = 2～5）
+                return String.format("%s天前", distanceDayInt);
+            } else {//yyyy-mm-dd
+                sdf.applyPattern("yyyy-MM-dd hh:mm");
+                return sdf.format(milliseconds);
+            }
         }
     }
 
