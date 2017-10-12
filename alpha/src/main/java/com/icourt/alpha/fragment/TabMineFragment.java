@@ -36,6 +36,7 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
+import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.utils.transformations.BlurTransformation;
 import com.icourt.alpha.widget.manager.DataCleanManager;
@@ -65,6 +66,8 @@ import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
 import retrofit2.HttpException;
 import retrofit2.Response;
+
+import static com.icourt.alpha.base.BaseAppUpdateActivity.UPDATE_APP_VERSION_KEY;
 
 /**
  * Description
@@ -390,6 +393,7 @@ public class TabMineFragment extends BaseFragment {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         loginOut();
+                        SpUtils.getInstance().remove(UPDATE_APP_VERSION_KEY);
                     }
                 })
                 .setNegativeButton("取消", null)
