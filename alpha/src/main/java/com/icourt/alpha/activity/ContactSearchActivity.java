@@ -217,11 +217,13 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
     @OnClick({R.id.tv_search_cancel})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.tv_search_cancel:
                 SystemUtils.hideSoftKeyBoard(getActivity(), etSearchName, true);
                 finish();
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }

@@ -170,11 +170,13 @@ public class TaskCheckItemFragment extends BaseFragment
     @OnClick({R.id.check_item_add})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.check_item_add:
                 checkItemEdit.requestFocus();
                 SystemUtils.showSoftKeyBoard(getActivity());
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }

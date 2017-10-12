@@ -152,7 +152,6 @@ public class TaskGroupCreateActivity extends BaseActivity {
             R.id.edit_clear_tv})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.titleAction:
                 if (type == UPDATE_TASK_GROUP_TYPE) {
@@ -164,6 +163,9 @@ public class TaskGroupCreateActivity extends BaseActivity {
             case R.id.edit_clear_tv:
                 groupNameEdittext.setText("");
                 setSaveBtnState();
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }

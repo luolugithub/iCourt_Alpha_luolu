@@ -35,6 +35,7 @@ import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.interfaces.OnDialogFragmentDismissListener;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnUpdateTaskListener;
+import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UriUtils;
@@ -84,6 +85,7 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
     private static final String KEY_TASK_ADD_ATTACHMENT_PERMISSION = "key_task_add_attachment_permission";
     private static final String KEY_TASK_DELETE_ATTACHMENT_PERMISSION = "key_task_delete_attachment_permission";
     private static final int REQUEST_CODE_CHOOSE_FILE = 1002;
+    private static final int FILE_MAX_SIZE = 30 * 1024 * 1024;//单个文件最大30M
 
     /**
      * hasLookAttachmentPermission>hasAddAttachmentPermission
@@ -322,6 +324,13 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
                 if (resultCode == Activity.RESULT_OK) {
                     if (data != null) {
                         String path = UriUtils.getPath(getContext(), data.getData());
+                        if (FileUtils.isFileExists(path)) {
+                            File file = new File(path);
+                            if (file.length() >= FILE_MAX_SIZE) {
+                                showTopSnackBar(getString(R.string.task_attachment_size_limit, String.valueOf(FILE_MAX_SIZE / (1024 * 1024))));
+                                return;
+                            }
+                        }
                         uploadFiles(Arrays.asList(path));
                     }
                 }

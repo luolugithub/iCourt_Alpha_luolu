@@ -214,9 +214,9 @@ public class TimerManager {
 
                         SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), response.body().result);
                         SpUtils.getInstance().putData(String.format(KEY_TIMER_TASK_ID, getUid()), response.body().result.taskPkId);
-                        broadTimingEvent(response.body().result.pkId, TimingEvent.TIMING_ADD);
                         setBase(0);
                         startTimingTask();
+                        broadTimingEvent(response.body().result.pkId, TimingEvent.TIMING_ADD);
                         if (callBack != null) {
                             callBack.onResponse(null, Response.success(response.body().result));
                         }
@@ -410,9 +410,9 @@ public class TimerManager {
     public void setOverTimingRemind(boolean remind) {
         if (getTimer() != null) {
             if (remind) {
-                getTimer().noRemind = 0;
+                getTimer().noRemind = TimeEntity.ItemEntity.STATE_REMIND_ON;
             } else {
-                getTimer().noRemind = 1;
+                getTimer().noRemind = TimeEntity.ItemEntity.STATE_REMIND_OFF;
             }
         }
     }
@@ -424,9 +424,9 @@ public class TimerManager {
      */
     public boolean isOverTimingRemind() {
         if (getTimer() != null) {
-            return getTimer().noRemind == 0;
+            return getTimer().noRemind == TimeEntity.ItemEntity.STATE_REMIND_ON;
         }
-        return true;
+        return false;
     }
 
     /**
@@ -437,9 +437,9 @@ public class TimerManager {
     public void setOverBubbleRemind(boolean remind) {
         if (getTimer() != null) {
             if (remind) {
-                getTimer().bubbleOff = 0;
+                getTimer().bubbleOff = TimeEntity.ItemEntity.STATE_BUBBLE_ON;
             } else {
-                getTimer().bubbleOff = 1;
+                getTimer().bubbleOff = TimeEntity.ItemEntity.STATE_BUBBLE_OFF;
             }
         }
     }
@@ -451,9 +451,9 @@ public class TimerManager {
      */
     public boolean isBubbleRemind() {
         if (getTimer() != null) {
-            return getTimer().bubbleOff == 0;
+            return getTimer().bubbleOff == TimeEntity.ItemEntity.STATE_BUBBLE_ON;
         }
-        return true;
+        return false;
     }
 
 

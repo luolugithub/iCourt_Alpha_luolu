@@ -4,7 +4,47 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-    <include layout="@layout/adapter_item_project_basic_info_layout" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:padding="@dimen/dp15">
+
+        <ImageView
+            android:id="@+id/key_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="@dimen/dp15"
+            android:src="@mipmap/project_name_icon" />
+
+        <TextView
+            android:id="@+id/key_name_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="项目名称"
+            android:textColor="@color/alpha_font_color_black"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/value_name_tv"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/dp15"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:gravity="right"
+            android:maxEms="8"
+            android:maxLines="1"
+            android:textColor="@color/alpha_font_color_gray"
+            android:textSize="16sp" />
+
+        <ImageView
+            android:id="@+id/arrow_right_iv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/dp5"
+            android:src="@mipmap/arrow_right" />
+    </LinearLayout>
 
     <View
         android:layout_width="match_parent"
@@ -12,16 +52,22 @@
         android:layout_marginLeft="50dp"
         android:background="@color/alpha_divider_color" />
 
-    <TextView
-        android:id="@+id/item_content_tv"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="35dp"
-        android:drawablePadding="@dimen/dp5"
-        android:drawableRight="@mipmap/arrow_right"
-        android:ellipsize="end"
-        android:maxLines="3"
-        android:padding="@dimen/dp15"
-        android:textColor="@color/alpha_font_color_gray"
-        android:textSize="16sp" />
+        >
+
+        <TextView
+            android:id="@+id/item_content_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="35dp"
+            android:drawablePadding="@dimen/dp5"
+            android:drawableRight="@mipmap/arrow_right"
+            android:ellipsize="end"
+            android:maxLines="3"
+            android:padding="@dimen/dp15"
+            android:textColor="@color/alpha_font_color_gray"
+            android:textSize="16sp" />
+    </LinearLayout>
 </LinearLayout>

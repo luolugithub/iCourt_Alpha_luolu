@@ -470,7 +470,7 @@ public class RepoListFragment extends RepoBaseFragment
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                         dialog.dismiss();
                         String s = adapter.getItem(position);
-                        if (TextUtils.equals(s, getString(R.string.repo_details))) {//查看资料库详情
+                        if (TextUtils.equals(s, getString(R.string.repo_look_details))) {//查看资料库详情
                             lookDetail(pos);
                         } else if (TextUtils.equals(s, getString(R.string.str_rename))) {//重命名
                             renameDocument(pos);
