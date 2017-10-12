@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.FolderAdapter;
@@ -49,6 +50,7 @@ import static com.icourt.alpha.constants.Const.FILE_ACTION_ADD;
 import static com.icourt.alpha.constants.Const.FILE_ACTION_COPY;
 import static com.icourt.alpha.constants.Const.FILE_ACTION_MOVE;
 import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
+import static com.icourt.alpha.constants.SFileConfig.SFILE_FILE_NAME_MAX_LENGTH;
 
 /**
  * Description
@@ -385,6 +387,11 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
             e.printStackTrace();
         }
         if (file != null && file.exists()) {
+            //3.再校验文件名称长度
+            if (StringUtils.isOverLength(file.getName(), SFILE_FILE_NAME_MAX_LENGTH)) {
+                showTopSnackBar(getString(R.string.sfile_length_limit_format, String.valueOf(SFILE_FILE_NAME_MAX_LENGTH)));
+                return;
+            }
             seaFileUploadFiles(
                     getSeaFileDstRepoId(),
                     getSeaFileDstDirPath(),

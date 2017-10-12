@@ -69,7 +69,6 @@ import static com.icourt.alpha.widget.comparators.FileSortComparator.FILE_SORT_T
 public class FileSimpleListActivity extends FolderBaseActivity
         implements BaseRecyclerAdapter.OnItemClickListener {
     private static final int REQUEST_CODE_CHOOSE_FILE = 1002;
-    private static final int MAX_LENGTH_FILE_NAME = 100;
 
     @BindView(R.id.recyclerView)
     EmptyRecyclerView recyclerView;
@@ -359,7 +358,6 @@ public class FileSimpleListActivity extends FolderBaseActivity
     }
 
 
-
     /**
      * 上传文件
      *
@@ -399,8 +397,8 @@ public class FileSimpleListActivity extends FolderBaseActivity
                         filePathsArray.remove(path);
                     } else {
                         //3.再校验文件名称长度
-                        if (StringUtils.isOverLength(file.getName(), MAX_LENGTH_FILE_NAME)) {
-                            showTopSnackBar(getString(R.string.sfile_length_limit_format, String.valueOf(MAX_LENGTH_FILE_NAME)));
+                        if (StringUtils.isOverLength(file.getName(), SFileConfig.SFILE_FILE_NAME_MAX_LENGTH)) {
+                            showTopSnackBar(getString(R.string.sfile_length_limit_format, String.valueOf(SFileConfig.SFILE_FILE_NAME_MAX_LENGTH)));
                             filePathsArray.remove(path);
                         }
                     }

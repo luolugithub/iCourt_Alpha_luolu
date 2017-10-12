@@ -63,6 +63,7 @@ import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
 
+import static com.icourt.alpha.constants.SFileConfig.SFILE_FILE_NAME_MAX_LENGTH;
 import static com.icourt.alpha.widget.comparators.FileSortComparator.FILE_SORT_TYPE_DEFAULT;
 
 /**
@@ -76,7 +77,6 @@ public class ProjectFileFragment extends SeaFileBaseFragment
         implements OnParentTitleBarClickListener, BaseRecyclerAdapter.OnItemClickListener {
     private static final String KEY_PROJECT_ID = "key_project_id";
     private static final int REQUEST_CODE_CHOOSE_FILE = 1002;
-    private static final int MAX_LENGTH_FILE_NAME = 100;
 
     @BindView(R.id.recyclerView)
     EmptyRecyclerView recyclerView;
@@ -450,8 +450,8 @@ public class ProjectFileFragment extends SeaFileBaseFragment
                         filePathsArray.remove(path);
                     } else {
                         //3.再校验文件名称长度
-                        if (StringUtils.isOverLength(file.getName(), MAX_LENGTH_FILE_NAME)) {
-                            showTopSnackBar(getString(R.string.sfile_length_limit_format, String.valueOf(MAX_LENGTH_FILE_NAME)));
+                        if (StringUtils.isOverLength(file.getName(), SFILE_FILE_NAME_MAX_LENGTH)) {
+                            showTopSnackBar(getString(R.string.sfile_length_limit_format, String.valueOf(SFILE_FILE_NAME_MAX_LENGTH)));
                             filePathsArray.remove(path);
                         }
                     }

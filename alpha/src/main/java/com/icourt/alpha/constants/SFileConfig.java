@@ -208,4 +208,9 @@ public class SFileConfig {
                 return FILE_FROM_REPO;
         }
     }
+
+    /**
+     * seafile 最大长度
+     */
+    public static final int SFILE_FILE_NAME_MAX_LENGTH = 80;
 }

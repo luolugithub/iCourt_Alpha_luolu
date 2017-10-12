@@ -103,7 +103,6 @@ public class FolderListActivity extends FolderBaseActivity
         BaseRecyclerAdapter.OnItemChildClickListener,
         OnDialogFragmentDismissListener {
 
-    private static final int MAX_LENGTH_FILE_NAME = 100;
     private static final int REQUEST_CODE_CHOOSE_FILE = 1002;
     @BindView(R.id.titleBack)
     ImageView titleBack;
@@ -757,8 +756,8 @@ public class FolderListActivity extends FolderBaseActivity
                         filePathsArray.remove(path);
                     } else {
                         //3.再校验文件名称长度
-                        if (StringUtils.isOverLength(file.getName(), MAX_LENGTH_FILE_NAME)) {
-                            showTopSnackBar(getString(R.string.sfile_length_limit_format, String.valueOf(MAX_LENGTH_FILE_NAME)));
+                        if (StringUtils.isOverLength(file.getName(), SFileConfig.SFILE_FILE_NAME_MAX_LENGTH)) {
+                            showTopSnackBar(getString(R.string.sfile_length_limit_format, String.valueOf(SFileConfig.SFILE_FILE_NAME_MAX_LENGTH)));
                             filePathsArray.remove(path);
                         }
                     }
