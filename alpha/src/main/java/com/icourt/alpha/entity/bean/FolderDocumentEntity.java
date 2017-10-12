@@ -149,7 +149,7 @@ public class FolderDocumentEntity implements ISeaFile, IFilterEntity, ISuspensio
 
     @Override
     public String getSeaFileVersionId() {
-        return null;
+        return String.valueOf(mtime);
     }
 
     @Override

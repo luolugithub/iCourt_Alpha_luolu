@@ -43,7 +43,7 @@ public class SFileSearchEntity implements ISeaFile {
 
     @Override
     public String getSeaFileVersionId() {
-        return null;
+        return String.valueOf(last_modified);
     }
 
     @Override
