@@ -11,7 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.FolderAdapter;
@@ -25,8 +24,10 @@ import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.FileUtils;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.filter.ListFilter;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -110,7 +111,7 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
     @BindView(R.id.copy_or_move_tv)
     TextView copyOrMoveTv;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
     OnFragmentCallBackListener onFragmentCallBackListener;
     ArrayList<ISeaFile> selectedFolderFiles;
 
@@ -232,14 +233,13 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
             }
         });
         folderAdapter.setOnItemClickListener(this);
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setOnRefreshListener(new OnRefreshListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(RefreshLayout refreshlayout) {
                 getData(true);
             }
         });
-        refreshLayout.startRefresh();
+        refreshLayout.autoRefresh();
     }
 
     @Override
@@ -328,8 +328,8 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 

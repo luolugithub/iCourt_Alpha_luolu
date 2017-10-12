@@ -18,7 +18,6 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.SFileSearchAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
@@ -33,7 +32,9 @@ import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.ClearEditText;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
 
 import java.util.ArrayList;
 
@@ -57,7 +58,7 @@ public class SFileSearchActivity extends BaseActivity
     SFileSearchAdapter sFileSearchAdapter;
     int pageIndex = 1;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
     @BindView(R.id.et_search_name)
     ClearEditText etSearchName;
     @BindView(R.id.tv_search_cancel)
@@ -65,7 +66,7 @@ public class SFileSearchActivity extends BaseActivity
     @BindView(R.id.searchLayout)
     LinearLayout searchLayout;
     @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     @BindView(R.id.contentEmptyText)
     TextView contentEmptyText;
     @BindView(R.id.softKeyboardSizeWatchLayout)
@@ -106,13 +107,13 @@ public class SFileSearchActivity extends BaseActivity
         sFileSearchAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override
             protected void updateUI() {
-                refreshLayout.setPullRefreshEnable(sFileSearchAdapter.getItemCount() > 0);
+                refreshLayout.setEnableRefresh(sFileSearchAdapter.getItemCount() > 0);
                 contentEmptyText.setVisibility(sFileSearchAdapter.getItemCount() <= 0 ? View.VISIBLE : View.GONE);
             }
         });
         sFileSearchAdapter.setOnItemClickListener(this);
         sFileSearchAdapter.setOnItemChildClickListener(this);
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+        recyclerView.getRecyclerView().addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
@@ -168,16 +169,14 @@ public class SFileSearchActivity extends BaseActivity
                 }
             }
         });
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(com.scwang.smartrefresh.layout.api.RefreshLayout refreshlayout) {
                 getData(true);
             }
 
             @Override
-            public void onLoadMore(boolean isSilence) {
-                super.onLoadMore(isSilence);
+            public void onLoadmore(com.scwang.smartrefresh.layout.api.RefreshLayout refreshlayout) {
                 getData(false);
             }
         });
@@ -220,14 +219,14 @@ public class SFileSearchActivity extends BaseActivity
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 
     private void enableLoadMore(boolean hasMore) {
         if (refreshLayout != null) {
-            refreshLayout.setPullLoadEnable(hasMore);
+            refreshLayout.setEnableLoadmore(hasMore);
         }
     }
 

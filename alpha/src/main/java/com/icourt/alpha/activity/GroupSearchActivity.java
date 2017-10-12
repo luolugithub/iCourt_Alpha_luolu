@@ -31,10 +31,11 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.ClearEditText;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.team.TeamService;
 import com.netease.nimlib.sdk.team.model.Team;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 
 import java.util.List;
 
@@ -65,9 +66,9 @@ public class GroupSearchActivity extends BaseActivity implements BaseRecyclerAda
     @BindView(R.id.searchLayout)
     LinearLayout searchLayout;
     @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
     @BindView(R.id.contentEmptyText)
     TextView contentEmptyText;
     @BindView(R.id.softKeyboardSizeWatchLayout)
@@ -115,11 +116,12 @@ public class GroupSearchActivity extends BaseActivity implements BaseRecyclerAda
     @Override
     protected void initView() {
         super.initView();
-        refreshLayout.setPullRefreshEnable(false);
+        refreshLayout.setEnableRefresh(false);
+        refreshLayout.setEnableLoadmore(false);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(groupAdapter = new GroupAdapter());
         groupAdapter.setOnItemClickListener(this);
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+        recyclerView.getRecyclerView().addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);

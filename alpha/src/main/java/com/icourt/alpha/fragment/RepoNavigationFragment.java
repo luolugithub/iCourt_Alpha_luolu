@@ -4,7 +4,6 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,7 +18,8 @@ import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.RepoTypeEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.ItemDecorationUtils;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 
 import java.util.Arrays;
 
@@ -42,9 +42,9 @@ public class RepoNavigationFragment extends BaseFragment
     RepoTypeAdapter repoTypeAdapter;
     HeaderFooterAdapter<RepoTypeAdapter> headerFooterAdapter;
     @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
     TextView footerView;
     OnFragmentCallBackListener onFragmentCallBackListener;
     String footerNotice = "";
@@ -82,13 +82,13 @@ public class RepoNavigationFragment extends BaseFragment
     @Override
     protected void initView() {
         footerNotice = getArguments().getString(KEY_FOOTER_NOTICE, "");
-        refreshLayout.setPullRefreshEnable(false);
-        refreshLayout.setPullLoadEnable(false);
+        refreshLayout.setEnableRefresh(false);
+        refreshLayout.setEnableLoadmore(false);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.addItemDecoration(ItemDecorationUtils.getCommMagin10Divider(getContext(), true));
         headerFooterAdapter = new HeaderFooterAdapter<>(repoTypeAdapter = new RepoTypeAdapter());
 
-        footerView = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_folder_document_num, recyclerView);
+        footerView = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_folder_document_num, recyclerView.getRecyclerView());
         headerFooterAdapter.addFooter(footerView);
         footerView.setText("将文件保存到可读写权限的资料库");
         footerView.setText(footerNotice);

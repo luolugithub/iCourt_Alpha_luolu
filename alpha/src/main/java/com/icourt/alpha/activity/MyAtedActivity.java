@@ -7,11 +7,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.MyAtedAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
@@ -25,11 +23,14 @@ import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.RequestCallbackWrapper;
 import com.netease.nimlib.sdk.team.TeamService;
 import com.netease.nimlib.sdk.team.model.Team;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,9 +63,9 @@ public class MyAtedActivity extends BaseActivity {
     @BindView(R.id.titleView)
     AppBarLayout titleView;
     @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
     private final List<Team> localTeams = new ArrayList<>();
     private final List<GroupContactBean> localGroupContactBeans = new ArrayList<>();
 
@@ -86,27 +87,22 @@ public class MyAtedActivity extends BaseActivity {
     protected void initView() {
         super.initView();
         setTitle("提及我的");
-        refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.my_center_null_atme_text);
-        refreshLayout.setMoveForHorizontal(true);
+        recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, R.string.my_center_null_atme_text);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(myAtedAdapter = new MyAtedAdapter(localTeams, localGroupContactBeans));
-        myAtedAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, myAtedAdapter));
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        myAtedAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(recyclerView, myAtedAdapter));
+        refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(RefreshLayout refreshlayout) {
                 getData(true);
             }
 
             @Override
-            public void onLoadMore(boolean isSilence) {
-                super.onLoadMore(isSilence);
+            public void onLoadmore(RefreshLayout refreshlayout) {
                 getData(false);
             }
         });
-        refreshLayout.setAutoRefresh(true);
-        refreshLayout.startRefresh();
+        refreshLayout.autoRefresh();
     }
 
     @Override
@@ -206,15 +202,15 @@ public class MyAtedActivity extends BaseActivity {
 
     private void enableLoadMore(List result) {
         if (refreshLayout != null) {
-            refreshLayout.setPullLoadEnable(result != null
+            refreshLayout.setEnableLoadmore(result != null
                     && result.size() >= ActionConstants.DEFAULT_PAGE_SIZE);
         }
     }
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 }

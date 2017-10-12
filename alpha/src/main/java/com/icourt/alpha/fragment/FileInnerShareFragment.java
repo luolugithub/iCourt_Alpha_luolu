@@ -5,14 +5,12 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.FileInnerShareAdapter;
@@ -29,8 +27,10 @@ import com.icourt.alpha.http.callback.SimpleCallBack2;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.JsonUtils;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -57,9 +57,9 @@ public class FileInnerShareFragment extends BaseFragment
         BaseRecyclerAdapter.OnItemChildClickListener {
 
     @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
     Unbinder unbinder;
     FileInnerShareAdapter fileInnerShareAdapter;
     HeaderFooterAdapter<FileInnerShareAdapter> headerFooterAdapter;
@@ -110,7 +110,7 @@ public class FileInnerShareFragment extends BaseFragment
         fileInnerShareAdapter.setOnItemChildClickListener(this);
         //有编辑的权限
         if (hasEditPermission) {
-            View footerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_add_attachment, recyclerView);
+            View footerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_add_attachment, recyclerView.getRecyclerView());
             TextView attachmentTv = footerView.findViewById(R.id.add_attachment_view);
             if (attachmentTv != null) {
                 attachmentTv.setText(R.string.sfile_add_share_member);
@@ -120,15 +120,14 @@ public class FileInnerShareFragment extends BaseFragment
         }
 
         recyclerView.setAdapter(headerFooterAdapter);
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setOnRefreshListener(new OnRefreshListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(com.scwang.smartrefresh.layout.api.RefreshLayout refreshlayout) {
                 getData(true);
             }
         });
 
-        refreshLayout.startRefresh();
+        getData(true);
     }
 
     @Override
@@ -154,8 +153,8 @@ public class FileInnerShareFragment extends BaseFragment
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 

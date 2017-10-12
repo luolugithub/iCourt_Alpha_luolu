@@ -4,13 +4,11 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.andview.refreshview.XRefreshView;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.SearchTaskActivity;
@@ -19,15 +17,17 @@ import com.icourt.alpha.activity.TimerDetailActivity;
 import com.icourt.alpha.activity.TimerTimingActivity;
 import com.icourt.alpha.adapter.TaskAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
-import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.UMMobClickAgent;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
 import com.icourt.alpha.widget.manager.TimerManager;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
 import com.umeng.analytics.MobclickAgent;
 
 import org.greenrobot.eventbus.Subscribe;
@@ -63,9 +63,9 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
     Unbinder unbinder;
     @Nullable
     @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
 
     private boolean isFirstTimeIntoPage = true;//用来判断是不是第一次进入该界面，如果是，滚动到一条任务，隐藏搜索栏。
 
@@ -94,35 +94,31 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
     @Override
     protected void initView() {
         projectId = getArguments().getString(KEY_PROJECT_ID);
-        refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_list_null_text);
-        refreshLayout.setMoveForHorizontal(true);
+        recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_list_null_text);
         linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
-        recyclerView.setHasFixedSize(true);
 
-        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
+        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView.getRecyclerView());
         View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
         registerClick(rl_comm_search);
 
         taskAdapter = new TaskAdapter();
         taskAdapter.addHeaderView(headerView);
-        taskAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskAdapter));
         taskAdapter.setOnItemLongClickListener(this);
         taskAdapter.setOnItemChildClickListener(this);
         taskAdapter.setOnItemClickListener(this);
         recyclerView.setAdapter(taskAdapter);
-
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setEnableLoadmore(false);
+        refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(RefreshLayout refreshlayout) {
                 checkAddTaskAndDocumentPms(projectId);
                 getData(true);
             }
 
             @Override
-            public void onLoadMore(boolean isSilence) {
-                super.onLoadMore(isSilence);
+            public void onLoadmore(RefreshLayout refreshlayout) {
+
             }
         });
     }
@@ -131,7 +127,7 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
     public void onResume() {
         super.onResume();
         if (isFirstTimeIntoPage) {
-            refreshLayout.startRefresh();
+            refreshLayout.autoRefresh();
         } else {
             getData(true);
         }
@@ -194,7 +190,7 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
                     public void onFailure(Call<ResEntity<TaskEntity>> call, Throwable t) {
                         super.onFailure(call, t);
                         stopRefresh();
-                        enableEmptyView(null);
+                        recyclerView.enableEmptyView(null);
                     }
                 });
     }
@@ -206,7 +202,7 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
      */
     private void getTaskGroupDatas(final TaskEntity taskEntity) {
         if (taskEntity != null) {
-            enableEmptyView(taskEntity.items);
+            recyclerView.enableEmptyView(taskEntity.items);
             if (taskEntity.items != null) {
                 Observable.create(new ObservableOnSubscribe<List<TaskEntity.TaskItemEntity>>() {
                     @Override
@@ -225,13 +221,13 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
                                 taskAdapter.setAddTime(isAddTime);
                                 taskAdapter.setNewData(searchPolymerizationEntities);
                                 goFirstTask();
-                                enableEmptyView(searchPolymerizationEntities);
+                                recyclerView.enableEmptyView(searchPolymerizationEntities);
                                 TimerManager.getInstance().timerQuerySync();
                             }
                         });
             }
         } else {
-            enableEmptyView(null);
+            recyclerView.enableEmptyView(null);
         }
     }
 
@@ -324,8 +320,8 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 
@@ -336,16 +332,6 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
         if (isFirstTimeIntoPage && taskAdapter.getData().size() > 0) {
             linearLayoutManager.scrollToPositionWithOffset(taskAdapter.getHeaderLayoutCount(), 0);
             isFirstTimeIntoPage = false;
-        }
-    }
-
-    private void enableEmptyView(List result) {
-        if (refreshLayout != null) {
-            if (result != null && result.size() > 0) {
-                refreshLayout.enableEmptyView(false);
-            } else {
-                refreshLayout.enableEmptyView(true);
-            }
         }
     }
 

@@ -6,18 +6,15 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.RepoAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
@@ -27,8 +24,10 @@ import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.StringUtils;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
 import com.icourt.alpha.widget.filter.ListFilter;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 
 import java.util.List;
 
@@ -65,9 +64,9 @@ public class RepoSelectListFragment extends RepoBaseFragment
     public static final String KEY_REPO_FILTER_ONLY_READ = "filter_only_read";
 
     @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
     Unbinder unbinder;
     RepoAdapter repoAdapter;
     OnFragmentCallBackListener onFragmentCallBackListener;
@@ -129,30 +128,28 @@ public class RepoSelectListFragment extends RepoBaseFragment
         repoAdapter.setOnItemClickListener(this);
         switch (repoType) {
             case REPO_MINE:
-                refreshLayout.setNoticeEmptyText(R.string.repo_empty);
+                recyclerView.setEmptyContent(R.string.repo_empty);
                 break;
             case REPO_SHARED_ME:
-                refreshLayout.setNoticeEmptyText(R.string.repo_share_empty);
+                recyclerView.setEmptyContent(R.string.repo_share_empty);
                 break;
             case REPO_LAWFIRM:
-                refreshLayout.setNoticeEmptyText(R.string.repo_lawfirm_empty);
+                recyclerView.setEmptyContent(R.string.repo_lawfirm_empty);
                 break;
             case REPO_PROJECT:
-                refreshLayout.setNoticeEmptyText(R.string.repo_empty);
+                recyclerView.setEmptyContent(R.string.repo_empty);
                 break;
         }
         if (filterOnlyReadRepo) {
-            refreshLayout.setNoticeEmptyText(R.string.repo_type_no_writable_repo);
+            recyclerView.setEmptyContent(R.string.repo_type_no_writable_repo);
         }
-        repoAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, repoAdapter));
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setOnRefreshListener(new OnRefreshListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(com.scwang.smartrefresh.layout.api.RefreshLayout refreshlayout) {
                 getData(true);
             }
         });
-        refreshLayout.startRefresh();
+        refreshLayout.autoRefresh();
     }
 
 
@@ -220,12 +217,14 @@ public class RepoSelectListFragment extends RepoBaseFragment
                     public void onSuccess(Call<ResEntity<List<RepoEntity>>> call, Response<ResEntity<List<RepoEntity>>> response) {
                         stopRefresh();
                         repoAdapter.bindData(true, response.body().result);
+                        recyclerView.enableEmptyView(response.body().result);
                     }
 
                     @Override
                     public void onFailure(Call<ResEntity<List<RepoEntity>>> call, Throwable t) {
                         super.onFailure(call, t);
                         stopRefresh();
+                        recyclerView.enableEmptyView(null);
                     }
                 });
     }
@@ -304,8 +303,8 @@ public class RepoSelectListFragment extends RepoBaseFragment
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 

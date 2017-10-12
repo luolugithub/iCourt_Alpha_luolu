@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <com.icourt.alpha.view.xrefreshlayout.RefreshLayout
+    <com.scwang.smartrefresh.layout.SmartRefreshLayout
         android:id="@+id/refreshLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -31,7 +31,7 @@
                 android:textSize="@dimen/alpha_font_size_mini"
                 android:visibility="gone" />
         </FrameLayout>
-    </com.icourt.alpha.view.xrefreshlayout.RefreshLayout>
+    </com.scwang.smartrefresh.layout.SmartRefreshLayout>
 
 
     <FrameLayout

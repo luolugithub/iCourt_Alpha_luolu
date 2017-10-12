@@ -13,9 +13,12 @@
     <string name="project_my_participation">我参与的项目</string>
 
     <string name="project_no">暂无项目</string>
-    <string name="project_no_star">暂无关注项目</string>
+    <string name="project_no_star">暂无关注的项目</string>
     <string name="project_no_participation">暂无参与项目</string>
     <string name="project_no_timer">暂无计时</string>
+    <string name="project_no_ing">暂无进行中的项目</string>
+    <string name="project_no_finished">暂无已完结的项目</string>
+    <string name="project_no_ended">没有已搁置的项目</string>
 
     <string name="project_type">项目类型</string>
     <string name="project_name">项目名称</string>

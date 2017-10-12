@@ -47,22 +47,18 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <com.icourt.alpha.view.xrefreshlayout.RefreshLayout
+        <com.scwang.smartrefresh.layout.SmartRefreshLayout
             android:id="@id/refreshLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <android.support.v7.widget.RecyclerView
+            <com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView
                 android:id="@id/recyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@android:color/white" />
 
-        </com.icourt.alpha.view.xrefreshlayout.RefreshLayout>
-
-        <include
-            layout="@layout/layout_empty_tv"
-            android:visibility="gone" />
+        </com.scwang.smartrefresh.layout.SmartRefreshLayout>
 
         <com.gjiazhe.wavesidebar.WaveSideBar
             android:id="@+id/recyclerIndexBar"

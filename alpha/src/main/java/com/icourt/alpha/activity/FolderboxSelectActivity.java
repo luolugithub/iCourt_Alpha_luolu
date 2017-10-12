@@ -7,14 +7,12 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.CheckedTextView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ProjectFileBoxAdapter;
@@ -28,8 +26,11 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack2;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ItemDecorationUtils;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
 import com.icourt.api.RequestUtils;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
 
 import java.io.File;
 import java.util.HashMap;
@@ -63,9 +64,9 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
     @BindView(R.id.titleView)
     AppBarLayout titleView;
     @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
     ProjectFileBoxAdapter projectFileBoxAdapter;
     String projectId, seaFileRepoId, filePath, rootName;
     boolean isCanlookAddDocument;
@@ -100,20 +101,17 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
         seaFileRepoId = getIntent().getStringExtra("seaFileRepoId");
         filePath = getIntent().getStringExtra("filePath");
         rootName = getIntent().getStringExtra("rootName");
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, "暂无文件夹");
-        refreshLayout.setMoveForHorizontal(true);
+        recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_project, "暂无文件夹");
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true));
-        recyclerView.setHasFixedSize(true);
 
         recyclerView.setAdapter(projectFileBoxAdapter = new ProjectFileBoxAdapter());
         projectFileBoxAdapter.setOnItemClickListener(this);
-        projectFileBoxAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, projectFileBoxAdapter));
+        projectFileBoxAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(recyclerView, projectFileBoxAdapter));
 
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(RefreshLayout refreshlayout) {
                 if (TextUtils.isEmpty(seaFileRepoId)) {
                     getDocumentId();
                 } else {
@@ -122,8 +120,7 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
             }
 
             @Override
-            public void onLoadMore(boolean isSilence) {
-                super.onLoadMore(isSilence);
+            public void onLoadmore(RefreshLayout refreshlayout) {
                 if (TextUtils.isEmpty(seaFileRepoId)) {
                     getDocumentId();
                 } else {
@@ -162,21 +159,18 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
                             if (response.body().result.contains("MAT:matter.document:readwrite")) {
                                 isCanlookAddDocument = true;
                                 titleAction.setVisibility(View.VISIBLE);
-                                refreshLayout.startRefresh();
+                                getData(true);
                             } else {
                                 titleAction.setVisibility(View.INVISIBLE);
-                                enableEmptyView(null);
                             }
                         } else {
                             titleAction.setVisibility(View.INVISIBLE);
-                            enableEmptyView(null);
                         }
                     }
 
                     @Override
                     public void onFailure(Call<ResEntity<List<String>>> call, Throwable t) {
                         super.onFailure(call, t);
-                        enableEmptyView(null);
                     }
                 });
     }
@@ -191,8 +185,6 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
                         stopRefresh();
                         if (response.body() != null) {
                             projectFileBoxAdapter.bindData(isRefresh, getFolders(response.body()));
-                        } else {
-                            enableEmptyView(null);
                         }
                     }
 
@@ -200,7 +192,6 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
                     public void onFailure(Call<List<FileBoxBean>> call, Throwable t) {
                         super.onFailure(call, t);
                         stopRefresh();
-                        enableEmptyView(null);
                         showTopSnackBar("获取文档列表失败");
                     }
                 });
@@ -226,7 +217,6 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
                     @Override
                     public void onFailure(Call<RepoIdResEntity> call, Throwable t) {
                         super.onFailure(call, t);
-                        enableEmptyView(null);
                     }
                 });
     }
@@ -241,24 +231,10 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
         return fileBoxBeens;
     }
 
-    private void enableEmptyView(List result) {
-        if (refreshLayout != null) {
-            if (result != null) {
-                if (result.size() > 0) {
-                    refreshLayout.enableEmptyView(false);
-                } else {
-                    refreshLayout.enableEmptyView(true);
-                }
-            } else {
-                refreshLayout.enableEmptyView(true);
-            }
-        }
-    }
-
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishLoadmore();
+            refreshLayout.finishRefresh();
         }
     }
 

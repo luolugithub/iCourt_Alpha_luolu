@@ -28,7 +28,6 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonParseException;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ChatAdapter;
@@ -60,7 +59,6 @@ import com.icourt.alpha.view.bgabadgeview.BGABadgeTextView;
 import com.icourt.alpha.view.emoji.MySelectPhotoLayout;
 import com.icourt.alpha.view.emoji.MyXhsEmoticonsKeyBoard;
 import com.icourt.alpha.view.recyclerviewDivider.ChatItemDecoration;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.comparators.LongFieldEntityComparator;
 import com.icourt.alpha.widget.comparators.ORDER;
 import com.icourt.alpha.widget.nim.GlobalMessageObserver;
@@ -73,6 +71,9 @@ import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.msg.model.MessageReceipt;
 import com.netease.nimlib.sdk.team.model.Team;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 import com.sj.emoji.DefEmoticons;
 import com.sj.emoji.EmojiBean;
 import com.sj.emoji.EmojiDisplay;
@@ -180,7 +181,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
     @BindView(R.id.chat_unread_num_tv)
     TextView chatUnreadNumTv;
     @BindView(R.id.ek_bar)
@@ -817,18 +818,11 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         chatAdapter.setOnItemChildClickListener(this);
         chatAdapter.setOnItemChildLongClickListener(this);
         recyclerView.addItemDecoration(new ChatItemDecoration(getContext(), chatAdapter));
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setOnRefreshListener(new OnRefreshListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(RefreshLayout refreshlayout) {
                 getData(false);
             }
-
-            @Override
-            public void onLoadMore(boolean isSilence) {
-                super.onLoadMore(isSilence);
-            }
-
         });
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -1213,8 +1207,8 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 

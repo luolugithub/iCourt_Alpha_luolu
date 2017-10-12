@@ -5,20 +5,17 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.TimerDetailActivity;
 import com.icourt.alpha.activity.TimerTimingActivity;
 import com.icourt.alpha.adapter.TimeAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.event.ProjectActionEvent;
@@ -28,8 +25,11 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.recyclerviewDivider.TimerItemDecoration;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
 import com.icourt.alpha.widget.manager.TimerManager;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -57,9 +57,9 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
     Unbinder unbinder;
     @Nullable
     @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
 
     String projectId;
     TimeAdapter timeAdapter;
@@ -92,33 +92,29 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
     @Override
     protected void initView() {
         projectId = getArguments().getString(KEY_PROJECT_ID);
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_timing, getString(R.string.project_no_timer));
-        refreshLayout.setMoveForHorizontal(true);
+        recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_timing, getString(R.string.project_no_timer));
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setItemAnimator(null);
 
         recyclerView.setAdapter(timeAdapter = new TimeAdapter());
         timeAdapter.setSumTime(sumTime);
         recyclerView.addItemDecoration(new TimerItemDecoration(getActivity(), timeAdapter));
-        recyclerView.setHasFixedSize(true);
         timeAdapter.setOnItemClickListener(this);
-        timeAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, timeAdapter));
 
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(RefreshLayout refreshlayout) {
                 getData(true);
                 getSumTimeByMatterId();
             }
 
             @Override
-            public void onLoadMore(boolean isSilence) {
-                super.onLoadMore(isSilence);
+            public void onLoadmore(RefreshLayout refreshlayout) {
                 getData(false);
             }
+
         });
-        refreshLayout.startRefresh();
+        refreshLayout.autoRefresh();
     }
 
     @Override
@@ -180,15 +176,15 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
 
     private void enableLoadMore(List result) {
         if (refreshLayout != null) {
-            refreshLayout.setPullLoadEnable(result != null
+            refreshLayout.setEnableLoadmore(result != null
                     && result.size() >= ActionConstants.DEFAULT_PAGE_SIZE);
         }
     }
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 

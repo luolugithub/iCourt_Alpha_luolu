@@ -3,15 +3,12 @@ package com.icourt.alpha.fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextView;
 
-import com.andview.refreshview.XRefreshView;
 import com.gjiazhe.wavesidebar.WaveSideBar;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.CustomerCompanyCreateActivity;
@@ -23,7 +20,6 @@ import com.icourt.alpha.activity.MyCollectedCustomersActivity;
 import com.icourt.alpha.adapter.CustomerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
-import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.db.convertor.ListConvertor;
@@ -37,9 +33,12 @@ import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.IndexUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.view.recyclerviewDivider.SuspensionDecoration;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
 import com.icourt.alpha.widget.comparators.PinyinComparator;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 import com.umeng.analytics.MobclickAgent;
 
 import org.greenrobot.eventbus.EventBus;
@@ -72,9 +71,9 @@ public class TabCustomerFragment extends BaseFragment implements BaseRecyclerAda
     @BindView(R.id.titleAction)
     ImageView titleAction;
     @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
     Unbinder unbinder;
     CustomerAdapter customerAdapter;
     HeaderFooterAdapter<CustomerAdapter> headerFooterAdapter;
@@ -83,8 +82,6 @@ public class TabCustomerFragment extends BaseFragment implements BaseRecyclerAda
     SuspensionDecoration mDecoration;
     CustomerDbService customerDbService;
     LinearLayoutManager linearLayoutManager;
-    @BindView(R.id.contentEmptyText)
-    TextView contentEmptyText;
 
     public static TabCustomerFragment newInstance() {
         return new TabCustomerFragment();
@@ -101,21 +98,13 @@ public class TabCustomerFragment extends BaseFragment implements BaseRecyclerAda
     @Override
     protected void initView() {
         EventBus.getDefault().register(this);
-        contentEmptyText.setText("暂无联系人");
+        recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_user, R.string.client_not_add);
         customerDbService = new CustomerDbService(getLoginUserId());
         linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
 
         headerFooterAdapter = new HeaderFooterAdapter<>(customerAdapter = new CustomerAdapter());
-        customerAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
-            @Override
-            protected void updateUI() {
-                if (contentEmptyText != null) {
-                    contentEmptyText.setVisibility(customerAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
-                }
-            }
-        });
-        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_customer_search, recyclerView);
+        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_customer_search, recyclerView.getRecyclerView());
         View header_customer_collected = headerView.findViewById(R.id.header_customer_collected);
         registerClick(header_customer_collected);
         View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
@@ -150,19 +139,16 @@ public class TabCustomerFragment extends BaseFragment implements BaseRecyclerAda
         recyclerView.setAdapter(headerFooterAdapter);
 
 
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setOnRefreshListener(new OnRefreshListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(RefreshLayout refreshlayout) {
                 getData(true);
             }
         });
-        refreshLayout.setPullRefreshEnable(true);
-        refreshLayout.setAutoRefresh(true);
+        refreshLayout.setEnableLoadmore(false);
+        refreshLayout.autoRefresh();
 
         getLocalCustomers();
-
-        refreshLayout.startRefresh();
     }
 
     /**
@@ -209,6 +195,7 @@ public class TabCustomerFragment extends BaseFragment implements BaseRecyclerAda
                             customerAdapter.setShowCustomerNum(true);
                             updateIndexBar(response.body().result);
                             insert2Db(response.body().result);
+                            recyclerView.enableEmptyView(response.body().result);
                         }
                     }
 
@@ -231,7 +218,7 @@ public class TabCustomerFragment extends BaseFragment implements BaseRecyclerAda
                 MyCollectedCustomersActivity.launch(getContext());
                 break;
             case R.id.titleAction:
-                new BottomActionDialog(getContext(), "添加联系人", Arrays.asList("个人联系人", "机构联系人"), new BottomActionDialog.OnActionItemClickListener() {
+                new BottomActionDialog(getContext(), getString(R.string.client_menu_add), Arrays.asList(getString(R.string.client_menu_person), getString(R.string.client_menu_company)), new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                         dialog.dismiss();
@@ -284,8 +271,8 @@ public class TabCustomerFragment extends BaseFragment implements BaseRecyclerAda
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 

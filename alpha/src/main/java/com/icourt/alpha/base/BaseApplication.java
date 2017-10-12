@@ -1,5 +1,6 @@
 package com.icourt.alpha.base;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -26,6 +27,8 @@ import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SFileTokenUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UserPreferences;
+import com.icourt.alpha.view.smartrefreshlayout.AlphaLoadFooter;
+import com.icourt.alpha.view.smartrefreshlayout.AlphaRefreshHeader;
 import com.icourt.alpha.widget.nim.AlphaMessageNotifierCustomization;
 import com.icourt.alpha.widget.nim.NimAttachParser;
 import com.icourt.lib.daemon.DaemonEnv;
@@ -47,6 +50,13 @@ import com.orhanobut.logger.AndroidLogAdapter;
 import com.orhanobut.logger.FormatStrategy;
 import com.orhanobut.logger.Logger;
 import com.orhanobut.logger.PrettyFormatStrategy;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.DefaultRefreshFooterCreater;
+import com.scwang.smartrefresh.layout.api.DefaultRefreshHeaderCreater;
+import com.scwang.smartrefresh.layout.api.RefreshFooter;
+import com.scwang.smartrefresh.layout.api.RefreshHeader;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.constant.SpinnerStyle;
 import com.umeng.analytics.MobclickAgent;
 import com.umeng.socialize.Config;
 import com.umeng.socialize.PlatformConfig;
@@ -90,6 +100,24 @@ public class BaseApplication extends MultiDexApplication {
         Log.LOG = BuildConfig.IS_DEBUG;//umeng sdk日志跟踪
         MobclickAgent.setDebugMode(BuildConfig.IS_DEBUG);
         System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
+
+        //设置全局的Header构建器
+        SmartRefreshLayout.setDefaultRefreshHeaderCreater(new DefaultRefreshHeaderCreater() {
+            @Override
+            public RefreshHeader createRefreshHeader(Context context, RefreshLayout layout) {
+                layout.setPrimaryColorsId(R.color.white, R.color.white);//全局设置主题颜色
+                layout.setHeaderHeight(100);
+                return new AlphaRefreshHeader(context).setSpinnerStyle(SpinnerStyle.Translate);
+            }
+        });
+        //设置全局的Footer构建器
+        SmartRefreshLayout.setDefaultRefreshFooterCreater(new DefaultRefreshFooterCreater() {
+            @Override
+            public RefreshFooter createRefreshFooter(Context context, RefreshLayout layout) {
+                layout.setFooterHeight(100);
+                return new AlphaLoadFooter(context).setSpinnerStyle(SpinnerStyle.Translate);
+            }
+        });
     }
 
     private static BaseApplication baseApplication;

@@ -6,15 +6,15 @@
 
     <include layout="@layout/layout_title_type_2" />
 
-    <com.icourt.alpha.view.xrefreshlayout.RefreshLayout
+    <com.scwang.smartrefresh.layout.SmartRefreshLayout
         android:id="@id/refreshLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <android.support.v7.widget.RecyclerView
+        <com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView
             android:id="@id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@android:color/white" />
-    </com.icourt.alpha.view.xrefreshlayout.RefreshLayout>
+    </com.scwang.smartrefresh.layout.SmartRefreshLayout>
 </LinearLayout>

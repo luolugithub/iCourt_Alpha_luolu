@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 客户模块 字符串资源定义 client_开头 -->
+    <string name="client_not_add">尚未添加客户</string>
+    <string name="client_menu_add">添加联系人</string>
+    <string name="client_menu_person">个人联系人</string>
+    <string name="client_menu_company">机构联系人</string>
+    <string name="client_not_collected">暂无关注的客户</string>
+</resources>

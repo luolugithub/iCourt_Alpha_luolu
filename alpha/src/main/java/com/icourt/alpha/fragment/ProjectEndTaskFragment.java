@@ -5,13 +5,11 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.andview.refreshview.XRefreshView;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.SearchTaskActivity;
@@ -20,7 +18,6 @@ import com.icourt.alpha.activity.TimerDetailActivity;
 import com.icourt.alpha.activity.TimerTimingActivity;
 import com.icourt.alpha.adapter.TaskAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
-import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
@@ -28,8 +25,11 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.UMMobClickAgent;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
 import com.icourt.alpha.widget.manager.TimerManager;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
 import com.umeng.analytics.MobclickAgent;
 
 import org.greenrobot.eventbus.Subscribe;
@@ -56,9 +56,9 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
     public static final String KEY_PROJECT_ID = "key_project_id";
 
     @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
 
     Unbinder unbinder;
 
@@ -89,13 +89,11 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
     @Override
     protected void initView() {
         projectId = getArguments().getString(KEY_PROJECT_ID);
-        refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_none_finished_task);
-        refreshLayout.setMoveForHorizontal(true);
+        recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_none_finished_task);
         linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
-        recyclerView.setHasFixedSize(true);
 
-        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
+        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView.getRecyclerView());
         View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
         registerClick(rl_comm_search);
         taskAdapter = new TaskAdapter();
@@ -103,25 +101,22 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
         taskAdapter.setOnItemClickListener(this);
         taskAdapter.setOnItemChildClickListener(this);
         taskAdapter.setOnItemLongClickListener(this);
-        taskAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskAdapter));
         recyclerView.setAdapter(taskAdapter);
 
 
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(RefreshLayout refreshlayout) {
                 checkAddTaskAndDocumentPms(projectId);
                 getData(true);
             }
 
             @Override
-            public void onLoadMore(boolean isSilence) {
-                super.onLoadMore(isSilence);
+            public void onLoadmore(RefreshLayout refreshlayout) {
                 getData(false);
             }
         });
-        refreshLayout.startRefresh();
+        refreshLayout.autoRefresh();
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -129,7 +124,7 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
         if (event == null) return;
         switch (event.action) {
             case TaskActionEvent.TASK_REFRESG_ACTION:
-                refreshLayout.startRefresh();
+                refreshLayout.autoRefresh();
                 break;
             case TaskActionEvent.TASK_DELETE_ACTION:
                 if (event.entity == null) return;
@@ -185,7 +180,7 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
                         if (response.body().result != null && recyclerView != null) {
                             taskAdapter.setNewData(response.body().result.items);
                             if (isRefresh) {//如果是下拉刷新情况，才判断要不要显示空页面
-                                enableEmptyView(taskAdapter.getData());
+                                recyclerView.enableEmptyView(taskAdapter.getData());
                             }
                             //第一次进入 隐藏搜索框
                             if (isFirstTimeIntoPage && taskAdapter.getData().size() > 0) {
@@ -202,7 +197,7 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
                         super.onFailure(call, t);
                         stopRefresh();
                         if (isRefresh) {//如果是下拉刷新情况，才判断要不要显示空页面
-                            enableEmptyView(taskAdapter.getData());
+                            recyclerView.enableEmptyView(taskAdapter.getData());
                         }
                     }
                 });
@@ -233,32 +228,17 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
                 });
     }
 
-    /**
-     * 根据数据是否为空，判断是否显示空页面。
-     *
-     * @param result 用来判断是否要显示空页面的列表
-     */
-    private void enableEmptyView(List result) {
-        if (refreshLayout != null) {
-            if (result != null && result.size() > 0) {
-                refreshLayout.enableEmptyView(false);
-            } else {
-                refreshLayout.enableEmptyView(true);
-            }
-        }
-    }
-
     private void enableLoadMore(List result) {
         if (refreshLayout != null) {
-            refreshLayout.setPullLoadEnable(result != null
+            refreshLayout.setEnableLoadmore(result != null
                     && result.size() >= ActionConstants.DEFAULT_PAGE_SIZE);
         }
     }
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishLoadmore();
+            refreshLayout.finishRefresh();
         }
     }
 
