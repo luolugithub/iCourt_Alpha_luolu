@@ -8,6 +8,7 @@ import android.widget.EditText;
 
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
+import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.utils.SpUtils;
@@ -72,7 +73,7 @@ public class FolderCreateActivity extends SFileEditBaseActivity {
 
     @Override
     protected int getMaxInputLimitNum() {
-        return 80;
+        return SFileConfig.SFILE_FILE_NAME_MAX_LENGTH;
     }
 
     @Override
