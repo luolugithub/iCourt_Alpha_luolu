@@ -5,12 +5,14 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.FileInnerShareAdapter;
@@ -227,9 +229,7 @@ public class FileInnerShareFragment extends BaseFragment
                         @Override
                         public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
                             dismissLoadingDialog();
-                            if (JsonUtils.getBoolValue(response.body(),"success")) {
-                                getData(true);
-                            }
+                            getData(true);
                         }
 
                         @Override
