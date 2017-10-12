@@ -12,7 +12,6 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.GlideUtils;
-import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.view.recyclerviewDivider.ITimeDividerInterface;
@@ -40,7 +39,6 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
     private static final int TIME_SIMPLE_TITLE = 2;
     private HashMap<Integer, Long> timeShowArray = new HashMap<>();//时间分割线
     private long sumTime;
-
 
     private boolean useSimpleTitle;
 
@@ -131,10 +129,14 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
         TextView divider_time_count = holder.obtainView(R.id.divider_time_count);
         timer_title_tv.setText(TextUtils.isEmpty(timeEntity.name) ? "未录入工作描述" : timeEntity.name);
         if (timeEntity.state == TimeEntity.ItemEntity.TIMER_STATE_START) {
-            long useTime = timeEntity.useTime;
-            if (useTime <= 0 && timeEntity.startTime > 0) {
-                useTime = DateUtils.millis() - timeEntity.startTime;
-            }
+//            long useTime = timeEntity.useTime;
+//            if (useTime <= 0 && timeEntity.startTime > 0) {
+//                useTime = DateUtils.millis() - timeEntity.startTime;
+//            }
+//            if (useTime < 0) {
+//                useTime = 0;
+//            }
+            long useTime = TimerManager.getInstance().getTimingSeconds() * 1000;
             if (useTime < 0) {
                 useTime = 0;
             }
@@ -189,7 +191,6 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
         }
         return String.format(Locale.CHINA, "%d:%02d", hour, minute);
     }
-
 
     /**
      * 设置顶部数据
@@ -318,6 +319,7 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
                     MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
                     TimerManager.getInstance().stopTimer();
                 }
+                notifyDataSetChanged();
                 break;
         }
     }

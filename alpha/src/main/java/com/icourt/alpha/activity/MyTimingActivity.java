@@ -147,4 +147,9 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
             }
         }
     }
+
+    @Override
+    public void onBackPressed() {
+        finish();
+    }
 }
