@@ -325,6 +325,7 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
                 setTitle(FileUtils.getFileName(seaFileImages.get(position).getSeaFileFullPath()));
             }
         });
+        viewPager.setOffscreenPageLimit(3);
         if (selectPos < imagePagerAdapter.getCount()) {
             mHandler.postDelayed(new Runnable() {
                 @Override
@@ -491,7 +492,7 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
                         if (imagePagerAdapter.getCount() > 1) {
                             seaFileImages.remove(currentItem);
                             initAdapter();
-                            viewPager.setCurrentItem(Math.min(currentItem + 1, seaFileImages.size() - 1));
+                            viewPager.setCurrentItem(Math.min(currentItem, imagePagerAdapter.getCount() - 1));
                         } else {
                             //只剩一个 就关闭整个页面
                             finish();
