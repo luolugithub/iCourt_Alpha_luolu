@@ -551,7 +551,8 @@ public class FileDownloadActivity extends ImageViewBaseActivity {
             startActivity(intent);     //这里最好try一下，有可能会报错。 //比如说你的MIME类型是打开邮箱，但是你手机里面没装邮箱客户端，就会报错。
         } catch (Exception e) {
             e.printStackTrace();
-            bugSync("打开文件失败", e);
+            showTopSnackBar("没有找到第三方App来打开此文件!");
+            bugSync("打开文件失败", "file:" + fileCachePath + StringUtils.throwable2string(e));
         }
     }
 

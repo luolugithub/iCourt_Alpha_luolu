@@ -595,10 +595,11 @@ public class FolderListActivity extends FolderBaseActivity
                                     getRepoPermission(),
                                     getSupportFragmentManager());
                         } else if (TextUtils.equals(action, getString(R.string.sfile_folder_details))) {
+                            String seaFileDirPath = FileUtils.getFileParentDir(getSeaFileDirPath());
                             FolderDetailDialogFragment.show(
                                     getRepoType(),
                                     getSeaFileRepoId(),
-                                    FileUtils.getFileParentDir(getSeaFileDirPath()),
+                                    seaFileDirPath,
                                     getRepoTitle(),
                                     0,
                                     getRepoPermission(),
