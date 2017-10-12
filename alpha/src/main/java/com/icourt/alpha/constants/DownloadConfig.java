@@ -63,7 +63,7 @@ public class DownloadConfig {
             if (!TextUtils.isEmpty(iSeaFile.getSeaFileVersionId())) {
                 String fileNameWithoutSuffix = FileUtils.getFileNameWithoutSuffix(fileFullPath);
                 String fileSuffix = FileUtils.getFileSuffix(fileFullPath);
-                fileFullPath = String.format("%s_%s%s", fileNameWithoutSuffix, iSeaFile.getSeaFileVersionId().hashCode(), fileSuffix);
+                fileFullPath = String.format("%s_%s%s", fileNameWithoutSuffix, iSeaFile.getSeaFileVersionId(), fileSuffix);
             }
             return getFormatedFileName(new StringBuilder(Environment.getExternalStorageDirectory().getAbsolutePath())
                     .append(File.separator)
@@ -91,7 +91,6 @@ public class DownloadConfig {
         }
         return null;
     }
-
 
 
     /**

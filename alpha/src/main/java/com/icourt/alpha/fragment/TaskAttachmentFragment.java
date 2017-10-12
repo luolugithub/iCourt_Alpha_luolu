@@ -26,9 +26,11 @@ import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.constants.SFileConfig;
+import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.entity.bean.TaskAttachmentEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
 import com.icourt.alpha.fragment.dialogfragment.SeaFileSelectDialogFragment;
+import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.http.observer.BaseObserver;
@@ -426,7 +428,7 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        TaskAttachmentEntity item = taskAttachmentAdapter.getItem(position);
+        final TaskAttachmentEntity item = taskAttachmentAdapter.getItem(position);
         if (item == null) return;
         if (item.pathInfoVo == null) return;
         //图片 直接预览
@@ -449,10 +451,35 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
                     imageDatas,
                     indexOf);
         } else {
-            FileDownloadActivity.launch(
-                    getContext(),
-                    item,
-                    SFileConfig.FILE_FROM_TASK);
+            //拿这个文件的更新时间
+            if (item.fileUpdateTime <= 0) {
+                showLoadingDialog(null);
+                getSeaFileDetails(
+                        item.getSeaFileRepoId(),
+                        item.getSeaFileFullPath(),
+                        new SFileCallBack<FolderDocumentEntity>() {
+                            @Override
+                            public void onSuccess(Call<FolderDocumentEntity> call, Response<FolderDocumentEntity> response) {
+                                dismissLoadingDialog();
+                                item.fileUpdateTime = response.body().mtime;
+                                FileDownloadActivity.launch(
+                                        getContext(),
+                                        item,
+                                        SFileConfig.FILE_FROM_TASK);
+                            }
+
+                            @Override
+                            public void onFailure(Call<FolderDocumentEntity> call, Throwable t) {
+                                dismissLoadingDialog();
+                                super.onFailure(call, t);
+                            }
+                        });
+            } else {
+                FileDownloadActivity.launch(
+                        getContext(),
+                        item,
+                        SFileConfig.FILE_FROM_TASK);
+            }
         }
     }
 
