@@ -2,10 +2,10 @@ package com.icourt.alpha.http;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.entity.bean.FileBoxBean;
 import com.icourt.alpha.entity.bean.FileVersionCommits;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
+import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.entity.bean.SFileSearchPage;
 import com.icourt.alpha.entity.bean.SFileShareUserInfo;
 import com.icourt.alpha.entity.bean.SeaFileTrashPageEntity;
@@ -558,5 +558,17 @@ public interface ApiSFileService {
             @Path("seaFileRepoId") String seaFileRepoId,
             @Field("password") String password);
 
+
+    /**
+     * 获取文件详情
+     *
+     * @param seaFileRepoId
+     * @param fullPath
+     * @return
+     */
+    @GET("api2/repos/{seaFileRepoId}/file/detail/")
+    Call<FolderDocumentEntity> seaFileDetails(
+            @Path("seaFileRepoId") String seaFileRepoId,
+            @Query("p") String fullPath);
 
 }

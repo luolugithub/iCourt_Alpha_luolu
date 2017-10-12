@@ -72,7 +72,8 @@ public class FileVersionEntity implements ILongFieldEntity, ISeaFile {
     @Nullable
     @Override
     public String getSeaFileVersionId() {
-        return id;
+        //每个版本一个时间
+        return String.valueOf(ctime);
     }
 
     @Override
