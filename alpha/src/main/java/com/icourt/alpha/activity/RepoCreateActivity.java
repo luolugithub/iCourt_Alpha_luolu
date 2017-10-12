@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import android.text.InputFilter;
 import android.widget.EditText;
 
+import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.utils.SpUtils;
@@ -60,7 +61,7 @@ public class RepoCreateActivity extends SFileEditBaseActivity {
 
     @Override
     protected int getMaxInputLimitNum() {
-        return 80;
+        return SFileConfig.SFILE_FILE_NAME_MAX_LENGTH;
     }
 
     @Override
