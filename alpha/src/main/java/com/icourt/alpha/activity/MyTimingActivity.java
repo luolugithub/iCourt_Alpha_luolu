@@ -2,7 +2,6 @@ package com.icourt.alpha.activity;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
@@ -10,53 +9,26 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.ViewPager;
-import android.util.SparseArray;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
-import com.icourt.alpha.adapter.baseadapter.BaseRefreshFragmentAdapter;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.base.BaseDialogFragment;
-import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.constants.TimingConfig;
-import com.icourt.alpha.entity.bean.TimingCountEntity;
 import com.icourt.alpha.entity.bean.TimingSelectEntity;
-import com.icourt.alpha.fragment.TaskListCalendarFragment;
 import com.icourt.alpha.fragment.TimingDayListFragment;
-import com.icourt.alpha.fragment.TimingListFragment;
+import com.icourt.alpha.fragment.TimingMonthListFragment;
 import com.icourt.alpha.fragment.TimingWeekListFragment;
+import com.icourt.alpha.fragment.TimingYearListFragment;
 import com.icourt.alpha.fragment.dialogfragment.TimingSelectDialogFragment;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
-import com.icourt.alpha.utils.DateUtils;
-import com.icourt.alpha.utils.SystemUtils;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import lecho.lib.hellocharts.model.Axis;
-import lecho.lib.hellocharts.model.AxisValue;
-import lecho.lib.hellocharts.model.Line;
-import lecho.lib.hellocharts.model.LineChartData;
-import lecho.lib.hellocharts.model.PointValue;
-import lecho.lib.hellocharts.model.ValueShape;
-import lecho.lib.hellocharts.model.Viewport;
-import lecho.lib.hellocharts.view.LineChartView;
-
-import static com.icourt.alpha.constants.TimingConfig.TIMING_QUERY_BY_DAY;
-import static com.icourt.alpha.constants.TimingConfig.TIMING_QUERY_BY_MONTH;
-import static com.icourt.alpha.constants.TimingConfig.TIMING_QUERY_BY_WEEK;
-import static com.icourt.alpha.constants.TimingConfig.TIMING_QUERY_BY_YEAR;
 
 /**
  * Description  我的计时
@@ -79,14 +51,8 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
     TextView timingCountTotalTv;
     @BindView(R.id.timing_today_total)
     TextView timingTodayTotal;
-
     @BindView(R.id.fl_container)
     FrameLayout flContainer;
-
-    BaseRefreshFragmentAdapter baseFragmentAdapter;
-
-    @TimingConfig.TIMINGQUERYTYPE
-    int timingQueryType = TIMING_QUERY_BY_WEEK;//默认按周
 
     public static void launch(@NonNull Context context) {
         if (context == null) return;
@@ -106,34 +72,7 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
     protected void initView() {
         super.initView();
         titleAction.setImageResource(R.mipmap.header_icon_add);
-
-
-//        viewPager.setAdapter(baseFragmentAdapter = new BaseRefreshFragmentAdapter(getSupportFragmentManager()) {
-//            @Override
-//            public Fragment getItem(int position) {
-//                int distance = position - CENTER_PAGE;
-//                long startTime = 0;
-//                switch (timingQueryType) {
-//                    case TIMING_QUERY_BY_DAY:
-//                        startTime = DateUtils.getTodayStartTime() + distance * TimeUnit.DAYS.toMillis(1);
-//                        break;
-//                    case TIMING_QUERY_BY_WEEK:
-//                        startTime = DateUtils.getCurrWeekStartTime() + distance * TimeUnit.DAYS.toMillis(7);
-//                        break;
-//                    case TIMING_QUERY_BY_MONTH:
-//                        break;
-//                    case TIMING_QUERY_BY_YEAR:
-//                        break;
-//                }
-//                return TimingListFragment.newInstance(timingQueryType, startTime);
-//            }
-//
-//            @Override
-//            public int getCount() {
-//                return MAX_PAGE;
-//            }
-//        });
-//        viewPager.setCurrentItem(CENTER_PAGE, false);
+        showCurrentWeekFragment();
     }
 
     @OnClick({R.id.timing_date_title_tv})
@@ -149,6 +88,20 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
         }
     }
 
+    private void showCurrentWeekFragment() {
+        long currentTimeMillis = System.currentTimeMillis();
+        TimingWeekListFragment weekListFragment = TimingWeekListFragment.newInstance(currentTimeMillis);
+        addOrShowFragmentAnim(weekListFragment, R.id.fl_container, true);
+    }
+
+    /**
+     * 替换所显示的Fragment
+     *
+     * @param targetFragment  要替换成哪个Fragment
+     * @param containerViewId
+     * @param isAnim
+     * @return
+     */
     protected Fragment addOrShowFragmentAnim(@NonNull Fragment targetFragment, @IdRes int containerViewId, boolean isAnim) {
         FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction transaction = fm.beginTransaction();
@@ -159,7 +112,6 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
         transaction.addToBackStack(null);
         return targetFragment;
     }
-
 
     /**
      * 展示时间选择对话框
@@ -187,12 +139,12 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
                 TimingWeekListFragment weekListFragment = TimingWeekListFragment.newInstance(timingSelectEntity.startTimeMillis);
                 addOrShowFragmentAnim(weekListFragment, R.id.fl_container, true);
             } else if (type == TimingConfig.TIMING_QUERY_BY_MONTH) {//月
-
+                TimingMonthListFragment monthListFragment = TimingMonthListFragment.newInstance(timingSelectEntity.startTimeMillis);
+                addOrShowFragmentAnim(monthListFragment, R.id.fl_container, true);
             } else if (type == TimingConfig.TIMING_QUERY_BY_YEAR) {//年
-
+                TimingYearListFragment yearListFragment = TimingYearListFragment.newInstance(timingSelectEntity.startTimeMillis);
+                addOrShowFragmentAnim(yearListFragment, R.id.fl_container, true);
             }
         }
     }
-
-
 }

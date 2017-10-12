@@ -41,14 +41,14 @@ import lecho.lib.hellocharts.model.Viewport;
 import lecho.lib.hellocharts.view.LineChartView;
 
 /**
- * Description 选中日情况下的计时列表
+ * Description 选中年情况下的计时列表
  * Company Beijing icourt
  * author zhaodanyang E-mail:zhaodanyang@icourt.cc
  * date createTime: 2017/10/10
  * version 2.1.1
  */
 
-public class TimingWeekListFragment extends BaseFragment {
+public class TimingYearListFragment extends BaseFragment {
 
     private static final String KEY_START_TIME = "key_start_time";
 
@@ -63,7 +63,7 @@ public class TimingWeekListFragment extends BaseFragment {
     @BindView(R.id.viewPager)
     ViewPager viewPager;
 
-    private int numberOfPoints = 7;//点的数量
+    private int numberOfPoints = 12;//点的数量
     private boolean hasLines = true;//折线图是否有分割线
     private boolean hasPoints = false;//不要圆点
     private ValueShape shape = ValueShape.CIRCLE;
@@ -77,8 +77,8 @@ public class TimingWeekListFragment extends BaseFragment {
 
     long startTimeMillis;//传递进来的开始时间
 
-    public static TimingWeekListFragment newInstance(long startTimeMillis) {
-        TimingWeekListFragment fragment = new TimingWeekListFragment();
+    public static TimingYearListFragment newInstance(long startTimeMillis) {
+        TimingYearListFragment fragment = new TimingYearListFragment();
         Bundle bundle = new Bundle();
         bundle.putLong(KEY_START_TIME, startTimeMillis);
         fragment.setArguments(bundle);
@@ -97,7 +97,7 @@ public class TimingWeekListFragment extends BaseFragment {
     protected void initView() {
         if (getArguments() != null) {
             long startTime = getArguments().getLong(KEY_START_TIME);
-            startTimeMillis = DateUtils.getWeekStartTime(startTime);
+            startTimeMillis = DateUtils.getYearStartDay(startTime);
         }
 
         resetViewport();
@@ -106,24 +106,24 @@ public class TimingWeekListFragment extends BaseFragment {
         timingChartView.setVisibility(View.VISIBLE);
         timingTextShowTimingLl.setVisibility(View.GONE);
 
-        final List<TimingSelectEntity> weekData = TimerDateManager.getWeekData();
+        final List<TimingSelectEntity> yearData = TimerDateManager.getYearData();
 
         viewPager.setAdapter(baseFragmentAdapter = new BaseRefreshFragmentAdapter(getChildFragmentManager()) {
             @Override
             public Fragment getItem(int position) {
-                TimingSelectEntity timingSelectEntity = weekData.get(position);
-                return TimingListFragment.newInstance(TimingConfig.TIMING_QUERY_BY_WEEK, timingSelectEntity.startTimeMillis);
+                TimingSelectEntity timingSelectEntity = yearData.get(position);
+                return TimingListFragment.newInstance(TimingConfig.TIMING_QUERY_BY_YEAR, timingSelectEntity.startTimeMillis);
             }
 
             @Override
             public int getCount() {
-                return weekData.size();
+                return yearData.size();
             }
         });
 
         int position = 0;
-        for (int i = 0; i < weekData.size(); i++) {
-            if (startTimeMillis >= weekData.get(i).startTimeMillis && startTimeMillis <= weekData.get(i).endTimeMillis) {
+        for (int i = 0; i < yearData.size(); i++) {
+            if (startTimeMillis >= yearData.get(i).startTimeMillis && startTimeMillis <= yearData.get(i).endTimeMillis) {
                 position = i;
                 break;
             }
@@ -149,14 +149,20 @@ public class TimingWeekListFragment extends BaseFragment {
         List<Line> lines = new ArrayList<>();
 
         List<PointValue> values = new ArrayList<>();
+        //x轴的坐标点，12个月
         List<AxisValue> axisXValues = Arrays.asList(
-                new AxisValue(0).setLabel("周一"),
-                new AxisValue(1).setLabel("周二"),
-                new AxisValue(2).setLabel("周三"),
-                new AxisValue(3).setLabel("周四"),
-                new AxisValue(4).setLabel("周五"),
-                new AxisValue(5).setLabel("周六"),
-                new AxisValue(6).setLabel("周日"));
+                new AxisValue(0).setLabel("1"),
+                new AxisValue(1).setLabel("2"),
+                new AxisValue(2).setLabel("3"),
+                new AxisValue(3).setLabel("4"),
+                new AxisValue(4).setLabel("5"),
+                new AxisValue(5).setLabel("6"),
+                new AxisValue(6).setLabel("7"),
+                new AxisValue(7).setLabel("8"),
+                new AxisValue(8).setLabel("9"),
+                new AxisValue(9).setLabel("10"),
+                new AxisValue(10).setLabel("11"),
+                new AxisValue(11).setLabel("12"));
         List<AxisValue> axisYValues = new ArrayList<>();
         for (int i = 0; i <= 24; i += 4) {
             axisYValues.add(new AxisValue(i).setLabel(String.format("%sh ", i)));

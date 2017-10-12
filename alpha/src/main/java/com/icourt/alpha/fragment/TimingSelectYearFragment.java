@@ -13,6 +13,7 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TimingSelectEntity;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.widget.manager.TimerDateManager;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -50,6 +51,7 @@ public class TimingSelectYearFragment extends BaseFragment {
     protected void initView() {
         wheelviewYear.setCyclic(false);
         wheelviewYear.setTextSize(20);
+
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(System.currentTimeMillis());
         int year = calendar.get(Calendar.YEAR);
