@@ -839,30 +839,20 @@ public class TaskDetailActivity extends BaseActivity
             baseFragmentAdapter.bindTitle(true, Arrays.asList(tabTitles.get(0, ""),
                     tabTitles.get(1, ""),
                     tabTitles.get(2, "")));
-            baseFragmentAdapter.bindData(true, Arrays.asList(
-                    taskDetailFragment == null ? taskDetailFragment = TaskDetailFragment.newInstance(taskItemEntity) : taskDetailFragment,
-                    taskCheckItemFragment == null ? taskCheckItemFragment = TaskCheckItemFragment.newInstance(
-                            taskItemEntity,
-                            hasTaskEditPermission()) : taskCheckItemFragment,
-                    taskAttachmentFragment == null ? taskAttachmentFragment = TaskAttachmentFragment.newInstance(
-                            taskItemEntity.id,
-                            taskItemEntity.matterId,
-                            taskItemEntity.matter != null ? taskItemEntity.matter.name : "",
-                            hasDocumentLookPermission(),
-                            hasDocumentAddPermission(),
-                            hasTaskEditPermission()) : taskAttachmentFragment
-            ));
             if (baseFragmentAdapter.getCount() <= 0) {
                 baseFragmentAdapter.bindData(true, Arrays.asList(
                         taskDetailFragment == null ? taskDetailFragment = TaskDetailFragment.newInstance(taskItemEntity) : taskDetailFragment,
-                        taskCheckItemFragment == null ? taskCheckItemFragment = TaskCheckItemFragment.newInstance(taskItemEntity.id, hasTaskEditPermission(), taskItemEntity.valid) : taskCheckItemFragment,
-                        TaskAttachmentFragment.newInstance(
+                        taskCheckItemFragment == null ? taskCheckItemFragment = TaskCheckItemFragment.newInstance(
+                                taskItemEntity.id,
+                                hasTaskEditPermission(),
+                                taskItemEntity.valid) : taskCheckItemFragment,
+                        taskAttachmentFragment == null ? taskAttachmentFragment = TaskAttachmentFragment.newInstance(
                                 taskItemEntity.id,
                                 taskItemEntity.matterId,
                                 taskItemEntity.matter != null ? taskItemEntity.matter.name : "",
                                 hasDocumentLookPermission(),
                                 hasDocumentAddPermission(),
-                                hasTaskEditPermission())
+                                hasTaskEditPermission()) : taskAttachmentFragment
                 ));
             }
 

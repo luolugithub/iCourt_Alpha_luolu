@@ -27,7 +27,6 @@ import com.icourt.alpha.adapter.TaskCheckItemAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TaskCheckItemEntity;
-import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
@@ -64,7 +63,6 @@ public class TaskCheckItemFragment extends BaseFragment
     private static final String KEY_VALID = "key_valid";
     private static final String KEY_IS_CHECK_ITEM = "key_is_check_item";
 
-    private static final String KEY_TASK_DETAIL = "key_task_detail";
     @BindView(R.id.recyclerview)
     RecyclerView recyclerview;
     @BindView(R.id.check_item_edit)
@@ -84,18 +82,16 @@ public class TaskCheckItemFragment extends BaseFragment
 
     Unbinder unbinder;
     String taskId;
-    TaskEntity.TaskItemEntity taskItemEntity;
     TaskCheckItemAdapter taskCheckItemAdapter;
     OnUpdateTaskListener updateTaskListener;
-    boolean hasPermission;
-    boolean isFinish;//是否完成
-    boolean valid;//是否有效   true：未删除   fale：已删除
+    boolean hasPermission, valid;
 
-    public static TaskCheckItemFragment newInstance(@NonNull TaskEntity.TaskItemEntity taskItemEntity, boolean hasPermission) {
+    public static TaskCheckItemFragment newInstance(@NonNull String taskId, boolean hasPermission, boolean valid) {
         TaskCheckItemFragment taskCheckItemFragment = new TaskCheckItemFragment();
         Bundle bundle = new Bundle();
-        bundle.putSerializable(KEY_TASK_DETAIL, taskItemEntity);
+        bundle.putString(KEY_TASK_ID, taskId);
         bundle.putBoolean(KEY_HAS_PERMISSION, hasPermission);
+        bundle.putBoolean(KEY_VALID, valid);
         taskCheckItemFragment.setArguments(bundle);
         return taskCheckItemFragment;
     }
@@ -120,29 +116,21 @@ public class TaskCheckItemFragment extends BaseFragment
 
     @Override
     protected void initView() {
-        taskItemEntity = (TaskEntity.TaskItemEntity) getArguments().getSerializable(KEY_TASK_DETAIL);
-        if (taskItemEntity != null) {
-            taskId = taskItemEntity.id;
-            valid = taskItemEntity.valid;
-            isFinish = taskItemEntity.state;
-        }
+        taskId = getArguments().getString(KEY_TASK_ID);
         hasPermission = getArguments().getBoolean(KEY_HAS_PERMISSION);
-        nestedScrollView.setOnScrollChangeListener(new NestedScrollView.OnScrollChangeListener() {
-            @Override
-            public void onScrollChange(NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
-
-            }
-        });
         valid = getArguments().getBoolean(KEY_VALID);
         recyclerview.setNestedScrollingEnabled(false);
         recyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerview.setAdapter(taskCheckItemAdapter = new TaskCheckItemAdapter());
+        taskCheckItemAdapter.setValid(valid);
         getData(false);
         if (hasPermission) {
+            addItemLayout.setVisibility(valid ? View.VISIBLE : View.GONE);
             emptyText.setText(R.string.task_no_check_item);
             taskCheckItemAdapter.setOnItemChildClickListener(this);
-            taskCheckItemAdapter.setOnLoseFocusListener(this);
             taskCheckItemAdapter.setOnItemClickListener(this);
+            if (valid)
+                taskCheckItemAdapter.setOnLoseFocusListener(this);
             checkItemEdit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
                 @Override
                 public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -155,14 +143,6 @@ public class TaskCheckItemFragment extends BaseFragment
                     return true;
                 }
             });
-            if (taskCheckItemAdapter != null) {
-                taskCheckItemAdapter.setValid(valid);
-                taskCheckItemAdapter.setFinish(isFinish);
-            }
-            addItemLayout.setVisibility(valid && !isFinish ? View.VISIBLE : View.GONE);
-            taskCheckItemAdapter.setOnItemClickListener(!isFinish && valid ? this : null);
-            taskCheckItemAdapter.setOnItemChildClickListener(!isFinish && valid ? this : null);
-            taskCheckItemAdapter.setOnLoseFocusListener(!isFinish && valid ? this : null);
         } else {
             emptyText.setText(R.string.task_no_permission_see_check);
             emptyLayout.setVisibility(View.VISIBLE);
