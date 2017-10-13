@@ -6,13 +6,11 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.util.ArrayMap;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.andview.refreshview.XRefreshView;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.SearchTaskActivity;
@@ -20,8 +18,6 @@ import com.icourt.alpha.activity.TaskDetailActivity;
 import com.icourt.alpha.activity.TimerDetailActivity;
 import com.icourt.alpha.activity.TimerTimingActivity;
 import com.icourt.alpha.adapter.TaskAdapter;
-import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
-import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
@@ -29,8 +25,11 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
 import com.icourt.alpha.widget.manager.TimerManager;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
 import com.umeng.analytics.MobclickAgent;
 
 import org.greenrobot.eventbus.Subscribe;
@@ -98,9 +97,9 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
 
     Unbinder unbinder;
     @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
 
     private LinearLayoutManager linearLayoutManager;
 
@@ -141,43 +140,31 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
         startType = getArguments().getInt(TAG_START_TYPE);
         finishType = getArguments().getInt(TAG_FINISH_TYPE);
         ids = getArguments().getStringArrayList(TAG_IDS);
-        refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_list_null_text);
-        refreshLayout.setMoveForHorizontal(true);
+        if (startType == TaskOtherListFragment.SELECT_OTHER_TYPE) {
+            recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_none_other_task);
+        } else {
+            recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_list_null_text);
+        }
         linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
-        recyclerView.setHasFixedSize(true);
-
+        refreshLayout.setEnableLoadmore(false);
         taskAdapter = new TaskAdapter();
-        taskAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
-            @Override
-            public void onItemRangeRemoved(int positionStart, int itemCount) {
-                super.onItemRangeRemoved(positionStart, itemCount);
-            }
-
-            @Override
-            protected void updateUI() {
-                //当RecyclerView进行刷新的时候，会回调该方法，这个方法会比Decoration先执行。
-            }
-        });
         View headerView = getActivity().getLayoutInflater().inflate(R.layout.header_search_comm, (ViewGroup) recyclerView.getParent(), false);
         View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
         registerClick(rl_comm_search);
         taskAdapter.addHeaderView(headerView);
-        taskAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskAdapter));
         taskAdapter.setOnItemClickListener(this);
         taskAdapter.setOnItemChildClickListener(this);
         recyclerView.setAdapter(taskAdapter);
 
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(RefreshLayout refreshlayout) {
                 getData(true);
             }
 
             @Override
-            public void onLoadMore(boolean isSilence) {
-                super.onLoadMore(isSilence);
+            public void onLoadmore(RefreshLayout refreshlayout) {
                 getData(false);
             }
         });
@@ -187,7 +174,7 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
     public void onResume() {
         super.onResume();
         if (isFirstTimeIntoPage) {
-            refreshLayout.startRefresh();
+            refreshLayout.autoRefresh();
         } else {
             getData(true);
         }
@@ -267,7 +254,7 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
                         if (response.body().result != null) {
                             getTaskGroupData(response.body().result);
                             if (isRefresh)
-                                enableEmptyView(response.body().result.items);
+                                recyclerView.enableEmptyView(response.body().result.items);
                             stopRefresh();
                         }
                     }
@@ -276,7 +263,7 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
                     public void onFailure(Call<ResEntity<TaskEntity>> call, Throwable t) {
                         super.onFailure(call, t);
                         stopRefresh();
-                        enableEmptyView(null);
+                        recyclerView.enableEmptyView(null);
                     }
                 }
         );
@@ -304,6 +291,7 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
                     @Override
                     public void accept(List<TaskEntity.TaskItemEntity> searchPolymerizationEntities) throws Exception {
                         taskAdapter.setNewData(searchPolymerizationEntities);
+                        recyclerView.enableEmptyView(searchPolymerizationEntities);
                         goFirstTask();
                     }
                 });
@@ -426,27 +414,12 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
     }
 
     /**
-     * 根据数据是否为空，判断是否显示空页面。
-     *
-     * @param result 用来判断是否要显示空页面的列表
-     */
-    private void enableEmptyView(List result) {
-        if (refreshLayout != null) {
-            if (result != null && result.size() > 0) {
-                refreshLayout.enableEmptyView(false);
-            } else {
-                refreshLayout.enableEmptyView(true);
-            }
-        }
-    }
-
-    /**
      * 停止刷新
      */
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 

@@ -14,7 +14,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.CustomerCompanyDetailActivity;
 import com.icourt.alpha.activity.CustomerPersonDetailActivity;
@@ -26,7 +25,6 @@ import com.icourt.alpha.adapter.ProjectClientAdapter;
 import com.icourt.alpha.adapter.ProjectMembersAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.db.dbmodel.CustomerDbModel;
@@ -45,7 +43,9 @@ import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.view.WrapContentHeightViewPager;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
 import com.umeng.analytics.MobclickAgent;
 
 import org.greenrobot.eventbus.EventBus;
@@ -80,7 +80,7 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
     @BindView(R.id.project_member_recyclerview)
     RecyclerView projectMemberRecyclerview;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
     @BindView(R.id.project_member_count)
     TextView projectMemberCount;
     @BindView(R.id.project_add_routine)
@@ -129,7 +129,6 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
     protected void initView() {
         projectId = getArguments().getString(KEY_PROJECT_ID);
         customerDbService = new CustomerDbService(LoginInfoUtils.getLoginUserId());
-        refreshLayout.setMoveForHorizontal(true);
 
         basicTopRecyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
         basicTopRecyclerview.addItemDecoration(ItemDecorationUtils.getCommMagin5Divider(getContext(), false));
@@ -141,20 +140,19 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
         projectMemberRecyclerview.addItemDecoration(ItemDecorationUtils.getCommFull5VerticalDivider(getContext(), true));
         projectMemberRecyclerview.setHasFixedSize(true);
         projectMemberRecyclerview.setAdapter(projectMemberAdapter = new ProjectMembersAdapter());
-        projectMemberAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, projectMemberAdapter));
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setEnableLoadmore(false);
+        refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(RefreshLayout refreshlayout) {
                 getData(true);
             }
 
             @Override
-            public void onLoadMore(boolean isSilence) {
-                super.onLoadMore(isSilence);
+            public void onLoadmore(RefreshLayout refreshlayout) {
+
             }
         });
-        refreshLayout.startRefresh();
+        refreshLayout.autoRefresh();
     }
 
     /**
@@ -408,8 +406,8 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 

@@ -7,24 +7,24 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.CheckedTextView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.SelectGroupAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.SelectGroupBean;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ItemDecorationUtils;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -55,9 +55,9 @@ public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAda
     @BindView(R.id.titleView)
     AppBarLayout titleView;
     @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
 
     SelectGroupAdapter selectGroupAdapter;
     final List<SelectGroupBean> groupBeanList = new ArrayList<>();
@@ -89,30 +89,24 @@ public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAda
         if (groupList != null) {
             groupBeanList.addAll(groupList);
         }
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_user, "暂无负责团队");
-        refreshLayout.setMoveForHorizontal(true);
+        recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_user, "暂无负责团队");
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setHasFixedSize(true);
         recyclerView.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(this, true));
         recyclerView.setAdapter(selectGroupAdapter = new SelectGroupAdapter());
-        selectGroupAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, selectGroupAdapter));
         selectGroupAdapter.setOnItemClickListener(this);
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(RefreshLayout refreshlayout) {
                 getData(true);
             }
 
             @Override
-            public void onLoadMore(boolean isSilence) {
-                super.onLoadMore(isSilence);
+            public void onLoadmore(RefreshLayout refreshlayout) {
                 getData(false);
             }
         });
 
-        refreshLayout.setAutoRefresh(true);
-        refreshLayout.startRefresh();
+        refreshLayout.autoRefresh();
     }
 
     @OnClick({R.id.titleAction})
@@ -143,7 +137,6 @@ public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAda
                             response.body().result.addAll(groupBeanList);
                         }
                         selectGroupAdapter.bindData(true, response.body().result);
-
                         if (response.body().result != null && groupBeanList != null) {
                             for (int i = 0; i < response.body().result.size(); i++) {
                                 for (int j = 0; j < groupBeanList.size(); j++) {
@@ -166,8 +159,8 @@ public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAda
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 

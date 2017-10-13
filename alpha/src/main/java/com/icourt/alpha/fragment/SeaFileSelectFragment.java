@@ -6,13 +6,11 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.FolderOnlySelectAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
@@ -24,7 +22,9 @@ import com.icourt.alpha.entity.bean.SeaFileSelectParam;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnSeaFileSelectListener;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -49,7 +49,7 @@ public class SeaFileSelectFragment extends BaseFragment
     public static final String KEY_SEAFILE_SELECT_PARAM = "key_seafile_select_param";
     private static final int MAX_SELECT_NUM = 10;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
 
 
     public static SeaFileSelectFragment newInstance(@NonNull SeaFileSelectParam seaFileSelectParam) {
@@ -61,7 +61,7 @@ public class SeaFileSelectFragment extends BaseFragment
     }
 
     @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     Unbinder unbinder;
     SeaFileSelectParam iSeaFileSelectParams;
     FolderOnlySelectAdapter folderDocumentAdapter;
@@ -119,23 +119,22 @@ public class SeaFileSelectFragment extends BaseFragment
                 ));
         folderDocumentAdapter.setOnItemClickListener(this);
 
-        final TextView emptyView = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_folder_document_num, recyclerView);
+        final TextView emptyView = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_folder_document_num, recyclerView.getRecyclerView());
         emptyView.setText(R.string.sfile_folder_empty);
-        refreshLayout.setEmptyView(emptyView);
+        recyclerView.setEmptyView(emptyView);
         folderDocumentAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override
             protected void updateUI() {
-                refreshLayout.enableEmptyView(folderDocumentAdapter.getItemCount() <= 0);
+                recyclerView.enableEmptyView(folderDocumentAdapter.getData());
             }
         });
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setOnRefreshListener(new OnRefreshListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(com.scwang.smartrefresh.layout.api.RefreshLayout refreshlayout) {
                 getData(true);
             }
         });
-        refreshLayout.startRefresh();
+        refreshLayout.autoRefresh();
     }
 
 
@@ -150,6 +149,7 @@ public class SeaFileSelectFragment extends BaseFragment
                     @Override
                     public void onSuccess(Call<List<FolderDocumentEntity>> call, Response<List<FolderDocumentEntity>> response) {
                         folderDocumentAdapter.bindData(true, wrapDatas(response.body()));
+                        recyclerView.enableEmptyView(response.body());
                         stopRefresh();
                     }
 
@@ -157,6 +157,7 @@ public class SeaFileSelectFragment extends BaseFragment
                     public void onFailure(Call<List<FolderDocumentEntity>> call, Throwable t) {
                         super.onFailure(call, t);
                         stopRefresh();
+                        recyclerView.enableEmptyView(null);
                     }
                 });
     }
@@ -203,8 +204,8 @@ public class SeaFileSelectFragment extends BaseFragment
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 

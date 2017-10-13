@@ -5,24 +5,25 @@ import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.SearchProjectActivity;
 import com.icourt.alpha.adapter.ProjectListAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
-import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.event.ProjectActionEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -53,9 +54,9 @@ public class MyProjectFragment extends BaseFragment {
     private static final String KEY_PROJECT_TYPE = "key_project_type";
     @Nullable
     @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
 
     @IntDef({TYPE_ALL_PROJECT,
             TYPE_MY_ATTENTION_PROJECT, TYPE_MY_PARTIC_PROJECT})
@@ -99,46 +100,40 @@ public class MyProjectFragment extends BaseFragment {
         if (projectType == TYPE_ALL_PROJECT) {
             attorneyType = "";
             myStar = "";
-            refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, getString(R.string.project_no));
+            recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_project, getString(R.string.project_no));
         } else if (projectType == TYPE_MY_ATTENTION_PROJECT) {
             attorneyType = "";
             myStar = "1";
             status = -1;
             matterType = "";
-            refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, getString(R.string.project_no_star));
+            recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_project, getString(R.string.project_no_star));
         } else if (projectType == TYPE_MY_PARTIC_PROJECT) {
             attorneyType = "O";
             myStar = "";
-            refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, getString(R.string.project_no_participation));
+            recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_project, getString(R.string.project_no_participation));
         }
-        refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(linearLayoutManager = new LinearLayoutManager(getContext()));
-        recyclerView.setHasFixedSize(true);
 
         headerFooterAdapter = new HeaderFooterAdapter<>(projectListAdapter = new ProjectListAdapter());
-        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
+        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView.getRecyclerView());
         View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
         registerClick(rl_comm_search);
         headerFooterAdapter.addHeader(headerView);
 
 
         recyclerView.setAdapter(headerFooterAdapter);
-        projectListAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, projectListAdapter));
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(RefreshLayout refreshlayout) {
                 getData(true);
             }
 
             @Override
-            public void onLoadMore(boolean isSilence) {
-                super.onLoadMore(isSilence);
+            public void onLoadmore(RefreshLayout refreshlayout) {
                 getData(false);
             }
         });
-        refreshLayout.setAutoRefresh(true);
-        refreshLayout.startRefresh();
+        refreshLayout.autoRefresh();
     }
 
     @Override
@@ -153,6 +148,24 @@ public class MyProjectFragment extends BaseFragment {
         }
     }
 
+    /**
+     * 获取空文案
+     *
+     * @param stateType
+     * @return
+     */
+    private int getEmptyContentId(int stateType) {
+        switch (stateType) {
+            case Const.PROJECT_STATUS_ING:
+                return R.string.project_no_ing;
+            case Const.PROJECT_STATUS_FINISH:
+                return R.string.project_no_finished;
+            case Const.PROJECT_STATUS_END:
+                return R.string.project_no_ended;
+        }
+        return 0;
+    }
+
     @Override
     public void notifyFragmentUpdate(Fragment targetFrgament, int type, Bundle bundle) {
         super.notifyFragmentUpdate(targetFrgament, type, bundle);
@@ -160,6 +173,7 @@ public class MyProjectFragment extends BaseFragment {
             if (type == 100) {//根据状态筛选
                 if (bundle != null) {
                     status = bundle.getInt("status");
+                    recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, getEmptyContentId(status));
                 }
             } else if (type == 101) {//根据类型筛选
                 if (bundle != null) {
@@ -215,7 +229,7 @@ public class MyProjectFragment extends BaseFragment {
                         }
 
                         if (isRefresh)
-                            enableEmptyView(response.body().result);
+                            recyclerView.checkIfEmpty();
                         stopRefresh();
                         pageIndex += 1;
                         enableLoadMore(response.body().result);
@@ -229,31 +243,17 @@ public class MyProjectFragment extends BaseFragment {
                 });
     }
 
-    private void enableEmptyView(List result) {
-        if (refreshLayout != null) {
-            if (result != null) {
-                if (result.size() > 0) {
-                    refreshLayout.enableEmptyView(false);
-                } else {
-                    refreshLayout.enableEmptyView(true);
-                }
-            } else {
-                refreshLayout.enableEmptyView(true);
-            }
-        }
-    }
-
     private void enableLoadMore(List result) {
         if (refreshLayout != null) {
-            refreshLayout.setPullLoadEnable(result != null
+            refreshLayout.setEnableLoadmore(result != null
                     && result.size() >= ActionConstants.DEFAULT_PAGE_SIZE);
         }
     }
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 
@@ -261,7 +261,7 @@ public class MyProjectFragment extends BaseFragment {
     public void onRefrshEvent(ProjectActionEvent event) {
         if (event == null) return;
         if (event.action == ProjectActionEvent.PROJECT_REFRESG_ACTION) {
-            refreshLayout.startRefresh();
+            refreshLayout.autoRefresh();
         }
     }
 

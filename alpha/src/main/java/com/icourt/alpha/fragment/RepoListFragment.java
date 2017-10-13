@@ -5,13 +5,11 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.FolderListActivity;
 import com.icourt.alpha.activity.RepoRenameActivity;
@@ -31,8 +29,11 @@ import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.StringUtils;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
 
 import java.util.Arrays;
 import java.util.List;
@@ -72,10 +73,10 @@ public class RepoListFragment extends RepoBaseFragment
 
     @BindView(R.id.recyclerView)
     @Nullable
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     Unbinder unbinder;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
     int pageIndex = 1;
     String defaultRopoId;
     int repoType;
@@ -114,43 +115,41 @@ public class RepoListFragment extends RepoBaseFragment
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         switch (repoType) {
             case REPO_MINE:
-                refreshLayout.setNoticeEmptyText(R.string.repo_empty);
+                recyclerView.setEmptyContent(R.string.repo_empty);
                 break;
             case REPO_SHARED_ME:
-                refreshLayout.setNoticeEmptyText(R.string.repo_share_empty);
+                recyclerView.setEmptyContent(R.string.repo_share_empty);
                 break;
             case REPO_LAWFIRM:
-                refreshLayout.setNoticeEmptyText(R.string.repo_lawfirm_empty);
+                recyclerView.setEmptyContent(R.string.repo_lawfirm_empty);
                 break;
             case REPO_PROJECT:
-                refreshLayout.setNoticeEmptyText(R.string.repo_empty);
+                recyclerView.setEmptyContent(R.string.repo_empty);
                 break;
         }
         recyclerView.setAdapter(repoAdapter = new RepoAdapter(repoType));
-        repoAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, repoAdapter));
+        repoAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(recyclerView, repoAdapter));
 
         repoAdapter.setOnItemClickListener(this);
         repoAdapter.setOnItemChildClickListener(this);
         repoAdapter.setOnItemLongClickListener(this);
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
             @Override
-            public void onLoadMore(boolean isSilence) {
-                super.onLoadMore(isSilence);
-                getData(false);
+            public void onRefresh(RefreshLayout refreshlayout) {
+                getData(true);
             }
 
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
-                getData(true);
+            public void onLoadmore(RefreshLayout refreshlayout) {
+                getData(false);
             }
         });
-        refreshLayout.startRefresh();
+        refreshLayout.autoRefresh();
     }
 
     private void enableLoadMore(List result) {
         if (refreshLayout != null) {
-            refreshLayout.setPullLoadEnable(result != null
+            refreshLayout.setEnableLoadmore(result != null
                     && result.size() >= ActionConstants.DEFAULT_PAGE_SIZE);
         }
     }
@@ -279,6 +278,7 @@ public class RepoListFragment extends RepoBaseFragment
                     public void onNext(@NonNull List<RepoEntity> repoEntities) {
                         stopRefresh();
                         repoAdapter.bindData(isRefresh, repoEntities);
+                        recyclerView.enableEmptyView(repoEntities);
                         pageIndex += 1;
                         enableLoadMore(repoEntities);
                     }
@@ -287,6 +287,7 @@ public class RepoListFragment extends RepoBaseFragment
                     public void onError(@NonNull Throwable throwable) {
                         super.onError(throwable);
                         stopRefresh();
+                        recyclerView.enableEmptyView(null);
                     }
 
                     @Override
@@ -299,8 +300,8 @@ public class RepoListFragment extends RepoBaseFragment
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 
