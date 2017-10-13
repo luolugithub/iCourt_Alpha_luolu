@@ -25,8 +25,11 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.StringUtils;
+import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -59,9 +62,9 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
 
     @Nullable
     @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
 
     /**
      * @param queryType
@@ -129,24 +132,36 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
             endTimeMillis = DateUtils.getYearLastDay(startTimeMillis);
         }
         recyclerView.setBackgroundColor(Color.WHITE);
-        recyclerView.setHasFixedSize(true);
         recyclerView.setItemAnimator(null);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(timeAdapter = new TimeAdapter(true));
         timeAdapter.setOnItemClickListener(this);
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_timing, R.string.timing_empty);
-        refreshLayout.setMoveForHorizontal(true);
+        recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_timing, R.string.timing_empty);
+//        refreshLayout.setMoveForHorizontal(true);
 //        timeAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, timeAdapter));
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+//        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+//            @Override
+//            public void onLoadMore(boolean isSilence) {
+//                super.onLoadMore(isSilence);
+//                getData(false);
+//            }
+//        });
+
+        refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
             @Override
-            public void onLoadMore(boolean isSilence) {
-                super.onLoadMore(isSilence);
+            public void onRefresh(com.scwang.smartrefresh.layout.api.RefreshLayout refreshlayout) {
+                getData(true);
+            }
+
+            @Override
+            public void onLoadmore(com.scwang.smartrefresh.layout.api.RefreshLayout refreshlayout) {
                 getData(false);
             }
         });
-        refreshLayout.setPullRefreshEnable(false);
+
+        refreshLayout.setEnableRefresh(false);
         boolean canLoadMore = (queryType != TimingConfig.TIMING_QUERY_BY_DAY && queryType != TimingConfig.TIMING_QUERY_BY_WEEK); //年月可以上拉加载
-        refreshLayout.setPullLoadEnable(canLoadMore);
+        refreshLayout.setEnableLoadmore(canLoadMore);
         initData();
     }
 
@@ -209,8 +224,8 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 
