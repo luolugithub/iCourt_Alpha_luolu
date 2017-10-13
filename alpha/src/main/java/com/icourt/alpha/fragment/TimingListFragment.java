@@ -136,7 +136,7 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
         timeAdapter.setOnItemClickListener(this);
         refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_timing, R.string.timing_empty);
         refreshLayout.setMoveForHorizontal(true);
-        timeAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, timeAdapter));
+//        timeAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, timeAdapter));
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
             public void onLoadMore(boolean isSilence) {
