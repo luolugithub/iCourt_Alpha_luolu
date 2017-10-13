@@ -440,8 +440,13 @@ public class RepoListFragment extends RepoBaseFragment
 
     @Override
     public boolean onItemLongClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, final View view, final int position) {
-        if (repoType == 0) {
-            showDocumentActionDialog(position);
+        RepoEntity item = repoAdapter.getItem(position);
+        if (item != null && item.isNeedDecrypt()) {
+            showDecryptDialog(item);
+        } else {
+            if (repoType == 0) {
+                showDocumentActionDialog(position);
+            }
         }
         return true;
     }
