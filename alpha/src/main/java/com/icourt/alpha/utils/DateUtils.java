@@ -110,14 +110,14 @@ public class DateUtils {
     public static final String getStandardSimpleFormatTime(long milliseconds) {
         SimpleDateFormat sdf = new SimpleDateFormat();
         if (isOverToday(milliseconds)) {//1.未来
-            sdf.applyPattern("yyyy-MM-dd hh:mm");
+            sdf.applyPattern("yyyy-MM-dd HH:mm");
             return sdf.format(milliseconds);
         } else if (isToday(milliseconds)) {//2.今天
             long distanceMilliseconds = System.currentTimeMillis() - milliseconds;
             if (distanceMilliseconds < TimeUnit.HOURS.toMillis(1)) {//3.x分钟前
                 long distanceSeconds = TimeUnit.MILLISECONDS.toMinutes(distanceMilliseconds);
                 if (distanceMilliseconds < 0) {
-                    sdf.applyPattern("yyyy-MM-dd hh:mm");
+                    sdf.applyPattern("yyyy-MM-dd HH:mm");
                     return sdf.format(milliseconds);
                 } else if (distanceSeconds == 0) {
                     return "刚刚";
@@ -170,14 +170,14 @@ public class DateUtils {
     public static final String getStandardFormatTime(long milliseconds) {
         SimpleDateFormat sdf = new SimpleDateFormat();
         if (isOverToday(milliseconds)) {//1.未来
-            sdf.applyPattern("yyyy-MM-dd hh:mm");
+            sdf.applyPattern("yyyy-MM-dd HH:mm");
             return sdf.format(milliseconds);
         } else if (isToday(milliseconds)) {//2.今天
             long distanceMilliseconds = System.currentTimeMillis() - milliseconds;
             if (distanceMilliseconds < TimeUnit.HOURS.toMillis(1)) {//3.x分钟前
                 long distanceSeconds = TimeUnit.MILLISECONDS.toMinutes(distanceMilliseconds);
                 if (distanceMilliseconds < 0) {
-                    sdf.applyPattern("yyyy-MM-dd hh:mm");
+                    sdf.applyPattern("yyyy-MM-dd HH:mm");
                     return sdf.format(milliseconds);
                 } else if (distanceSeconds == 0) {
                     return "刚刚";
@@ -188,7 +188,7 @@ public class DateUtils {
                 return String.format("%s小时前", TimeUnit.MILLISECONDS.toHours(distanceMilliseconds));
             }
         } else if (isYesterday(milliseconds)) {
-            sdf.applyPattern("昨天 hh:mm");
+            sdf.applyPattern("昨天 HH:mm");
             return sdf.format(milliseconds);
         } else {
             int todayOfYear = Calendar.getInstance().get(Calendar.DAY_OF_YEAR);
@@ -204,7 +204,7 @@ public class DateUtils {
             if (distanceDay < 10 && distanceDayInt <= 5) {//x天前（x = 2～5）
                 return String.format("%s天前", distanceDayInt);
             } else {//yyyy-mm-dd
-                sdf.applyPattern("yyyy-MM-dd hh:mm");
+                sdf.applyPattern("yyyy-MM-dd HH:mm");
                 return sdf.format(milliseconds);
             }
         }
