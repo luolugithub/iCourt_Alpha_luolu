@@ -74,9 +74,9 @@ public class TimerDateManager {
         List<TimingSelectEntity> dayList = new ArrayList<>();//显示日期的list
         Calendar instance = getStartDate();
         //当前月的开始时间
-        long monthStartTime = DateUtils.getMonthFirstDay(instance.getTimeInMillis());
+        long monthStartTime = DateUtils.getMonthStartTime(instance.getTimeInMillis());
         //当前月的结束时间
-        long monthEndTime = DateUtils.getMonthLastDay(instance.getTimeInMillis());
+        long monthEndTime = DateUtils.getMonthEndTime(instance.getTimeInMillis());
 
         while (monthStartTime < System.currentTimeMillis()) {
             TimingSelectEntity timingSelectEntity = new TimingSelectEntity();
@@ -87,7 +87,7 @@ public class TimerDateManager {
             dayList.add(timingSelectEntity);
             instance.add(Calendar.MONTH, 1);//月+1
             monthStartTime = instance.getTimeInMillis();
-            monthEndTime = DateUtils.getMonthLastDay(instance.getTimeInMillis());
+            monthEndTime = DateUtils.getMonthEndTime(instance.getTimeInMillis());
         }
         return dayList;
     }
@@ -102,9 +102,9 @@ public class TimerDateManager {
         List<TimingSelectEntity> dayList = new ArrayList<>();//显示日期的list
         Calendar instance = getStartDate();
         //当前年的开始时间
-        long yearStartTime = DateUtils.getYearStartDay(instance.getTimeInMillis());
+        long yearStartTime = DateUtils.getYearStartTime(instance.getTimeInMillis());
         //当前年的结束时间
-        long yearEndTime = DateUtils.getYearLastDay(instance.getTimeInMillis());
+        long yearEndTime = DateUtils.getYearEndTime(instance.getTimeInMillis());
 
         while (yearStartTime < System.currentTimeMillis()) {
             TimingSelectEntity timingSelectEntity = new TimingSelectEntity();
@@ -115,7 +115,7 @@ public class TimerDateManager {
             dayList.add(timingSelectEntity);
             instance.add(Calendar.YEAR, 1);//年+1
             yearStartTime = instance.getTimeInMillis();
-            yearEndTime = DateUtils.getYearLastDay(instance.getTimeInMillis());
+            yearEndTime = DateUtils.getYearEndTime(instance.getTimeInMillis());
         }
         return dayList;
     }

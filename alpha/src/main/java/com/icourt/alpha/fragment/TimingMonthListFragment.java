@@ -97,7 +97,7 @@ public class TimingMonthListFragment extends BaseFragment {
     protected void initView() {
         if (getArguments() != null) {
             long startTime = getArguments().getLong(KEY_START_TIME);
-            startTimeMillis = DateUtils.getMonthFirstDay(startTime);
+            startTimeMillis = DateUtils.getMonthStartTime(startTime);
         }
 
         resetViewport();

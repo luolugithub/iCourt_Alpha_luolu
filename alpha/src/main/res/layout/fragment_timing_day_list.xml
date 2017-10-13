@@ -5,6 +5,7 @@
     android:layout_height="match_parent">
 
     <android.support.design.widget.AppBarLayout
+        android:id="@+id/appbar"
         style="@style/AlphaTitleAppBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -12,8 +13,8 @@
 
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="150dp"
-            android:layout_margin="10dp"
+            android:layout_height="170dp"
+            android:padding="10dp"
             app:layout_scrollFlags="scroll">
 
             <lecho.lib.hellocharts.view.LineChartView

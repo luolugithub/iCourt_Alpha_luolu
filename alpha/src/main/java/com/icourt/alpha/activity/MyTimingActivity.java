@@ -12,6 +12,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
@@ -25,6 +26,8 @@ import com.icourt.alpha.fragment.TimingWeekListFragment;
 import com.icourt.alpha.fragment.TimingYearListFragment;
 import com.icourt.alpha.fragment.dialogfragment.TimingSelectDialogFragment;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
+import com.icourt.alpha.interfaces.OnTimingChangeListener;
+import com.icourt.alpha.utils.DateUtils;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -37,7 +40,7 @@ import butterknife.OnClick;
  * date createTime：2017/10/9
  * version 2.1.1
  */
-public class MyTimingActivity extends BaseActivity implements OnFragmentCallBackListener {
+public class MyTimingActivity extends BaseActivity implements OnFragmentCallBackListener, OnTimingChangeListener {
 
     @BindView(R.id.titleBack)
     ImageView titleBack;
@@ -53,6 +56,9 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
     TextView timingTodayTotal;
     @BindView(R.id.fl_container)
     FrameLayout flContainer;
+
+    @BindView(R.id.ll_today_time)
+    LinearLayout llTodayTime;
 
     public static void launch(@NonNull Context context) {
         if (context == null) return;
@@ -75,12 +81,15 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
         showCurrentWeekFragment();
     }
 
-    @OnClick({R.id.timing_date_title_tv})
+    @OnClick({R.id.ll_all_time, R.id.ll_today_time})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.timing_date_title_tv:
+            case R.id.ll_all_time:
                 showTimingSelectDialogFragment();
+                break;
+            case R.id.ll_today_time:
+                showCurrentWeekFragment();
                 break;
             default:
                 super.onClick(v);
@@ -88,10 +97,51 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        finish();
+    }
+
+    /**
+     * 显示本周的计时
+     */
     private void showCurrentWeekFragment() {
         long currentTimeMillis = System.currentTimeMillis();
         TimingWeekListFragment weekListFragment = TimingWeekListFragment.newInstance(currentTimeMillis);
         addOrShowFragmentAnim(weekListFragment, R.id.fl_container, true);
+    }
+
+    /**
+     * 显示选中的日期
+     *
+     * @param type
+     * @param selectedTimeMillis
+     */
+    private void showSelectedDate(@TimingConfig.TIMINGQUERYTYPE int type, long selectedTimeMillis) {
+        if (type == TimingConfig.TIMING_QUERY_BY_DAY) {//日
+            String date = DateUtils.getMMMdd(selectedTimeMillis);
+            timingDateTitleTv.setText(date);
+        } else if (type == TimingConfig.TIMING_QUERY_BY_WEEK) {//周，周需要考虑又没有跨年
+            long weekStartTime = DateUtils.getWeekStartTime(selectedTimeMillis);
+            long weekEndTime = DateUtils.getWeekEndTime(selectedTimeMillis);
+            String startDate;
+            String endDate;
+            if (DateUtils.getYear(System.currentTimeMillis()) == DateUtils.getYear(weekStartTime)
+                    && DateUtils.getYear(System.currentTimeMillis()) == DateUtils.getYear(weekEndTime)) {//开始和结束时间都是是今年，不需要显示年份
+                startDate = DateUtils.getMMdd(weekStartTime);
+                endDate = DateUtils.getMMdd(weekEndTime);
+            } else {//需要显示年份
+                startDate = DateUtils.getyyyyMMdd(weekStartTime);
+                endDate = DateUtils.getyyyyMMdd(weekEndTime);
+            }
+            timingDateTitleTv.setText(getString(R.string.timing_date_contact, startDate, endDate));
+        } else if (type == TimingConfig.TIMING_QUERY_BY_MONTH) {//月
+            String date = DateUtils.getyyyyMM(selectedTimeMillis);
+            timingDateTitleTv.setText(date);
+        } else if (type == TimingConfig.TIMING_QUERY_BY_YEAR) {//年
+            int year = DateUtils.getYear(selectedTimeMillis);
+            timingDateTitleTv.setText(String.valueOf(year));
+        }
     }
 
     /**
@@ -145,11 +195,26 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
                 TimingYearListFragment yearListFragment = TimingYearListFragment.newInstance(timingSelectEntity.startTimeMillis);
                 addOrShowFragmentAnim(yearListFragment, R.id.fl_container, true);
             }
+            int convertType = TimingConfig.convert2timingQueryType(type);
+            showSelectedDate(convertType, timingSelectEntity.startTimeMillis);
         }
     }
 
     @Override
-    public void onBackPressed() {
-        finish();
+    public void onHeaderHide(boolean isHide) {
+        if (isHide) {
+            if (llTodayTime.getVisibility() == View.VISIBLE) {
+                llTodayTime.setVisibility(View.GONE);
+            }
+        } else {
+            if (llTodayTime.getVisibility() == View.GONE) {
+                llTodayTime.setVisibility(View.VISIBLE);
+            }
+        }
+    }
+
+    @Override
+    public void onTimeChanged(@TimingConfig.TIMINGQUERYTYPE int type, long selectedTimeMillis) {
+        showSelectedDate(type, selectedTimeMillis);
     }
 }

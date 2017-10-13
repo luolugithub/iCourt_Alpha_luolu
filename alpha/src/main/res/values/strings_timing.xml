@@ -27,5 +27,5 @@
     <string name="timing_empty">暂无计时</string>
     <string name="timing_name_limit_format" formatted="false">计时标题不能超过%s个字符</string>
 
-    <string name="timing_list_behavior">com.icourt.alpha.view.behavior.TimingListBehavior</string>
+    <string name="timing_date_contact" formatted="false">%s - %s</string>
 </resources>

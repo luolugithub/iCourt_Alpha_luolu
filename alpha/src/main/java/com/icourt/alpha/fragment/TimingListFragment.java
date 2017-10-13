@@ -4,18 +4,15 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.TimerDetailActivity;
 import com.icourt.alpha.activity.TimerTimingActivity;
 import com.icourt.alpha.adapter.TimeAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.constants.TimingConfig;
 import com.icourt.alpha.entity.bean.TimeEntity;
@@ -26,7 +23,6 @@ import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
@@ -34,8 +30,6 @@ import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-
-import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -125,11 +119,11 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
             startTimeMillis = DateUtils.getWeekStartTime(startTime);
             endTimeMillis = DateUtils.getWeekEndTime(startTimeMillis);
         } else if (queryType == TimingConfig.TIMING_QUERY_BY_MONTH) {//月
-            startTimeMillis = DateUtils.getMonthFirstDay(startTime);
-            endTimeMillis = DateUtils.getMonthLastDay(startTimeMillis);
+            startTimeMillis = DateUtils.getMonthStartTime(startTime);
+            endTimeMillis = DateUtils.getMonthEndTime(startTimeMillis);
         } else if (queryType == TimingConfig.TIMING_QUERY_BY_YEAR) {//年
-            startTimeMillis = DateUtils.getYearStartDay(startTime);
-            endTimeMillis = DateUtils.getYearLastDay(startTimeMillis);
+            startTimeMillis = DateUtils.getYearStartTime(startTime);
+            endTimeMillis = DateUtils.getYearEndTime(startTimeMillis);
         }
         recyclerView.setBackgroundColor(Color.WHITE);
         recyclerView.setItemAnimator(null);

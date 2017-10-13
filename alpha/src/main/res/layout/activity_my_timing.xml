@@ -15,6 +15,7 @@
         android:padding="10dp">
 
         <LinearLayout
+            android:id="@+id/ll_all_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical">
@@ -26,7 +27,7 @@
                 android:drawablePadding="5dp"
                 android:drawableRight="@mipmap/arrow_bottom"
                 android:paddingRight="10dp"
-                android:text="4月13-4月20" />
+                android:text="" />
 
             <TextView
                 android:id="@+id/timing_count_total_tv"
@@ -35,7 +36,7 @@
                 android:layout_marginBottom="5dp"
                 android:layout_marginTop="5dp"
                 android:maxLines="1"
-                android:text="63:02"
+                android:text=""
                 android:textColor="@color/alpha_font_color_title"
                 android:textSize="24sp" />
 
@@ -47,6 +48,7 @@
             android:layout_weight="1" />
 
         <LinearLayout
+            android:id="@+id/ll_today_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="right"
@@ -65,7 +67,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="5dp"
                 android:layout_marginTop="5dp"
-                android:text="8:12"
+                android:text=""
                 android:textColor="@color/alpha_font_color_title"
                 android:textSize="24sp" />
         </LinearLayout>

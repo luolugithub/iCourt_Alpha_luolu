@@ -7,6 +7,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 public class DateUtils {
@@ -234,6 +235,21 @@ public class DateUtils {
     }
 
     /**
+     * 判断两个时间戳是否在同一年
+     *
+     * @param timeMillis1
+     * @param timeMillis2
+     * @return
+     */
+    public static boolean isSameYear(long timeMillis1, long timeMillis2) {
+        Calendar calendar1 = Calendar.getInstance();
+        Calendar calendar2 = Calendar.getInstance();
+        calendar1.setTimeInMillis(timeMillis1);
+        calendar2.setTimeInMillis(timeMillis2);
+        return calendar1.get(Calendar.YEAR) == calendar2.get(Calendar.YEAR);
+    }
+
+    /**
      * 根据不同时间段，显示不同时间
      *
      * @param date
@@ -402,6 +418,28 @@ public class DateUtils {
      */
     public static String getyyyyMMdd(long milliseconds) {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy年MM月dd日");
+        return formatter.format(milliseconds);
+    }
+
+    /**
+     * 返回2017年10月这种格式
+     *
+     * @param milliseconds
+     * @return
+     */
+    public static String getyyyyMM(long milliseconds) {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy年MM月");
+        return formatter.format(milliseconds);
+    }
+
+    /**
+     * 返回格式化成xx月xx日的格式
+     *
+     * @param milliseconds
+     * @return
+     */
+    public static String getMMdd(long milliseconds) {
+        SimpleDateFormat formatter = new SimpleDateFormat("MM月dd日");
         return formatter.format(milliseconds);
     }
 
@@ -919,7 +957,7 @@ public class DateUtils {
      * @param millis
      * @return
      */
-    public static long getMonthFirstDay(long millis) {
+    public static long getMonthStartTime(long millis) {
         Calendar instance = Calendar.getInstance();
         instance.setTimeInMillis(millis);
         instance.set(Calendar.DAY_OF_MONTH, 1);
@@ -936,7 +974,7 @@ public class DateUtils {
      * @param millis
      * @return
      */
-    public static long getMonthLastDay(long millis) {
+    public static long getMonthEndTime(long millis) {
         Calendar instance = Calendar.getInstance();
         instance.setTimeInMillis(millis);
         instance.set(Calendar.DAY_OF_MONTH, instance.getActualMaximum(Calendar.DAY_OF_MONTH));
@@ -952,7 +990,7 @@ public class DateUtils {
      * @param millis
      * @return
      */
-    public static long getYearStartDay(long millis) {
+    public static long getYearStartTime(long millis) {
         Calendar instance = Calendar.getInstance();
         instance.setTimeInMillis(millis);
         instance.set(Calendar.MONTH, Calendar.JANUARY);
@@ -970,7 +1008,7 @@ public class DateUtils {
      * @param millis
      * @return
      */
-    public static long getYearLastDay(long millis) {
+    public static long getYearEndTime(long millis) {
         Calendar instance = Calendar.getInstance();
         instance.setTimeInMillis(millis);
         instance.set(Calendar.MONTH, Calendar.DECEMBER);
@@ -979,5 +1017,33 @@ public class DateUtils {
         instance.set(Calendar.MINUTE, 59);
         instance.set(Calendar.SECOND, 59);
         return instance.getTimeInMillis();
+    }
+
+    /**
+     * 将计时时间毫秒数转换为时：分的样式
+     *
+     * @param times
+     * @return
+     */
+    public static String getHm(long times) {
+        times /= 1000;
+        long hour = times / 3600;
+        long minute = times % 3600 / 60;
+        if (minute < 0) {
+            minute = 0;
+        }
+        return String.format(Locale.CHINA, "%d:%02d", hour, minute);
+    }
+
+    /**
+     * 获取时间戳所在的年份
+     *
+     * @param timeMillis
+     * @return
+     */
+    public static int getYear(long timeMillis) {
+        Calendar instance = Calendar.getInstance();
+        instance.setTimeInMillis(timeMillis);
+        return instance.get(Calendar.YEAR);
     }
 }

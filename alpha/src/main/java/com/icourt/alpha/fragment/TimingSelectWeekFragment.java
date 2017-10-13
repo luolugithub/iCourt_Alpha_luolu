@@ -90,7 +90,7 @@ public class TimingSelectWeekFragment extends BaseFragment {
             //当前周的结束时间
             long weekEndTime;
             //先预加载10条，如果一下子把数据全部加载出来，会导致DialogFragment弹出过慢。
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < 5; i++) {
                 //所在周开始日期
                 weekStartTime = DateUtils.getWeekStartTime(instance.getTimeInMillis());
                 weekEndTime = DateUtils.getWeekEndTime(instance.getTimeInMillis());

@@ -116,6 +116,7 @@ public class TimingSelectMonthFragment extends BaseFragment {
      * @param monthPosition
      */
     private void verifyDate(int yearPosition, int monthPosition) {
+        if (wheelviewMonth == null) return;
         selectedYearPosition = yearPosition;
         final Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(System.currentTimeMillis());
