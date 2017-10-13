@@ -259,10 +259,9 @@ public class TimerDetailActivity extends BaseTimerActivity
             R.id.titleBack})
     @Override
     public void onClick(View view) {
-
         switch (view.getId()) {
             case R.id.titleBack:
-                saveTiming();
+                saveTiming(true);
                 break;
             case R.id.titleAction:
                 new BottomActionDialog(getContext(),
@@ -434,7 +433,7 @@ public class TimerDetailActivity extends BaseTimerActivity
         return super.dispatchTouchEvent(ev);
     }
 
-    private void saveTiming() {
+    private void saveTiming(final boolean isFinish) {
         //实时保存
         if (itemEntity != null) {
             JsonObject jsonBody = null;
@@ -476,7 +475,7 @@ public class TimerDetailActivity extends BaseTimerActivity
                     new SimpleCallBack<JsonElement>() {
                         @Override
                         public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-
+                            if (isFinish) finish();
                         }
 
                         @Override
@@ -551,12 +550,12 @@ public class TimerDetailActivity extends BaseTimerActivity
             }
 
         }
-        saveTiming();
+        saveTiming(false);
     }
 
     @Override
     public void onBackPressed() {
-        saveTiming();
+        saveTiming(true);
         super.onBackPressed();
     }
 }

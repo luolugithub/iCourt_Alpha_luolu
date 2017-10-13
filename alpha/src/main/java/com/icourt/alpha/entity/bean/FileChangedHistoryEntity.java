@@ -1,5 +1,6 @@
 package com.icourt.alpha.entity.bean;
 
+import android.support.annotation.Nullable;
 import android.support.annotation.StringDef;
 import android.text.TextUtils;
 
@@ -15,13 +16,44 @@ import java.lang.annotation.RetentionPolicy;
  * date createTime：2017/8/17
  * version 2.1.0
  */
-public class FileChangedHistoryEntity implements ILongFieldEntity {
+public class FileChangedHistoryEntity implements ILongFieldEntity,ISeaFile {
     public static final String OP_TYPE_CREATE = "create";
     public static final String OP_TYPE_MOVE = "move";
     public static final String OP_TYPE_DELETE = "delete";
     public static final String OP_TYPE_RECOVER = "recover";
     public static final String OP_TYPE_RENAME = "rename";
     public static final String OP_TYPE_EDIT = "edit";
+
+    @Override
+    public String getSeaFileId() {
+        return null;
+    }
+
+    @Override
+    public String getSeaFileRepoId() {
+        return repo_id;
+    }
+
+    @Override
+    public String getSeaFileFullPath() {
+        return path;
+    }
+
+    @Nullable
+    @Override
+    public String getSeaFileVersionId() {
+        return null;
+    }
+
+    @Override
+    public long getSeaFileSize() {
+        return size;
+    }
+
+    @Override
+    public String getSeaFilePermission() {
+        return null;
+    }
 
     @StringDef({
             OP_TYPE_CREATE,
@@ -80,5 +112,26 @@ public class FileChangedHistoryEntity implements ILongFieldEntity {
     @Override
     public Long getCompareLongField() {
         return date;
+    }
+
+    @Override
+    public String toString() {
+        return "FileChangedHistoryEntity{" +
+                "id=" + id +
+                ", obj_type='" + obj_type + '\'' +
+                ", op_type='" + op_type + '\'' +
+                ", operator_id='" + operator_id + '\'' +
+                ", operator_name='" + operator_name + '\'' +
+                ", date=" + date +
+                ", repo_id='" + repo_id + '\'' +
+                ", repo_name='" + repo_name + '\'' +
+                ", path='" + path + '\'' +
+                ", size=" + size +
+                ", commit_id='" + commit_id + '\'' +
+                ", pre_commit_id='" + pre_commit_id + '\'' +
+                ", new_path='" + new_path + '\'' +
+                ", pic='" + pic + '\'' +
+                ", file_name='" + file_name + '\'' +
+                '}';
     }
 }

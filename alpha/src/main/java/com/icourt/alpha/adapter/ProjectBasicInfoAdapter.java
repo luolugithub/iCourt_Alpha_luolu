@@ -50,9 +50,9 @@ public class ProjectBasicInfoAdapter extends BaseArrayRecyclerAdapter<ProjectBas
     public int bindView(int viewtype) {
         switch (viewtype) {
             case CLIENT_TYPE:
-                return R.layout.project_detail_item_client_layout;
             case NAME_AND_CONTENT_TYPE:
-                return R.layout.project_detail_item_name_and_content_layout;
+                return R.layout.project_detail_item_client_layout;
+//                return R.layout.project_detail_item_name_and_content_layout;
             case OTHER_TYPE:
                 return R.layout.adapter_item_project_basic_info_layout;
         }
@@ -70,7 +70,7 @@ public class ProjectBasicInfoAdapter extends BaseArrayRecyclerAdapter<ProjectBas
         keyView.setText(projectBasicItemEntity.key);
         ImageView rightView = holder.obtainView(R.id.arrow_right_iv);
         rightView.setVisibility(isShowRightView(projectBasicItemEntity.type) ? View.VISIBLE : View.GONE);
-        if (getItemViewType(position) == CLIENT_TYPE) {//客户
+        if (getItemViewType(position) == CLIENT_TYPE || getItemViewType(position) == NAME_AND_CONTENT_TYPE) {//客户  项目名称   项目详情
             RecyclerView recyclerView = holder.obtainView(R.id.client_recyclerview);
             ProjectClientAdapter projectClientAdapter = null;
             if (recyclerView.getLayoutManager() == null) {
@@ -80,11 +80,14 @@ public class ProjectBasicInfoAdapter extends BaseArrayRecyclerAdapter<ProjectBas
                 projectClientAdapter.setOnItemClickListener(super.onItemClickListener);
             }
             projectClientAdapter = (ProjectClientAdapter) recyclerView.getAdapter();
-            projectClientAdapter.bindData(true, clientsBeens);
-        } else if (getItemViewType(position) == NAME_AND_CONTENT_TYPE) { //名称、备注
-            TextView valueView = holder.obtainView(R.id.item_content_tv);
-            valueView.setText(projectBasicItemEntity.value);
-        } else { //其他信息
+            List contents = new ArrayList();
+            if (getItemViewType(position) == CLIENT_TYPE) {
+                contents.addAll(clientsBeens);
+            } else if (getItemViewType(position) == NAME_AND_CONTENT_TYPE) {
+                contents.add(projectBasicItemEntity);
+            }
+            projectClientAdapter.bindData(true, contents);
+        }else { //其他信息
             TextView valueView = holder.obtainView(R.id.value_name_tv);
             valueView.setText(projectBasicItemEntity.value);
             if (projectBasicItemEntity.type == Const.PROJECT_DEPARTMENT_TYPE) {
@@ -121,6 +124,7 @@ public class ProjectBasicInfoAdapter extends BaseArrayRecyclerAdapter<ProjectBas
             case Const.PROJECT_TYPE_TYPE://项目类型
                 return R.mipmap.project_type_icon;
             case Const.PROJECT_REMARK_TYPE://项目备注
+            case Const.PROJECT_SERVER_CONTENT_TYPE://服务内容
                 return R.mipmap.project_detail_icon;
             case Const.PROJECT_DEPARTMENT_TYPE://负责部门
                 return R.mipmap.project_department_icon;

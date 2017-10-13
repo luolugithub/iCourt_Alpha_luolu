@@ -1,6 +1,10 @@
 package com.icourt.alpha.entity.bean;
 
+import android.support.annotation.Nullable;
+
 import com.icourt.alpha.widget.comparators.ILongFieldEntity;
+
+import java.io.Serializable;
 
 /**
  * Description
@@ -9,7 +13,7 @@ import com.icourt.alpha.widget.comparators.ILongFieldEntity;
  * date createTime：2017/8/15
  * version 2.1.0
  */
-public class FileVersionEntity implements ILongFieldEntity {
+public class FileVersionEntity implements ILongFieldEntity, ISeaFile {
     /**
      * "rev_file_size": 61003,
      * "rev_file_id": "aaf6ab1ea3de4c6e225acb632a4648394583cf7d",
@@ -42,14 +46,61 @@ public class FileVersionEntity implements ILongFieldEntity {
     public long rev_file_size;
     public String rev_file_id;
     public SFileUserInfo user_info;
+    public String seaFileFullPath;
+    public String seaFilePermission;
 
     @Override
     public Long getCompareLongField() {
         return ctime;
     }
 
-    public static class SFileUserInfo {
+    @Override
+    public String getSeaFileId() {
+        return id;
+    }
+
+    @Override
+    public String getSeaFileRepoId() {
+        return repo_id;
+    }
+
+    @Override
+    public String getSeaFileFullPath() {
+        return seaFileFullPath;
+    }
+
+    @Nullable
+    @Override
+    public String getSeaFileVersionId() {
+        //每个版本一个时间
+        return String.valueOf(ctime);
+    }
+
+    @Override
+    public long getSeaFileSize() {
+        return rev_file_size;
+    }
+
+    @Override
+    public String getSeaFilePermission() {
+        return seaFilePermission;
+    }
+
+    public static class SFileUserInfo implements Serializable {
         public String name;
     }
 
+    @Override
+    public String toString() {
+        return "FileVersionEntity{" +
+                "id='" + id + '\'' +
+                ", version=" + version +
+                ", ctime=" + ctime +
+                ", repo_id='" + repo_id + '\'' +
+                ", rev_file_size=" + rev_file_size +
+                ", rev_file_id='" + rev_file_id + '\'' +
+                ", user_info=" + user_info +
+                ", seaFileFullPath='" + seaFileFullPath + '\'' +
+                '}';
+    }
 }

@@ -22,6 +22,7 @@ import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.entity.bean.SeaFileTrashPageEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.utils.ActionConstants;
+import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 
@@ -210,14 +211,13 @@ public class FileTrashListFragment extends SeaFileBaseFragment
                     String.format("%s%s", item.parent_dir, item.name),
                     item.commit_id);
         }
-        showLoadingDialog(R.string.sfile_recovering);
+        showLoadingDialog(R.string.str_executing);
         callEnqueue(jsonObjectCall,
                 new SFileCallBack<JsonObject>() {
                     @Override
                     public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
                         dismissLoadingDialog();
-                        if (response.body().has("success")
-                                && response.body().get("success").getAsBoolean()) {
+                        if (JsonUtils.getBoolValue(response.body(),"success")) {
                             getData(true);
                             showToast(R.string.sfile_recovery_success);
                         } else {

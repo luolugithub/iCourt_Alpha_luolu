@@ -3,6 +3,7 @@ package com.icourt.alpha.fragment.dialogfragment;
 import android.os.Bundle;
 import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -19,7 +20,10 @@ import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.StringUtils;
+import com.icourt.alpha.view.tab.AlphaTitleNavigatorAdapter;
 import com.icourt.alpha.widget.comparators.FileSortComparator;
+
+import net.lucode.hackware.magicindicator.buildins.commonnavigator.CommonNavigator;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -38,13 +42,14 @@ import retrofit2.Response;
 public class FolderDetailDialogFragment extends FileDetailsBaseDialogFragment {
     protected static final String KEY_LOCATION_TAB_INDEX = "locationPage";//定位的tab
 
-    public static void show(@NonNull String fromRepoId,
-                            String fromRepoFileDirPath,
-                            String fileName,
-                            long fileSize,
-                            @IntRange(from = 0, to = 2) int locationTabIndex,
-                            @SFileConfig.FILE_PERMISSION String repoPermission,
-                            @NonNull FragmentManager fragmentManager) {
+    public static void show(
+            @SFileConfig.REPO_TYPE int repoType,
+            @NonNull String fromRepoId,
+            String fromRepoFileDirPath,
+            String fileName,
+            @IntRange(from = 0, to = 2) int locationTabIndex,
+            @SFileConfig.FILE_PERMISSION String repoPermission,
+            @NonNull FragmentManager fragmentManager) {
         if (fragmentManager == null) return;
         String tag = FileDetailDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = fragmentManager.beginTransaction();
@@ -52,24 +57,24 @@ public class FolderDetailDialogFragment extends FileDetailsBaseDialogFragment {
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        show(newInstance(fromRepoId, fromRepoFileDirPath, fileName, fileSize, locationTabIndex, repoPermission), tag, mFragTransaction);
+        show(newInstance(repoType, fromRepoId, fromRepoFileDirPath, fileName, locationTabIndex, repoPermission), tag, mFragTransaction);
     }
 
     public static FolderDetailDialogFragment newInstance(
+            @SFileConfig.REPO_TYPE int repoType,
             String fromRepoId,
             String fromRepoFileDirPath,
             String fileName,
-            long fileSize,
             @IntRange(from = 0, to = 2) int locationTabIndex,
             @SFileConfig.FILE_PERMISSION String repoPermission) {
         FolderDetailDialogFragment fragment = new FolderDetailDialogFragment();
         Bundle args = new Bundle();
+        args.putInt(KEY_SEA_FILE_FROM_REPO_TYPE, repoType);
         args.putString(KEY_SEA_FILE_FROM_REPO_ID, fromRepoId);
         args.putString(KEY_SEA_FILE_DIR_PATH, fromRepoFileDirPath);
+        args.putString(KEY_SEA_FILE_NAME, fileName);
         args.putInt(KEY_LOCATION_TAB_INDEX, locationTabIndex);
         args.putString(KEY_SEA_FILE_REPO_PERMISSION, repoPermission);
-        args.putLong(KEY_SEA_FILE_SIZE, fileSize);
-        args.putString(KEY_SEA_FILE_NAME, fileName);
         fragment.setArguments(args);
         return fragment;
     }
@@ -91,7 +96,26 @@ public class FolderDetailDialogFragment extends FileDetailsBaseDialogFragment {
         fileVersionTv.setVisibility(View.GONE);
 
         viewPager.setAdapter(baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager()));
-        tabLayout.setupWithViewPager(viewPager);
+        CommonNavigator commonNavigator = new CommonNavigator(getContext());
+        commonNavigator.setAdapter(new AlphaTitleNavigatorAdapter(1.0f) {
+            @Nullable
+            @Override
+            public CharSequence getTitle(int index) {
+                return baseFragmentAdapter.getPageTitle(index);
+            }
+
+            @Override
+            public int getCount() {
+                return baseFragmentAdapter.getCount();
+            }
+
+            @Override
+            public void onTabClick(View v, int pos) {
+                viewPager.setCurrentItem(pos, true);
+            }
+        });
+        tabLayout.setNavigator2(commonNavigator)
+                .setupWithViewPager(viewPager);
         baseFragmentAdapter.bindTitle(true, Arrays.asList("内部共享", "下载链接", "上传链接"));
         String folderPath = String.format("%s%s/", fromRepoDirPath, getArguments().getString(KEY_SEA_FILE_NAME, ""));
         baseFragmentAdapter.bindData(true,
@@ -136,7 +160,7 @@ public class FolderDetailDialogFragment extends FileDetailsBaseDialogFragment {
                                 }
                             }
                             FolderDocumentEntity folderDocumentEntity = response.body().get(0);
-                            if (folderDocumentEntity != null&& !TextUtils.isEmpty(folderDocumentEntity.modifier_name)) {
+                            if (folderDocumentEntity != null && !TextUtils.isEmpty(folderDocumentEntity.modifier_name)) {
                                 fileUpdateInfoTv.setText("");
                                 fileCreateInfoTv.setText(String.format("%s 更新于 %s", StringUtils.getEllipsizeText(folderDocumentEntity.modifier_name, 8), DateUtils.getyyyyMMddHHmm(folderDocumentEntity.mtime * 1_000)));
                             } else {

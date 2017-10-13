@@ -174,7 +174,7 @@ public class FileLinkFragment extends BaseFragment {
             }
             fileAccessPwdTv.setText(sFileLinkInfoEntity.isNeedAccessPwd() ? sFileLinkInfoEntity.password : getString(R.string.sfile_link_password_null));
             linkCopyTv.setText(sFileLinkInfoEntity.isNeedAccessPwd() ? "复制链接和密码" : "复制链接");
-            fileAccessTimeLimitTv.setText(sFileLinkInfoEntity.expireTime <= 0 ? getString(R.string.sfile_link_limit_date_0) : DateUtils.getyyyy_MM_dd(sFileLinkInfoEntity.expireTime));
+            fileAccessTimeLimitTv.setText(sFileLinkInfoEntity.expireTime <= 0 ? getString(R.string.sfile_link_limit_date_0) : DateUtils.getMM_dd_HH_mm(sFileLinkInfoEntity.expireTime));
             fileShareLinkTv.setText(sFileLinkInfoEntity.getRealShareLink());
         } else {
             fileLinkCreateTv.setVisibility(View.VISIBLE);
@@ -182,7 +182,7 @@ public class FileLinkFragment extends BaseFragment {
 
             fileAccessTimeLimitTv.setText(getString(R.string.sfile_link_limit_date_7));
             fileShareLinkTv.setText("");
-            fileAccessPwdTv.setText(R.string.sfile_link_password_generation);
+            fileAccessPwdTv.setText(R.string.sfile_link_password_auto_generation);
             if (linkType == LINK_TYPE_DOWNLOAD) {
                 fileShareLinkTitleTv.setText(R.string.sfile_link_download_create);
             } else {
@@ -378,7 +378,7 @@ public class FileLinkFragment extends BaseFragment {
         paramJsonObject.addProperty("expireDays", getSelectedExpireDays());
         paramJsonObject.addProperty("path", getArguments().getString(KEY_SEA_FILE_FROM_FILE_PATH, ""));
         paramJsonObject.addProperty("repoId", getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID, ""));
-        paramJsonObject.addProperty("type",linkType);
+        paramJsonObject.addProperty("type", linkType);
         showLoadingDialog(R.string.str_creating);
         callEnqueue(getApi().fileShareLinkCreate(RequestUtils.createJsonBody(paramJsonObject.toString()))
                 , new SFileCallBack<SFileLinkInfoEntity>() {

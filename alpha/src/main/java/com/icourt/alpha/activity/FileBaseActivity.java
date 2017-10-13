@@ -8,8 +8,12 @@ import android.text.TextUtils;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.base.BaseActivity;
+import com.icourt.alpha.constants.DownloadConfig;
+import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
+import com.icourt.alpha.entity.bean.ISeaFile;
 import com.icourt.alpha.entity.bean.SFileUploadParamEntity;
+import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.IndexUtils;
 import com.icourt.alpha.utils.SFileTokenUtils;
 import com.icourt.alpha.widget.comparators.FileSortComparator;
@@ -164,6 +168,25 @@ public class FileBaseActivity extends BaseActivity {
     }
 
     /**
+     * 填充权限
+     *
+     * @param permission
+     * @param items
+     * @return
+     */
+    protected List<FolderDocumentEntity> wrapData(@SFileConfig.FILE_PERMISSION String permission,
+                                                  @android.support.annotation.NonNull final List<FolderDocumentEntity> items) {
+        if (items != null) {
+            for (int i = 0; i < items.size(); i++) {
+                FolderDocumentEntity folderDocumentEntity = items.get(i);
+                if (folderDocumentEntity == null) continue;
+                folderDocumentEntity.permission = permission;
+            }
+        }
+        return items;
+    }
+
+    /**
      * 文件批量删除
      *
      * @param items
@@ -192,10 +215,16 @@ public class FileBaseActivity extends BaseActivity {
                                                 seaFileRepoId,
                                                 String.format("%s%s", seaFileDirPath, item.name));
                             } else {
+
+                                //1.网络删除
                                 delCall = getSFileApi()
                                         .fileDeleteObservable(
                                                 seaFileRepoId,
                                                 String.format("%s%s", seaFileDirPath, item.name));
+
+
+                                //2.本地缓存文件删除
+                                deletCachedSeaFile(item);
                             }
                             observables.add(delCall);
                         }
@@ -206,5 +235,14 @@ public class FileBaseActivity extends BaseActivity {
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(observer);
+    }
+
+    /**
+     * 删除缓存的seafile
+     *
+     * @param item
+     */
+    private void deletCachedSeaFile(ISeaFile item) {
+        FileUtils.deleteFile(DownloadConfig.getSeaFileDownloadPath(getLoginUserId(), item));
     }
 }

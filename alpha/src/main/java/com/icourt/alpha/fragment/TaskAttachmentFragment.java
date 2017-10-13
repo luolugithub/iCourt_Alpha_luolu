@@ -19,14 +19,18 @@ import android.widget.TextView;
 import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.FileDownloadActivity;
+import com.icourt.alpha.activity.ImageViewerActivity;
 import com.icourt.alpha.adapter.TaskAttachmentAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseDialogFragment;
+import com.icourt.alpha.constants.SFileConfig;
+import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.entity.bean.TaskAttachmentEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
 import com.icourt.alpha.fragment.dialogfragment.SeaFileSelectDialogFragment;
+import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.http.observer.BaseObserver;
@@ -34,6 +38,7 @@ import com.icourt.alpha.interfaces.OnDialogFragmentDismissListener;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnUpdateTaskListener;
 import com.icourt.alpha.utils.FileUtils;
+import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UriUtils;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
@@ -82,6 +87,7 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
     private static final String KEY_TASK_ADD_ATTACHMENT_PERMISSION = "key_task_add_attachment_permission";
     private static final String KEY_TASK_DELETE_ATTACHMENT_PERMISSION = "key_task_delete_attachment_permission";
     private static final int REQUEST_CODE_CHOOSE_FILE = 1002;
+    private static final int FILE_MAX_SIZE = 30 * 1024 * 1024;//单个文件最大30M
 
     /**
      * hasLookAttachmentPermission>hasAddAttachmentPermission
@@ -215,6 +221,14 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if (hasLookAttachmentPermission) {
+            getData(true);
+        }
+    }
+
+    @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
         callEnqueue(
@@ -222,6 +236,17 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
                 new SimpleCallBack<List<TaskAttachmentEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<TaskAttachmentEntity>>> call, Response<ResEntity<List<TaskAttachmentEntity>>> response) {
+                        if (response.body().result != null) {
+                            //填充文件权限
+                            // 暂时先不做 ，删除seafile文件 任务附件的大小变成0kb 没有消失
+                         /*   for (TaskAttachmentEntity taskAttachmentEntity : response.body().result) {
+                                if (taskAttachmentEntity == null) continue;
+                                if (TextUtils.isEmpty(taskAttachmentEntity.filePermission)) {
+                                    taskAttachmentEntity.filePermission =
+                                            hasDeleteAttachmentPermission ? PERMISSION_RW : PERMISSION_R;
+                                }
+                            }*/
+                        }
                         taskAttachmentAdapter.bindData(true, response.body().result);
                     }
                 });
@@ -236,6 +261,22 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
             default:
                 super.onClick(v);
                 break;
+        }
+    }
+
+    @Override
+    public void notifyFragmentUpdate(Fragment targetFrgament, int type, Bundle bundle) {
+        if (targetFrgament instanceof TaskAttachmentFragment) {
+            if (type == 100 && bundle != null) {
+                boolean isFinish = bundle.getBoolean("isFinish");
+                boolean valid = bundle.getBoolean("valid");
+                if (footerAddView != null)
+                    footerAddView.setVisibility(!isFinish && valid ? View.VISIBLE : View.GONE);
+                if (isFinish || !valid) {
+                    if (taskAttachmentAdapter != null)
+                        taskAttachmentAdapter.setOnItemLongClickListener(null);
+                }
+            }
         }
     }
 
@@ -285,6 +326,13 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
                 if (resultCode == Activity.RESULT_OK) {
                     if (data != null) {
                         String path = UriUtils.getPath(getContext(), data.getData());
+                        if (FileUtils.isFileExists(path)) {
+                            File file = new File(path);
+                            if (file.length() >= FILE_MAX_SIZE) {
+                                showTopSnackBar(getString(R.string.task_attachment_size_limit, String.valueOf(FILE_MAX_SIZE / (1024 * 1024))));
+                                return;
+                            }
+                        }
                         uploadFiles(Arrays.asList(path));
                     }
                 }
@@ -380,17 +428,59 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        TaskAttachmentEntity item = taskAttachmentAdapter.getItem(position);
+        final TaskAttachmentEntity item = taskAttachmentAdapter.getItem(position);
         if (item == null) return;
         if (item.pathInfoVo == null) return;
-        FileDownloadActivity.launch(
-                getContext(),
-                item.pathInfoVo.repoId,
-                FileUtils.getFileName(item.pathInfoVo.filePath),
-                item.fileSize,
-                item.pathInfoVo.filePath,
-                null,
-                FileDownloadActivity.FILE_FROM_TASK);
+        //图片 直接预览
+        if (IMUtils.isPIC(item.getSeaFileFullPath())) {
+            List<TaskAttachmentEntity> allData = taskAttachmentAdapter.getData();
+
+            ArrayList<TaskAttachmentEntity> imageDatas = new ArrayList<>();
+            for (int i = 0; i < allData.size(); i++) {
+                TaskAttachmentEntity folderDocumentEntity = allData.get(i);
+                if (folderDocumentEntity == null) continue;
+                if (IMUtils.isPIC(folderDocumentEntity.getSeaFileFullPath())) {
+                    imageDatas.add(folderDocumentEntity);
+                }
+            }
+
+            int indexOf = imageDatas.indexOf(item);
+            ImageViewerActivity.launch(
+                    getContext(),
+                    SFileConfig.FILE_FROM_TASK,
+                    imageDatas,
+                    indexOf);
+        } else {
+            //拿这个文件的更新时间
+            if (item.fileUpdateTime <= 0) {
+                showLoadingDialog(null);
+                getSeaFileDetails(
+                        item.getSeaFileRepoId(),
+                        item.getSeaFileFullPath(),
+                        new SFileCallBack<FolderDocumentEntity>() {
+                            @Override
+                            public void onSuccess(Call<FolderDocumentEntity> call, Response<FolderDocumentEntity> response) {
+                                dismissLoadingDialog();
+                                item.fileUpdateTime = response.body().mtime;
+                                FileDownloadActivity.launch(
+                                        getContext(),
+                                        item,
+                                        SFileConfig.FILE_FROM_TASK);
+                            }
+
+                            @Override
+                            public void onFailure(Call<FolderDocumentEntity> call, Throwable t) {
+                                dismissLoadingDialog();
+                                super.onFailure(call, t);
+                            }
+                        });
+            } else {
+                FileDownloadActivity.launch(
+                        getContext(),
+                        item,
+                        SFileConfig.FILE_FROM_TASK);
+            }
+        }
     }
 
 

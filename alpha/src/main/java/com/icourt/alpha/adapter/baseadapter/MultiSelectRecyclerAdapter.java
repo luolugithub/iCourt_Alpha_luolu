@@ -14,6 +14,11 @@ import java.util.List;
  * 公共多选适配器
  */
 
+/**
+ * 新版本 @see {@link BaseSelectableAdapter}
+ * @param <T>
+ */
+@Deprecated
 public abstract class MultiSelectRecyclerAdapter<T> extends BaseArrayRecyclerAdapter<T> {
 
     private final SparseBooleanArray selectedArray = new SparseBooleanArray();

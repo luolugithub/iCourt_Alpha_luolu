@@ -2,6 +2,7 @@
 <resources>
     <!-- 标准的字符串资源 str_开头-->
     <string name="str_ok">确定</string>
+    <string name="str_good">好的</string>
     <string name="str_close">关闭</string>
     <string name="str_cancel">取消</string>
 
@@ -27,9 +28,11 @@
 
 
     <string name="str_delete_sucess">删除成功</string>
-    <string name="str_camera">相机</string>
+    <string name="str_camera">拍照</string>
     <string name="str_title">标题</string>
     <string name="str_save">保存</string>
     <string name="str_sd_unavailable">sd卡不可用</string>
     <string name="str_click_refresh">点击刷新</string>
+
+    <string name="str_executing_error">操作失败</string>
 </resources>

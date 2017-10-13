@@ -4,7 +4,6 @@ import android.app.Dialog;
 import android.os.Bundle;
 import android.support.annotation.CallSuper;
 import android.support.annotation.Nullable;
-import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +17,7 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.constants.SFileConfig;
+import com.icourt.alpha.view.tab.AlphaTabLayout;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -32,6 +32,7 @@ import butterknife.Unbinder;
  * version 2.1.0
  */
 public class FileDetailsBaseDialogFragment extends BaseDialogFragment {
+    protected static final String KEY_SEA_FILE_FROM_REPO_TYPE = "seaFileFromRepoType";//原仓库类型
     protected static final String KEY_SEA_FILE_FROM_REPO_ID = "seaFileFromRepoId";//原仓库id
     protected static final String KEY_SEA_FILE_DIR_PATH = "seaFileDirPath";//原文件目录
     protected static final String KEY_SEA_FILE_REPO_PERMISSION = "seaFileRepoPermission";//repo的权限
@@ -54,7 +55,7 @@ public class FileDetailsBaseDialogFragment extends BaseDialogFragment {
     @BindView(R.id.file_update_info_tv)
     TextView fileUpdateInfoTv;
     @BindView(R.id.tabLayout)
-    TabLayout tabLayout;
+    AlphaTabLayout tabLayout;
     @BindView(R.id.viewPager)
     ViewPager viewPager;
     Unbinder unbinder;
@@ -91,6 +92,16 @@ public class FileDetailsBaseDialogFragment extends BaseDialogFragment {
     protected String getRepoPermission() {
         String stringPermission = getArguments().getString(KEY_SEA_FILE_REPO_PERMISSION, "");
         return SFileConfig.convert2filePermission(stringPermission);
+    }
+
+    /**
+     * 获取资料库类型
+     *
+     * @return
+     */
+    @SFileConfig.REPO_TYPE
+    protected int getRepoType() {
+        return SFileConfig.convert2RepoType(getArguments().getInt(KEY_SEA_FILE_FROM_REPO_TYPE));
     }
 
     @OnClick({R.id.titleAction})

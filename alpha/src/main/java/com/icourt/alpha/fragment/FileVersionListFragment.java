@@ -25,6 +25,7 @@ import com.icourt.alpha.entity.bean.FileVersionEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.interfaces.OnFragmentDataChangeListener;
 import com.icourt.alpha.utils.IMUtils;
+import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.comparators.LongFieldEntityComparator;
 import com.icourt.alpha.widget.comparators.ORDER;
@@ -217,29 +218,16 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
         unbinder.unbind();
     }
 
-    private String getFileName() {
-        String string = fromRepoFilePath;
-        if (!TextUtils.isEmpty(string)) {
-            String[] split = string.split("/");
-            if (split != null && split.length > 0) {
-                return split[split.length - 1];
-            }
-        }
-        return string;
-    }
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         FileVersionEntity item = fileVersionAdapter.getItem(position);
         if (item == null) return;
+        item.seaFileFullPath = fromRepoFilePath;
         FileDownloadActivity.launch(
                 getContext(),
-                item.repo_id,
-                getFileName(),
-                item.rev_file_size,
-                fromRepoFilePath,
-                item.id,
-                FileDownloadActivity.FILE_FROM_REPO);
+                item,
+                SFileConfig.FILE_FROM_REPO);
     }
 
     @Override
@@ -278,7 +266,7 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
      *
      * @param item
      */
-    private void restoreFile(FileVersionEntity item) {
+    private void restoreFile(final FileVersionEntity item) {
         if (item == null) return;
         showLoadingDialog(R.string.sfile_backspacing);
         callEnqueue(getSFileApi().fileRetroversion(
@@ -290,8 +278,7 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
                     @Override
                     public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
                         dismissLoadingDialog();
-                        if (response.body().has("success")
-                                && response.body().get("success").getAsBoolean()) {
+                        if (JsonUtils.getBoolValue(response.body(),"success")) {
                             showToast(R.string.sfile_backspace_success);
                             getData(true);
                         } else {
@@ -302,10 +289,12 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
                     @Override
                     public void onFailure(Call<JsonObject> call, Throwable t) {
                         dismissLoadingDialog();
-                        super.onFailure(call, t);
                         if (t instanceof HttpException
                                 && ((HttpException) t).code() == 500) {
-                            showToast("文件可能被移除或者重命名无法回退!");
+                            bugSync("文件回滚失败", item != null ? item.toString() : "");
+                            showToast(R.string.str_executing_error);
+                        } else {
+                            super.onFailure(call, t);
                         }
                     }
 

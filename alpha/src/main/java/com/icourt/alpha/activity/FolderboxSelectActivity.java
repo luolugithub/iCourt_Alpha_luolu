@@ -139,10 +139,12 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
     @OnClick({R.id.titleAction})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.titleAction:
                 getUploadUrl(filePath);
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }
@@ -153,30 +155,30 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
     private void checkAddTaskAndDocumentPms() {
         callEnqueue(getApi().permissionQuery(getLoginUserId(), "MAT", projectId),
                 new SimpleCallBack<List<String>>() {
-            @Override
-            public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
 
-                if (response.body().result != null) {
-                    if (response.body().result.contains("MAT:matter.document:readwrite")) {
-                        isCanlookAddDocument = true;
-                        titleAction.setVisibility(View.VISIBLE);
-                        refreshLayout.startRefresh();
-                    } else {
-                        titleAction.setVisibility(View.INVISIBLE);
+                        if (response.body().result != null) {
+                            if (response.body().result.contains("MAT:matter.document:readwrite")) {
+                                isCanlookAddDocument = true;
+                                titleAction.setVisibility(View.VISIBLE);
+                                refreshLayout.startRefresh();
+                            } else {
+                                titleAction.setVisibility(View.INVISIBLE);
+                                enableEmptyView(null);
+                            }
+                        } else {
+                            titleAction.setVisibility(View.INVISIBLE);
+                            enableEmptyView(null);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<List<String>>> call, Throwable t) {
+                        super.onFailure(call, t);
                         enableEmptyView(null);
                     }
-                } else {
-                    titleAction.setVisibility(View.INVISIBLE);
-                    enableEmptyView(null);
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ResEntity<List<String>>> call, Throwable t) {
-                super.onFailure(call, t);
-                enableEmptyView(null);
-            }
-        });
+                });
     }
 
     @Override
@@ -184,24 +186,24 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
         super.getData(isRefresh);
         callEnqueue(getSFileApi().projectQueryFileBoxByDir(seaFileRepoId, rootName),
                 new SFileCallBack<List<FileBoxBean>>() {
-            @Override
-            public void onSuccess(Call<List<FileBoxBean>> call, Response<List<FileBoxBean>> response) {
-                stopRefresh();
-                if (response.body() != null) {
-                    projectFileBoxAdapter.bindData(isRefresh, getFolders(response.body()));
-                } else {
-                    enableEmptyView(null);
-                }
-            }
+                    @Override
+                    public void onSuccess(Call<List<FileBoxBean>> call, Response<List<FileBoxBean>> response) {
+                        stopRefresh();
+                        if (response.body() != null) {
+                            projectFileBoxAdapter.bindData(isRefresh, getFolders(response.body()));
+                        } else {
+                            enableEmptyView(null);
+                        }
+                    }
 
-            @Override
-            public void onFailure(Call<List<FileBoxBean>> call, Throwable t) {
-                super.onFailure(call, t);
-                stopRefresh();
-                enableEmptyView(null);
-                showTopSnackBar("获取文档列表失败");
-            }
-        });
+                    @Override
+                    public void onFailure(Call<List<FileBoxBean>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        stopRefresh();
+                        enableEmptyView(null);
+                        showTopSnackBar("获取文档列表失败");
+                    }
+                });
     }
 
     /**
@@ -297,25 +299,25 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
         showLoadingDialog("正在上传...");
         callEnqueue(getSFileApi().projectUploadUrlQuery(seaFileRepoId),
                 new SFileCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<JsonElement> call, Response<JsonElement> response) {
-                if (response.body() != null) {
-                    String uploadUrl = response.body().getAsString();
-                    uploadFile(uploadUrl, filePath);
-                } else {
-                    dismissLoadingDialog();
-                    showTopSnackBar("上传失败");
-                }
-            }
+                    @Override
+                    public void onSuccess(Call<JsonElement> call, Response<JsonElement> response) {
+                        if (response.body() != null) {
+                            String uploadUrl = response.body().getAsString();
+                            uploadFile(uploadUrl, filePath);
+                        } else {
+                            dismissLoadingDialog();
+                            showTopSnackBar("上传失败");
+                        }
+                    }
 
-            @Override
-            public void onFailure(Call<JsonElement> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-                showTopSnackBar("获取上传文件地址失败");
-            }
+                    @Override
+                    public void onFailure(Call<JsonElement> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                        showTopSnackBar("获取上传文件地址失败");
+                    }
 
-        });
+                });
     }
 
 
@@ -335,22 +337,22 @@ public class FolderboxSelectActivity extends BaseActivity implements BaseRecycle
         params.put(key, RequestUtils.createStreamBody(file));
         callEnqueue(getSFileApi().sfileUploadFile(uploadUrl, params),
                 new SFileCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<JsonElement> call, Response<JsonElement> response) {
-                dismissLoadingDialog();
-                showTopSnackBar("上传成功");
-                ProjectSelectActivity.lauchClose(FolderboxSelectActivity.this);
-                ImportFile2AlphaActivity.lauchClose(FolderboxSelectActivity.this);
-                finish();
-            }
+                    @Override
+                    public void onSuccess(Call<JsonElement> call, Response<JsonElement> response) {
+                        dismissLoadingDialog();
+                        showTopSnackBar("上传成功");
+                        ProjectSelectActivity.lauchClose(FolderboxSelectActivity.this);
+                        ImportFile2AlphaActivity.lauchClose(FolderboxSelectActivity.this);
+                        finish();
+                    }
 
-            @Override
-            public void onFailure(Call<JsonElement> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-                showTopSnackBar("文件上传失败");
-            }
-        });
+                    @Override
+                    public void onFailure(Call<JsonElement> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                        showTopSnackBar("文件上传失败");
+                    }
+                });
     }
 
 }

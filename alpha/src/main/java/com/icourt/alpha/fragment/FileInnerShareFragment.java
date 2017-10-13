@@ -227,9 +227,7 @@ public class FileInnerShareFragment extends BaseFragment
                         @Override
                         public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
                             dismissLoadingDialog();
-                            if (response.body().has("success")) {
-                                getData(true);
-                            }
+                            getData(true);
                         }
 
                         @Override

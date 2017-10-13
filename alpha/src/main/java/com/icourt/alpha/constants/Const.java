@@ -201,6 +201,7 @@ public class Const {
     public static final int PROJECT_PRICE_TYPE = 20;//标的
     public static final int PROJECT_CASENO_TYPE = 21;//案由号码
     public static final int PROJECT_ACCEPTANCE_TYPE = 22;//acceptance  type
+    public static final int PROJECT_SERVER_CONTENT_TYPE = 23;//非诉专项 服务内容  type
 
     //项目类型 0争议解决，1非诉专项,2常年顾问，3所内事务
     public static final int PROJECT_DISPUTE_TYPE = 0;//争议解决
@@ -218,7 +219,8 @@ public class Const {
             PROJECT_NUMBER_TYPE,
             PROJECT_REMARK_TYPE,
             PROJECT_CASE_TYPE,
-            PROJECT_CASENUMBER_TYPE})
+            PROJECT_CASENUMBER_TYPE,
+            PROJECT_CLIENT_TYPE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface PROJECT_INFO_TEXT_TYPE { //查看text内容（名称、类型、编号、案由...）
 

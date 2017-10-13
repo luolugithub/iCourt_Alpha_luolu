@@ -9,7 +9,7 @@ import android.text.TextUtils;
  * date createTime：2017/8/20
  * version 2.1.0
  */
-public class SFileSearchEntity {
+public class SFileSearchEntity implements ISeaFile {
     /**
      * "repo_id": "f362f49f-084b-4940-ae01-49097dbbddee",
      * "name": "screen_image.jpg",
@@ -36,4 +36,33 @@ public class SFileSearchEntity {
         return !TextUtils.isEmpty(content_highlight);
     }
 
+    @Override
+    public String getSeaFileFullPath() {
+        return fullpath;
+    }
+
+    @Override
+    public String getSeaFileVersionId() {
+        return String.valueOf(last_modified);
+    }
+
+    @Override
+    public long getSeaFileSize() {
+        return size;
+    }
+
+    @Override
+    public String getSeaFilePermission() {
+        return null;
+    }
+
+    @Override
+    public String getSeaFileId() {
+        return null;
+    }
+
+    @Override
+    public String getSeaFileRepoId() {
+        return repo_id;
+    }
 }

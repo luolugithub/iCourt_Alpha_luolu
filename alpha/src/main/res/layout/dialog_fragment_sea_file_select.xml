@@ -118,7 +118,7 @@
                 android:id="@+id/panel_indicator"
                 android:layout_width="match_parent"
                 android:layout_height="25dp"
-                android:src="@mipmap/panel_open" />
+                android:src="@mipmap/panel_close" />
 
             <FrameLayout
                 android:layout_width="match_parent"
@@ -139,6 +139,7 @@
     </com.sothree.slidinguppanel.SlidingUpPanelLayout>
 
     <LinearLayout
+        android:id="@+id/bottom_action_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
@@ -156,10 +157,8 @@
                 android:id="@+id/selected_num_tv"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="?attr/selectableItemBackground"
                 android:gravity="center"
                 android:paddingBottom="10dp"
-                android:paddingTop="10dp"
                 android:text="@string/sfile_file_already_selected"
                 android:textSize="@dimen/alpha_font_size_mini_lowest" />
 

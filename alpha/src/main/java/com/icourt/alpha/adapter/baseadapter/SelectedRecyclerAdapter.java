@@ -6,6 +6,11 @@ package com.icourt.alpha.adapter.baseadapter;
  * @time 2016-08-30 09:49
  */
 
+/**
+ * 新版本 @see {@link BaseSelectableAdapter}
+ * @param <T>
+ */
+@Deprecated
 public abstract class SelectedRecyclerAdapter<T> extends BaseArrayRecyclerAdapter<T> {
 
     private static final int defaultSelectedPos = -1;

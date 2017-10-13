@@ -160,6 +160,7 @@ public class TaskDetailActivity extends BaseActivity
     TaskUsersAdapter usersAdapter;
     TaskDetailFragment taskDetailFragment;
     TaskCheckItemFragment taskCheckItemFragment;
+    TaskAttachmentFragment taskAttachmentFragment;
 
     final SparseArray<CharSequence> tabTitles = new SparseArray<>();
 
@@ -228,6 +229,7 @@ public class TaskDetailActivity extends BaseActivity
                 taskTablayout.setFocusableInTouchMode(true);
                 taskTablayout.requestFocus();//请求焦点
                 taskTablayout.findFocus();//获取焦点
+                updateTabItemFragment();
             }
 
             @Override
@@ -265,7 +267,6 @@ public class TaskDetailActivity extends BaseActivity
             R.id.task_time})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         SystemUtils.hideSoftKeyBoard(this);
         mainContent.setFocusable(true);
         mainContent.setFocusableInTouchMode(true);
@@ -406,6 +407,9 @@ public class TaskDetailActivity extends BaseActivity
                 if (taskItemEntity.timingSum > 0) {
                     showTimersDialogFragment();
                 }
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }
@@ -706,7 +710,7 @@ public class TaskDetailActivity extends BaseActivity
      */
     private boolean hasDocumentAddPermission() {
         if (taskItemEntity != null && taskItemEntity.right != null) {
-            return taskItemEntity.valid
+            return !taskItemEntity.state && taskItemEntity.valid
                     && taskItemEntity.right.contains("MAT:matter.document:readwrite");
         }
         return false;
@@ -835,6 +839,19 @@ public class TaskDetailActivity extends BaseActivity
             baseFragmentAdapter.bindTitle(true, Arrays.asList(tabTitles.get(0, ""),
                     tabTitles.get(1, ""),
                     tabTitles.get(2, "")));
+            baseFragmentAdapter.bindData(true, Arrays.asList(
+                    taskDetailFragment == null ? taskDetailFragment = TaskDetailFragment.newInstance(taskItemEntity) : taskDetailFragment,
+                    taskCheckItemFragment == null ? taskCheckItemFragment = TaskCheckItemFragment.newInstance(
+                            taskItemEntity,
+                            hasTaskEditPermission()) : taskCheckItemFragment,
+                    taskAttachmentFragment == null ? taskAttachmentFragment = TaskAttachmentFragment.newInstance(
+                            taskItemEntity.id,
+                            taskItemEntity.matterId,
+                            taskItemEntity.matter != null ? taskItemEntity.matter.name : "",
+                            hasDocumentLookPermission(),
+                            hasDocumentAddPermission(),
+                            hasTaskEditPermission()) : taskAttachmentFragment
+            ));
             if (baseFragmentAdapter.getCount() <= 0) {
                 baseFragmentAdapter.bindData(true, Arrays.asList(
                         taskDetailFragment == null ? taskDetailFragment = TaskDetailFragment.newInstance(taskItemEntity) : taskDetailFragment,
@@ -849,7 +866,7 @@ public class TaskDetailActivity extends BaseActivity
                 ));
             }
 
-            updateDetailFargment();
+            updateTabItemFragment();
 
             if (taskItemEntity.attendeeUsers != null) {
                 if (taskItemEntity.attendeeUsers.size() > 0) {
@@ -897,15 +914,22 @@ public class TaskDetailActivity extends BaseActivity
     }
 
     /**
-     * 更新任务详情fragment
+     * 更新tab的每个fragment
      */
-    private void updateDetailFargment() {
-        if (taskDetailFragment == null) return;
+    private void updateTabItemFragment() {
         Bundle bundle = new Bundle();
         bundle.putBoolean("isFinish", taskItemEntity.state);
         bundle.putBoolean("valid", taskItemEntity.valid);
         bundle.putSerializable("taskItemEntity", taskItemEntity);
-        taskDetailFragment.notifyFragmentUpdate(taskDetailFragment, 100, bundle);
+        if (taskDetailFragment != null) {
+            taskDetailFragment.notifyFragmentUpdate(taskDetailFragment, 100, bundle);
+        }
+        if (taskCheckItemFragment != null) {
+            taskCheckItemFragment.notifyFragmentUpdate(taskCheckItemFragment, 100, bundle);
+        }
+        if (taskAttachmentFragment != null) {
+            taskAttachmentFragment.notifyFragmentUpdate(taskAttachmentFragment, 100, bundle);
+        }
     }
 
     /**
@@ -952,7 +976,7 @@ public class TaskDetailActivity extends BaseActivity
                         taskUserArrowIv.setVisibility(View.VISIBLE);
                         taskStartIamge.setVisibility(View.VISIBLE);
                         taskItemEntity.valid = true;
-                        updateDetailFargment();
+                        updateTabItemFragment();
                         EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_DELETE_ACTION, taskItemEntity));
                     }
 
