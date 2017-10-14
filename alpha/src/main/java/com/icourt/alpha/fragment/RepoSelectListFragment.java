@@ -29,6 +29,7 @@ import com.icourt.alpha.widget.filter.ListFilter;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -216,6 +217,9 @@ public class RepoSelectListFragment extends RepoBaseFragment
                     @Override
                     public void onSuccess(Call<ResEntity<List<RepoEntity>>> call, Response<ResEntity<List<RepoEntity>>> response) {
                         stopRefresh();
+                        if (response.body().result == null) {
+                            response.body().result = new ArrayList<RepoEntity>();
+                        }
                         repoAdapter.bindData(true, response.body().result);
                         recyclerView.enableEmptyView(response.body().result);
                     }
@@ -266,6 +270,9 @@ public class RepoSelectListFragment extends RepoBaseFragment
                     @Override
                     public void onNext(@NonNull List<RepoEntity> repoEntities) {
                         stopRefresh();
+                        if (repoEntities == null) {
+                            repoEntities = new ArrayList<RepoEntity>();
+                        }
                         if (filterOnlyReadRepo) {
                             filterOnlyReadPermissionRepo(repoEntities);
                         }
@@ -282,6 +289,7 @@ public class RepoSelectListFragment extends RepoBaseFragment
                     public void onComplete() {
                         super.onComplete();
                         stopRefresh();
+                        repoAdapter.notifyDataSetChanged();
                     }
                 });
     }

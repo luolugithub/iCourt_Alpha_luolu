@@ -49,6 +49,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import retrofit2.Call;
+import retrofit2.HttpException;
 import retrofit2.Response;
 
 import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
@@ -379,14 +380,18 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
 
                     @Override
                     public void onFailure(Call<FolderDocumentEntity> call, Throwable t) {
-                        super.onFailure(call, t);
                         dismissLoadingDialog();
+                        if (t instanceof HttpException
+                                && ((HttpException) t).code() == 404) {
+                            showToast(R.string.sfile_revert_fail);
+                        } else {
+                            super.onFailure(call, t);
+                        }
                     }
 
                     @Override
                     public void defNotify(String noticeStr) {
                         showToast(noticeStr);
-                        //super.defNotify(noticeStr);
                     }
                 });
     }

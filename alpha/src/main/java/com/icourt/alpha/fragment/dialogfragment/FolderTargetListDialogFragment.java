@@ -231,7 +231,7 @@ public class FolderTargetListDialogFragment
                 titleContent.setText("移动到");
                 break;
             case FILE_ACTION_ADD:
-                titleContent.setText("保存到我的文档");
+                titleContent.setText("保存到文档");
                 break;
             default:
                 titleContent.setText("复制到");
