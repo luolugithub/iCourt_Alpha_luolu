@@ -21,7 +21,7 @@ public class DownloadConfig {
 
     //  app更新安装包保存路径              /alpha_download/new_apk/
     //  多用户默认保存路径                 /alpha_download/userId/
-    //  多用户文件全路径(seafile)保存路径   /alpha_download/userId/repoId/x_dir/yyy_versionId.doc
+    //  多用户文件全路径(seafile)保存路径   /alpha_download/userId/repoId/x_dir/versionId/yyy.doc
 
     //下载文件根目录
     public static final String FILE_DOWNLOAD_ROOT_DIR = "alpha_download";
@@ -61,9 +61,14 @@ public class DownloadConfig {
             //如果有版本 标记版本号
             String fileFullPath = iSeaFile.getSeaFileFullPath();
             if (!TextUtils.isEmpty(iSeaFile.getSeaFileVersionId())) {
-                String fileNameWithoutSuffix = FileUtils.getFileNameWithoutSuffix(fileFullPath);
-                String fileSuffix = FileUtils.getFileSuffix(fileFullPath);
-                fileFullPath = String.format("%s_%s%s", fileNameWithoutSuffix, iSeaFile.getSeaFileVersionId(), fileSuffix);
+                String fileParentDir = FileUtils.getFileParentDir(iSeaFile.getSeaFileFullPath());
+                if (!TextUtils.isEmpty(fileFullPath)) {
+                    fileFullPath = new StringBuilder(fileParentDir)
+                            .append(iSeaFile.getSeaFileVersionId())
+                            .append(File.separator)
+                            .append(FileUtils.getFileName(fileFullPath))
+                            .toString();
+                }
             }
             return getFormatedFileName(new StringBuilder(Environment.getExternalStorageDirectory().getAbsolutePath())
                     .append(File.separator)
