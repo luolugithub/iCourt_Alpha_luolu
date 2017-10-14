@@ -16,6 +16,7 @@ import com.icourt.alpha.adapter.baseadapter.BaseRefreshFragmentAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.constants.TimingConfig;
 import com.icourt.alpha.entity.bean.TimeEntity;
+import com.icourt.alpha.entity.bean.TimingStatisticEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnTimingChangeListener;
@@ -24,6 +25,7 @@ import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.widget.manager.TimerDateManager;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -49,7 +51,7 @@ import retrofit2.Response;
  * version 2.1.1
  */
 
-public class TimingListDayFragment extends BaseFragment {
+public class TimingListDayFragment extends BaseTimingListFragment {
 
     private static final String KEY_START_TIME = "key_start_time";
 
@@ -78,13 +80,6 @@ public class TimingListDayFragment extends BaseFragment {
         bundle.putLong(KEY_START_TIME, startTimeMillis);
         fragment.setArguments(bundle);
         return fragment;
-    }
-
-    private OnTimingChangeListener getParentListener() {
-        if (getActivity() != null && getActivity() instanceof OnTimingChangeListener) {
-            return (OnTimingChangeListener) getActivity();
-        }
-        return null;
     }
 
     @Nullable
@@ -143,9 +138,9 @@ public class TimingListDayFragment extends BaseFragment {
             }
 
             @Override
-            public void onPageSelected(int position) {
+            public void onPageSelected(int position) {//当左右切换的时候，需要更新标题栏时期，还要获取切换到的tab页的统计数据
                 selectedDayTime = calendar.getTimeInMillis() + position * TimeUnit.DAYS.toMillis(1);
-                updateDayTime(selectedDayTime, DateUtils.getDayEndTime(selectedDayTime));
+                getTimingStatistic(TYPE_DAY, DateUtils.getDayStartTime(selectedDayTime), DateUtils.getDayEndTime(selectedDayTime));
                 if (getParentListener() != null) {
                     getParentListener().onTimeChanged(TimingConfig.TIMING_QUERY_BY_DAY, selectedDayTime);
                 }
@@ -156,65 +151,29 @@ public class TimingListDayFragment extends BaseFragment {
 
             }
         });
-
+        //当前界面所传递的时间和起始时间（2015年1月1日）相差的天数。
         int differentDays = DateUtils.differentDays(calendar.getTimeInMillis(), startTimeMillis);
         viewPager.setCurrentItem(differentDays, false);
         selectedDayTime = calendar.getTimeInMillis() + viewPager.getCurrentItem() * TimeUnit.DAYS.toMillis(1);
-        updateDayTime(selectedDayTime, DateUtils.getDayEndTime(selectedDayTime));
+        getTimingStatistic(TYPE_DAY, DateUtils.getDayStartTime(selectedDayTime), DateUtils.getDayEndTime(selectedDayTime));
     }
 
-    private void updateDayTime(long startTime, long endTime) {
-        String weekStartTime = DateUtils.getyyyy_MM_dd(startTime);
-        String weekEndTime = DateUtils.getyyyy_MM_dd(endTime);
-        callEnqueue(
-                getApi().timingListQueryByTime(getLoginUserId(), weekStartTime, weekEndTime, 0, Integer.MAX_VALUE),
-                new SimpleCallBack<TimeEntity>() {
-                    @Override
-                    public void onSuccess(Call<ResEntity<TimeEntity>> call, Response<ResEntity<TimeEntity>> response) {
-                        if (response.body().result != null) {
-                            //获取完数据，遍历列表
-                            if (response.body().result.items != null && response.body().result.items.size() > 0) {
-                                traverseTime(response.body().result.items);
-                            } else {
-                                showSumTime(0);
-                            }
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<ResEntity<TimeEntity>> call, Throwable t) {
-                        super.onFailure(call, t);
-                    }
-                }
-        );
-    }
-
-    private void traverseTime(final List<TimeEntity.ItemEntity> items) {
-        Observable.create(new ObservableOnSubscribe<Long>() {
-            @Override
-            public void subscribe(@NonNull ObservableEmitter<Long> e) throws Exception {
-                long timeMillis = 0;
-                for (TimeEntity.ItemEntity item : items) {
-                    timeMillis += item.useTime;
-                }
-                e.onNext(timeMillis);
-                e.onComplete();
-            }
-        })
-                .compose(this.<Long>bindToLifecycle())
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<Long>() {
-                    @Override
-                    public void accept(@NonNull Long aLong) throws Exception {
-                        showSumTime(aLong);
-                    }
-                });
-    }
-
+    /**
+     * 显示总计时
+     *
+     * @param timeMillis
+     */
     private void showSumTime(long timeMillis) {
         String hm = DateUtils.getHm(timeMillis);
         timingCountTotal2Tv.setText(hm);
+    }
+
+    @Override
+    protected void getTimingStatisticSuccess(TimingStatisticEntity statisticEntity) {
+        super.getTimingStatisticSuccess(statisticEntity);
+        showSumTime(statisticEntity.allTimingSum);
+        if (getParentListener() != null)
+            getParentListener().onTimeSumChanged(TimingConfig.TIMING_QUERY_BY_DAY, statisticEntity.allTimingSum, statisticEntity.todayTimingSum);
     }
 
     @Override

@@ -36,6 +36,7 @@ import com.icourt.alpha.entity.bean.TaskMemberWrapEntity;
 import com.icourt.alpha.entity.bean.TaskReminderEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.bean.TimingCountEntity;
+import com.icourt.alpha.entity.bean.TimingStatisticEntity;
 import com.icourt.alpha.entity.bean.UserDataEntity;
 import com.icourt.alpha.entity.bean.WorkType;
 import com.icourt.alpha.http.httpmodel.ResEntity;
@@ -1540,6 +1541,19 @@ public interface ApiAlphaService {
      */
     @GET("ilaw/api/v2/documents/my/officeLibs")
     Call<ResEntity<List<RepoEntity>>> getOfficeLibs(@Query("permissionType") String permissionType);
+
+    /**
+     * 获取计时模块，日、周、月、年的统计时间
+     * 接口地址：https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/timing-api/getPersonalTimingStatisticsUsingGET
+     *
+     * @param type      查询的时间区间类型：day，天；week，周；month，月；year，年；
+     * @param startTime 起始时间，yyyy-MM-dd
+     * @param endTime   结束时间，yyyy-MM-dd
+     * @return
+     */
+    @GET("ilaw/api/v2/timing/timing/personal/statistics")
+    Call<ResEntity<TimingStatisticEntity>> getTimingStatistic(@Query("type") String type, @Query("startTime") String startTime, @Query("endTime") String endTime);
+
 }
 
 

@@ -2,6 +2,7 @@ package com.icourt.alpha.fragment;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
@@ -18,6 +19,7 @@ import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.constants.TimingConfig;
 import com.icourt.alpha.entity.bean.TimingCountEntity;
 import com.icourt.alpha.entity.bean.TimingSelectEntity;
+import com.icourt.alpha.entity.bean.TimingStatisticEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.widget.manager.TimerDateManager;
@@ -48,7 +50,7 @@ import lecho.lib.hellocharts.view.LineChartView;
  * version 2.1.1
  */
 
-public class TimingListWeekFragment extends BaseFragment {
+public class TimingListWeekFragment extends BaseTimingListFragment {
 
     private static final String KEY_START_TIME = "key_start_time";
 
@@ -73,8 +75,6 @@ public class TimingListWeekFragment extends BaseFragment {
     private boolean hasLabelForSelected = false;
 
     BaseRefreshFragmentAdapter baseFragmentAdapter;
-    private final List<TimingCountEntity> timingCountEntities = new ArrayList<>();//服务器返回的每日的计时时常
-
     long startTimeMillis;//传递进来的开始时间
 
     public static TimingListWeekFragment newInstance(long startTimeMillis) {
@@ -101,7 +101,7 @@ public class TimingListWeekFragment extends BaseFragment {
         }
 
         resetViewport();
-        generateData();
+        generateData(new ArrayList<Long>());
 
         timingChartView.setVisibility(View.VISIBLE);
         timingTextShowTimingLl.setVisibility(View.GONE);
@@ -121,6 +121,26 @@ public class TimingListWeekFragment extends BaseFragment {
             }
         });
 
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                TimingSelectEntity timingSelectEntity = weekData.get(position);
+                getTimingStatistic(TYPE_WEEK, timingSelectEntity.startTimeMillis, timingSelectEntity.endTimeMillis);
+                if (getParentListener() != null)
+                    getParentListener().onTimeChanged(TimingConfig.TIMING_QUERY_BY_WEEK, timingSelectEntity.startTimeMillis);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+
         int position = 0;
         for (int i = 0; i < weekData.size(); i++) {
             if (startTimeMillis >= weekData.get(i).startTimeMillis && startTimeMillis <= weekData.get(i).endTimeMillis) {
@@ -129,6 +149,18 @@ public class TimingListWeekFragment extends BaseFragment {
             }
         }
         viewPager.setCurrentItem(position, false);
+        TimingSelectEntity timingSelectEntity = weekData.get(position);
+        getTimingStatistic(TYPE_WEEK, timingSelectEntity.startTimeMillis, timingSelectEntity.endTimeMillis);
+    }
+
+    @Override
+    protected void getTimingStatisticSuccess(TimingStatisticEntity statisticEntity) {
+        super.getTimingStatisticSuccess(statisticEntity);
+        if (getParentListener() != null) {
+            getParentListener().onTimeSumChanged(TimingConfig.TIMING_QUERY_BY_WEEK, statisticEntity.allTimingSum, statisticEntity.todayTimingSum);
+            if (statisticEntity.timingList != null)
+                generateData(statisticEntity.timingList);
+        }
     }
 
     private void resetViewport() {
@@ -143,7 +175,12 @@ public class TimingListWeekFragment extends BaseFragment {
         timingChartView.setCurrentViewport(v);
     }
 
-    private void generateData() {
+    /**
+     * 更新折线图数据
+     *
+     * @param list
+     */
+    private void generateData(@NonNull List<Long> list) {
         if (timingChartView == null) return;
         resetViewport();
         List<Line> lines = new ArrayList<>();
@@ -162,40 +199,42 @@ public class TimingListWeekFragment extends BaseFragment {
             axisYValues.add(new AxisValue(i).setLabel(String.format("%sh ", i)));
         }
 
-        SparseArray<Long> weekDataArray = new SparseArray<>();
-        for (int i = 0; i < timingCountEntities.size(); i++) {//遍历每日的计时时常
-            TimingCountEntity itemEntity = timingCountEntities.get(i);
-            if (itemEntity != null) {
-                try {
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.setFirstDayOfWeek(Calendar.MONDAY);
-                    calendar.setTimeInMillis(itemEntity.workDate);
-
-                    log("--------------->>i:" + i + "  day:" + (calendar.get(Calendar.DAY_OF_WEEK) + 5) % 7 + "  count:" + itemEntity.timingCount);
-                    weekDataArray.put((calendar.get(Calendar.DAY_OF_WEEK) + 5) % 7, itemEntity.timingCount);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
+//        SparseArray<Long> weekDataArray = new SparseArray<>();
+//        for (int i = 0; i < timingCountEntities.size(); i++) {//遍历每日的计时时常
+//            TimingCountEntity itemEntity = timingCountEntities.get(i);
+//            if (itemEntity != null) {
+//                try {
+//                    Calendar calendar = Calendar.getInstance();
+//                    calendar.setFirstDayOfWeek(Calendar.MONDAY);
+//                    calendar.setTimeInMillis(itemEntity.workDate);
+//
+//                    log("--------------->>i:" + i + "  day:" + (calendar.get(Calendar.DAY_OF_WEEK) + 5) % 7 + "  count:" + itemEntity.timingCount);
+//                    weekDataArray.put((calendar.get(Calendar.DAY_OF_WEEK) + 5) % 7, itemEntity.timingCount);
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }
 
         //计算出要展示的那天的计时时间
         float maxValue = 0f;
-        for (int j = 0; j < numberOfPoints; j++) {
-            float hour = 0;
-            Long weekDayTime = weekDataArray.get(j);
-            if (weekDayTime != null) {
-                hour = weekDayTime.longValue() * 1.0f / TimeUnit.HOURS.toMillis(1);
+        if (list.size() >= numberOfPoints) {
+            for (int j = 0; j < numberOfPoints; j++) {
+                float hour = 0;
+                Long weekDayTime = list.get(j);
+                if (weekDayTime != null) {
+                    hour = weekDayTime * 1.0f / TimeUnit.HOURS.toMillis(1);
+                }
+                //最大24
+                if (hour >= 24) {
+                    hour = 23.9f;
+                }
+                if (hour > maxValue) {
+                    maxValue = hour;
+                }
+                log("--------j:" + j + "  time:" + hour);
+                values.add(new PointValue(j, hour));
             }
-            //最大24
-            if (hour >= 24) {
-                hour = 23.9f;
-            }
-            if (hour > maxValue) {
-                maxValue = hour;
-            }
-            log("--------j:" + j + "  time:" + hour);
-            values.add(new PointValue(j, hour));
         }
 
         //用第二条先提高高度

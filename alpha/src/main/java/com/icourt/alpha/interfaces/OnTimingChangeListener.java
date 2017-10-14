@@ -16,4 +16,6 @@ public interface OnTimingChangeListener {
 
     void onTimeChanged(@TimingConfig.TIMINGQUERYTYPE int type, long selectedTimeMillis);
 
+    void onTimeSumChanged(@TimingConfig.TIMINGQUERYTYPE int type, long selectedTimeSum, long todayTimeSum);
+
 }

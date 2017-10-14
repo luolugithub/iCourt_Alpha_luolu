@@ -145,6 +145,21 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
     }
 
     /**
+     * 显示选中日期和今天的总计时
+     *
+     * @param selectedTimeSum
+     * @param todayTimeSum
+     */
+    private void showTimeSum(@TimingConfig.TIMINGQUERYTYPE int type, long selectedTimeSum, long todayTimeSum) {
+        timingTodayTotal.setText(DateUtils.getHm(todayTimeSum));
+        if (type == TimingConfig.TIMING_QUERY_BY_DAY) {
+            timingCountTotalTv.setText("");
+        } else {
+            timingCountTotalTv.setText(DateUtils.getHm(selectedTimeSum));
+        }
+    }
+
+    /**
      * 替换所显示的Fragment
      *
      * @param targetFragment  要替换成哪个Fragment
@@ -216,5 +231,10 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
     @Override
     public void onTimeChanged(@TimingConfig.TIMINGQUERYTYPE int type, long selectedTimeMillis) {
         showSelectedDate(type, selectedTimeMillis);
+    }
+
+    @Override
+    public void onTimeSumChanged(@TimingConfig.TIMINGQUERYTYPE int type, long selectedTimeSum, long todayTimeSum) {
+        showTimeSum(type, selectedTimeSum, todayTimeSum);
     }
 }
