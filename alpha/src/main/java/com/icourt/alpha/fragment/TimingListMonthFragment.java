@@ -41,14 +41,14 @@ import lecho.lib.hellocharts.model.Viewport;
 import lecho.lib.hellocharts.view.LineChartView;
 
 /**
- * Description 选中日情况下的计时列表
+ * Description 选中月情况下的计时列表
  * Company Beijing icourt
  * author zhaodanyang E-mail:zhaodanyang@icourt.cc
  * date createTime: 2017/10/10
  * version 2.1.1
  */
 
-public class TimingWeekListFragment extends BaseFragment {
+public class TimingListMonthFragment extends BaseFragment {
 
     private static final String KEY_START_TIME = "key_start_time";
 
@@ -77,8 +77,8 @@ public class TimingWeekListFragment extends BaseFragment {
 
     long startTimeMillis;//传递进来的开始时间
 
-    public static TimingWeekListFragment newInstance(long startTimeMillis) {
-        TimingWeekListFragment fragment = new TimingWeekListFragment();
+    public static TimingListMonthFragment newInstance(long startTimeMillis) {
+        TimingListMonthFragment fragment = new TimingListMonthFragment();
         Bundle bundle = new Bundle();
         bundle.putLong(KEY_START_TIME, startTimeMillis);
         fragment.setArguments(bundle);
@@ -97,7 +97,7 @@ public class TimingWeekListFragment extends BaseFragment {
     protected void initView() {
         if (getArguments() != null) {
             long startTime = getArguments().getLong(KEY_START_TIME);
-            startTimeMillis = DateUtils.getWeekStartTime(startTime);
+            startTimeMillis = DateUtils.getMonthStartTime(startTime);
         }
 
         resetViewport();
@@ -106,24 +106,24 @@ public class TimingWeekListFragment extends BaseFragment {
         timingChartView.setVisibility(View.VISIBLE);
         timingTextShowTimingLl.setVisibility(View.GONE);
 
-        final List<TimingSelectEntity> weekData = TimerDateManager.getWeekData();
+        final List<TimingSelectEntity> monthData = TimerDateManager.getMonthData();
 
         viewPager.setAdapter(baseFragmentAdapter = new BaseRefreshFragmentAdapter(getChildFragmentManager()) {
             @Override
             public Fragment getItem(int position) {
-                TimingSelectEntity timingSelectEntity = weekData.get(position);
-                return TimingListFragment.newInstance(TimingConfig.TIMING_QUERY_BY_WEEK, timingSelectEntity.startTimeMillis);
+                TimingSelectEntity timingSelectEntity = monthData.get(position);
+                return TimingListFragment.newInstance(TimingConfig.TIMING_QUERY_BY_MONTH, timingSelectEntity.startTimeMillis);
             }
 
             @Override
             public int getCount() {
-                return weekData.size();
+                return monthData.size();
             }
         });
 
         int position = 0;
-        for (int i = 0; i < weekData.size(); i++) {
-            if (startTimeMillis >= weekData.get(i).startTimeMillis && startTimeMillis <= weekData.get(i).endTimeMillis) {
+        for (int i = 0; i < monthData.size(); i++) {
+            if (startTimeMillis >= monthData.get(i).startTimeMillis && startTimeMillis <= monthData.get(i).endTimeMillis) {
                 position = i;
                 break;
             }
@@ -149,14 +149,15 @@ public class TimingWeekListFragment extends BaseFragment {
         List<Line> lines = new ArrayList<>();
 
         List<PointValue> values = new ArrayList<>();
+        //x轴的坐标点
         List<AxisValue> axisXValues = Arrays.asList(
-                new AxisValue(0).setLabel("周一"),
-                new AxisValue(1).setLabel("周二"),
-                new AxisValue(2).setLabel("周三"),
-                new AxisValue(3).setLabel("周四"),
-                new AxisValue(4).setLabel("周五"),
-                new AxisValue(5).setLabel("周六"),
-                new AxisValue(6).setLabel("周日"));
+                new AxisValue(0).setLabel("1"),
+                new AxisValue(1).setLabel("5"),
+                new AxisValue(2).setLabel("10"),
+                new AxisValue(3).setLabel("15"),
+                new AxisValue(4).setLabel("20"),
+                new AxisValue(5).setLabel("25"),
+                new AxisValue(6).setLabel("30"));
         List<AxisValue> axisYValues = new ArrayList<>();
         for (int i = 0; i <= 24; i += 4) {
             axisYValues.add(new AxisValue(i).setLabel(String.format("%sh ", i)));

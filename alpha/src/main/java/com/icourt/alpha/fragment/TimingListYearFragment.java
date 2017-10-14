@@ -48,7 +48,7 @@ import lecho.lib.hellocharts.view.LineChartView;
  * version 2.1.1
  */
 
-public class TimingYearListFragment extends BaseFragment {
+public class TimingListYearFragment extends BaseFragment {
 
     private static final String KEY_START_TIME = "key_start_time";
 
@@ -77,8 +77,8 @@ public class TimingYearListFragment extends BaseFragment {
 
     long startTimeMillis;//传递进来的开始时间
 
-    public static TimingYearListFragment newInstance(long startTimeMillis) {
-        TimingYearListFragment fragment = new TimingYearListFragment();
+    public static TimingListYearFragment newInstance(long startTimeMillis) {
+        TimingListYearFragment fragment = new TimingListYearFragment();
         Bundle bundle = new Bundle();
         bundle.putLong(KEY_START_TIME, startTimeMillis);
         fragment.setArguments(bundle);

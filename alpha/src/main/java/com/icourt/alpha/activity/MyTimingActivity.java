@@ -20,10 +20,10 @@ import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.constants.TimingConfig;
 import com.icourt.alpha.entity.bean.TimingSelectEntity;
-import com.icourt.alpha.fragment.TimingDayListFragment;
-import com.icourt.alpha.fragment.TimingMonthListFragment;
-import com.icourt.alpha.fragment.TimingWeekListFragment;
-import com.icourt.alpha.fragment.TimingYearListFragment;
+import com.icourt.alpha.fragment.TimingListDayFragment;
+import com.icourt.alpha.fragment.TimingListMonthFragment;
+import com.icourt.alpha.fragment.TimingListWeekFragment;
+import com.icourt.alpha.fragment.TimingListYearFragment;
 import com.icourt.alpha.fragment.dialogfragment.TimingSelectDialogFragment;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnTimingChangeListener;
@@ -107,7 +107,7 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
      */
     private void showCurrentWeekFragment() {
         long currentTimeMillis = System.currentTimeMillis();
-        TimingWeekListFragment weekListFragment = TimingWeekListFragment.newInstance(currentTimeMillis);
+        TimingListWeekFragment weekListFragment = TimingListWeekFragment.newInstance(currentTimeMillis);
         addOrShowFragmentAnim(weekListFragment, R.id.fl_container, true);
     }
 
@@ -183,16 +183,16 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
             TimingSelectEntity timingSelectEntity = (TimingSelectEntity) params.getSerializable(BaseDialogFragment.KEY_FRAGMENT_RESULT);
             if (timingSelectEntity == null) return;
             if (type == TimingConfig.TIMING_QUERY_BY_DAY) {//日
-                TimingDayListFragment dayListFragment = TimingDayListFragment.newInstance(timingSelectEntity.startTimeMillis);
+                TimingListDayFragment dayListFragment = TimingListDayFragment.newInstance(timingSelectEntity.startTimeMillis);
                 addOrShowFragmentAnim(dayListFragment, R.id.fl_container, true);
             } else if (type == TimingConfig.TIMING_QUERY_BY_WEEK) {//周
-                TimingWeekListFragment weekListFragment = TimingWeekListFragment.newInstance(timingSelectEntity.startTimeMillis);
+                TimingListWeekFragment weekListFragment = TimingListWeekFragment.newInstance(timingSelectEntity.startTimeMillis);
                 addOrShowFragmentAnim(weekListFragment, R.id.fl_container, true);
             } else if (type == TimingConfig.TIMING_QUERY_BY_MONTH) {//月
-                TimingMonthListFragment monthListFragment = TimingMonthListFragment.newInstance(timingSelectEntity.startTimeMillis);
+                TimingListMonthFragment monthListFragment = TimingListMonthFragment.newInstance(timingSelectEntity.startTimeMillis);
                 addOrShowFragmentAnim(monthListFragment, R.id.fl_container, true);
             } else if (type == TimingConfig.TIMING_QUERY_BY_YEAR) {//年
-                TimingYearListFragment yearListFragment = TimingYearListFragment.newInstance(timingSelectEntity.startTimeMillis);
+                TimingListYearFragment yearListFragment = TimingListYearFragment.newInstance(timingSelectEntity.startTimeMillis);
                 addOrShowFragmentAnim(yearListFragment, R.id.fl_container, true);
             }
             int convertType = TimingConfig.convert2timingQueryType(type);

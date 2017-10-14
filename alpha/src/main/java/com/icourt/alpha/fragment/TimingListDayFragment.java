@@ -49,7 +49,7 @@ import retrofit2.Response;
  * version 2.1.1
  */
 
-public class TimingDayListFragment extends BaseFragment {
+public class TimingListDayFragment extends BaseFragment {
 
     private static final String KEY_START_TIME = "key_start_time";
 
@@ -72,8 +72,8 @@ public class TimingDayListFragment extends BaseFragment {
     long startTimeMillis;//传递进来的开始时间
     long selectedDayTime;//选中的某一天的开始时间
 
-    public static TimingDayListFragment newInstance(long startTimeMillis) {
-        TimingDayListFragment fragment = new TimingDayListFragment();
+    public static TimingListDayFragment newInstance(long startTimeMillis) {
+        TimingListDayFragment fragment = new TimingListDayFragment();
         Bundle bundle = new Bundle();
         bundle.putLong(KEY_START_TIME, startTimeMillis);
         fragment.setArguments(bundle);
