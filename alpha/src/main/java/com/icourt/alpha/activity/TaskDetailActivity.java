@@ -49,6 +49,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnUpdateTaskListener;
+import com.icourt.alpha.utils.BeanUtils;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.GlideUtils;
@@ -156,7 +157,7 @@ public class TaskDetailActivity extends BaseActivity
     int myStar = -1;
     boolean isStrat = false;
     boolean isSelectedCheckItem = false;//是否默认选中检查项tab
-    TaskEntity.TaskItemEntity taskItemEntity;
+    TaskEntity.TaskItemEntity taskItemEntity, cloneItemEntity;
     TaskUsersAdapter usersAdapter;
     TaskDetailFragment taskDetailFragment;
     TaskCheckItemFragment taskCheckItemFragment;
@@ -672,6 +673,11 @@ public class TaskDetailActivity extends BaseActivity
                     public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
                         dismissLoadingDialog();
                         taskItemEntity = response.body().result;
+                        try {
+                            cloneItemEntity = (TaskEntity.TaskItemEntity) BeanUtils.cloneTo(taskItemEntity);
+                        } catch (RuntimeException e) {
+                            e.printStackTrace();
+                        }
                         setDataToView(response.body().result);
                     }
 
@@ -974,6 +980,7 @@ public class TaskDetailActivity extends BaseActivity
                     public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
                         super.onFailure(call, t);
                         dismissLoadingDialog();
+                        taskCheckbox.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.restore, 0, 0, 0);
                     }
                 });
     }
@@ -1030,6 +1037,7 @@ public class TaskDetailActivity extends BaseActivity
                     public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
                         super.onFailure(call, t);
                         dismissLoadingDialog();
+                        titleAction.setImageResource(R.mipmap.header_icon_star_line);
                     }
                 });
     }
@@ -1055,6 +1063,7 @@ public class TaskDetailActivity extends BaseActivity
                     public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
                         super.onFailure(call, t);
                         dismissLoadingDialog();
+                        titleAction.setImageResource(R.mipmap.header_icon_star_solid);
                     }
                 });
     }
@@ -1104,6 +1113,11 @@ public class TaskDetailActivity extends BaseActivity
                         if (checkbox != null)
                             checkbox.setChecked(state);
                         taskItemEntity = response.body().result;
+                        try {
+                            cloneItemEntity = (TaskEntity.TaskItemEntity) BeanUtils.cloneTo(taskItemEntity);
+                        } catch (RuntimeException e) {
+                            e.printStackTrace();
+                        }
                         setDataToView(response.body().result);
                     }
 
@@ -1111,8 +1125,9 @@ public class TaskDetailActivity extends BaseActivity
                     public void onFailure(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Throwable t) {
                         super.onFailure(call, t);
                         dismissLoadingDialog();
+                        setDataToView(cloneItemEntity);
                         if (checkbox != null)
-                            checkbox.setChecked(!state);
+                            checkbox.setChecked(cloneItemEntity.state);
                     }
 
                     @Override
@@ -1208,39 +1223,34 @@ public class TaskDetailActivity extends BaseActivity
         if (fragment instanceof TaskAllotSelectDialogFragment) {//选择负责人回调
             if (params != null) {
                 List<TaskEntity.TaskItemEntity.AttendeeUserEntity> attusers = (List<TaskEntity.TaskItemEntity.AttendeeUserEntity>) params.getSerializable("list");
-                if (attusers != null && attusers.size() > 0) {
-                    if (attusers.size() == 1) {
-                        taskUsersLayout.setVisibility(View.GONE);
-                        taskUserLayout.setVisibility(View.VISIBLE);
-                        GlideUtils.loadUser(this, attusers.get(0).pic, taskUserPic);
-                        taskUserName.setText(attusers.get(0).userName);
-                    } else {
-                        taskUsersLayout.setVisibility(View.VISIBLE);
-                        taskUserLayout.setVisibility(View.GONE);
-                        if (taskUserRecyclerview.getLayoutManager() == null) {
-                            LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-                            layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
-                            layoutManager.setReverseLayout(true);
-                            taskUserRecyclerview.setLayoutManager(layoutManager);
-                            taskUserRecyclerview.setAdapter(usersAdapter = new TaskUsersAdapter(this));
-                            usersAdapter.setOnItemClickListener(this);
-                        }
-                    }
-                } else {
-                    taskUsersLayout.setVisibility(View.GONE);
-                    taskUserLayout.setVisibility(View.VISIBLE);
-                    taskUserName.setText("未分配");
-                    taskUserPic.setVisibility(View.GONE);
-                }
+//                if (attusers != null && attusers.size() > 0) {
+//                    if (attusers.size() == 1) {
+//                        taskUsersLayout.setVisibility(View.GONE);
+//                        taskUserLayout.setVisibility(View.VISIBLE);
+//                        GlideUtils.loadUser(this, attusers.get(0).pic, taskUserPic);
+//                        taskUserName.setText(attusers.get(0).userName);
+//                    } else {
+//                        taskUsersLayout.setVisibility(View.VISIBLE);
+//                        taskUserLayout.setVisibility(View.GONE);
+//                        if (taskUserRecyclerview.getLayoutManager() == null) {
+//                            LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+//                            layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+//                            layoutManager.setReverseLayout(true);
+//                            taskUserRecyclerview.setLayoutManager(layoutManager);
+//                            taskUserRecyclerview.setAdapter(usersAdapter = new TaskUsersAdapter(this));
+//                            usersAdapter.setOnItemClickListener(this);
+//                        }
+//                    }
+//                } else {
+//                    taskUsersLayout.setVisibility(View.GONE);
+//                    taskUserLayout.setVisibility(View.VISIBLE);
+//                    taskUserName.setText("未分配");
+//                    taskUserPic.setVisibility(View.GONE);
+//                }
                 if (taskItemEntity.attendeeUsers != null) {
                     taskItemEntity.attendeeUsers.clear();
                     taskItemEntity.attendeeUsers.addAll(attusers);
                     updateTask(taskItemEntity, taskItemEntity.state, taskCheckbox);
-                    if (usersAdapter != null) {
-                        if (taskItemEntity.attendeeUsers.size() > 0)
-                            Collections.reverse(taskItemEntity.attendeeUsers);
-                        usersAdapter.bindData(true, taskItemEntity.attendeeUsers);
-                    }
                 }
             }
         }

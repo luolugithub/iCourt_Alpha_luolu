@@ -31,9 +31,9 @@ import com.icourt.alpha.fragment.dialogfragment.DateSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ProjectSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.TaskGroupSelectFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
-import com.icourt.alpha.http.exception.ResponseException;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
+import com.icourt.alpha.utils.BeanUtils;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.api.RequestUtils;
@@ -80,7 +80,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
     @BindView(R.id.task_desc_tv)
     TextView taskDescTv;
 
-    TaskEntity.TaskItemEntity taskItemEntity;
+    TaskEntity.TaskItemEntity taskItemEntity, cloneItemEntity;
     @BindView(R.id.task_desc_layout)
     LinearLayout taskDescLayout;
     TaskReminderEntity taskReminderEntity;
@@ -116,12 +116,17 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
         EventBus.getDefault().register(this);
         taskItemEntity = (TaskEntity.TaskItemEntity) getArguments().getSerializable(KEY_TASK_DETAIL);
         if (taskItemEntity != null) {
-            setDataToView();
+            try {
+                cloneItemEntity = (TaskEntity.TaskItemEntity) BeanUtils.cloneTo(taskItemEntity);
+            } catch (RuntimeException e) {
+                e.printStackTrace();
+            }
+            setDataToView(taskItemEntity);
             getTaskReminder(taskItemEntity.id); //获取任务提醒数据
         }
     }
 
-    private void setDataToView() {
+    private void setDataToView(TaskEntity.TaskItemEntity taskItemEntity) {
         if (taskItemEntity == null) return;
         if (taskProjectLayout == null) return;
         isFinish = taskItemEntity.state;
@@ -133,6 +138,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             if (taskItemEntity.parentFlow != null) {
                 taskGroupTv.setText(taskItemEntity.parentFlow.name);
             } else {
+                taskGroupTv.setText("");
                 taskGroupTv.setHint((valid && !isFinish) ? "选择任务组" : "未指定任务组");
             }
         } else {
@@ -211,7 +217,12 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             isFinish = bundle.getBoolean("isFinish");
             valid = bundle.getBoolean("valid");
             taskItemEntity = (TaskEntity.TaskItemEntity) bundle.getSerializable("taskItemEntity");
-            setDataToView();
+            try {
+                cloneItemEntity = (TaskEntity.TaskItemEntity) BeanUtils.cloneTo(taskItemEntity);
+            } catch (RuntimeException e) {
+                e.printStackTrace();
+            }
+            setDataToView(taskItemEntity);
         }
     }
 
@@ -381,40 +392,48 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
                     public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
                         dismissLoadingDialog();
                         if (taskProjectTv != null) {
-                            if (projectEntity != null) {
-                                taskProjectTv.setText(projectEntity.name);
-                                taskGroupLayout.setVisibility(View.VISIBLE);
-                                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_UPDATE_PROJECT_ACTION, projectEntity.pkId));
-                                if (taskItemEntity != null) {
-                                    if (taskItemEntity.matter != null) {
-                                        taskItemEntity.matter.id = projectEntity.pkId;
-                                        taskItemEntity.matter.name = projectEntity.name;
-                                    } else {
-                                        TaskEntity.TaskItemEntity.MatterEntity matterEntity = new TaskEntity.TaskItemEntity.MatterEntity();
-                                        matterEntity.id = projectEntity.pkId;
-                                        matterEntity.name = projectEntity.name;
-                                        taskItemEntity.matter = matterEntity;
-                                    }
-                                }
-                                if (taskGroupEntity != null) {
-                                    taskGroupTv.setText(taskGroupEntity.name);
-                                } else {
-                                    taskGroupTv.setText("");
-                                }
-                            } else {
-                                if (taskGroupEntity != null) {
-                                    taskGroupTv.setText(taskGroupEntity.name);
-                                } else {
-                                    taskGroupTv.setText(taskItemEntity != null ? taskItemEntity.parentFlow != null ? taskItemEntity.parentFlow.name : "" : "");
-                                }
-                            }
+                            taskItemEntity = response.body().result;
                             try {
-                                if (taskDescTv == null) return;
-                                taskDescTv.setText(URLDecoder.decode(itemEntity.description, "utf-8"));
-                            } catch (Exception e) {
+                                cloneItemEntity = (TaskEntity.TaskItemEntity) BeanUtils.cloneTo(taskItemEntity);
+                            } catch (RuntimeException e) {
                                 e.printStackTrace();
-                                bugSync("任务详情－任务描述URLDecoder.decode失败：" + itemEntity.description, e);
                             }
+                            setDataToView(taskItemEntity);
+
+//                            if (projectEntity != null) {
+//                                taskProjectTv.setText(projectEntity.name);
+//                                taskGroupLayout.setVisibility(View.VISIBLE);
+//                                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_UPDATE_PROJECT_ACTION, projectEntity.pkId));
+//                                if (taskItemEntity != null) {
+//                                    if (taskItemEntity.matter != null) {
+//                                        taskItemEntity.matter.id = projectEntity.pkId;
+//                                        taskItemEntity.matter.name = projectEntity.name;
+//                                    } else {
+//                                        TaskEntity.TaskItemEntity.MatterEntity matterEntity = new TaskEntity.TaskItemEntity.MatterEntity();
+//                                        matterEntity.id = projectEntity.pkId;
+//                                        matterEntity.name = projectEntity.name;
+//                                        taskItemEntity.matter = matterEntity;
+//                                    }
+//                                }
+//                                if (taskGroupEntity != null) {
+//                                    taskGroupTv.setText(taskGroupEntity.name);
+//                                } else {
+//                                    taskGroupTv.setText("");
+//                                }
+//                            } else {
+//                                if (taskGroupEntity != null) {
+//                                    taskGroupTv.setText(taskGroupEntity.name);
+//                                } else {
+//                                    taskGroupTv.setText(taskItemEntity != null ? taskItemEntity.parentFlow != null ? taskItemEntity.parentFlow.name : "" : "");
+//                                }
+//                            }
+//                            try {
+//                                if (taskDescTv == null) return;
+//                                taskDescTv.setText(URLDecoder.decode(itemEntity.description, "utf-8"));
+//                            } catch (Exception e) {
+//                                e.printStackTrace();
+//                                bugSync("任务详情－任务描述URLDecoder.decode失败：" + itemEntity.description, e);
+//                            }
                             addReminders(taskReminderEntity);
                             EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION, itemEntity.id, ""));
                         }
@@ -424,9 +443,11 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
                     public void onFailure(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Throwable t) {
                         super.onFailure(call, t);
                         dismissLoadingDialog();
-                        if (t instanceof ResponseException) {
-                            showTopSnackBar(((ResponseException) t).message);
-                        }
+                        setDataToView(cloneItemEntity);
+                    }
+                    @Override
+                    public void defNotify(String noticeStr) {
+                        showTopSnackBar(noticeStr);
                     }
                 }
         );
