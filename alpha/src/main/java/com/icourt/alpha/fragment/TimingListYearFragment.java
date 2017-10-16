@@ -97,23 +97,7 @@ public class TimingListYearFragment extends BaseTimingListFragment {
     @Override
     protected void initView() {
         addAppbarHidenListener(appBarLayout);
-        timingChartView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        appBarLayout.getParent().requestDisallowInterceptTouchEvent(true);
-                        break;
-                    case MotionEvent.ACTION_MOVE:
-                        appBarLayout.getParent().requestDisallowInterceptTouchEvent(true);
-                        break;
-                    case MotionEvent.ACTION_UP:
-                        appBarLayout.getParent().requestDisallowInterceptTouchEvent(false);
-                        break;
-                }
-                return false;
-            }
-        });
+        dispatchTouchEvent(appBarLayout, timingChartView);
 
         if (getArguments() != null) {
             long startTime = getArguments().getLong(KEY_START_TIME);
@@ -186,7 +170,7 @@ public class TimingListYearFragment extends BaseTimingListFragment {
     private void resetViewport() {
         if (timingChartView == null) return;
         // Reset viewport height range to (0,100)
-        final Viewport v = new Viewport(0, timingChartView.getMaximumViewport().height(), numberOfPoints, 0);
+        final Viewport v = new Viewport(0, timingChartView.getMaximumViewport().height(), 11, 0);
 //        v.bottom = 0;
 //        v.top = 24;
 //        v.left = 0;

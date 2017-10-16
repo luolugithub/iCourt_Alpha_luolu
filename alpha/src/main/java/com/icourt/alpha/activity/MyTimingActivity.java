@@ -81,7 +81,7 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
         showCurrentWeekFragment();
     }
 
-    @OnClick({R.id.ll_all_time, R.id.ll_today_time})
+    @OnClick({R.id.ll_all_time, R.id.ll_today_time, R.id.titleAction})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -90,6 +90,9 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
                 break;
             case R.id.ll_today_time:
                 showCurrentWeekFragment();
+                break;
+            case R.id.titleAction:
+                TimerAddActivity.launch(getContext());
                 break;
             default:
                 super.onClick(v);
@@ -140,7 +143,7 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
             timingDateTitleTv.setText(date);
         } else if (type == TimingConfig.TIMING_QUERY_BY_YEAR) {//年
             int year = DateUtils.getYear(selectedTimeMillis);
-            timingDateTitleTv.setText(getString(R.string.timing_year,String.valueOf(year)));
+            timingDateTitleTv.setText(getString(R.string.timing_year, String.valueOf(year)));
         }
     }
 

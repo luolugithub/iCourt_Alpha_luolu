@@ -95,6 +95,7 @@ public class TimingListWeekFragment extends BaseTimingListFragment {
     @Override
     protected void initView() {
         addAppbarHidenListener(appBarLayout);
+        dispatchTouchEvent(appBarLayout, timingChartView);
 
         if (getArguments() != null) {
             long startTime = getArguments().getLong(KEY_START_TIME);

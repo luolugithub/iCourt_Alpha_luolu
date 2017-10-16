@@ -2,6 +2,8 @@ package com.icourt.alpha.fragment;
 
 import android.support.annotation.IntDef;
 import android.support.design.widget.AppBarLayout;
+import android.view.MotionEvent;
+import android.view.View;
 
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TimingStatisticEntity;
@@ -14,6 +16,7 @@ import com.icourt.alpha.utils.LogUtils;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
+import lecho.lib.hellocharts.view.LineChartView;
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -70,6 +73,33 @@ public abstract class BaseTimingListFragment extends BaseFragment {
                         getParentListener().onHeaderHide(false);
                     }
                 }
+            }
+        });
+    }
+
+    /**
+     * 解决折线图和AppBarlayout在CoordinatorLayout中的滑动冲突问题
+     *
+     * @param appBarLayout
+     * @param chartView
+     */
+    protected void dispatchTouchEvent(final AppBarLayout appBarLayout, LineChartView chartView) {
+        if (appBarLayout == null || chartView == null) return;
+        chartView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        appBarLayout.getParent().requestDisallowInterceptTouchEvent(true);
+                        break;
+                    case MotionEvent.ACTION_MOVE:
+                        appBarLayout.getParent().requestDisallowInterceptTouchEvent(true);
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        appBarLayout.getParent().requestDisallowInterceptTouchEvent(false);
+                        break;
+                }
+                return false;
             }
         });
     }
