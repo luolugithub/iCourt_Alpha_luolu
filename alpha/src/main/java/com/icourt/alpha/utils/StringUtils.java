@@ -238,7 +238,8 @@ public class StringUtils {
      */
     public static boolean isMobileNO86(String mobiles) {
         if (TextUtils.isEmpty(mobiles)) return false;
-        String telRegex = "((\\+86)+[ ]+((13\\d{9})|(14[57]\\d{8})|(15\\d{9})|(17\\d{9})|(18\\d{9})))|(13\\d{9})|(14[57]\\d{8})|(15\\d{9})|(17\\d{9})|(18\\d{9})";
+//        String telRegex = "((\\+86)+[ ]+((13\\d{9})|(14[57]\\d{8})|(15\\d{9})|(17\\d{9})|(18\\d{9})))|(13\\d{9})|(14[57]\\d{8})|(15\\d{9})|(17\\d{9})|(18\\d{9})";
+        String telRegex = "(((\\+86)+[ ])|(0086)|())+((13\\d{9})|(14[57]\\d{8})|(15\\d{9})|(17\\d{9})|(18\\d{9}))";
         return mobiles.matches(telRegex);
     }
 

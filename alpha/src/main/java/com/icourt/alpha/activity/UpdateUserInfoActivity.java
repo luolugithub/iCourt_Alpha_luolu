@@ -140,7 +140,7 @@ public class UpdateUserInfoActivity extends BaseActivity {
                 myCenterUpdateHintText.setText(R.string.mine_phone);
                 leftImageView.setImageResource(R.mipmap.setting_phone);
                 updateStateLayout.setVisibility(View.VISIBLE);
-                myCenterUpdateEdittext.setFilters(new InputFilter[]{new InputFilter.LengthFilter(15)});
+                myCenterUpdateEdittext.setFilters(new InputFilter[]{new InputFilter.LengthFilter(UPDATE_PHONE_MAX_LENGTH)});
                 myCenterUpdateEdittext.setKeyListener(new NumberKeyListener() {
                     @Override
                     protected char[] getAcceptedChars() {
