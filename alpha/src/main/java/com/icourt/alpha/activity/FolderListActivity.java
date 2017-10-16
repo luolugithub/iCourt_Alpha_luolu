@@ -102,7 +102,6 @@ public class FolderListActivity extends FolderBaseActivity
         BaseRecyclerAdapter.OnItemChildClickListener,
         OnDialogFragmentDismissListener {
 
-    private static final int MAX_LENGTH_FILE_NAME = 100;
     private static final int REQUEST_CODE_CHOOSE_FILE = 1002;
     @BindView(R.id.titleBack)
     ImageView titleBack;
@@ -559,7 +558,6 @@ public class FolderListActivity extends FolderBaseActivity
     private void showActionMoreDialog() {
 
         ArrayList<String> menus = new ArrayList<>();
-        menus.add(getString(R.string.sfile_menu_repo_details));
         //如果是非根目录 显示文件夹详情按钮
         boolean isRepoRoot = TextUtils.isEmpty(getSeaFileDirPath())
                 || TextUtils.equals(getSeaFileDirPath(), "/");
@@ -568,6 +566,7 @@ public class FolderListActivity extends FolderBaseActivity
                 && getRepoType() == SFileConfig.REPO_MINE) {
             menus.add(getString(R.string.sfile_folder_details));
         }
+        menus.add(getString(R.string.repo_manage));
         //有读写权限 并且列表不为空
         if (TextUtils.equals(getRepoPermission(), PERMISSION_RW)
                 && folderDocumentAdapter.getItemCount() > 0) {
@@ -587,7 +586,7 @@ public class FolderListActivity extends FolderBaseActivity
                             folderDocumentAdapter.setSelectable(true);
                             folderDocumentAdapter.notifyDataSetChanged();
                             updateSelectableModeSatue(folderDocumentAdapter.isSelectable());
-                        } else if (TextUtils.equals(action, getString(R.string.sfile_menu_repo_details))) {
+                        } else if (TextUtils.equals(action, getString(R.string.repo_manage))) {
                             RepoDetailsDialogFragment.show(
                                     getRepoType(),
                                     getSeaFileRepoId(),
@@ -595,10 +594,11 @@ public class FolderListActivity extends FolderBaseActivity
                                     getRepoPermission(),
                                     getSupportFragmentManager());
                         } else if (TextUtils.equals(action, getString(R.string.sfile_folder_details))) {
+                            String seaFileDirPath = FileUtils.getFileParentDir(getSeaFileDirPath());
                             FolderDetailDialogFragment.show(
                                     getRepoType(),
                                     getSeaFileRepoId(),
-                                    FileUtils.getFileParentDir(getSeaFileDirPath()),
+                                    seaFileDirPath,
                                     getRepoTitle(),
                                     0,
                                     getRepoPermission(),
@@ -756,8 +756,8 @@ public class FolderListActivity extends FolderBaseActivity
                         filePathsArray.remove(path);
                     } else {
                         //3.再校验文件名称长度
-                        if (StringUtils.isOverLength(file.getName(), MAX_LENGTH_FILE_NAME)) {
-                            showTopSnackBar(getString(R.string.sfile_length_limit_format, String.valueOf(MAX_LENGTH_FILE_NAME)));
+                        if (StringUtils.isOverLength(file.getName(), SFileConfig.SFILE_FILE_NAME_MAX_LENGTH)) {
+                            showTopSnackBar(getString(R.string.sfile_length_limit_format, String.valueOf(SFileConfig.SFILE_FILE_NAME_MAX_LENGTH)));
                             filePathsArray.remove(path);
                         }
                     }
@@ -984,12 +984,8 @@ public class FolderListActivity extends FolderBaseActivity
                             } else {
                                 FileDetailDialogFragment.show(
                                         getRepoType(),
-                                        getSeaFileRepoId(),
-                                        getSeaFileDirPath(),
-                                        item.name,
-                                        item.size,
+                                        item,
                                         1,
-                                        getRepoPermission(),
                                         getSupportFragmentManager());
                             }
                         } else if (TextUtils.equals(action, getString(R.string.sfile_file_copy))) {
@@ -1023,12 +1019,8 @@ public class FolderListActivity extends FolderBaseActivity
         } else {
             FileDetailDialogFragment.show(
                     getRepoType(),
-                    getSeaFileRepoId(),
-                    getSeaFileDirPath(),
-                    item.name,
-                    item.size,
+                    item,
                     0,
-                    getRepoPermission(),
                     getSupportFragmentManager());
         }
     }
@@ -1048,7 +1040,7 @@ public class FolderListActivity extends FolderBaseActivity
                 getSeaFileRepoId(),
                 getSeaFileDirPath(),
                 getSeaFileRepoId(),
-                getSeaFileDirPath(),
+                "/",
                 folderDocumentEntities)
                 .show(mFragTransaction, tag);
     }

@@ -210,7 +210,7 @@ public class ReminderFragment extends BaseFragment
     /**
      * 转换自定义
      */
-    private void convertCoustomReminder(){
+    private void convertCoustomReminder() {
         /**
          * ruleTime设置时间集合
          * 根据ruleTime --->
@@ -326,7 +326,6 @@ public class ReminderFragment extends BaseFragment
             R.id.add_reminder_text})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.titleBack:
                 if (onPageFragmentCallBack != null) {
@@ -363,6 +362,9 @@ public class ReminderFragment extends BaseFragment
                 customPosition = reminderListAdapter.getItemCount() - 1;
                 reminderListAdapter.setSelected(customPosition, true);
                 scrollToPosition(customPosition);
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }

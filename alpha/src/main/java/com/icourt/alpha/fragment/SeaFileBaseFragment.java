@@ -10,6 +10,7 @@ import com.google.gson.JsonObject;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.entity.bean.SFileUploadParamEntity;
+import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.utils.IndexUtils;
 import com.icourt.alpha.utils.SFileTokenUtils;
 import com.icourt.alpha.widget.comparators.FileSortComparator;
@@ -32,6 +33,7 @@ import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.RequestBody;
+import retrofit2.Call;
 
 /**
  * Description  seaFile文件碎片基础类
@@ -210,5 +212,17 @@ public abstract class SeaFileBaseFragment extends BaseFragment {
             }
         }
         return items;
+    }
+
+    /**
+     * 获取文档详情
+     *
+     * @param repoId       资料库id
+     * @param fileFullPath 文件全路径
+     */
+    protected Call<FolderDocumentEntity> getSeaFileDetails(@android.support.annotation.NonNull String repoId,
+                                                           @android.support.annotation.NonNull String fileFullPath,
+                                                           @android.support.annotation.NonNull SFileCallBack<FolderDocumentEntity> sFileCallBack) {
+        return callEnqueue(getSFileApi().seaFileDetails(repoId, fileFullPath), sFileCallBack);
     }
 }

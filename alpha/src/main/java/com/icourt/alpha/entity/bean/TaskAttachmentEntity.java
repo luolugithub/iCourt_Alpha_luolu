@@ -18,6 +18,7 @@ public class TaskAttachmentEntity implements ISeaFile {
     public long fileSize;
     public PathInfoVoEntity pathInfoVo;
     public String filePermission;//rw,r
+    public long fileUpdateTime;//文件更新的时间戳
 
     @Override
     public String getSeaFileFullPath() {
@@ -26,7 +27,7 @@ public class TaskAttachmentEntity implements ISeaFile {
 
     @Override
     public String getSeaFileVersionId() {
-        return null;
+        return String.valueOf(fileUpdateTime);
     }
 
     @Override

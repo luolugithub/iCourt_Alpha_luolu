@@ -174,7 +174,7 @@ public class FileLinkFragment extends BaseFragment {
             }
             fileAccessPwdTv.setText(sFileLinkInfoEntity.isNeedAccessPwd() ? sFileLinkInfoEntity.password : getString(R.string.sfile_link_password_null));
             linkCopyTv.setText(sFileLinkInfoEntity.isNeedAccessPwd() ? "复制链接和密码" : "复制链接");
-            fileAccessTimeLimitTv.setText(sFileLinkInfoEntity.expireTime <= 0 ? getString(R.string.sfile_link_limit_date_0) : DateUtils.getyyyy_MM_dd(sFileLinkInfoEntity.expireTime));
+            fileAccessTimeLimitTv.setText(sFileLinkInfoEntity.expireTime <= 0 ? getString(R.string.sfile_link_limit_date_0) : DateUtils.getMM_dd_HH_mm(sFileLinkInfoEntity.expireTime));
             fileShareLinkTv.setText(sFileLinkInfoEntity.getRealShareLink());
         } else {
             fileLinkCreateTv.setVisibility(View.VISIBLE);
@@ -197,7 +197,7 @@ public class FileLinkFragment extends BaseFragment {
     public boolean onLongClick(View v) {
         switch (v.getId()) {
             case R.id.file_access_pwd_tv:
-                if (!isNoFileShareLink()) {
+                if (isNeedAccessPwd()) {
                     showCopyMenuDialog(new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
@@ -378,7 +378,7 @@ public class FileLinkFragment extends BaseFragment {
         paramJsonObject.addProperty("expireDays", getSelectedExpireDays());
         paramJsonObject.addProperty("path", getArguments().getString(KEY_SEA_FILE_FROM_FILE_PATH, ""));
         paramJsonObject.addProperty("repoId", getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID, ""));
-        paramJsonObject.addProperty("type",linkType);
+        paramJsonObject.addProperty("type", linkType);
         showLoadingDialog(R.string.str_creating);
         callEnqueue(getApi().fileShareLinkCreate(RequestUtils.createJsonBody(paramJsonObject.toString()))
                 , new SFileCallBack<SFileLinkInfoEntity>() {
@@ -436,4 +436,12 @@ public class FileLinkFragment extends BaseFragment {
     }
 
 
+    /**
+     * 是否需要pwd
+     *
+     * @return
+     */
+    private boolean isNeedAccessPwd() {
+        return !isNoFileShareLink() && sFileLinkInfoEntity.isNeedAccessPwd();
+    }
 }

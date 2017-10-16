@@ -145,7 +145,6 @@ public class ProjectListFragment extends BaseFragment implements BaseRecyclerAda
     @OnClick({R.id.header_comm_search_cancel_tv})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.header_comm_search_cancel_tv:
                 headerCommSearchInputEt.setText("");
@@ -155,6 +154,9 @@ public class ProjectListFragment extends BaseFragment implements BaseRecyclerAda
             case R.id.header_comm_search_ll:
                 headerCommSearchInputLl.setVisibility(View.VISIBLE);
                 SystemUtils.showSoftKeyBoard(getActivity(), headerCommSearchInputEt);
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }

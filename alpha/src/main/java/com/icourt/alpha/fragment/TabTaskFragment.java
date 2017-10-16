@@ -341,7 +341,6 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
             R.id.titleCalendar})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.titleCalendar:
                 if (!RAUtils.isLegal(RAUtils.DURATION_DEFAULT)) return;
@@ -402,6 +401,9 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                                 }
                             }
                         }).show();
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }

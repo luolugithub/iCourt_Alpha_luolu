@@ -320,18 +320,22 @@ public class FileUtils {
      * @return
      */
     public static final String getFileParentDir(String filePath) {
-        if (!TextUtils.isEmpty(filePath)) {
-            int separatorIndex = filePath.lastIndexOf(File.separator);
-            if (separatorIndex > 0) {
-                if (separatorIndex == filePath.length() - 1) {
-                    String temp = filePath.substring(0, filePath.length() - 2);
-                    separatorIndex = temp.lastIndexOf(File.separator);
-                    if (separatorIndex > 0) {
-                        return filePath.substring(0, separatorIndex);
+        try {
+            if (!TextUtils.isEmpty(filePath)) {
+                int separatorIndex = filePath.lastIndexOf(File.separator);
+                if (separatorIndex > 0) {
+                    if (separatorIndex == filePath.length() - 1) {
+                        String temp = filePath.substring(0, filePath.length() - 2);
+                        separatorIndex = temp.lastIndexOf(File.separator);
+                        if (separatorIndex > 0) {
+                            return filePath.substring(0, separatorIndex + 1);
+                        }
                     }
+                    return filePath.substring(0, separatorIndex + 1);
                 }
-                return filePath.substring(0, separatorIndex);
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return File.separator;
     }

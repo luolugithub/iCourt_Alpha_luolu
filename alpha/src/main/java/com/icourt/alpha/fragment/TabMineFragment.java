@@ -201,7 +201,6 @@ public class TabMineFragment extends BaseFragment {
             R.id.menu_test})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.photo_image:
 //                ImagePagerActivity.launch(getContext(), Arrays.asList(getLoginUserInfo().getPic()));//头像大图浏览
@@ -227,6 +226,9 @@ public class TabMineFragment extends BaseFragment {
                 break;
             case R.id.menu_test:
 //                test1();
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }

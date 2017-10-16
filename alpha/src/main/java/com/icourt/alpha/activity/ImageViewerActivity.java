@@ -64,6 +64,7 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
     private static final String KEY_SELECT_POS = "key_select_pos";//多个图片地址 跳转到某一条
     private static final String KEY_FILE_FROM = "key_file_from";  //文件来源
     private static final String KEY_SEA_FILE_IMAGES = "key_sea_File_Images";//seafile图片
+    private static final String KEY_INTERCEPT_LOOK_FILE_DETAILS = "key_intercept_look_file_details";//是否拦截查看文件详情
     @BindView(R.id.titleAction)
     ImageView titleAction;
     @BindView(R.id.main_content)
@@ -76,6 +77,21 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
                               @SFileConfig.FILE_FROM int fileFrom,
                               ArrayList<? extends ISeaFile> seaFileImages,
                               int selectPos) {
+        launch(context, fileFrom, seaFileImages, selectPos, false);
+    }
+
+    /**
+     * @param context
+     * @param fileFrom
+     * @param seaFileImages
+     * @param selectPos
+     * @param interceptLookFileDetails 是否拦截查看文件详情
+     */
+    public static void launch(@NonNull Context context,
+                              @SFileConfig.FILE_FROM int fileFrom,
+                              ArrayList<? extends ISeaFile> seaFileImages,
+                              int selectPos,
+                              boolean interceptLookFileDetails) {
         if (context == null) return;
         if (seaFileImages == null || seaFileImages.isEmpty()) return;
         if (selectPos < 0) {
@@ -87,6 +103,7 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
         intent.putExtra(KEY_FILE_FROM, fileFrom);
         intent.putExtra(KEY_SEA_FILE_IMAGES, seaFileImages);
         intent.putExtra(KEY_SELECT_POS, selectPos);
+        intent.putExtra(KEY_INTERCEPT_LOOK_FILE_DETAILS, interceptLookFileDetails);
         context.startActivity(intent);
     }
 
@@ -308,6 +325,7 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
                 setTitle(FileUtils.getFileName(seaFileImages.get(position).getSeaFileFullPath()));
             }
         });
+        viewPager.setOffscreenPageLimit(3);
         if (selectPos < imagePagerAdapter.getCount()) {
             mHandler.postDelayed(new Runnable() {
                 @Override
@@ -401,7 +419,10 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
                                 "保存图片",
                                 "保存到项目"));
             }
-
+        }
+        //拦截查看文件详情
+        if (getIntent().getBooleanExtra(KEY_INTERCEPT_LOOK_FILE_DETAILS, false)) {
+            menus.remove(getString(R.string.sfile_file_details));
         }
         new BottomActionDialog(getContext(),
                 null,
@@ -414,12 +435,8 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
                         if (TextUtils.equals(action, getString(R.string.sfile_file_details))) {
                             FileDetailDialogFragment.show(
                                     SFileConfig.REPO_UNKNOW,
-                                    item.getSeaFileRepoId(),
-                                    FileUtils.getFileParentDir(item.getSeaFileFullPath()),
-                                    FileUtils.getFileName(item.getSeaFileFullPath()),
-                                    item.getSeaFileSize(),
+                                    item,
                                     0,
-                                    item.getSeaFilePermission(),
                                     getSupportFragmentManager());
 
                         } else if (TextUtils.equals(action, "保存图片")) {
@@ -475,7 +492,7 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
                         if (imagePagerAdapter.getCount() > 1) {
                             seaFileImages.remove(currentItem);
                             initAdapter();
-                            viewPager.setCurrentItem(Math.min(currentItem + 1, seaFileImages.size() - 1));
+                            viewPager.setCurrentItem(Math.min(currentItem, imagePagerAdapter.getCount() - 1));
                         } else {
                             //只剩一个 就关闭整个页面
                             finish();

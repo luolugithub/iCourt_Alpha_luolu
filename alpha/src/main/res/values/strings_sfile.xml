@@ -11,7 +11,8 @@
     <string name="repo_inner_share">内部共享</string>
     <string name="repo_share">共享</string>
     <string name="repo_recycle_bin">回收站</string>
-    <string name="repo_details">查看资料库详情</string>
+    <string name="repo_manage">管理资料库</string>
+    <string name="repo_details">资料库详情</string>
 
     <string-array name="repo_type_array">
         <item>我的</item>
@@ -28,16 +29,16 @@
     </string-array>
 
     <string-array name="repo_action_menus_rw_array">
-        <item>@string/repo_details</item>
+        <item>@string/repo_manage</item>
         <item>重命名</item>
         <item>@string/repo_share</item>
         <item>@string/str_delete</item>
     </string-array>
 
     <string-array name="repo_action_menus_r_array">
-        <item>查看资料库详情</item>
+        <item>@string/repo_manage</item>
         <item>@string/str_rename</item>
-        <item>内部共享</item>
+        <item>@string/repo_share</item>
     </string-array>
 
     <string name="repo_delete_confirm">删除后不可恢复, 确定删除吗?</string>
@@ -49,7 +50,6 @@
     <string name="sfile_folder_statistics" formatted="false">%s个文件夹, %s个文件</string>
     <string name="sfile_file_already_selected" formatted="false">已选择: %s</string>
 
-    <string name="sfile_menu_repo_details">查看资料库详情</string>
     <string name="sfile_menu_recycle_bin">回收站</string>
     <string name="sfile_menu_batch_operation">批量操作</string>
 

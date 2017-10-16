@@ -32,6 +32,13 @@ import com.kaopiz.kprogresshud.KProgressHUD;
  * date createTime：2015/9/10 10:05
  * version
  */
+
+/**
+ * 新版本 @see {@link BaseAdapter}
+ *
+ * @param
+ */
+@Deprecated
 public abstract class BaseRecyclerAdapter extends RecyclerView.Adapter<BaseRecyclerAdapter.ViewHolder> {
 
     @LayoutRes

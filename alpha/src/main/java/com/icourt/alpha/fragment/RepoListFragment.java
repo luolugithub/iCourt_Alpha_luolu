@@ -440,8 +440,13 @@ public class RepoListFragment extends RepoBaseFragment
 
     @Override
     public boolean onItemLongClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, final View view, final int position) {
-        if (repoType == 0) {
-            showDocumentActionDialog(position);
+        RepoEntity item = repoAdapter.getItem(position);
+        if (item != null && item.isNeedDecrypt()) {
+            showDecryptDialog(item);
+        } else {
+            if (repoType == 0) {
+                showDocumentActionDialog(position);
+            }
         }
         return true;
     }
@@ -470,7 +475,7 @@ public class RepoListFragment extends RepoBaseFragment
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                         dialog.dismiss();
                         String s = adapter.getItem(position);
-                        if (TextUtils.equals(s, getString(R.string.repo_details))) {//查看资料库详情
+                        if (TextUtils.equals(s, getString(R.string.repo_manage))) {//查看资料库详情
                             lookDetail(pos);
                         } else if (TextUtils.equals(s, getString(R.string.str_rename))) {//重命名
                             renameDocument(pos);

@@ -26,15 +26,18 @@ import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.constants.SFileConfig;
+import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.entity.bean.TaskAttachmentEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
 import com.icourt.alpha.fragment.dialogfragment.SeaFileSelectDialogFragment;
+import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.interfaces.OnDialogFragmentDismissListener;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnUpdateTaskListener;
+import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UriUtils;
@@ -84,6 +87,7 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
     private static final String KEY_TASK_ADD_ATTACHMENT_PERMISSION = "key_task_add_attachment_permission";
     private static final String KEY_TASK_DELETE_ATTACHMENT_PERMISSION = "key_task_delete_attachment_permission";
     private static final int REQUEST_CODE_CHOOSE_FILE = 1002;
+    private static final int FILE_MAX_SIZE = 30 * 1024 * 1024;//单个文件最大30M
 
     /**
      * hasLookAttachmentPermission>hasAddAttachmentPermission
@@ -322,6 +326,13 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
                 if (resultCode == Activity.RESULT_OK) {
                     if (data != null) {
                         String path = UriUtils.getPath(getContext(), data.getData());
+                        if (FileUtils.isFileExists(path)) {
+                            File file = new File(path);
+                            if (file.length() >= FILE_MAX_SIZE) {
+                                showTopSnackBar(getString(R.string.task_attachment_size_limit, String.valueOf(FILE_MAX_SIZE / (1024 * 1024))));
+                                return;
+                            }
+                        }
                         uploadFiles(Arrays.asList(path));
                     }
                 }
@@ -417,7 +428,7 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        TaskAttachmentEntity item = taskAttachmentAdapter.getItem(position);
+        final TaskAttachmentEntity item = taskAttachmentAdapter.getItem(position);
         if (item == null) return;
         if (item.pathInfoVo == null) return;
         //图片 直接预览
@@ -440,10 +451,35 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
                     imageDatas,
                     indexOf);
         } else {
-            FileDownloadActivity.launch(
-                    getContext(),
-                    item,
-                    SFileConfig.FILE_FROM_TASK);
+            //拿这个文件的更新时间
+            if (item.fileUpdateTime <= 0) {
+                showLoadingDialog(null);
+                getSeaFileDetails(
+                        item.getSeaFileRepoId(),
+                        item.getSeaFileFullPath(),
+                        new SFileCallBack<FolderDocumentEntity>() {
+                            @Override
+                            public void onSuccess(Call<FolderDocumentEntity> call, Response<FolderDocumentEntity> response) {
+                                dismissLoadingDialog();
+                                item.fileUpdateTime = response.body().mtime;
+                                FileDownloadActivity.launch(
+                                        getContext(),
+                                        item,
+                                        SFileConfig.FILE_FROM_TASK);
+                            }
+
+                            @Override
+                            public void onFailure(Call<FolderDocumentEntity> call, Throwable t) {
+                                dismissLoadingDialog();
+                                super.onFailure(call, t);
+                            }
+                        });
+            } else {
+                FileDownloadActivity.launch(
+                        getContext(),
+                        item,
+                        SFileConfig.FILE_FROM_TASK);
+            }
         }
     }
 
