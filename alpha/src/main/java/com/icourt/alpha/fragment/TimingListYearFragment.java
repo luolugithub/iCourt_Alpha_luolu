@@ -8,6 +8,7 @@ import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -30,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import lecho.lib.hellocharts.gesture.ZoomType;
 import lecho.lib.hellocharts.model.Axis;
 import lecho.lib.hellocharts.model.AxisValue;
 import lecho.lib.hellocharts.model.Line;
@@ -95,13 +97,29 @@ public class TimingListYearFragment extends BaseTimingListFragment {
     @Override
     protected void initView() {
         addAppbarHidenListener(appBarLayout);
+        timingChartView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        appBarLayout.getParent().requestDisallowInterceptTouchEvent(true);
+                        break;
+                    case MotionEvent.ACTION_MOVE:
+                        appBarLayout.getParent().requestDisallowInterceptTouchEvent(true);
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        appBarLayout.getParent().requestDisallowInterceptTouchEvent(false);
+                        break;
+                }
+                return false;
+            }
+        });
 
         if (getArguments() != null) {
             long startTime = getArguments().getLong(KEY_START_TIME);
             startTimeMillis = DateUtils.getYearStartTime(startTime);
         }
 
-        resetViewport();
         generateData(new ArrayList<Long>());
 
         timingChartView.setVisibility(View.VISIBLE);
@@ -168,11 +186,11 @@ public class TimingListYearFragment extends BaseTimingListFragment {
     private void resetViewport() {
         if (timingChartView == null) return;
         // Reset viewport height range to (0,100)
-        final Viewport v = new Viewport(timingChartView.getMaximumViewport());
-        v.bottom = 0;
-        v.top = 24;
-        v.left = 0;
-        v.right = numberOfPoints;
+        final Viewport v = new Viewport(0, timingChartView.getMaximumViewport().height(), numberOfPoints, 0);
+//        v.bottom = 0;
+//        v.top = 24;
+//        v.left = 0;
+//        v.right = numberOfPoints;
         // timingChartView.setMaximumViewport(v);
         timingChartView.setCurrentViewport(v);
     }
@@ -180,6 +198,7 @@ public class TimingListYearFragment extends BaseTimingListFragment {
     private void generateData(@NonNull List<Long> list) {
         if (timingChartView == null) return;
         resetViewport();
+
         List<Line> lines = new ArrayList<>();
 
         List<PointValue> values = new ArrayList<>();
@@ -226,18 +245,18 @@ public class TimingListYearFragment extends BaseTimingListFragment {
         //用第二条先提高高度
         if (maxValue < 8.0f) {
             List<PointValue> values2 = Arrays.asList(
-                    new PointValue(0, 10.0f),
-                    new PointValue(1, 20.0f),
-                    new PointValue(2, 20.0f),
-                    new PointValue(3, 30.0f),
+                    new PointValue(0, 20.0f),
+                    new PointValue(1, 80.0f),
+                    new PointValue(2, 50.0f),
+                    new PointValue(3, 70.0f),
                     new PointValue(4, 30.0f),
                     new PointValue(5, 50.0f),
                     new PointValue(6, 80.0f),
-                    new PointValue(7, 80.0f),
+                    new PointValue(7, 10.0f),
                     new PointValue(8, 80.0f),
-                    new PointValue(9, 80.0f),
+                    new PointValue(9, 10.0f),
                     new PointValue(10, 80.0f),
-                    new PointValue(11, 80.0f));
+                    new PointValue(11, 10.0f));
             Line line2 = new Line(values2);
             line2.setShape(shape);
             line2.setCubic(false);

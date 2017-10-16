@@ -155,7 +155,7 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
 
         refreshLayout.setEnableRefresh(false);
         boolean canLoadMore = (queryType != TimingConfig.TIMING_QUERY_BY_DAY && queryType != TimingConfig.TIMING_QUERY_BY_WEEK); //日周不可以上拉加载，年月可以上拉加载。
-        refreshLayout.setEnableLoadmore(canLoadMore);
+        refreshLayout.setEnableLoadmore(true);
         initData();
     }
 
