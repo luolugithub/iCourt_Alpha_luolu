@@ -3,6 +3,7 @@ package com.icourt.alpha.fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -355,7 +356,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
         }
     }
 
-    private void renameFileRevoke(FileChangedHistoryEntity item) {
+    private void renameFileRevoke(final FileChangedHistoryEntity item) {
         if (item == null) return;
         //"/aaaa/Android手机推送设置.docx"---->"Android手机推送设置.docx",
         String orginName = item.path;
@@ -382,10 +383,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                     @Override
                     public void onFailure(Call<FolderDocumentEntity> call, Throwable t) {
                         dismissLoadingDialog();
-                        if (t instanceof HttpException
-                                && ((HttpException) t).code() == 404) {
-                            showToast(R.string.sfile_revert_fail);
-                        } else {
+                        if (!handleRevokeFail(item, t)) {
                             super.onFailure(call, t);
                         }
                     }
@@ -395,6 +393,29 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                         showToast(noticeStr);
                     }
                 });
+    }
+
+    /**
+     * 处理撤销失败的提示
+     *
+     * @param t
+     * @return
+     */
+    private boolean handleRevokeFail(@Nullable final FileChangedHistoryEntity item, @NonNull Throwable t) {
+        if (t instanceof HttpException
+                && ((HttpException) t).code() == 404) {
+            showToast(R.string.sfile_revert_fail);
+            if (item != null) {
+                bugSync("文件撤销失败",
+                        new StringBuilder("\nitem:")
+                                .append(item.toString())
+                                .append("\nthrowable")
+                                .append(t.toString())
+                                .toString());
+            }
+            return true;
+        }
+        return false;
     }
 
     private void renameFolderRevoke(final FileChangedHistoryEntity item) {
@@ -443,7 +464,9 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                     @Override
                     public void onFailure(Call<String> call, Throwable t) {
                         dismissLoadingDialog();
-                        super.onFailure(call, t);
+                        if (!handleRevokeFail(item, t)) {
+                            super.onFailure(call, t);
+                        }
                     }
 
                     @Override
@@ -459,7 +482,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
      *
      * @param item
      */
-    private void fileRevokeMove(FileChangedHistoryEntity item) {
+    private void fileRevokeMove(final FileChangedHistoryEntity item) {
         if (item == null) return;
         showLoadingDialog(R.string.str_executing);
         //eg.   "/hshh"---->"/" "/hshh/xx1"---> "/hshh"
@@ -497,8 +520,10 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
 
                     @Override
                     public void onFailure(Call<JsonElement> call, Throwable t) {
-                        super.onFailure(call, t);
                         dismissLoadingDialog();
+                        if (!handleRevokeFail(item, t)) {
+                            super.onFailure(call, t);
+                        }
                     }
 
                     @Override
@@ -514,7 +539,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
      *
      * @param item
      */
-    private void revokeFolder(FileChangedHistoryEntity item) {
+    private void revokeFolder(final FileChangedHistoryEntity item) {
         if (item == null) return;
         showLoadingDialog(R.string.str_executing);
         callEnqueue(getSFileApi().folderRevert(
@@ -536,8 +561,10 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
 
                     @Override
                     public void onFailure(Call<JsonObject> call, Throwable t) {
-                        super.onFailure(call, t);
                         dismissLoadingDialog();
+                        if (!handleRevokeFail(item, t)) {
+                            super.onFailure(call, t);
+                        }
                     }
 
                     @Override
@@ -574,7 +601,9 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                     @Override
                     public void onFailure(Call<JsonObject> call, Throwable t) {
                         dismissLoadingDialog();
-                        super.onFailure(call, t);
+                        if (!handleRevokeFail(item, t)) {
+                            super.onFailure(call, t);
+                        }
                     }
 
                     @Override
@@ -599,7 +628,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
      *
      * @param item
      */
-    private void deleteFolder(FileChangedHistoryEntity item) {
+    private void deleteFolder(final FileChangedHistoryEntity item) {
         showLoadingDialog(R.string.str_executing);
         callEnqueue(getSFileApi().folderDelete(
                 item.repo_id,
@@ -619,7 +648,9 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                     @Override
                     public void onFailure(Call<JsonObject> call, Throwable t) {
                         dismissLoadingDialog();
-                        super.onFailure(call, t);
+                        if (!handleRevokeFail(item, t)) {
+                            super.onFailure(call, t);
+                        }
                     }
 
                     @Override
@@ -635,7 +666,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
      *
      * @param item
      */
-    private void revokeFile(FileChangedHistoryEntity item) {
+    private void revokeFile(final FileChangedHistoryEntity item) {
         if (item == null) return;
         showLoadingDialog(R.string.str_executing);
         callEnqueue(getSFileApi().fileRevert(
@@ -657,7 +688,9 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                     @Override
                     public void onFailure(Call<JsonObject> call, Throwable t) {
                         dismissLoadingDialog();
-                        super.onFailure(call, t);
+                        if (!handleRevokeFail(item, t)) {
+                            super.onFailure(call, t);
+                        }
                     }
 
                     @Override
@@ -673,7 +706,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
      *
      * @param item
      */
-    private void revokeEditFile(FileChangedHistoryEntity item) {
+    private void revokeEditFile(final FileChangedHistoryEntity item) {
         if (item == null) return;
         showLoadingDialog(R.string.str_executing);
         callEnqueue(getSFileApi().fileRevertEdit(
@@ -696,7 +729,9 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                     @Override
                     public void onFailure(Call<JsonObject> call, Throwable t) {
                         dismissLoadingDialog();
-                        super.onFailure(call, t);
+                        if (!handleRevokeFail(item, t)) {
+                            super.onFailure(call, t);
+                        }
                     }
 
                     @Override
