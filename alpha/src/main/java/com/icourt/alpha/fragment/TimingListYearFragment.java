@@ -2,10 +2,11 @@ package com.icourt.alpha.fragment;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
-import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,17 +15,15 @@ import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseRefreshFragmentAdapter;
-import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.constants.TimingConfig;
-import com.icourt.alpha.entity.bean.TimingCountEntity;
 import com.icourt.alpha.entity.bean.TimingSelectEntity;
+import com.icourt.alpha.entity.bean.TimingStatisticEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.widget.manager.TimerDateManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -48,12 +47,14 @@ import lecho.lib.hellocharts.view.LineChartView;
  * version 2.1.1
  */
 
-public class TimingListYearFragment extends BaseFragment {
+public class TimingListYearFragment extends BaseTimingListFragment {
 
     private static final String KEY_START_TIME = "key_start_time";
 
     Unbinder bind;
 
+    @BindView(R.id.appbar)
+    AppBarLayout appBarLayout;
     @BindView(R.id.timing_chart_view)
     LineChartView timingChartView;
     @BindView(R.id.timing_count_total2_tv)
@@ -73,8 +74,6 @@ public class TimingListYearFragment extends BaseFragment {
     private boolean hasLabelForSelected = false;
 
     BaseRefreshFragmentAdapter baseFragmentAdapter;
-    private final List<TimingCountEntity> timingCountEntities = new ArrayList<>();//服务器返回的每日的计时时常
-
     long startTimeMillis;//传递进来的开始时间
 
     public static TimingListYearFragment newInstance(long startTimeMillis) {
@@ -95,13 +94,15 @@ public class TimingListYearFragment extends BaseFragment {
 
     @Override
     protected void initView() {
+        addAppbarHidenListener(appBarLayout);
+
         if (getArguments() != null) {
             long startTime = getArguments().getLong(KEY_START_TIME);
             startTimeMillis = DateUtils.getYearStartTime(startTime);
         }
 
         resetViewport();
-        generateData();
+        generateData(new ArrayList<Long>());
 
         timingChartView.setVisibility(View.VISIBLE);
         timingTextShowTimingLl.setVisibility(View.GONE);
@@ -121,6 +122,27 @@ public class TimingListYearFragment extends BaseFragment {
             }
         });
 
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                TimingSelectEntity timingSelectEntity = yearData.get(position);
+                getTimingStatistic(TYPE_YEAR, timingSelectEntity.startTimeMillis, timingSelectEntity.endTimeMillis);
+                if (getParentListener() != null)
+                    getParentListener().onTimeChanged(TimingConfig.TIMING_QUERY_BY_YEAR, timingSelectEntity.startTimeMillis);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+
+        //记录当前position，然后获取所在年份的统计数据。
         int position = 0;
         for (int i = 0; i < yearData.size(); i++) {
             if (startTimeMillis >= yearData.get(i).startTimeMillis && startTimeMillis <= yearData.get(i).endTimeMillis) {
@@ -128,7 +150,19 @@ public class TimingListYearFragment extends BaseFragment {
                 break;
             }
         }
-        viewPager.setCurrentItem(position, false);
+        viewPager.setCurrentItem(position, true);
+        TimingSelectEntity timingSelectEntity = yearData.get(position);
+        getTimingStatistic(TYPE_YEAR, timingSelectEntity.startTimeMillis, timingSelectEntity.endTimeMillis);
+    }
+
+    @Override
+    protected void getTimingStatisticSuccess(TimingStatisticEntity statisticEntity) {
+        super.getTimingStatisticSuccess(statisticEntity);
+        if (getParentListener() != null) {
+            getParentListener().onTimeSumChanged(TimingConfig.TIMING_QUERY_BY_YEAR, statisticEntity.allTimingSum, statisticEntity.todayTimingSum);
+            if (statisticEntity.timingList != null)
+                generateData(statisticEntity.timingList);
+        }
     }
 
     private void resetViewport() {
@@ -143,7 +177,7 @@ public class TimingListYearFragment extends BaseFragment {
         timingChartView.setCurrentViewport(v);
     }
 
-    private void generateData() {
+    private void generateData(@NonNull List<Long> list) {
         if (timingChartView == null) return;
         resetViewport();
         List<Line> lines = new ArrayList<>();
@@ -164,56 +198,46 @@ public class TimingListYearFragment extends BaseFragment {
                 new AxisValue(10).setLabel("11"),
                 new AxisValue(11).setLabel("12"));
         List<AxisValue> axisYValues = new ArrayList<>();
-        for (int i = 0; i <= 24; i += 4) {
+        for (int i = 0; i <= 320; i += 80) {
             axisYValues.add(new AxisValue(i).setLabel(String.format("%sh ", i)));
-        }
-
-        SparseArray<Long> weekDataArray = new SparseArray<>();
-        for (int i = 0; i < timingCountEntities.size(); i++) {//遍历每日的计时时常
-            TimingCountEntity itemEntity = timingCountEntities.get(i);
-            if (itemEntity != null) {
-                try {
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.setFirstDayOfWeek(Calendar.MONDAY);
-                    calendar.setTimeInMillis(itemEntity.workDate);
-
-                    log("--------------->>i:" + i + "  day:" + (calendar.get(Calendar.DAY_OF_WEEK) + 5) % 7 + "  count:" + itemEntity.timingCount);
-                    weekDataArray.put((calendar.get(Calendar.DAY_OF_WEEK) + 5) % 7, itemEntity.timingCount);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
         }
 
         //计算出要展示的那天的计时时间
         float maxValue = 0f;
-        for (int j = 0; j < numberOfPoints; j++) {
-            float hour = 0;
-            Long weekDayTime = weekDataArray.get(j);
-            if (weekDayTime != null) {
-                hour = weekDayTime.longValue() * 1.0f / TimeUnit.HOURS.toMillis(1);
+        if (list.size() >= numberOfPoints) {
+            for (int j = 0; j < numberOfPoints; j++) {
+                float hour = 0;
+                Long weekDayTime = list.get(j);
+                if (weekDayTime != null) {
+                    hour = weekDayTime * 1.0f / TimeUnit.HOURS.toMillis(1);
+                }
+                //最大320
+                if (hour >= 320) {
+                    hour = 319.9f;
+                }
+                if (hour > maxValue) {
+                    maxValue = hour;
+                }
+                log("--------j:" + j + "  time:" + hour);
+                values.add(new PointValue(j, hour));
             }
-            //最大24
-            if (hour >= 24) {
-                hour = 23.9f;
-            }
-            if (hour > maxValue) {
-                maxValue = hour;
-            }
-            log("--------j:" + j + "  time:" + hour);
-            values.add(new PointValue(j, hour));
         }
 
         //用第二条先提高高度
         if (maxValue < 8.0f) {
             List<PointValue> values2 = Arrays.asList(
-                    new PointValue(0, 1.0f),
-                    new PointValue(1, 2.0f),
-                    new PointValue(2, 2.0f),
-                    new PointValue(3, 3.0f),
-                    new PointValue(4, 3.0f),
-                    new PointValue(5, 5.0f),
-                    new PointValue(6, 8.0f));
+                    new PointValue(0, 10.0f),
+                    new PointValue(1, 20.0f),
+                    new PointValue(2, 20.0f),
+                    new PointValue(3, 30.0f),
+                    new PointValue(4, 30.0f),
+                    new PointValue(5, 50.0f),
+                    new PointValue(6, 80.0f),
+                    new PointValue(7, 80.0f),
+                    new PointValue(8, 80.0f),
+                    new PointValue(9, 80.0f),
+                    new PointValue(10, 80.0f),
+                    new PointValue(11, 80.0f));
             Line line2 = new Line(values2);
             line2.setShape(shape);
             line2.setCubic(false);

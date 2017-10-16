@@ -1,6 +1,7 @@
 package com.icourt.alpha.fragment;
 
 import android.support.annotation.IntDef;
+import android.support.design.widget.AppBarLayout;
 
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TimingStatisticEntity;
@@ -8,6 +9,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnTimingChangeListener;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.utils.LogUtils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -46,6 +48,30 @@ public abstract class BaseTimingListFragment extends BaseFragment {
             return (OnTimingChangeListener) getActivity();
         }
         return null;
+    }
+
+    /**
+     * 监听AppBar的缺省，来控制标题栏的显示情况
+     *
+     * @param appBarLayout
+     */
+    protected void addAppbarHidenListener(AppBarLayout appBarLayout) {
+        if (appBarLayout == null) return;
+        appBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
+            @Override
+            public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
+                LogUtils.i("appbar verticalOffset" + verticalOffset);
+                LogUtils.i("appbar height" + appBarLayout.getHeight());
+
+                if (getParentListener() != null) {
+                    if (verticalOffset < -appBarLayout.getHeight() * 0.9) {//如果滚动距离超过了AppBar高度的百分之90
+                        getParentListener().onHeaderHide(true);
+                    } else {
+                        getParentListener().onHeaderHide(false);
+                    }
+                }
+            }
+        });
     }
 
     /**

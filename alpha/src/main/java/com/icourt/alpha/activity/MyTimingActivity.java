@@ -140,7 +140,7 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
             timingDateTitleTv.setText(date);
         } else if (type == TimingConfig.TIMING_QUERY_BY_YEAR) {//年
             int year = DateUtils.getYear(selectedTimeMillis);
-            timingDateTitleTv.setText(String.valueOf(year));
+            timingDateTitleTv.setText(getString(R.string.timing_year,String.valueOf(year)));
         }
     }
 

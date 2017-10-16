@@ -4,9 +4,9 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
-import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,9 +15,7 @@ import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseRefreshFragmentAdapter;
-import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.constants.TimingConfig;
-import com.icourt.alpha.entity.bean.TimingCountEntity;
 import com.icourt.alpha.entity.bean.TimingSelectEntity;
 import com.icourt.alpha.entity.bean.TimingStatisticEntity;
 import com.icourt.alpha.utils.DateUtils;
@@ -26,7 +24,6 @@ import com.icourt.alpha.widget.manager.TimerDateManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -56,6 +53,8 @@ public class TimingListWeekFragment extends BaseTimingListFragment {
 
     Unbinder bind;
 
+    @BindView(R.id.appbar)
+    AppBarLayout appBarLayout;
     @BindView(R.id.timing_chart_view)
     LineChartView timingChartView;
     @BindView(R.id.timing_count_total2_tv)
@@ -95,6 +94,8 @@ public class TimingListWeekFragment extends BaseTimingListFragment {
 
     @Override
     protected void initView() {
+        addAppbarHidenListener(appBarLayout);
+
         if (getArguments() != null) {
             long startTime = getArguments().getLong(KEY_START_TIME);
             startTimeMillis = DateUtils.getWeekStartTime(startTime);
@@ -141,6 +142,7 @@ public class TimingListWeekFragment extends BaseTimingListFragment {
             }
         });
 
+        //记录当前所在的position，根据position获取周的统计数据。
         int position = 0;
         for (int i = 0; i < weekData.size(); i++) {
             if (startTimeMillis >= weekData.get(i).startTimeMillis && startTimeMillis <= weekData.get(i).endTimeMillis) {
@@ -148,7 +150,7 @@ public class TimingListWeekFragment extends BaseTimingListFragment {
                 break;
             }
         }
-        viewPager.setCurrentItem(position, false);
+        viewPager.setCurrentItem(position, true);
         TimingSelectEntity timingSelectEntity = weekData.get(position);
         getTimingStatistic(TYPE_WEEK, timingSelectEntity.startTimeMillis, timingSelectEntity.endTimeMillis);
     }
@@ -198,23 +200,6 @@ public class TimingListWeekFragment extends BaseTimingListFragment {
         for (int i = 0; i <= 24; i += 4) {
             axisYValues.add(new AxisValue(i).setLabel(String.format("%sh ", i)));
         }
-
-//        SparseArray<Long> weekDataArray = new SparseArray<>();
-//        for (int i = 0; i < timingCountEntities.size(); i++) {//遍历每日的计时时常
-//            TimingCountEntity itemEntity = timingCountEntities.get(i);
-//            if (itemEntity != null) {
-//                try {
-//                    Calendar calendar = Calendar.getInstance();
-//                    calendar.setFirstDayOfWeek(Calendar.MONDAY);
-//                    calendar.setTimeInMillis(itemEntity.workDate);
-//
-//                    log("--------------->>i:" + i + "  day:" + (calendar.get(Calendar.DAY_OF_WEEK) + 5) % 7 + "  count:" + itemEntity.timingCount);
-//                    weekDataArray.put((calendar.get(Calendar.DAY_OF_WEEK) + 5) % 7, itemEntity.timingCount);
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        }
 
         //计算出要展示的那天的计时时间
         float maxValue = 0f;

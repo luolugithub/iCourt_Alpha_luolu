@@ -38,7 +38,7 @@ import retrofit2.Call;
 import retrofit2.Response;
 
 /**
- * Description  计时列表
+ * Description  计时列表（用来显示日、周、月、年统计图下面的计时列表）
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/10/9
@@ -154,7 +154,7 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
         });
 
         refreshLayout.setEnableRefresh(false);
-        boolean canLoadMore = (queryType != TimingConfig.TIMING_QUERY_BY_DAY && queryType != TimingConfig.TIMING_QUERY_BY_WEEK); //年月可以上拉加载
+        boolean canLoadMore = (queryType != TimingConfig.TIMING_QUERY_BY_DAY && queryType != TimingConfig.TIMING_QUERY_BY_WEEK); //日周不可以上拉加载，年月可以上拉加载。
         refreshLayout.setEnableLoadmore(canLoadMore);
         initData();
     }

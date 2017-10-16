@@ -13,35 +13,18 @@ import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseRefreshFragmentAdapter;
-import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.constants.TimingConfig;
-import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.bean.TimingStatisticEntity;
-import com.icourt.alpha.http.callback.SimpleCallBack;
-import com.icourt.alpha.http.httpmodel.ResEntity;
-import com.icourt.alpha.interfaces.OnTimingChangeListener;
 import com.icourt.alpha.utils.DateUtils;
-import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.widget.manager.TimerDateManager;
 
 import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
-import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.annotations.NonNull;
-import io.reactivex.functions.Consumer;
-import io.reactivex.schedulers.Schedulers;
 import lecho.lib.hellocharts.view.LineChartView;
-import retrofit2.Call;
-import retrofit2.Response;
 
 /**
  * Description 选中日情况下的计时列表
@@ -57,6 +40,8 @@ public class TimingListDayFragment extends BaseTimingListFragment {
 
     Unbinder bind;
 
+    @BindView(R.id.appbar)
+    AppBarLayout appBarLayout;
     @BindView(R.id.timing_chart_view)
     LineChartView timingChartView;
     @BindView(R.id.timing_count_total2_tv)
@@ -65,9 +50,6 @@ public class TimingListDayFragment extends BaseTimingListFragment {
     LinearLayout timingTextShowTimingLl;
     @BindView(R.id.viewPager)
     ViewPager viewPager;
-
-    @BindView(R.id.appbar)
-    AppBarLayout appBarLayout;
 
     BaseRefreshFragmentAdapter baseFragmentAdapter;
 
@@ -92,22 +74,7 @@ public class TimingListDayFragment extends BaseTimingListFragment {
 
     @Override
     protected void initView() {
-        //监听toolbar的缺省，来控制标题栏的显示情况
-        appBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
-            @Override
-            public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
-                LogUtils.i("appbar verticalOffset" + verticalOffset);
-                LogUtils.i("appbar height" + appBarLayout.getHeight());
-
-                if (getParentListener() != null) {
-                    if (verticalOffset < -appBarLayout.getHeight() * 0.9) {//如果滚动距离超过了AppBar高度的百分之90
-                        getParentListener().onHeaderHide(true);
-                    } else {
-                        getParentListener().onHeaderHide(false);
-                    }
-                }
-            }
-        });
+        addAppbarHidenListener(appBarLayout);
 
         if (getArguments() != null)
             startTimeMillis = getArguments().getLong(KEY_START_TIME);
@@ -151,9 +118,10 @@ public class TimingListDayFragment extends BaseTimingListFragment {
 
             }
         });
+
         //当前界面所传递的时间和起始时间（2015年1月1日）相差的天数。
         int differentDays = DateUtils.differentDays(calendar.getTimeInMillis(), startTimeMillis);
-        viewPager.setCurrentItem(differentDays, false);
+        viewPager.setCurrentItem(differentDays, true);
         selectedDayTime = calendar.getTimeInMillis() + viewPager.getCurrentItem() * TimeUnit.DAYS.toMillis(1);
         getTimingStatistic(TYPE_DAY, DateUtils.getDayStartTime(selectedDayTime), DateUtils.getDayEndTime(selectedDayTime));
     }
