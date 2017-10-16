@@ -22,7 +22,7 @@ import android.util.SparseArray;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.CheckBox;
+import android.widget.CheckedTextView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -99,7 +99,12 @@ public class TaskDetailActivity extends BaseActivity
     private static final String KEY_IS_CHECKITEM = "key_is_checkitem";
     private static final int SHOW_DELETE_DIALOG = 0;//删除提示对话框
     private static final int SHOW_FINISH_DIALOG = 1;//完成任务提示对话框
+    private static final int SHOW_RENEW_DIALOG = 2;//恢复任务提示对话框
     private static final int START_COMMENT_FORRESULT_CODE = 0;//跳转评论code
+
+    private static final int SHOW_DELETE_BUTTOM_SHEET = 0;//删除二次确认
+    private static final int SHOW_CLEAR_BUTTOM_SHEET = 1;//清空二次确认
+    private static final int SHOW_RENEW_BUTTOM_SHEET = 2;//恢复二次确认
 
     @BindView(R.id.titleBack)
     ImageView titleBack;
@@ -110,7 +115,7 @@ public class TaskDetailActivity extends BaseActivity
     @BindView(R.id.titleAction2)
     ImageView titleAction2;
     @BindView(R.id.task_checkbox)
-    CheckBox taskCheckbox;
+    CheckedTextView taskCheckbox;
     @BindView(R.id.task_name)
     TextView taskName;
     @BindView(R.id.task_user_pic)
@@ -367,7 +372,7 @@ public class TaskDetailActivity extends BaseActivity
                         } else {
                             if (taskItemEntity.attendeeUsers != null) {
                                 if (taskItemEntity.attendeeUsers.size() > 1) {
-                                    showDeleteDialog("该任务为多人任务，确定要完成吗?", SHOW_FINISH_DIALOG);
+                                    showDeleteDialog("该任务由多人负责，确定完成?", SHOW_FINISH_DIALOG);
                                 } else {
                                     updateTask(taskItemEntity, true, taskCheckbox);
                                 }
@@ -553,40 +558,49 @@ public class TaskDetailActivity extends BaseActivity
                         dialog.dismiss();
                         switch (position) {
                             case 0:
+                                if (taskItemEntity == null) return;
                                 if (taskItemEntity.valid) {
-                                    if (taskItemEntity != null) {
-                                        if (!taskItemEntity.state) {
-                                            if (taskItemEntity.attendeeUsers != null) {
-                                                if (taskItemEntity.attendeeUsers.size() > 1) {
-                                                    showDeleteDialog("该任务由多人负责，确定完成?", SHOW_FINISH_DIALOG);
-                                                } else {
-                                                    updateTask(taskItemEntity, true, taskCheckbox);
-                                                }
+                                    if (!taskItemEntity.state) {
+                                        if (taskItemEntity.attendeeUsers != null) {
+                                            if (taskItemEntity.attendeeUsers.size() > 1) {
+                                                showDeleteDialog("该任务由多人负责，确定完成?", SHOW_FINISH_DIALOG);
                                             } else {
                                                 updateTask(taskItemEntity, true, taskCheckbox);
                                             }
                                         } else {
-                                            updateTask(taskItemEntity, false, taskCheckbox);
+                                            updateTask(taskItemEntity, true, taskCheckbox);
                                         }
+                                    } else {
+                                        updateTask(taskItemEntity, false, taskCheckbox);
                                     }
-                                } else
-                                    recoverTaskById(taskId);
+                                } else {
+                                    if (taskItemEntity.attendeeUsers != null) {
+                                        if (taskItemEntity.attendeeUsers.size() > 1) {
+                                            showDeleteDialog("该任务由多人负责，确定恢复?", SHOW_RENEW_DIALOG);
+                                        } else {
+                                            showTwiceSureDialog("确定恢复？", SHOW_RENEW_BUTTOM_SHEET);
+                                        }
+                                    } else {
+                                        showTwiceSureDialog("确定恢复？", SHOW_RENEW_BUTTOM_SHEET);
+                                    }
+                                }
+
                                 break;
                             case 1:
                                 if (taskItemEntity.valid) {
                                     if (taskItemEntity != null) {
                                         if (taskItemEntity.attendeeUsers != null) {
                                             if (taskItemEntity.attendeeUsers.size() > 1) {
-                                                showDeleteDialog("该任务为多人任务，确定要删除吗?", SHOW_DELETE_DIALOG);
+                                                showDeleteDialog("该任务由多人负责，确定删除?", SHOW_DELETE_DIALOG);
                                             } else {
-                                                showTwiceSureDialog("确定删除？");
+                                                showTwiceSureDialog("确定删除？", SHOW_DELETE_BUTTOM_SHEET);
                                             }
                                         } else {
-                                            showTwiceSureDialog("确定删除？");
+                                            showTwiceSureDialog("确定删除？", SHOW_DELETE_BUTTOM_SHEET);
                                         }
                                     }
                                 } else {
-                                    showTwiceSureDialog("彻底删除后不可恢复,确定彻底删除？");
+                                    showTwiceSureDialog("彻底删除后不可恢复,确定彻底删除？", SHOW_CLEAR_BUTTOM_SHEET);
                                 }
                                 break;
                         }
@@ -597,7 +611,7 @@ public class TaskDetailActivity extends BaseActivity
     /**
      * 显示二次确认对话框
      */
-    private void showTwiceSureDialog(String title) {
+    private void showTwiceSureDialog(String title, final int type) {
         new BottomActionDialog(getContext(),
                 title,
                 Arrays.asList("确定"),
@@ -609,10 +623,12 @@ public class TaskDetailActivity extends BaseActivity
                         dialog.dismiss();
                         switch (position) {
                             case 0:
-                                if (taskItemEntity.valid) {
+                                if (type == SHOW_DELETE_BUTTOM_SHEET) {
                                     deleteTask();
-                                } else {
+                                } else if (type == SHOW_CLEAR_BUTTOM_SHEET) {
                                     clearAllDeletedTask();
+                                } else if (type == SHOW_RENEW_BUTTOM_SHEET) {
+                                    recoverTaskById(taskId);
                                 }
                                 break;
                         }
@@ -643,6 +659,8 @@ public class TaskDetailActivity extends BaseActivity
                                     updateTask(taskItemEntity, true, taskCheckbox);
                                 }
                             }
+                        }else if(type == SHOW_RENEW_DIALOG){
+                            recoverTaskById(taskId);
                         }
                         break;
                     case Dialog.BUTTON_NEGATIVE:
@@ -807,7 +825,7 @@ public class TaskDetailActivity extends BaseActivity
                 taskCheckbox.setChecked(false);
             }
             if (!taskItemEntity.valid) {
-                taskCheckbox.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.restore, 0, 0, 0);
+                taskCheckbox.setBackgroundResource(R.mipmap.restore);
             }
 
             if (myStar == TaskEntity.ATTENTIONED) {
@@ -963,7 +981,7 @@ public class TaskDetailActivity extends BaseActivity
                     @Override
                     public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                         dismissLoadingDialog();
-                        taskCheckbox.setCompoundDrawablesWithIntrinsicBounds(R.drawable.sl_checkbox, 0, 0, 0);
+                        taskCheckbox.setBackgroundResource(R.drawable.sl_checkbox);
                         if (taskItemEntity.state) {
                             taskCheckbox.setChecked(true);
                         } else {
@@ -980,7 +998,7 @@ public class TaskDetailActivity extends BaseActivity
                     public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
                         super.onFailure(call, t);
                         dismissLoadingDialog();
-                        taskCheckbox.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.restore, 0, 0, 0);
+                        taskCheckbox.setBackgroundResource(R.mipmap.restore);
                     }
                 });
     }
@@ -1099,7 +1117,7 @@ public class TaskDetailActivity extends BaseActivity
      * @param state
      * @param checkbox
      */
-    private void updateTask(TaskEntity.TaskItemEntity itemEntity, final boolean state, final CheckBox checkbox) {
+    private void updateTask(TaskEntity.TaskItemEntity itemEntity, final boolean state, final CheckedTextView checkbox) {
         showLoadingDialog(null);
         callEnqueue(
                 getApi().taskUpdateNew(RequestUtils.createJsonBody(getTaskJson(itemEntity, state))),
