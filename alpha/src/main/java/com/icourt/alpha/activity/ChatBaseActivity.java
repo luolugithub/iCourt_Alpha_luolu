@@ -175,6 +175,7 @@ public abstract class ChatBaseActivity
     @Override
     protected void onPause() {
         super.onPause();
+        clearUnReadNum();
         NIMClient.getService(MsgService.class)
                 .setChattingAccount(MsgService.MSG_CHATTING_ACCOUNT_NONE, SessionTypeEnum.None);
     }
