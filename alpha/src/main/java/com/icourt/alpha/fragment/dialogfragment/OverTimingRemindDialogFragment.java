@@ -109,7 +109,7 @@ public class OverTimingRemindDialogFragment extends BaseDialogFragment implement
         windowParams.dimAmount = 0.0f;
 
         windowParams.y = DensityUtil.dip2px(getContext(), 42);
-        window.setLayout(DensityUtil.dip2px(getContext(), 260), DensityUtil.dip2px(getContext(), 65f));
+        window.setLayout(DensityUtil.dip2px(getContext(), 280), DensityUtil.dip2px(getContext(), 70f));
         window.setAttributes(windowParams);
     }
 

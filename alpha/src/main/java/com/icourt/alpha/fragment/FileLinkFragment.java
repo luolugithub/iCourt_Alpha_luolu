@@ -197,7 +197,7 @@ public class FileLinkFragment extends BaseFragment {
     public boolean onLongClick(View v) {
         switch (v.getId()) {
             case R.id.file_access_pwd_tv:
-                if (!isNoFileShareLink()) {
+                if (isNeedAccessPwd()) {
                     showCopyMenuDialog(new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
@@ -436,4 +436,12 @@ public class FileLinkFragment extends BaseFragment {
     }
 
 
+    /**
+     * 是否需要pwd
+     *
+     * @return
+     */
+    private boolean isNeedAccessPwd() {
+        return !isNoFileShareLink() && sFileLinkInfoEntity.isNeedAccessPwd();
+    }
 }
