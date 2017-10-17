@@ -361,6 +361,7 @@
     <color name="timer_select_cancle_color">#959595</color>
     <color name="timer_selected_color">#0c000000</color>
     <color name="timer_stop_color">#e5e5e5</color>
+    <color name="timer_chart_text_color">#a6a6a6</color>
 
 
 </resources>

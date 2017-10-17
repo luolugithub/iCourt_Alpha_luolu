@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +20,7 @@ import com.icourt.alpha.constants.TimingConfig;
 import com.icourt.alpha.entity.bean.TimingSelectEntity;
 import com.icourt.alpha.entity.bean.TimingStatisticEntity;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.widget.manager.TimerDateManager;
 
@@ -30,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import lecho.lib.hellocharts.gesture.ContainerScrollType;
 import lecho.lib.hellocharts.model.Axis;
 import lecho.lib.hellocharts.model.AxisValue;
 import lecho.lib.hellocharts.model.Line;
@@ -95,15 +98,21 @@ public class TimingListMonthFragment extends BaseTimingListFragment {
 
     @Override
     protected void initView() {
-        addAppbarHidenListener(appBarLayout);
-        dispatchTouchEvent(appBarLayout, timingChartView);
+        //初始化折线图的padding值
+        int dp5 = DensityUtil.dip2px(getActivity(), 5);
+        int dp10 = DensityUtil.dip2px(getActivity(), 10);
+        int dp12 = DensityUtil.dip2px(getActivity(), 12);
+        setChartViewPadding(timingChartView, dp5, dp10, dp12, dp5);
+        timingChartView.setZoomEnabled(false);//设置折线图不可缩放
+        timingChartView.setContainerScrollEnabled(false, ContainerScrollType.VERTICAL);//设置折线图的包裹布局是否可以滚动
+        addAppbarHidenListener(appBarLayout);//给AppBarLayout添加监听
 
         if (getArguments() != null) {
             long startTime = getArguments().getLong(KEY_START_TIME);
             startTimeMillis = DateUtils.getMonthStartTime(startTime);
         }
 
-        resetViewport();
+        //初始化折线图，先给一个空列表数据
         generateData(new ArrayList<Long>());
 
         timingChartView.setVisibility(View.VISIBLE);
@@ -167,6 +176,9 @@ public class TimingListMonthFragment extends BaseTimingListFragment {
         }
     }
 
+    /**
+     * 初始化折线图的上下左右刻度相关
+     */
     private void resetViewport() {
         if (timingChartView == null) return;
         // Reset viewport height range to (0,100)
@@ -182,10 +194,11 @@ public class TimingListMonthFragment extends BaseTimingListFragment {
     private void generateData(@NonNull List<Long> list) {
         if (timingChartView == null) return;
         resetViewport();
+
         List<Line> lines = new ArrayList<>();
 
         List<PointValue> values = new ArrayList<>();
-        //x轴的坐标点，纵轴显示1, 5, 10, 15, 20, 25, 30
+        //x轴的坐标点，横轴显示1, 5, 10, 15, 20, 25, 30
         List<AxisValue> axisXValues = Arrays.asList(
                 new AxisValue(0).setLabel("1"),
                 new AxisValue(4).setLabel("5"),
@@ -220,7 +233,7 @@ public class TimingListMonthFragment extends BaseTimingListFragment {
             }
         }
 
-        //用第二条先提高高度
+        //用第二条先提高纵轴高度，防止真正要显示的折线图数据过少而显示不全的问题。
         if (maxValue < 8.0f) {
             List<PointValue> values2 = Arrays.asList(
                     new PointValue(0, 1.0f),
@@ -256,8 +269,17 @@ public class TimingListMonthFragment extends BaseTimingListFragment {
         LineChartData data = new LineChartData(lines);
 
 
-        Axis axisX = new Axis().setHasLines(true).setValues(axisXValues);
-        Axis axisY = new Axis().setHasLines(true).setValues(axisYValues);
+        Axis axisX = new Axis()
+                .setHasLines(true)
+                .setValues(axisXValues)
+                .setTextSize(10)
+                .setTextColor(ContextCompat.getColor(getActivity(), R.color.timer_chart_text_color))
+                .setMaxLabelChars("00".toCharArray().length);
+        Axis axisY = new Axis()
+                .setHasLines(true)
+                .setValues(axisYValues)
+                .setTextSize(10)
+                .setTextColor(ContextCompat.getColor(getActivity(), R.color.timer_chart_text_color));
         data.setAxisXBottom(axisX);
         data.setAxisYLeft(axisY);
 

@@ -12,7 +12,10 @@
         android:layout_height="wrap_content"
         android:background="@android:color/white"
         android:orientation="horizontal"
-        android:padding="10dp">
+        android:paddingBottom="10dp"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:paddingTop="20dp">
 
         <LinearLayout
             android:id="@+id/ll_all_time"
@@ -33,8 +36,7 @@
                 android:id="@+id/timing_count_total_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="5dp"
-                android:layout_marginTop="5dp"
+                android:includeFontPadding="false"
                 android:maxLines="1"
                 android:text=""
                 android:textColor="@color/alpha_font_color_title"
@@ -65,8 +67,7 @@
                 android:id="@+id/timing_today_total"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="5dp"
-                android:layout_marginTop="5dp"
+                android:includeFontPadding="false"
                 android:text=""
                 android:textColor="@color/alpha_font_color_title"
                 android:textSize="24sp" />

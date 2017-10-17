@@ -4,6 +4,7 @@ import android.support.annotation.IntDef;
 import android.support.design.widget.AppBarLayout;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TimingStatisticEntity;
@@ -51,6 +52,20 @@ public abstract class BaseTimingListFragment extends BaseFragment {
             return (OnTimingChangeListener) getActivity();
         }
         return null;
+    }
+
+    /**
+     * 设置折线图的padding值
+     *
+     * @param chartView
+     * @param paddingLeft
+     * @param paddingTop
+     * @param paddingRight
+     * @param paddingBottom
+     */
+    protected void setChartViewPadding(LineChartView chartView, int paddingLeft, int paddingTop, int paddingRight, int paddingBottom) {
+        if (chartView == null) return;
+        chartView.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
     }
 
     /**
