@@ -16,7 +16,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.SearchProjectActivity;
 import com.icourt.alpha.activity.SearchTaskActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseRefreshFragmentAdapter;
 import com.icourt.alpha.base.BaseFragment;
@@ -168,8 +167,6 @@ public class TaskListCalendarFragment extends BaseFragment {
                 clendar.set(Calendar.MINUTE, 0);
                 clendar.set(Calendar.SECOND, 0);
                 clendar.set(Calendar.MILLISECOND, 0);
-                int centerPos = MAXDAILYPAGE / 2;
-                long key = clendar.getTimeInMillis() - (centerPos - position) * TimeUnit.DAYS.toMillis(1);
                 boolean deleted = false;
                 for (int i = taskItemEntityList.size() - 1; i >= 0; i--) {
                     TaskEntity.TaskItemEntity taskItemEntity = taskItemEntityList.get(i);
@@ -579,7 +576,7 @@ public class TaskListCalendarFragment extends BaseFragment {
                             TabTaskFragment tabTaskFragment = (TabTaskFragment) allFragment.getParentFragment();
                             tabTaskFragment.isShowCalendar = false;
                             tabTaskFragment.isAwayScroll = true;
-                            tabTaskFragment.setFirstTabText("未完成", 0);
+                        tabTaskFragment.setFirstTabText(getString(R.string.task_unfinished), 0);
                             tabTaskFragment.updateListData(0);
                         }
                     }
@@ -636,7 +633,6 @@ public class TaskListCalendarFragment extends BaseFragment {
         super.notifyFragmentUpdate(targetFrgament, type, bundle);
         if (targetFrgament != this) return;
         if (bundle != null) {
-            ArrayList<TaskEntity.TaskItemEntity> tasks = (ArrayList<TaskEntity.TaskItemEntity>) bundle.getSerializable(KEY_FRAGMENT_RESULT);
             getTaskData();
         }
     }

@@ -124,7 +124,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                 Arrays.asList(
                         alltaskFragment = TaskAllFragment.newInstance(),
                         attentionTaskFragment = TaskListFragment.newInstance(TaskListFragment.TYPE_MY_ATTENTION, 0)));
-        baseFragmentAdapter.bindTitle(true, Arrays.asList("未完成", "我关注的"));
+        baseFragmentAdapter.bindTitle(true, Arrays.asList(getString(R.string.task_unfinished), getString(R.string.task_my_attention)));
 
         CommonNavigator commonNavigator = new CommonNavigator(getContext());
         AlphaTitleNavigatorAdapter indicatorAdapter = new AlphaTitleNavigatorAdapter() {
