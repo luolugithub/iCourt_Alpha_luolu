@@ -34,6 +34,7 @@ import com.icourt.alpha.activity.TimerTimingActivity;
 import com.icourt.alpha.adapter.TaskAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
+import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
@@ -264,15 +265,15 @@ public class TaskListFragment extends BaseTaskFragment implements
             case TaskActionEvent.TASK_DELETE_ACTION://删除的动作
                 if (event.entity == null) return;
                 if (type == TYPE_ALL) {//所有任务列表
-                    if (stateType == 0) {//未完成
+                    if (stateType == Const.TASK_STATETYPE_UN_FINISH) {//未完成
                         //删除动作暂时重新请求接口
                         getData(true);
-                    } else if (stateType == 1) {//已完成
+                    } else if (stateType == Const.TASK_STATETYPE_FINISH) {//已完成
                         if (taskAdapter != null) {
                             taskAdapter.removeItem(event.entity);
                             enableEmptyView(taskAdapter.getData());
                         }
-                    } else if (stateType == 3) {//已删除
+                    } else if (stateType == Const.TASK_STATETYPE_DELETED) {//已删除
                         if (taskAdapter != null) {
                             if (event.entity.valid) {//从已删除列表中彻底删除
                                 taskAdapter.removeItem(event.entity);
@@ -290,7 +291,7 @@ public class TaskListFragment extends BaseTaskFragment implements
             case TaskActionEvent.TASK_ADD_ITEM_ACITON://添加的动作
                 if (event.entity == null) return;
                 if (type == TYPE_ALL) {
-                    if (stateType == 1 || stateType == 3) {//如果是已完成／已删除，可以直接添加item
+                    if (stateType == Const.TASK_STATETYPE_FINISH || stateType == Const.TASK_STATETYPE_DELETED) {//如果是已完成／已删除，可以直接添加item
                         if (taskAdapter != null) {
                             taskAdapter.addData(event.entity);
                         }
@@ -520,7 +521,7 @@ public class TaskListFragment extends BaseTaskFragment implements
     private void getTaskGroupData(final TaskEntity taskEntity) {
         if (taskEntity == null) return;
         if (taskEntity.items == null) return;
-        if (stateType == 0) {//未完成的任务需要分组
+        if (stateType == Const.TASK_STATETYPE_UN_FINISH) {//未完成的任务需要分组
             Observable.create(new ObservableOnSubscribe<List<TaskEntity.TaskItemEntity>>() {
                 @Override
                 public void subscribe(ObservableEmitter<List<TaskEntity.TaskItemEntity>> e) throws Exception {
@@ -538,7 +539,7 @@ public class TaskListFragment extends BaseTaskFragment implements
                             goFirstTask();
                             enableEmptyView(taskAdapter.getData());
                             if (tabTaskFragment != null) {
-                                if (tabTaskFragment.isAwayScroll && stateType == 0) {
+                                if (tabTaskFragment.isAwayScroll && stateType == Const.TASK_STATETYPE_UN_FINISH) {
                                     if (newTaskEntities.size() > 1) {
                                         showNextTaskView(true);
                                     }
@@ -557,7 +558,7 @@ public class TaskListFragment extends BaseTaskFragment implements
                             }
                         }
                     });
-        } else if (stateType == 1 || stateType == 3) {//已完成/已删除的任务列表
+        } else if (stateType == Const.TASK_STATETYPE_FINISH || stateType == Const.TASK_STATETYPE_DELETED) {//已完成/已删除的任务列表
             taskAdapter.setNewData(taskEntity.items);
             goFirstTask();
             enableEmptyView(taskAdapter.getData());
@@ -721,7 +722,7 @@ public class TaskListFragment extends BaseTaskFragment implements
      * 彻底清空所有已删除的任务（已删除的列表长按删除或者清空需要调用此方法）
      */
     public void clearAllDeletedTask() {
-        if (stateType == 3) {//已删除的任务列表
+        if (stateType == Const.TASK_STATETYPE_DELETED) {//已删除的任务列表
             if (taskAdapter == null) return;
             if (taskAdapter.getData().size() <= 0) return;
             List<String> ids = new ArrayList<>();
@@ -929,7 +930,7 @@ public class TaskListFragment extends BaseTaskFragment implements
 
     @Override
     public boolean onItemLongClick(BaseQuickAdapter baseQuickAdapter, View view, int i) {
-        if (stateType == 3)//已删除的任务列表不能进行长按操作
+        if (stateType == Const.TASK_STATETYPE_DELETED)//已删除的任务列表不能进行长按操作
             return false;
         TaskEntity.TaskItemEntity item = taskAdapter.getItem(i);
         if (item != null && item.type == 0)//说明是任务
@@ -956,7 +957,7 @@ public class TaskListFragment extends BaseTaskFragment implements
             case R.id.task_item_checkbox://完成的按钮
                 if (itemEntity == null)
                     return;
-                if (stateType == 0 || stateType == 1) {//已完成／未完成列表
+                if (stateType == Const.TASK_STATETYPE_UN_FINISH || stateType == Const.TASK_STATETYPE_FINISH) {//已完成／未完成列表
                     if (!itemEntity.state) {//完成任务
                         if (itemEntity.attendeeUsers != null) {
                             if (itemEntity.attendeeUsers.size() > 1) {

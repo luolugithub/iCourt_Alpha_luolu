@@ -23,7 +23,6 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.CheckedTextView;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -97,6 +96,12 @@ public class TaskDetailActivity extends BaseActivity
 
     private static final String KEY_TASK_ID = "key_task_id";
     private static final String KEY_IS_CHECKITEM = "key_is_checkitem";
+    private static final String KEY_IS_CHECK_ITEM = "key_is_check_item";
+    private static final String KEY_ISFINISH = "isFinish";
+    private static final String KEY_VALID = "valid";
+    private static final String KEY_TASKITEMENTITY = "taskItemEntity";
+
+
     private static final int SHOW_DELETE_DIALOG = 0;//删除提示对话框
     private static final int SHOW_FINISH_DIALOG = 1;//完成任务提示对话框
     private static final int SHOW_RENEW_DIALOG = 2;//恢复任务提示对话框
@@ -158,6 +163,7 @@ public class TaskDetailActivity extends BaseActivity
     LinearLayout taskTimeSumLayout;
 
     String taskId;
+    String timmingTaskId;
     BaseFragmentAdapter baseFragmentAdapter;
     int myStar = -1;
     boolean isStrat = false;
@@ -169,10 +175,6 @@ public class TaskDetailActivity extends BaseActivity
     TaskAttachmentFragment taskAttachmentFragment;
 
     final SparseArray<CharSequence> tabTitles = new SparseArray<>();
-
-//    boolean isEditTask = false;//编辑任务权限
-//    boolean isDeleteTask = false;//删除任务权限
-//    boolean isAddTime = false;//添加计时权限
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -249,7 +251,6 @@ public class TaskDetailActivity extends BaseActivity
             }
         });
         titleAction2.setImageResource(R.mipmap.header_icon_more);
-//        getData(false);
     }
 
     @Override
@@ -295,7 +296,7 @@ public class TaskDetailActivity extends BaseActivity
                     if (hasTaskEditPermission()) {
                         TaskDescUpdateActivity.launch(getContext(), taskName.getText().toString(), TaskDescUpdateActivity.UPDATE_TASK_NAME);
                     } else {
-                        showTopSnackBar("您没有编辑任务的权限");
+                        showTopSnackBar(getString(R.string.task_not_permission_edit_task));
                     }
                 }
                 break;
@@ -308,11 +309,11 @@ public class TaskDetailActivity extends BaseActivity
                             if (taskItemEntity.matter != null) {
                                 showTaskAllotSelectDialogFragment(taskItemEntity.matter.id);
                             } else {
-                                showTopSnackBar("请先选择项目");
+                                showTopSnackBar(getString(R.string.task_please_check_project));
                             }
                         }
                     } else {
-                        showTopSnackBar("您没有编辑任务的权限");
+                        showTopSnackBar(getString(R.string.task_not_permission_edit_task));
                     }
                 }
                 break;
@@ -359,12 +360,6 @@ public class TaskDetailActivity extends BaseActivity
                     if (taskItemEntity.valid) {
                         if (taskItemEntity.state) {
                             if (taskItemEntity.attendeeUsers != null) {
-                                //去掉了取消完成的对话框，避免再次加回来。
-//                            if (taskItemEntity.attendeeUsers.size() > 1) {
-//                                showDeleteDialog("该任务为多人任务，确定要取消完成吗?", SHOW_FINISH_DIALOG);
-//                            } else {
-//                                updateTask(taskItemEntity, false, taskCheckbox);
-//                            }
                                 updateTask(taskItemEntity, false, taskCheckbox);
                             } else {
                                 updateTask(taskItemEntity, false, taskCheckbox);
@@ -372,7 +367,7 @@ public class TaskDetailActivity extends BaseActivity
                         } else {
                             if (taskItemEntity.attendeeUsers != null) {
                                 if (taskItemEntity.attendeeUsers.size() > 1) {
-                                    showDeleteDialog("该任务由多人负责，确定完成?", SHOW_FINISH_DIALOG);
+                                    showDeleteDialog(getString(R.string.task_is_confirm_complete_task), SHOW_FINISH_DIALOG);
                                 } else {
                                     updateTask(taskItemEntity, true, taskCheckbox);
                                 }
@@ -385,7 +380,7 @@ public class TaskDetailActivity extends BaseActivity
                     }
                 } else {
                     taskCheckbox.setChecked(!taskCheckbox.isChecked());
-                    showTopSnackBar("您没有编辑任务的权限");
+                    showTopSnackBar(getString(R.string.task_not_permission_edit_task));
                 }
                 break;
             case R.id.comment_tv:
@@ -425,28 +420,6 @@ public class TaskDetailActivity extends BaseActivity
      *
      * @return
      */
-    @Deprecated
-    private TimeEntity.ItemEntity getTimer() {
-        TimeEntity.ItemEntity itemEntity = new TimeEntity.ItemEntity();
-        if (taskItemEntity != null) {
-            itemEntity.taskPkId = taskItemEntity.id;
-            itemEntity.name = taskItemEntity.name;
-            itemEntity.workDate = DateUtils.millis();
-            itemEntity.createUserId = getLoginUserId();
-            itemEntity.username = getLoginUserInfo().getName();
-            itemEntity.startTime = DateUtils.millis();
-            if (taskItemEntity.matter != null) {
-                itemEntity.matterPkId = taskItemEntity.matter.id;
-            }
-        }
-        return itemEntity;
-    }
-
-    /**
-     * 获取添加计时实体
-     *
-     * @return
-     */
     private TimeEntity.ItemEntity getTimer(TaskEntity.TaskItemEntity taskItemEntity) {
         TimeEntity.ItemEntity itemEntity = new TimeEntity.ItemEntity();
         if (taskItemEntity != null) {
@@ -477,8 +450,6 @@ public class TaskDetailActivity extends BaseActivity
     public TaskEntity.TaskItemEntity getTaskItemEntity() {
         return taskItemEntity;
     }
-
-    String timmingTaskId;
 
     /**
      * 计时事件
@@ -540,12 +511,12 @@ public class TaskDetailActivity extends BaseActivity
         List<String> titles = null;
         if (taskItemEntity.valid) {
             if (taskItemEntity.state) {
-                titles = Arrays.asList("标记为未完成", "删除");
+                titles = Arrays.asList(getString(R.string.task_update_state_to_unfinish), getString(R.string.task_delete));
             } else {
-                titles = Arrays.asList("标记为已完成", "删除");
+                titles = Arrays.asList(getString(R.string.task_update_state_to_finish), getString(R.string.task_delete));
             }
         } else {
-            titles = Arrays.asList("恢复", "彻底删除");
+            titles = Arrays.asList(getString(R.string.task_revert), getString(R.string.task_downright_delete));
         }
         new BottomActionDialog(getContext(),
                 null,
@@ -563,7 +534,7 @@ public class TaskDetailActivity extends BaseActivity
                                     if (!taskItemEntity.state) {
                                         if (taskItemEntity.attendeeUsers != null) {
                                             if (taskItemEntity.attendeeUsers.size() > 1) {
-                                                showDeleteDialog("该任务由多人负责，确定完成?", SHOW_FINISH_DIALOG);
+                                                showDeleteDialog(getString(R.string.task_is_confirm_complete_task), SHOW_FINISH_DIALOG);
                                             } else {
                                                 updateTask(taskItemEntity, true, taskCheckbox);
                                             }
@@ -576,12 +547,12 @@ public class TaskDetailActivity extends BaseActivity
                                 } else {
                                     if (taskItemEntity.attendeeUsers != null) {
                                         if (taskItemEntity.attendeeUsers.size() > 1) {
-                                            showDeleteDialog("该任务由多人负责，确定恢复?", SHOW_RENEW_DIALOG);
+                                            showDeleteDialog(getString(R.string.task_is_confirm_revert_task), SHOW_RENEW_DIALOG);
                                         } else {
-                                            showTwiceSureDialog("确定恢复？", SHOW_RENEW_BUTTOM_SHEET);
+                                            showTwiceSureDialog(getString(R.string.task_is_revert_task), SHOW_RENEW_BUTTOM_SHEET);
                                         }
                                     } else {
-                                        showTwiceSureDialog("确定恢复？", SHOW_RENEW_BUTTOM_SHEET);
+                                        showTwiceSureDialog(getString(R.string.task_is_revert_task), SHOW_RENEW_BUTTOM_SHEET);
                                     }
                                 }
 
@@ -591,16 +562,16 @@ public class TaskDetailActivity extends BaseActivity
                                     if (taskItemEntity != null) {
                                         if (taskItemEntity.attendeeUsers != null) {
                                             if (taskItemEntity.attendeeUsers.size() > 1) {
-                                                showDeleteDialog("该任务由多人负责，确定删除?", SHOW_DELETE_DIALOG);
+                                                showDeleteDialog(getString(R.string.task_is_confirm_delete_task), SHOW_DELETE_DIALOG);
                                             } else {
-                                                showTwiceSureDialog("确定删除？", SHOW_DELETE_BUTTOM_SHEET);
+                                                showTwiceSureDialog(getString(R.string.task_is_delete), SHOW_DELETE_BUTTOM_SHEET);
                                             }
                                         } else {
-                                            showTwiceSureDialog("确定删除？", SHOW_DELETE_BUTTOM_SHEET);
+                                            showTwiceSureDialog(getString(R.string.task_is_delete), SHOW_DELETE_BUTTOM_SHEET);
                                         }
                                     }
                                 } else {
-                                    showTwiceSureDialog("彻底删除后不可恢复,确定彻底删除？", SHOW_CLEAR_BUTTOM_SHEET);
+                                    showTwiceSureDialog(getString(R.string.task_delete_not_revert), SHOW_CLEAR_BUTTOM_SHEET);
                                 }
                                 break;
                         }
@@ -614,7 +585,7 @@ public class TaskDetailActivity extends BaseActivity
     private void showTwiceSureDialog(String title, final int type) {
         new BottomActionDialog(getContext(),
                 title,
-                Arrays.asList("确定"),
+                Arrays.asList(getString(R.string.str_ok)),
                 0,
                 0xFFFF0000,
                 new BottomActionDialog.OnActionItemClickListener() {
@@ -659,7 +630,7 @@ public class TaskDetailActivity extends BaseActivity
                                     updateTask(taskItemEntity, true, taskCheckbox);
                                 }
                             }
-                        }else if(type == SHOW_RENEW_DIALOG){
+                        } else if (type == SHOW_RENEW_DIALOG) {
                             recoverTaskById(taskId);
                         }
                         break;
@@ -674,10 +645,10 @@ public class TaskDetailActivity extends BaseActivity
         };
         //dialog参数设置
         AlertDialog.Builder builder = new AlertDialog.Builder(this);  //先得到构造器
-        builder.setTitle("提示"); //设置标题
+        builder.setTitle(getString(R.string.task_remind)); //设置标题
         builder.setMessage(message); //设置内容
-        builder.setPositiveButton("确认", dialogOnclicListener);
-        builder.setNegativeButton("取消", dialogOnclicListener);
+        builder.setPositiveButton(getString(R.string.task_confirm), dialogOnclicListener);
+        builder.setNegativeButton(getString(R.string.task_cancel), dialogOnclicListener);
         builder.create().show();
     }
 
@@ -818,7 +789,7 @@ public class TaskDetailActivity extends BaseActivity
             taskStartIamge.setVisibility(hasAddTimerPermission() ? View.VISIBLE : View.GONE);
             taskName.setText(taskItemEntity.name);
             myStar = taskItemEntity.attentioned;
-            commentTv.setText(taskItemEntity.commentCount + "条动态");
+            commentTv.setText(String.format("%s条动态", taskItemEntity.commentCount));
             if (taskItemEntity.state) {
                 taskCheckbox.setChecked(true);
             } else {
@@ -842,22 +813,22 @@ public class TaskDetailActivity extends BaseActivity
             SpannableString checkTextForegroundColorSpan = null;
             if (taskItemEntity.itemCount > 0) {
                 String checkTargetStr = String.format("%s/%s", taskItemEntity.doneItemCount, taskItemEntity.itemCount);
-                String checkOriginStr = "检查项 " + checkTargetStr;
+                String checkOriginStr = getString(R.string.task_check) + " " + checkTargetStr;
                 checkTextForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(checkOriginStr, checkTargetStr, 0xFFCACACA);
             } else {
-                checkTextForegroundColorSpan = new SpannableString("检查项");
+                checkTextForegroundColorSpan = new SpannableString(getString(R.string.task_check));
             }
 
             SpannableString attachTextForegroundColorSpan = null;
             if (taskItemEntity.attachmentCount > 0) {
                 String attachTargetStr = String.valueOf(taskItemEntity.attachmentCount);
-                String attachOriginStr = "附件 " + attachTargetStr;
+                String attachOriginStr = getString(R.string.task_attachment) + " " + attachTargetStr;
                 attachTextForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(attachOriginStr, attachTargetStr, 0xFFCACACA);
             } else {
-                attachTextForegroundColorSpan = new SpannableString("附件");
+                attachTextForegroundColorSpan = new SpannableString(getString(R.string.task_attachment));
             }
 
-            tabTitles.put(0, "任务详情");
+            tabTitles.put(0, getString(R.string.task_detail));
             tabTitles.put(1, checkTextForegroundColorSpan);
             tabTitles.put(2, attachTextForegroundColorSpan);
             baseFragmentAdapter.bindTitle(true, Arrays.asList(tabTitles.get(0, ""),
@@ -932,9 +903,9 @@ public class TaskDetailActivity extends BaseActivity
      */
     private void updateTabItemFragment() {
         Bundle bundle = new Bundle();
-        bundle.putBoolean("isFinish", taskItemEntity.state);
-        bundle.putBoolean("valid", taskItemEntity.valid);
-        bundle.putSerializable("taskItemEntity", taskItemEntity);
+        bundle.putBoolean(KEY_ISFINISH, taskItemEntity.state);
+        bundle.putBoolean(KEY_VALID, taskItemEntity.valid);
+        bundle.putSerializable(KEY_TASKITEMENTITY, taskItemEntity);
         if (taskDetailFragment != null) {
             taskDetailFragment.notifyFragmentUpdate(taskDetailFragment, 100, bundle);
         }
@@ -950,10 +921,9 @@ public class TaskDetailActivity extends BaseActivity
      * 更新检查项fragment
      */
     private void updateCheckItemFragment() {
-        log("更新检查项fragment ------------ ");
         if (taskCheckItemFragment == null) return;
         Bundle bundle = new Bundle();
-        bundle.putBoolean("key_is_check_item", isSelectedCheckItem);
+        bundle.putBoolean(KEY_IS_CHECK_ITEM, isSelectedCheckItem);
         taskCheckItemFragment.notifyFragmentUpdate(taskCheckItemFragment, 101, bundle);
     }
 
@@ -964,7 +934,7 @@ public class TaskDetailActivity extends BaseActivity
         taskUsersLayout.setVisibility(View.GONE);
         taskUserLayout.setVisibility(View.VISIBLE);
         taskUserPic.setVisibility(View.GONE);
-        taskUserName.setText("未分配");
+        taskUserName.setText(getString(R.string.task_not_allot));
     }
 
     /**
@@ -1215,56 +1185,11 @@ public class TaskDetailActivity extends BaseActivity
         return super.dispatchTouchEvent(ev);
     }
 
-    @Deprecated
-    public boolean isShouldHideInput(View v, MotionEvent event) {
-        if (v != null && (v instanceof EditText)) {
-            int[] leftTop = {0, 0};
-            //获取输入框当前的location位置
-            v.getLocationInWindow(leftTop);
-            int left = leftTop[0];
-            int top = leftTop[1];
-            int bottom = top + v.getHeight();
-            int right = left + v.getWidth();
-            if (event.getX() > left && event.getX() < right
-                    && event.getY() > top && event.getY() < bottom) {
-                // 点击的是输入框区域，保留点击EditText的事件
-                return false;
-            } else {
-                return true;
-            }
-        }
-        return false;
-    }
-
     @Override
     public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
         if (fragment instanceof TaskAllotSelectDialogFragment) {//选择负责人回调
             if (params != null) {
                 List<TaskEntity.TaskItemEntity.AttendeeUserEntity> attusers = (List<TaskEntity.TaskItemEntity.AttendeeUserEntity>) params.getSerializable("list");
-//                if (attusers != null && attusers.size() > 0) {
-//                    if (attusers.size() == 1) {
-//                        taskUsersLayout.setVisibility(View.GONE);
-//                        taskUserLayout.setVisibility(View.VISIBLE);
-//                        GlideUtils.loadUser(this, attusers.get(0).pic, taskUserPic);
-//                        taskUserName.setText(attusers.get(0).userName);
-//                    } else {
-//                        taskUsersLayout.setVisibility(View.VISIBLE);
-//                        taskUserLayout.setVisibility(View.GONE);
-//                        if (taskUserRecyclerview.getLayoutManager() == null) {
-//                            LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-//                            layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
-//                            layoutManager.setReverseLayout(true);
-//                            taskUserRecyclerview.setLayoutManager(layoutManager);
-//                            taskUserRecyclerview.setAdapter(usersAdapter = new TaskUsersAdapter(this));
-//                            usersAdapter.setOnItemClickListener(this);
-//                        }
-//                    }
-//                } else {
-//                    taskUsersLayout.setVisibility(View.GONE);
-//                    taskUserLayout.setVisibility(View.VISIBLE);
-//                    taskUserName.setText("未分配");
-//                    taskUserPic.setVisibility(View.GONE);
-//                }
                 if (taskItemEntity.attendeeUsers != null) {
                     taskItemEntity.attendeeUsers.clear();
                     taskItemEntity.attendeeUsers.addAll(attusers);
@@ -1322,7 +1247,7 @@ public class TaskDetailActivity extends BaseActivity
                     if (taskItemEntity.matter != null) {
                         showTaskAllotSelectDialogFragment(taskItemEntity.matter.id);
                     } else {
-                        showTopSnackBar("请优先选择项目");
+                        showTopSnackBar(getString(R.string.task_please_check_project));
                     }
             }
         }
@@ -1333,7 +1258,7 @@ public class TaskDetailActivity extends BaseActivity
         if (data != null) {
             if (requestCode == START_COMMENT_FORRESULT_CODE) {
                 int commentCount = data.getIntExtra(KEY_ACTIVITY_RESULT, -1);
-                commentTv.setText(commentCount + "条动态");
+                commentTv.setText(String.format("%s条动态", commentCount));
             }
         }
         super.onActivityResult(requestCode, resultCode, data);
@@ -1348,11 +1273,11 @@ public class TaskDetailActivity extends BaseActivity
     public void onUpdateDocument(int documentCount) {
         if (documentCount > 0) {
             String attachTargetStr = String.valueOf(documentCount);
-            String attachOriginStr = "附件 " + attachTargetStr;
+            String attachOriginStr = getString(R.string.task_attachment) + " " + attachTargetStr;
             SpannableString attachTextForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(attachOriginStr, attachTargetStr, 0xFFCACACA);
             tabTitles.put(2, attachTextForegroundColorSpan);
         } else {
-            tabTitles.put(2, "附件");
+            tabTitles.put(2, getString(R.string.task_attachment));
         }
         baseFragmentAdapter.bindTitle(true, Arrays.asList(tabTitles.get(0, ""),
                 tabTitles.get(1, ""),
