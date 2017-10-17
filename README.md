@@ -65,7 +65,13 @@
   地址: https://shenceadmin.alphalawyer.cn  
   测试: 用户名:admin 密码:ud***** 
   正式: 用户名:admin 密码:v*****  
-  集成文档:https://github.com/sensorsdata/sa-sdk-android  
+  集成文档:https://github.com/sensorsdata/sa-sdk-android   
+  
+#代码规范
+ 以阿里巴巴为准,不做过多文案描述  
+ 插件: Alibaba Java Coding Guidelines  
+ 插件使用相关博客:http://www.cnblogs.com/plokmju/p/7670481.html  
+ 
    
 #日志跟踪tag
 1. 自定义LogUtils
