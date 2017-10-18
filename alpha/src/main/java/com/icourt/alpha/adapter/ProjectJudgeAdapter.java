@@ -58,9 +58,9 @@ public class ProjectJudgeAdapter<T> extends BaseArrayRecyclerAdapter<T> {
             nameview.setText(valuesBean.text);
             phoneview.setVisibility(TextUtils.isEmpty(valuesBean.phone) ? View.GONE : View.VISIBLE);
             phoneview.setText(valuesBean.phone);
-        }else if (t instanceof ProjectProcessesEntity.CaseCodesBean) {
+        } else if (t instanceof ProjectProcessesEntity.CaseCodesBean) {
             ProjectProcessesEntity.CaseCodesBean caseCodesBean = (ProjectProcessesEntity.CaseCodesBean) t;
-            nameview.setText(caseCodesBean.crowdedName);
+            nameview.setText(TextUtils.isEmpty(caseCodesBean.crowdedName) ? caseCodesBean.name : caseCodesBean.crowdedName);
             phoneview.setVisibility(View.GONE);
         }
         holder.bindChildClick(phoneview);
