@@ -30,6 +30,8 @@ import butterknife.Unbinder;
 
 public class TimingSelectMonthFragment extends BaseFragment {
 
+    private static final String KEY_SELECTED_DATE = "keySelectedDate";
+
     Unbinder unbinder;
 
     @BindView(R.id.wheelview_year)
@@ -43,8 +45,12 @@ public class TimingSelectMonthFragment extends BaseFragment {
     private int selectedYearPosition;//选中的年所在的position
     private int selectedMonthPosition;//选中的月所在的position
 
-    public static TimingSelectMonthFragment newInstance() {
-        return new TimingSelectMonthFragment();
+    public static TimingSelectMonthFragment newInstance(long selectedDate) {
+        TimingSelectMonthFragment fragment = new TimingSelectMonthFragment();
+        Bundle bundle = new Bundle();
+        bundle.putLong(KEY_SELECTED_DATE, selectedDate);
+        fragment.setArguments(bundle);
+        return fragment;
     }
 
     @Nullable
@@ -58,6 +64,12 @@ public class TimingSelectMonthFragment extends BaseFragment {
     @Override
     protected void initView() {
 
+        final Calendar calendar = Calendar.getInstance();
+        if (getArguments() != null) {
+            long timeMillis = getArguments().getLong(KEY_SELECTED_DATE, System.currentTimeMillis());
+            calendar.setTimeInMillis(timeMillis);
+        }
+
         wheelviewYear.setTextSize(20);
         wheelviewYear.setCyclic(false);
         wheelviewMonth.setTextSize(20);
@@ -66,8 +78,7 @@ public class TimingSelectMonthFragment extends BaseFragment {
         List<String> yearList = new ArrayList<>();
         List<String> monthList = new ArrayList<>();
 
-        final Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(System.currentTimeMillis());
+
         int year = calendar.get(Calendar.YEAR);
         for (int i = 2015; i <= year; i++) {//2015年-当前年
             yearList.add(String.valueOf(i));

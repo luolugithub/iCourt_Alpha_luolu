@@ -107,7 +107,7 @@ public class TimingListDayFragment extends BaseTimingListFragment {
             @Override
             public void onPageSelected(int position) {//当左右切换的时候，需要更新标题栏时期，还要获取切换到的tab页的统计数据
                 selectedDayTime = calendar.getTimeInMillis() + position * TimeUnit.DAYS.toMillis(1);
-                getTimingStatistic(TYPE_DAY, DateUtils.getDayStartTime(selectedDayTime), DateUtils.getDayEndTime(selectedDayTime));
+                getTimingStatistic(TimingConfig.TIMING_QUERY_BY_DAY, DateUtils.getDayStartTime(selectedDayTime), DateUtils.getDayEndTime(selectedDayTime));
                 if (getParentListener() != null) {
                     getParentListener().onTimeChanged(TimingConfig.TIMING_QUERY_BY_DAY, selectedDayTime);
                 }
@@ -123,7 +123,7 @@ public class TimingListDayFragment extends BaseTimingListFragment {
         int differentDays = DateUtils.differentDays(calendar.getTimeInMillis(), startTimeMillis);
         viewPager.setCurrentItem(differentDays, true);
         selectedDayTime = calendar.getTimeInMillis() + viewPager.getCurrentItem() * TimeUnit.DAYS.toMillis(1);
-        getTimingStatistic(TYPE_DAY, DateUtils.getDayStartTime(selectedDayTime), DateUtils.getDayEndTime(selectedDayTime));
+        getTimingStatistic(TimingConfig.TIMING_QUERY_BY_DAY, DateUtils.getDayStartTime(selectedDayTime), DateUtils.getDayEndTime(selectedDayTime));
     }
 
     /**

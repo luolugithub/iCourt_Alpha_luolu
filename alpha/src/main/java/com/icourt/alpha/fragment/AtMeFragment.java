@@ -207,7 +207,6 @@ public class AtMeFragment extends BaseFragment {
                 .subscribe(consumer);
     }
 
-
     private void enableLoadMore(List result) {
         if (refreshLayout != null) {
             refreshLayout.setEnableLoadmore(result != null

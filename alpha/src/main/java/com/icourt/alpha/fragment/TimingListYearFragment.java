@@ -158,7 +158,7 @@ public class TimingListYearFragment extends BaseTimingListFragment {
             @Override
             public void onPageSelected(int position) {
                 TimingSelectEntity timingSelectEntity = yearData.get(position);
-                getTimingStatistic(TYPE_YEAR, timingSelectEntity.startTimeMillis, timingSelectEntity.endTimeMillis);
+                getTimingStatistic(TimingConfig.TIMING_QUERY_BY_YEAR, timingSelectEntity.startTimeMillis, timingSelectEntity.endTimeMillis);
                 if (getParentListener() != null)
                     getParentListener().onTimeChanged(TimingConfig.TIMING_QUERY_BY_YEAR, timingSelectEntity.startTimeMillis);
             }
@@ -179,7 +179,7 @@ public class TimingListYearFragment extends BaseTimingListFragment {
         }
         viewPager.setCurrentItem(position, true);
         TimingSelectEntity timingSelectEntity = yearData.get(position);
-        getTimingStatistic(TYPE_YEAR, timingSelectEntity.startTimeMillis, timingSelectEntity.endTimeMillis);
+        getTimingStatistic(TimingConfig.TIMING_QUERY_BY_YEAR, timingSelectEntity.startTimeMillis, timingSelectEntity.endTimeMillis);
     }
 
     @Override
@@ -297,13 +297,13 @@ public class TimingListYearFragment extends BaseTimingListFragment {
                 .setHasLines(true)
                 .setValues(axisXValues)
                 .setTextSize(10)
-                .setTextColor(ContextCompat.getColor(getActivity(), R.color.timer_chart_text_color))
+                .setTextColor(SystemUtils.getColor(getActivity(), R.color.timer_chart_text_color))
                 .setMaxLabelChars("00".toCharArray().length);
         Axis axisY = new Axis()
                 .setHasLines(true)
                 .setValues(axisYValues)
                 .setTextSize(10)
-                .setTextColor(ContextCompat.getColor(getActivity(), R.color.timer_chart_text_color));
+                .setTextColor(SystemUtils.getColor(getActivity(), R.color.timer_chart_text_color));
         data.setAxisXBottom(axisX);
         data.setAxisYLeft(axisY);
 

@@ -31,6 +31,8 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.List;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
@@ -49,7 +51,7 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
     private static final String KEY_START_TIME = "startTime";
     private static final String KEY_QUERY_TYPE = "queryType";
 
-    //以下两个标记为是为了给Fragment在ViewPager中进行缓加载使用的。
+    //以下标记为是为了给Fragment在ViewPager中进行缓加载使用的。
     private boolean isVisible;//是否可见
 
     Unbinder unbinder;
@@ -59,6 +61,15 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
     EmptyRecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
     SmartRefreshLayout refreshLayout;
+
+    @TimingConfig.TIMINGQUERYTYPE
+    int queryType;
+    long startTimeMillis;
+    long endTimeMillis;
+    TimeAdapter timeAdapter;
+
+    private boolean canLoadMore;//是否可以加载更多（日、周不可以加载更多；月、年可以加载更多）
+    int pageIndex = 0;
 
     /**
      * @param queryType
@@ -73,14 +84,6 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
         fragment.setArguments(args);
         return fragment;
     }
-
-    @TimingConfig.TIMINGQUERYTYPE
-    int queryType;
-    long startTimeMillis;
-    long endTimeMillis;
-    TimeAdapter timeAdapter;
-
-    int pageIndex = 0;
 
     @Nullable
     @Override
@@ -154,8 +157,8 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
         });
 
         refreshLayout.setEnableRefresh(false);
-        boolean canLoadMore = (queryType != TimingConfig.TIMING_QUERY_BY_DAY && queryType != TimingConfig.TIMING_QUERY_BY_WEEK); //日周不可以上拉加载，年月可以上拉加载。
-        refreshLayout.setEnableLoadmore(true);
+        canLoadMore = (queryType != TimingConfig.TIMING_QUERY_BY_DAY && queryType != TimingConfig.TIMING_QUERY_BY_WEEK); //日周不可以上拉加载，年月可以上拉加载。
+        refreshLayout.setEnableLoadmore(canLoadMore);
         initData();
     }
 
@@ -202,7 +205,13 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
                     @Override
                     public void onSuccess(Call<ResEntity<TimeEntity>> call, Response<ResEntity<TimeEntity>> response) {
                         if (response.body().result != null) {
-                            timeAdapter.bindData(isRefresh, response.body().result.items);
+                            List<TimeEntity.ItemEntity> items = response.body().result.items;
+                            timeAdapter.bindData(isRefresh, items);
+                            if (canLoadMore && enableLoadMore(items)) {
+                                refreshLayout.setEnableLoadmore(true);
+                            } else {
+                                refreshLayout.setEnableLoadmore(false);
+                            }
                         }
                         stopRefresh();
                     }
@@ -214,6 +223,14 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
                     }
                 }
         );
+    }
+
+    private boolean enableLoadMore(List result) {
+        if (refreshLayout != null) {
+            if (result != null && result.size() >= ActionConstants.DEFAULT_PAGE_SIZE)
+                return true;
+        }
+        return false;
     }
 
     private void stopRefresh() {

@@ -13,7 +13,6 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TimingSelectEntity;
 import com.icourt.alpha.utils.DateUtils;
-import com.icourt.alpha.widget.manager.TimerDateManager;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -30,13 +29,20 @@ import butterknife.Unbinder;
 
 public class TimingSelectYearFragment extends BaseFragment {
 
+    private static final String KEY_SELECTED_DATE = "keySelectedDate";
+
     Unbinder unbinder;
+
     @BindView(R.id.wheelview_year)
     WheelView wheelviewYear;
     TimeWheelAdapter yearAdapter;
 
-    public static TimingSelectYearFragment newInstance() {
-        return new TimingSelectYearFragment();
+    public static TimingSelectYearFragment newInstance(long selectedDate) {
+        TimingSelectYearFragment fragment = new TimingSelectYearFragment();
+        Bundle bundle = new Bundle();
+        bundle.putLong(KEY_SELECTED_DATE, selectedDate);
+        fragment.setArguments(bundle);
+        return fragment;
     }
 
     @Nullable
@@ -49,10 +55,18 @@ public class TimingSelectYearFragment extends BaseFragment {
 
     @Override
     protected void initView() {
+        int selectedYear = 2015;
+        Calendar calendar = Calendar.getInstance();
+        if (getArguments() != null) {
+            long timeMillis = getArguments().getLong(KEY_SELECTED_DATE, System.currentTimeMillis());
+            calendar.setTimeInMillis(timeMillis);
+            selectedYear = calendar.get(Calendar.YEAR);
+        }
+
         wheelviewYear.setCyclic(false);
         wheelviewYear.setTextSize(20);
 
-        Calendar calendar = Calendar.getInstance();
+        calendar.clear();
         calendar.setTimeInMillis(System.currentTimeMillis());
         int year = calendar.get(Calendar.YEAR);
         List<String> yearList = new ArrayList<>();
@@ -62,13 +76,13 @@ public class TimingSelectYearFragment extends BaseFragment {
 
         wheelviewYear.setAdapter(yearAdapter = new TimeWheelAdapter(yearList));
 
-        int currentYearCount = 0;
+        int currentYearPosition = 0;
         for (int i = 0; i < yearList.size(); i++) {
-            if (TextUtils.equals(yearList.get(i), String.valueOf(calendar.get(Calendar.YEAR)))) {
-                currentYearCount = i;
+            if (TextUtils.equals(yearList.get(i), String.valueOf(selectedYear))) {
+                currentYearPosition = i;
             }
         }
-        wheelviewYear.setCurrentItem(currentYearCount);
+        wheelviewYear.setCurrentItem(currentYearPosition);
     }
 
     private class TimeWheelAdapter implements WheelAdapter<String> {

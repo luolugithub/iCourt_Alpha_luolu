@@ -29,6 +29,8 @@ import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnTimingChangeListener;
 import com.icourt.alpha.utils.DateUtils;
 
+import java.util.Calendar;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -59,6 +61,10 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
 
     @BindView(R.id.ll_today_time)
     LinearLayout llTodayTime;
+
+    Calendar selectedDate = Calendar.getInstance();
+    @TimingConfig.TIMINGQUERYTYPE
+    int selectedType = TimingConfig.TIMING_QUERY_BY_WEEK;//当前选中的是日、周、月、年的哪一种状态。
 
     public static void launch(@NonNull Context context) {
         if (context == null) return;
@@ -110,12 +116,14 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
      */
     private void showCurrentWeekFragment() {
         long currentTimeMillis = System.currentTimeMillis();
+        selectedDate.clear();
+        selectedDate.setTimeInMillis(currentTimeMillis);
         TimingListWeekFragment weekListFragment = TimingListWeekFragment.newInstance(currentTimeMillis);
-        addOrShowFragmentAnim(weekListFragment, R.id.fl_container, true);
+        addOrShowFragmentAnim(TimingConfig.TIMING_QUERY_BY_WEEK, weekListFragment, R.id.fl_container, false);
     }
 
     /**
-     * 显示选中的日期
+     * 显示选中的日期到界面上
      *
      * @param type
      * @param selectedTimeMillis
@@ -148,7 +156,7 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
     }
 
     /**
-     * 显示选中日期和今天的总计时
+     * 显示选中日期和今天的总计时到界面上
      *
      * @param selectedTimeSum
      * @param todayTimeSum
@@ -165,12 +173,15 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
     /**
      * 替换所显示的Fragment
      *
+     * @param type            要替换的类型（日、周、月、年）
      * @param targetFragment  要替换成哪个Fragment
      * @param containerViewId
      * @param isAnim
      * @return
      */
-    protected Fragment addOrShowFragmentAnim(@NonNull Fragment targetFragment, @IdRes int containerViewId, boolean isAnim) {
+    protected Fragment addOrShowFragmentAnim(@TimingConfig.TIMINGQUERYTYPE int type, Fragment targetFragment, @IdRes int containerViewId, boolean isAnim) {
+        if (targetFragment == null) return null;
+        selectedType = type;
         FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction transaction = fm.beginTransaction();
         if (isAnim) {
@@ -191,7 +202,7 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        TimingSelectDialogFragment.newInstance()
+        TimingSelectDialogFragment.newInstance(selectedType, selectedDate.getTimeInMillis())
                 .show(mFragTransaction, tag);
     }
 
@@ -200,19 +211,19 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
         if (fragment instanceof TimingSelectDialogFragment) {
             TimingSelectEntity timingSelectEntity = (TimingSelectEntity) params.getSerializable(BaseDialogFragment.KEY_FRAGMENT_RESULT);
             if (timingSelectEntity == null) return;
+            Fragment selectedFragment = null;
             if (type == TimingConfig.TIMING_QUERY_BY_DAY) {//日
-                TimingListDayFragment dayListFragment = TimingListDayFragment.newInstance(timingSelectEntity.startTimeMillis);
-                addOrShowFragmentAnim(dayListFragment, R.id.fl_container, true);
+                selectedFragment = TimingListDayFragment.newInstance(timingSelectEntity.startTimeMillis);
             } else if (type == TimingConfig.TIMING_QUERY_BY_WEEK) {//周
-                TimingListWeekFragment weekListFragment = TimingListWeekFragment.newInstance(timingSelectEntity.startTimeMillis);
-                addOrShowFragmentAnim(weekListFragment, R.id.fl_container, true);
+                selectedFragment = TimingListWeekFragment.newInstance(timingSelectEntity.startTimeMillis);
             } else if (type == TimingConfig.TIMING_QUERY_BY_MONTH) {//月
-                TimingListMonthFragment monthListFragment = TimingListMonthFragment.newInstance(timingSelectEntity.startTimeMillis);
-                addOrShowFragmentAnim(monthListFragment, R.id.fl_container, true);
+                selectedFragment = TimingListMonthFragment.newInstance(timingSelectEntity.startTimeMillis);
             } else if (type == TimingConfig.TIMING_QUERY_BY_YEAR) {//年
-                TimingListYearFragment yearListFragment = TimingListYearFragment.newInstance(timingSelectEntity.startTimeMillis);
-                addOrShowFragmentAnim(yearListFragment, R.id.fl_container, true);
+                selectedFragment = TimingListYearFragment.newInstance(timingSelectEntity.startTimeMillis);
             }
+            addOrShowFragmentAnim(type, selectedFragment, R.id.fl_container, false);
+            selectedDate.clear();
+            selectedDate.setTimeInMillis(timingSelectEntity.startTimeMillis);
             int convertType = TimingConfig.convert2timingQueryType(type);
             showSelectedDate(convertType, timingSelectEntity.startTimeMillis);
         }
@@ -233,6 +244,9 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
 
     @Override
     public void onTimeChanged(@TimingConfig.TIMINGQUERYTYPE int type, long selectedTimeMillis) {
+        selectedDate.clear();
+        selectedDate.setTimeInMillis(selectedTimeMillis);
+        selectedType = type;
         showSelectedDate(type, selectedTimeMillis);
     }
 
