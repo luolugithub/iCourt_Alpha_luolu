@@ -1,7 +1,6 @@
 package com.icourt.alpha.adapter;
 
 import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.View;
@@ -13,7 +12,6 @@ import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.utils.DateUtils;
-import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SystemUtils;
@@ -24,7 +22,7 @@ import com.umeng.analytics.MobclickAgent;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import static com.umeng.socialize.utils.ContextUtil.getContext;
 
@@ -140,13 +138,13 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
 //            if (useTime < 0) {
 //                useTime = 0;
 //            }
-            long useTime = TimerManager.getInstance().getTimingSeconds() * 1000;
+            long useTime = TimerManager.getInstance().getTimingSeconds();
             if (useTime < 0) {
                 useTime = 0;
             }
             timer_count_tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
             timer_count_tv.setTextColor(SystemUtils.getColor(timer_count_tv.getContext(), R.color.colorPrimary));
-            timer_count_tv.setText(toTime(useTime));
+            timer_count_tv.setText(DateUtils.getTimingStr(useTime));
             timer_icon.setImageResource(R.drawable.orange_side_dot_bg);
         } else {//说明没有在计时
             timer_count_tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
@@ -180,14 +178,6 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
         } else {
             divider_ll.setVisibility(View.GONE);
         }
-    }
-
-    public String toTime(long times) {
-        times /= 1000;
-        long hour = times / 3600;
-        long minute = times % 3600 / 60;
-        long second = times % 60;
-        return String.format(Locale.CHINA, "%02d:%02d:%02d", hour, minute, second);
     }
 
     /**
@@ -227,7 +217,7 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
             if (useTime < 0) {
                 useTime = 0;
             }
-            durationView.setText(toTime(useTime));
+            durationView.setText(DateUtils.getTimingStr(useTime / TimeUnit.SECONDS.toMillis(1)));
             quantumView.setText(DateUtils.getTimeDurationDate(timeEntity.startTime) + " - 现在");
         } else {
             try {

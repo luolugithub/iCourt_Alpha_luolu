@@ -713,6 +713,8 @@ public class DateUtils {
 
 
     /**
+     * 判断是否是昨天
+     *
      * @param millis 毫秒
      * @return
      */
@@ -1022,17 +1024,30 @@ public class DateUtils {
     /**
      * 将计时时间毫秒数转换为时：分的样式
      *
-     * @param times
+     * @param timesMillis 毫秒
      * @return
      */
-    public static String getHm(long times) {
-        times /= 1000;
-        long hour = times / 3600;
-        long minute = times % 3600 / 60;
+    public static String getHm(long timesMillis) {
+        timesMillis /= 1000;
+        long hour = timesMillis / 3600;
+        long minute = timesMillis % 3600 / 60;
         if (minute < 0) {
             minute = 0;
         }
         return String.format(Locale.CHINA, "%d:%02d", hour, minute);
+    }
+
+    /**
+     * 获取计时的样式（比如：20:12:08）
+     *
+     * @param timeSeconds 秒
+     * @return
+     */
+    public static String getTimingStr(long timeSeconds) {
+        long hour = timeSeconds / 3600;
+        long minute = timeSeconds % 3600 / 60;
+        long second = timeSeconds % 60;
+        return String.format(Locale.CHINA, "%02d:%02d:%02d", hour, minute, second);
     }
 
     /**

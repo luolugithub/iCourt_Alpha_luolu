@@ -107,7 +107,6 @@ public class TimerManager {
         return timerManager;
     }
 
-
     /**
      * 1秒一次
      */
@@ -135,7 +134,6 @@ public class TimerManager {
             }
         }
     }
-
 
     /**
      * 获取登陆用户id
@@ -248,7 +246,6 @@ public class TimerManager {
         }
     }
 
-
     /**
      * 只是重置数据
      *
@@ -282,7 +279,6 @@ public class TimerManager {
         setBase(timer.useTime / 1_000);
         startTimingTask();
     }
-
 
     /**
      * 获取计时对象
@@ -337,7 +333,6 @@ public class TimerManager {
         TimeEntity.ItemEntity timer = getTimer();
         return timer != null && StringUtils.equalsIgnoreCase(id, timer.pkId, false);
     }
-
 
     /**
      * 同步网络计时
@@ -456,7 +451,6 @@ public class TimerManager {
         return false;
     }
 
-
     /**
      * 更新原计时对象（之前已经有对象正在计时了）
      *
@@ -498,7 +492,6 @@ public class TimerManager {
         }
         return -1;
     }
-
 
     /**
      * 清除timer 并发停止的广播
@@ -563,7 +556,6 @@ public class TimerManager {
                     });
         }
     }
-
 
     private void broadTimingEvent(String id, @TimingEvent.TIMING_ACTION int action) {
         EventBus.getDefault().post(new TimingEvent(id, action));
