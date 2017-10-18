@@ -12,9 +12,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.asange.recyclerviewadapter.BaseViewHolder;
+import com.asange.recyclerviewadapter.OnItemClickListener;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.RepoAdapter;
-import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
@@ -59,8 +60,7 @@ import static com.icourt.alpha.constants.SFileConfig.REPO_SHARED_ME;
  * date createTime：2017/8/19
  * version 2.1.0
  */
-public class RepoSelectListFragment extends RepoBaseFragment
-        implements BaseRecyclerAdapter.OnItemClickListener {
+public class RepoSelectListFragment extends RepoBaseFragment implements OnItemClickListener {
     public static final String KEY_REPO_TYPE = "repoType";
     public static final String KEY_REPO_FILTER_ONLY_READ = "filter_only_read";
 
@@ -113,9 +113,10 @@ public class RepoSelectListFragment extends RepoBaseFragment
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(repoAdapter = new RepoAdapter(REPO_MINE) {
+
             @Override
-            public void onBindHoder(ViewHolder holder, RepoEntity repoEntity, int position) {
-                super.onBindHoder(holder, repoEntity, position);
+            public void onBindHolder(BaseViewHolder holder, @Nullable RepoEntity repoEntity, int i) {
+                super.onBindHolder(holder, repoEntity, i);
                 ImageView document_expand_iv = holder.obtainView(R.id.document_expand_iv);
                 ImageView document_detail_iv = holder.obtainView(R.id.document_detail_iv);
                 if (document_detail_iv != null) {
@@ -323,21 +324,6 @@ public class RepoSelectListFragment extends RepoBaseFragment
         unbinder.unbind();
     }
 
-    @Override
-    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        RepoEntity item = repoAdapter.getItem(position);
-        if (item == null) return;
-        if (item.isNeedDecrypt()) {
-            showDecryptDialog(item);
-            return;
-        }
-        if (onFragmentCallBackListener != null) {
-            Bundle bundle = new Bundle();
-            bundle.putSerializable(KEY_FRAGMENT_RESULT, item);
-            bundle.putInt(KEY_REPO_TYPE, repoType);
-            onFragmentCallBackListener.onFragmentCallBack(this, 1, bundle);
-        }
-    }
 
     /**
      * 展示资料库解锁的对话框
@@ -430,4 +416,21 @@ public class RepoSelectListFragment extends RepoBaseFragment
                 });
     }
 
+    @Override
+    public void onItemClick(com.asange.recyclerviewadapter.BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
+        RepoEntity item = repoAdapter.getItem(i);
+        if (item == null) {
+            return;
+        }
+        if (item.isNeedDecrypt()) {
+            showDecryptDialog(item);
+            return;
+        }
+        if (onFragmentCallBackListener != null) {
+            Bundle bundle = new Bundle();
+            bundle.putSerializable(KEY_FRAGMENT_RESULT, item);
+            bundle.putInt(KEY_REPO_TYPE, repoType);
+            onFragmentCallBackListener.onFragmentCallBack(this, 1, bundle);
+        }
+    }
 }

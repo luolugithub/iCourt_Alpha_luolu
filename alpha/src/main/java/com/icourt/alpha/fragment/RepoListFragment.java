@@ -11,6 +11,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.asange.recyclerviewadapter.BaseViewHolder;
+import com.asange.recyclerviewadapter.OnItemChildClickListener;
+import com.asange.recyclerviewadapter.OnItemClickListener;
+import com.asange.recyclerviewadapter.OnItemLongClickListener;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.FolderListActivity;
 import com.icourt.alpha.activity.RepoRenameActivity;
@@ -66,10 +70,7 @@ import static com.icourt.alpha.constants.SFileConfig.REPO_SHARED_ME;
  * date createTime：2017/8/9
  * version 2.1.0
  */
-public class RepoListFragment extends RepoBaseFragment
-        implements BaseRecyclerAdapter.OnItemClickListener,
-        BaseRecyclerAdapter.OnItemLongClickListener,
-        BaseRecyclerAdapter.OnItemChildClickListener {
+public class RepoListFragment extends RepoBaseFragment implements OnItemClickListener, OnItemChildClickListener, OnItemLongClickListener {
     private static final String KEY_REPO_TYPE = "repoType";
 
     @BindView(R.id.recyclerView)
@@ -408,17 +409,6 @@ public class RepoListFragment extends RepoBaseFragment
     }
 
 
-    @Override
-    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        RepoEntity item = repoAdapter.getItem(position);
-        if (item == null) return;
-        if (item.isNeedDecrypt()) {
-            showDecryptDialog(item);
-            return;
-        }
-        lookFolderList(item);
-    }
-
     /**
      * 查看文档目录子文件列表
      *
@@ -439,19 +429,6 @@ public class RepoListFragment extends RepoBaseFragment
                 item.encrypted);
     }
 
-
-    @Override
-    public boolean onItemLongClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, final View view, final int position) {
-        RepoEntity item = repoAdapter.getItem(position);
-        if (item != null && item.isNeedDecrypt()) {
-            showDecryptDialog(item);
-        } else {
-            if (repoType == 0) {
-                showDocumentActionDialog(position);
-            }
-        }
-        return true;
-    }
 
     private boolean isDefaultReop(String repo_id) {
         return StringUtils.equalsIgnoreCase(repo_id, defaultRopoId, false);
@@ -592,9 +569,21 @@ public class RepoListFragment extends RepoBaseFragment
                 });
     }
 
+
     @Override
-    public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        RepoEntity item = repoAdapter.getItem(position);
+    public void onItemClick(com.asange.recyclerviewadapter.BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
+        RepoEntity item = repoAdapter.getItem(i);
+        if (item == null) return;
+        if (item.isNeedDecrypt()) {
+            showDecryptDialog(item);
+            return;
+        }
+        lookFolderList(item);
+    }
+
+    @Override
+    public void onItemChildClick(com.asange.recyclerviewadapter.BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
+        RepoEntity item = repoAdapter.getItem(i);
         if (item == null) return;
         if (item.isNeedDecrypt()) {
             showDecryptDialog(item);
@@ -602,11 +591,24 @@ public class RepoListFragment extends RepoBaseFragment
         }
         switch (view.getId()) {
             case R.id.document_expand_iv:
-                showDocumentActionDialog(position);
+                showDocumentActionDialog(i);
                 break;
             case R.id.document_detail_iv:
-                lookDetail(position);
+                lookDetail(i);
                 break;
         }
+    }
+
+    @Override
+    public boolean onItemLongClick(com.asange.recyclerviewadapter.BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
+        RepoEntity item = repoAdapter.getItem(i);
+        if (item != null && item.isNeedDecrypt()) {
+            showDecryptDialog(item);
+        } else {
+            if (repoType == 0) {
+                showDocumentActionDialog(i);
+            }
+        }
+        return true;
     }
 }
