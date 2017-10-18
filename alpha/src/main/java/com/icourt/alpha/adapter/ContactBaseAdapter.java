@@ -2,6 +2,7 @@ package com.icourt.alpha.adapter;
 
 import android.support.annotation.CallSuper;
 import android.support.annotation.CheckResult;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -75,6 +76,15 @@ public abstract class ContactBaseAdapter<T extends SelectableEntity> extends Bas
         return getContactByAccid(StringUtils.toLowerCase(userId));
     }
 
+    @Override
+    public boolean bindData(boolean isRefresh, @NonNull List<T> datas) {
+        if (isRefresh) {
+            initContacts();
+            initTeams();
+        }
+        return super.bindData(isRefresh, datas);
+    }
+
     /**
      * 通过accid 查询 accid: eg. 7b113d3f234411e7843370106faece2e
      *
@@ -109,10 +119,6 @@ public abstract class ContactBaseAdapter<T extends SelectableEntity> extends Bas
         return null;
     }
 
-    public ContactBaseAdapter() {
-        initContacts();
-        initTeams();
-    }
 
     /**
      * 获取teams
