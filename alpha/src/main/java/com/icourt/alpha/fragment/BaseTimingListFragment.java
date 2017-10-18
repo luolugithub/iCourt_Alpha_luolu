@@ -49,7 +49,9 @@ public abstract class BaseTimingListFragment extends BaseFragment {
      * @param paddingBottom
      */
     protected void setChartViewPadding(LineChartView chartView, int paddingLeft, int paddingTop, int paddingRight, int paddingBottom) {
-        if (chartView == null) return;
+        if (chartView == null) {
+            return;
+        }
         chartView.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
     }
 
@@ -59,7 +61,9 @@ public abstract class BaseTimingListFragment extends BaseFragment {
      * @param appBarLayout
      */
     protected void addAppbarHidenListener(AppBarLayout appBarLayout) {
-        if (appBarLayout == null) return;
+        if (appBarLayout == null) {
+            return;
+        }
         appBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
             @Override
             public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
@@ -83,8 +87,11 @@ public abstract class BaseTimingListFragment extends BaseFragment {
      * @param appBarLayout
      * @param chartView
      */
+    @Deprecated
     protected void dispatchTouchEvent(final AppBarLayout appBarLayout, LineChartView chartView) {
-        if (appBarLayout == null || chartView == null) return;
+        if (appBarLayout == null || chartView == null) {
+            return;
+        }
         chartView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -148,7 +155,7 @@ public abstract class BaseTimingListFragment extends BaseFragment {
     }
 
     /**
-     * 获取计时统计数据成功
+     * 获取计时统计数据成功的回调
      *
      * @param statisticEntity
      */
