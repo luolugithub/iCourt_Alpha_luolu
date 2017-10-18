@@ -125,8 +125,9 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
      * @param position
      */
     private void setTypeSimpleTitle(ViewHolder holder, TimeEntity.ItemEntity timeEntity, int position) {
-        if (holder == null) return;
-        if (timeEntity == null) return;
+        if (holder == null || timeEntity == null) {
+            return;
+        }
         ImageView timer_icon = holder.obtainView(R.id.timer_icon);
         TextView timer_count_tv = holder.obtainView(R.id.timer_count_tv);
         TextView timer_title_tv = holder.obtainView(R.id.timer_title_tv);
@@ -134,14 +135,8 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
         TextView divider_time = holder.obtainView(R.id.divider_time);
         TextView divider_time_count = holder.obtainView(R.id.divider_time_count);
         timer_title_tv.setText(TextUtils.isEmpty(timeEntity.name) ? "未录入工作描述" : timeEntity.name);
-        if (timeEntity.state == TimeEntity.ItemEntity.TIMER_STATE_START) {//说明是正在计时
-//            long useTime = timeEntity.useTime;
-//            if (useTime <= 0 && timeEntity.startTime > 0) {
-//                useTime = DateUtils.millis() - timeEntity.startTime;
-//            }
-//            if (useTime < 0) {
-//                useTime = 0;
-//            }
+        if (timeEntity.state == TimeEntity.ItemEntity.TIMER_STATE_START) {
+            //说明是正在计时
             long useTime = TimerManager.getInstance().getTimingSeconds();
             if (useTime < 0) {
                 useTime = 0;
@@ -150,7 +145,8 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
             timer_count_tv.setTextColor(SystemUtils.getColor(timer_count_tv.getContext(), R.color.colorPrimary));
             timer_count_tv.setText(DateUtils.getTimingStr(useTime));
             timer_icon.setImageResource(R.drawable.orange_side_dot_bg);
-        } else {//说明没有在计时
+        } else {
+            //说明没有在计时
             timer_count_tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
             timer_count_tv.setTextColor(SystemUtils.getColor(timer_count_tv.getContext(), R.color.textColorPrimary));
             try {
@@ -171,13 +167,6 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
             } else {
                 divider_time.setText(DateUtils.getMMMdd(timeEntity.workDate));
             }
-//            long dayTimingLength = 0;//某天的计时时长
-//            for (int i = position; i < getData().size(); i++) {
-//                TimeEntity.ItemEntity item = getItem(i);
-//                if (item != null && item.workDate == timeEntity.workDate) {
-//                    dayTimingLength += item.useTime;
-//                }
-//            }
             long dayTimingLength = timeEntity.todayTimingSum;
             divider_time_count.setText(DateUtils.getHm(dayTimingLength));
         } else {
@@ -190,7 +179,6 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
      */
     private void setTypeTopData(ViewHolder holder, TimeEntity.ItemEntity timeEntity) {
         TextView totalView = holder.obtainView(R.id.time_top_total_tv);
-        ImageView addView = holder.obtainView(R.id.time_top_add_img);
         if (sumTime > 0) {
             totalView.setText(DateUtils.getHm(sumTime) + "'");
         }
@@ -245,8 +233,9 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
      * @param timeEntity
      */
     private void addTimeDividerArray(TimeEntity.ItemEntity timeEntity, int position) {
-        if (timeEntity == null) return;
-
+        if (timeEntity == null) {
+            return;
+        }
         if (!timeShowArray.containsValue(timeEntity.workDate)) {
             timeShowArray.put(position, timeEntity.workDate);
         }
