@@ -100,16 +100,35 @@ public class TaskDetailActivity extends BaseActivity
     private static final String KEY_ISFINISH = "isFinish";
     private static final String KEY_VALID = "valid";
     private static final String KEY_TASKITEMENTITY = "taskItemEntity";
+    /**
+     * 删除提示对话框
+     */
+    private static final int SHOW_DELETE_DIALOG = 0;
+    /**
+     * 完成任务提示对话框
+     */
+    private static final int SHOW_FINISH_DIALOG = 1;
+    /**
+     * 恢复任务提示对话框
+     */
+    private static final int SHOW_RENEW_DIALOG = 2;
+    /**
+     * 跳转评论code
+     */
+    private static final int START_COMMENT_FORRESULT_CODE = 0;
 
-
-    private static final int SHOW_DELETE_DIALOG = 0;//删除提示对话框
-    private static final int SHOW_FINISH_DIALOG = 1;//完成任务提示对话框
-    private static final int SHOW_RENEW_DIALOG = 2;//恢复任务提示对话框
-    private static final int START_COMMENT_FORRESULT_CODE = 0;//跳转评论code
-
-    private static final int SHOW_DELETE_BUTTOM_SHEET = 0;//删除二次确认
-    private static final int SHOW_CLEAR_BUTTOM_SHEET = 1;//清空二次确认
-    private static final int SHOW_RENEW_BUTTOM_SHEET = 2;//恢复二次确认
+    /**
+     * 删除二次确认
+     */
+    private static final int SHOW_DELETE_BUTTOM_SHEET = 0;
+    /**
+     * 清空二次确认
+     */
+    private static final int SHOW_CLEAR_BUTTOM_SHEET = 1;
+    /**
+     * 恢复二次确认
+     */
+    private static final int SHOW_RENEW_BUTTOM_SHEET = 2;
 
     @BindView(R.id.titleBack)
     ImageView titleBack;
@@ -167,7 +186,10 @@ public class TaskDetailActivity extends BaseActivity
     BaseFragmentAdapter baseFragmentAdapter;
     int myStar = -1;
     boolean isStrat = false;
-    boolean isSelectedCheckItem = false;//是否默认选中检查项tab
+    /**
+     * 是否默认选中检查项tab
+     */
+    boolean isSelectedCheckItem = false;
     TaskEntity.TaskItemEntity taskItemEntity, cloneItemEntity;
     TaskUsersAdapter usersAdapter;
     TaskDetailFragment taskDetailFragment;
@@ -191,8 +213,12 @@ public class TaskDetailActivity extends BaseActivity
     }
 
     public static void launch(@NonNull Context context, @NonNull String taskId) {
-        if (context == null) return;
-        if (TextUtils.isEmpty(taskId)) return;
+        if (context == null) {
+            return;
+        }
+        if (TextUtils.isEmpty(taskId)) {
+            return;
+        }
         Intent intent = new Intent(context, TaskDetailActivity.class);
         intent.putExtra(KEY_TASK_ID, taskId);
         context.startActivity(intent);
@@ -206,8 +232,12 @@ public class TaskDetailActivity extends BaseActivity
      * @param isSelectedCheckItem
      */
     public static void launchTabSelectCheckItem(@NonNull Context context, @NonNull String taskId, boolean isSelectedCheckItem) {
-        if (context == null) return;
-        if (TextUtils.isEmpty(taskId)) return;
+        if (context == null) {
+            return;
+        }
+        if (TextUtils.isEmpty(taskId)) {
+            return;
+        }
         Intent intent = new Intent(context, TaskDetailActivity.class);
         intent.putExtra(KEY_TASK_ID, taskId);
         intent.putExtra(KEY_IS_CHECKITEM, isSelectedCheckItem);
@@ -229,14 +259,18 @@ public class TaskDetailActivity extends BaseActivity
         taskTablayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                if (tab == null) return;
+                if (tab == null) {
+                    return;
+                }
                 tab.setText(tabTitles.get(tab.getPosition(), ""));
-                if (isSelectedCheckItem && tab.getPosition() == 1) return;
+                if (isSelectedCheckItem && tab.getPosition() == 1) {
+                    return;
+                }
                 SystemUtils.hideSoftKeyBoard(TaskDetailActivity.this);
                 taskTablayout.setFocusable(true);
                 taskTablayout.setFocusableInTouchMode(true);
-                taskTablayout.requestFocus();//请求焦点
-                taskTablayout.findFocus();//获取焦点
+                taskTablayout.requestFocus();
+                taskTablayout.findFocus();
                 updateTabItemFragment();
             }
 
@@ -277,21 +311,25 @@ public class TaskDetailActivity extends BaseActivity
         SystemUtils.hideSoftKeyBoard(this);
         mainContent.setFocusable(true);
         mainContent.setFocusableInTouchMode(true);
-        mainContent.requestFocus();//请求焦点
-        mainContent.findFocus();//获取焦点
+        mainContent.requestFocus();
+        mainContent.findFocus();
         switch (v.getId()) {
-            case R.id.titleAction://关注
+            //关注
+            case R.id.titleAction:
                 if (myStar == TaskEntity.UNATTENTIONED) {
                     addStar();
                 } else {
                     deleteStar();
                 }
                 break;
-            case R.id.titleAction2://更多
+            //更多
+            case R.id.titleAction2:
                 showBottomMenu();
                 break;
             case R.id.task_name:
-                if (taskItemEntity == null) return;
+                if (taskItemEntity == null) {
+                    return;
+                }
                 if (!taskItemEntity.state) {
                     if (hasTaskEditPermission()) {
                         TaskDescUpdateActivity.launch(getContext(), taskName.getText().toString(), TaskDescUpdateActivity.UPDATE_TASK_NAME);
@@ -302,60 +340,37 @@ public class TaskDetailActivity extends BaseActivity
                 break;
             case R.id.task_user_layout:
             case R.id.task_users_layout:
-                if (taskItemEntity == null) return;
+                if (taskItemEntity == null) {
+                    return;
+                }
                 if (!taskItemEntity.state) {
-                    if (hasTaskEditPermission()) {
-                        if (taskItemEntity.valid) {
-                            if (taskItemEntity.matter != null) {
-                                showTaskAllotSelectDialogFragment(taskItemEntity.matter.id);
-                            } else {
-                                showTopSnackBar(getString(R.string.task_please_check_project));
-                            }
+                    if (hasTaskEditPermission() && taskItemEntity.valid) {
+                        if (taskItemEntity.matter != null) {
+                            showTaskAllotSelectDialogFragment(taskItemEntity.matter.id);
+                        } else {
+                            showTopSnackBar(getString(R.string.task_please_check_project));
                         }
                     } else {
                         showTopSnackBar(getString(R.string.task_not_permission_edit_task));
                     }
                 }
                 break;
-            case R.id.task_start_iamge://开始计时
-                if (taskItemEntity == null) return;
+            //开始计时
+            case R.id.task_start_iamge:
+                if (taskItemEntity == null) {
+                    return;
+                }
                 if (isStrat) {
-                    MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
-                    TimerManager.getInstance().stopTimer(new SimpleCallBack<TimeEntity.ItemEntity>() {
-                        @Override
-                        public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
-                            TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
-                            TimerDetailActivity.launch(getContext(), timer);
-                        }
-
-                        @Override
-                        public void onFailure(Call<ResEntity<TimeEntity.ItemEntity>> call, Throwable t) {
-                            super.onFailure(call, t);
-                        }
-                    });
+                    startTimeMethod();
                 } else {
-                    showLoadingDialog(null);
-                    final TimeEntity.ItemEntity itemEntity = getTimer(taskItemEntity);
-                    MobclickAgent.onEvent(getContext(), UMMobClickAgent.start_timer_click_id);
-                    TimerManager.getInstance().addTimer(itemEntity, new Callback<TimeEntity.ItemEntity>() {
-                        @Override
-                        public void onResponse(Call<TimeEntity.ItemEntity> call, Response<TimeEntity.ItemEntity> response) {
-                            if (response.body() != null) {
-                                dismissLoadingDialog();
-                                itemEntity.pkId = response.body().pkId;
-                                TimerTimingActivity.launch(TaskDetailActivity.this, itemEntity);
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(Call<TimeEntity.ItemEntity> call, Throwable throwable) {
-                            dismissLoadingDialog();
-                        }
-                    });
+                    stopTimeMethod();
                 }
                 break;
-            case R.id.task_checkbox://  完成／取消完成
-                if (taskItemEntity == null) return;
+            //  完成／取消完成
+            case R.id.task_checkbox:
+                if (taskItemEntity == null) {
+                    return;
+                }
                 if (hasTaskEditPermission()) {
                     if (taskItemEntity.valid) {
                         if (taskItemEntity.state) {
@@ -376,7 +391,15 @@ public class TaskDetailActivity extends BaseActivity
                             }
                         }
                     } else {
-                        recoverTaskById(taskId);
+                        if (taskItemEntity.attendeeUsers != null) {
+                            if (taskItemEntity.attendeeUsers.size() > 1) {
+                                showDeleteDialog(getString(R.string.task_is_confirm_revert_task), SHOW_RENEW_DIALOG);
+                            } else {
+                                showTwiceSureDialog(getString(R.string.task_is_revert_task), SHOW_RENEW_BUTTOM_SHEET);
+                            }
+                        } else {
+                            showTwiceSureDialog(getString(R.string.task_is_revert_task), SHOW_RENEW_BUTTOM_SHEET);
+                        }
                     }
                 } else {
                     taskCheckbox.setChecked(!taskCheckbox.isChecked());
@@ -384,27 +407,36 @@ public class TaskDetailActivity extends BaseActivity
                 }
                 break;
             case R.id.comment_tv:
-                if (taskItemEntity == null) return;
+                if (taskItemEntity == null) {
+                    return;
+                }
                 CommentListActivity.launchForResult(this,
                         taskItemEntity,
                         START_COMMENT_FORRESULT_CODE,
                         false);
                 break;
-            case R.id.comment_layout://更多评论动态
-                if (taskItemEntity == null) return;
+            //更多评论动态
+            case R.id.comment_layout:
+                if (taskItemEntity == null) {
+                    return;
+                }
                 CommentListActivity.launchForResult(this,
                         taskItemEntity,
                         START_COMMENT_FORRESULT_CODE,
                         taskItemEntity.valid);
                 break;
             case R.id.task_time_sum_layout:
-                if (taskItemEntity == null) return;
+                if (taskItemEntity == null) {
+                    return;
+                }
                 if (taskItemEntity.timingSum > 0) {
                     showTimersDialogFragment();
                 }
                 break;
             case R.id.task_time:
-                if (taskItemEntity == null) return;
+                if (taskItemEntity == null) {
+                    return;
+                }
                 if (taskItemEntity.timingSum > 0) {
                     showTimersDialogFragment();
                 }
@@ -413,6 +445,49 @@ public class TaskDetailActivity extends BaseActivity
                 super.onClick(v);
                 break;
         }
+    }
+
+    /**
+     * 开始计时
+     */
+    private void startTimeMethod() {
+        MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
+        TimerManager.getInstance().stopTimer(new SimpleCallBack<TimeEntity.ItemEntity>() {
+            @Override
+            public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
+                TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
+                TimerDetailActivity.launch(getContext(), timer);
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<TimeEntity.ItemEntity>> call, Throwable t) {
+                super.onFailure(call, t);
+            }
+        });
+    }
+
+    /**
+     * 停止计时
+     */
+    private void stopTimeMethod() {
+        showLoadingDialog(null);
+        final TimeEntity.ItemEntity itemEntity = getTimer(taskItemEntity);
+        MobclickAgent.onEvent(getContext(), UMMobClickAgent.start_timer_click_id);
+        TimerManager.getInstance().addTimer(itemEntity, new Callback<TimeEntity.ItemEntity>() {
+            @Override
+            public void onResponse(Call<TimeEntity.ItemEntity> call, Response<TimeEntity.ItemEntity> response) {
+                if (response.body() != null) {
+                    dismissLoadingDialog();
+                    itemEntity.pkId = response.body().pkId;
+                    TimerTimingActivity.launch(TaskDetailActivity.this, itemEntity);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<TimeEntity.ItemEntity> call, Throwable throwable) {
+                dismissLoadingDialog();
+            }
+        });
     }
 
     /**
@@ -458,7 +533,9 @@ public class TaskDetailActivity extends BaseActivity
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onTimerEvent(TimingEvent event) {
-        if (event == null) return;
+        if (event == null) {
+            return;
+        }
 
         switch (event.action) {
             case TimingEvent.TIMING_ADD:
@@ -500,6 +577,8 @@ public class TaskDetailActivity extends BaseActivity
                     }
                 }
                 break;
+            default:
+                break;
         }
     }
 
@@ -507,7 +586,9 @@ public class TaskDetailActivity extends BaseActivity
      * 显示底部菜单
      */
     private void showBottomMenu() {
-        if (taskItemEntity == null) return;
+        if (taskItemEntity == null) {
+            return;
+        }
         List<String> titles = null;
         if (taskItemEntity.valid) {
             if (taskItemEntity.state) {
@@ -529,7 +610,9 @@ public class TaskDetailActivity extends BaseActivity
                         dialog.dismiss();
                         switch (position) {
                             case 0:
-                                if (taskItemEntity == null) return;
+                                if (taskItemEntity == null) {
+                                    return;
+                                }
                                 if (taskItemEntity.valid) {
                                     if (!taskItemEntity.state) {
                                         if (taskItemEntity.attendeeUsers != null) {
@@ -555,7 +638,6 @@ public class TaskDetailActivity extends BaseActivity
                                         showTwiceSureDialog(getString(R.string.task_is_revert_task), SHOW_RENEW_BUTTOM_SHEET);
                                     }
                                 }
-
                                 break;
                             case 1:
                                 if (taskItemEntity.valid) {
@@ -573,6 +655,8 @@ public class TaskDetailActivity extends BaseActivity
                                 } else {
                                     showTwiceSureDialog(getString(R.string.task_delete_not_revert), SHOW_CLEAR_BUTTOM_SHEET);
                                 }
+                                break;
+                            default:
                                 break;
                         }
                     }
@@ -601,6 +685,8 @@ public class TaskDetailActivity extends BaseActivity
                                 } else if (type == SHOW_RENEW_BUTTOM_SHEET) {
                                     recoverTaskById(taskId);
                                 }
+                                break;
+                            default:
                                 break;
                         }
                     }
@@ -636,17 +722,20 @@ public class TaskDetailActivity extends BaseActivity
                         break;
                     case Dialog.BUTTON_NEGATIVE:
                         if (type == SHOW_FINISH_DIALOG) {
-                            if (taskCheckbox != null)
+                            if (taskCheckbox != null) {
                                 taskCheckbox.setChecked(taskItemEntity.state);
+                            }
                         }
+                        break;
+                    default:
                         break;
                 }
             }
         };
         //dialog参数设置
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);  //先得到构造器
-        builder.setTitle(getString(R.string.task_remind)); //设置标题
-        builder.setMessage(message); //设置内容
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(getString(R.string.task_remind));
+        builder.setMessage(message);
         builder.setPositiveButton(getString(R.string.task_confirm), dialogOnclicListener);
         builder.setNegativeButton(getString(R.string.task_cancel), dialogOnclicListener);
         builder.create().show();
@@ -746,9 +835,10 @@ public class TaskDetailActivity extends BaseActivity
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        if (taskItemEntity != null)
+        if (taskItemEntity != null) {
             TaskAllotSelectDialogFragment.newInstance(projectId, taskItemEntity.attendeeUsers)
                     .show(mFragTransaction, tag);
+        }
     }
 
     /**
@@ -761,9 +851,10 @@ public class TaskDetailActivity extends BaseActivity
         if (fragment != null) {
             mFragTransaction.remove(fragment);
         }
-        if (taskItemEntity != null)
+        if (taskItemEntity != null) {
             TaskTimersDialogFragment.newInstance(taskItemEntity)
                     .show(mFragTransaction, tag);
+        }
     }
 
     public String getHm(long times) {
@@ -771,7 +862,9 @@ public class TaskDetailActivity extends BaseActivity
         long hour = times / 3600;
         long minute = times % 3600 / 60;
         long second = times % 60;
-        if (second > 0) minute += 1;
+        if (second > 0) {
+            minute += 1;
+        }
         return String.format(Locale.CHINA, "%02d:%02d", hour, minute);
     }
 
@@ -782,7 +875,9 @@ public class TaskDetailActivity extends BaseActivity
      */
     private void setDataToView(TaskEntity.TaskItemEntity taskItemEntity) {
         if (taskItemEntity != null) {
-            if (taskName == null) return;
+            if (taskName == null) {
+                return;
+            }
             if (titleAction2 != null) {
                 titleAction2.setVisibility(hasTaskDeletePermission() ? View.VISIBLE : View.GONE);
             }
@@ -863,8 +958,9 @@ public class TaskDetailActivity extends BaseActivity
                         layoutManager.setReverseLayout(true);
                         taskUserRecyclerview.setLayoutManager(layoutManager);
                         taskUserRecyclerview.setAdapter(usersAdapter = new TaskUsersAdapter(this));
-                        if (taskItemEntity.valid)
+                        if (taskItemEntity.valid) {
                             usersAdapter.setOnItemClickListener(this);
+                        }
                         Collections.reverse(taskItemEntity.attendeeUsers);
                         usersAdapter.bindData(true, taskItemEntity.attendeeUsers);
                     } else if (taskItemEntity.attendeeUsers.size() == 1) {
@@ -921,7 +1017,9 @@ public class TaskDetailActivity extends BaseActivity
      * 更新检查项fragment
      */
     private void updateCheckItemFragment() {
-        if (taskCheckItemFragment == null) return;
+        if (taskCheckItemFragment == null) {
+            return;
+        }
         Bundle bundle = new Bundle();
         bundle.putBoolean(KEY_IS_CHECK_ITEM, isSelectedCheckItem);
         taskCheckItemFragment.notifyFragmentUpdate(taskCheckItemFragment, 101, bundle);
@@ -943,7 +1041,9 @@ public class TaskDetailActivity extends BaseActivity
      * @param taskId
      */
     private void recoverTaskById(String taskId) {
-        if (TextUtils.isEmpty(taskId)) return;
+        if (TextUtils.isEmpty(taskId)) {
+            return;
+        }
         showLoadingDialog(null);
         callEnqueue(
                 getApi().taskRecoverById(taskId),
@@ -977,7 +1077,9 @@ public class TaskDetailActivity extends BaseActivity
      * 清空所有已删除的任务
      */
     public void clearAllDeletedTask() {
-        if (TextUtils.isEmpty(taskId)) return;
+        if (TextUtils.isEmpty(taskId)) {
+            return;
+        }
         List<String> ids = new ArrayList<>();
         ids.add(taskId);
         if (ids.size() > 0) {
@@ -1098,8 +1200,9 @@ public class TaskDetailActivity extends BaseActivity
                         if (response.body().result != null) {
                             EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION, response.body().result));
                         }
-                        if (checkbox != null)
+                        if (checkbox != null) {
                             checkbox.setChecked(state);
+                        }
                         taskItemEntity = response.body().result;
                         try {
                             cloneItemEntity = (TaskEntity.TaskItemEntity) BeanUtils.cloneTo(taskItemEntity);
@@ -1114,8 +1217,9 @@ public class TaskDetailActivity extends BaseActivity
                         super.onFailure(call, t);
                         dismissLoadingDialog();
                         setDataToView(cloneItemEntity);
-                        if (checkbox != null)
+                        if (checkbox != null) {
                             checkbox.setChecked(cloneItemEntity.state);
+                        }
                     }
 
                     @Override
@@ -1167,10 +1271,13 @@ public class TaskDetailActivity extends BaseActivity
             gestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
                 @Override
                 public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-                    if (e1 == null || e2 == null)
+                    if (e1 == null || e2 == null) {
                         return super.onFling(e1, e2, velocityX, velocityY);
+                    }
                     boolean canFastScroll = e1.getRawX() > appbar.getBottom() && e2.getRawX() > appbar.getBottom();
-                    if (!canFastScroll) return super.onFling(e1, e2, velocityX, velocityY);
+                    if (!canFastScroll) {
+                        return super.onFling(e1, e2, velocityX, velocityY);
+                    }
                     int limit = DensityUtil.dip2px(getContext(), 3500);
                     if (velocityY > limit) {
                         appbar.setExpanded(true, true);
@@ -1187,7 +1294,8 @@ public class TaskDetailActivity extends BaseActivity
 
     @Override
     public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
-        if (fragment instanceof TaskAllotSelectDialogFragment) {//选择负责人回调
+        //选择负责人回调
+        if (fragment instanceof TaskAllotSelectDialogFragment) {
             if (params != null) {
                 List<TaskEntity.TaskItemEntity.AttendeeUserEntity> attusers = (List<TaskEntity.TaskItemEntity.AttendeeUserEntity>) params.getSerializable("list");
                 if (taskItemEntity.attendeeUsers != null) {
@@ -1201,15 +1309,21 @@ public class TaskDetailActivity extends BaseActivity
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onUpdateTaskNameEvent(TaskActionEvent event) {
-        if (event == null) return;
-        if (taskItemEntity == null) return;
-        if (event.action == TaskActionEvent.TASK_UPDATE_NAME_ACTION) {//修改任务名称
+        if (event == null) {
+            return;
+        }
+        if (taskItemEntity == null) {
+            return;
+        }
+        //修改任务名称
+        if (event.action == TaskActionEvent.TASK_UPDATE_NAME_ACTION) {
             String desc = event.desc;
             if (!TextUtils.isEmpty(desc)) {
                 taskItemEntity.name = desc;
                 updateTask(taskItemEntity, taskItemEntity.state, null);
             }
-        } else if (event.action == TaskActionEvent.TASK_UPDATE_PROJECT_ACTION) {//修改任务所属项目
+        }//修改任务所属项目
+        else if (event.action == TaskActionEvent.TASK_UPDATE_PROJECT_ACTION) {
             taskUsersLayout.setVisibility(View.GONE);
             taskUserLayout.setVisibility(View.VISIBLE);
             if (getLoginUserInfo() != null) {
@@ -1242,13 +1356,12 @@ public class TaskDetailActivity extends BaseActivity
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         if (adapter instanceof TaskUsersAdapter) {
-            if (taskItemEntity != null) {
-                if (!taskItemEntity.state)
-                    if (taskItemEntity.matter != null) {
-                        showTaskAllotSelectDialogFragment(taskItemEntity.matter.id);
-                    } else {
-                        showTopSnackBar(getString(R.string.task_please_check_project));
-                    }
+            if (taskItemEntity != null && !taskItemEntity.state) {
+                if (taskItemEntity.matter != null) {
+                    showTaskAllotSelectDialogFragment(taskItemEntity.matter.id);
+                } else {
+                    showTopSnackBar(getString(R.string.task_please_check_project));
+                }
             }
         }
     }

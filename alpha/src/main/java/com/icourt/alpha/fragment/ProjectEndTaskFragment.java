@@ -54,6 +54,9 @@ import retrofit2.Response;
 public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuickAdapter.OnItemClickListener, BaseQuickAdapter.OnItemChildClickListener, BaseQuickAdapter.OnItemLongClickListener {
 
     public static final String KEY_PROJECT_ID = "key_project_id";
+    private static final String PROJECT_EDIT_TASK_PREMISSION = "MAT:matter.task:edit";
+    private static final String PROJECT_DELETE_TASK_PREMISSION = "MAT:matter.task:delete";
+    private static final String PROJECT_ADD_TASK_PREMISSION = "MAT:matter.timeLog:add";
 
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
@@ -67,8 +70,14 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
     private TaskAdapter taskAdapter;
     String projectId;
     private int pageIndex = 1;
-    TaskEntity.TaskItemEntity lastEntity;//最后一次操作的任务
-    boolean isFirstTimeIntoPage = true;//是否是第一次进入界面，第一次进入界面，要隐藏搜索栏，滚动到第一个任务。
+    /**
+     * 最后一次操作的任务
+     */
+    TaskEntity.TaskItemEntity lastEntity;
+    /**
+     * 是否是第一次进入界面，第一次进入界面，要隐藏搜索栏，滚动到第一个任务。
+     */
+    boolean isFirstTimeIntoPage = true;
 
     public static ProjectEndTaskFragment newInstance(@NonNull Context context, @NonNull String projectId) {
         ProjectEndTaskFragment projectTaskFragment = new ProjectEndTaskFragment();
@@ -106,7 +115,6 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
         taskAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskAdapter));
         recyclerView.setAdapter(taskAdapter);
 
-
         refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
             public void onRefresh(boolean isPullDown) {
@@ -126,28 +134,38 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDeleteTaskEvent(TaskActionEvent event) {
-        if (event == null) return;
+        if (event == null) {
+            return;
+        }
         switch (event.action) {
             case TaskActionEvent.TASK_REFRESG_ACTION:
                 refreshLayout.startRefresh();
                 break;
             case TaskActionEvent.TASK_DELETE_ACTION:
-                if (event.entity == null) return;
+                if (event.entity == null) {
+                    return;
+                }
                 if (taskAdapter != null) {
                     taskAdapter.removeItem(event.entity);
                 }
                 break;
             case TaskActionEvent.TASK_ADD_ITEM_ACITON:
-                if (event.entity == null) return;
+                if (event.entity == null) {
+                    return;
+                }
                 if (taskAdapter != null) {
                     taskAdapter.addData(event.entity);
                 }
                 break;
             case TaskActionEvent.TASK_UPDATE_ITEM:
-                if (event.entity == null) return;
+                if (event.entity == null) {
+                    return;
+                }
                 if (taskAdapter != null) {
                     taskAdapter.updateItem(event.entity);
                 }
+                break;
+            default:
                 break;
         }
     }
@@ -184,7 +202,8 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
                         stopRefresh();
                         if (response.body().result != null && recyclerView != null) {
                             taskAdapter.setNewData(response.body().result.items);
-                            if (isRefresh) {//如果是下拉刷新情况，才判断要不要显示空页面
+                            //如果是下拉刷新情况，才判断要不要显示空页面
+                            if (isRefresh) {
                                 enableEmptyView(taskAdapter.getData());
                             }
                             //第一次进入 隐藏搜索框
@@ -201,7 +220,8 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
                     public void onFailure(Call<ResEntity<TaskEntity>> call, Throwable t) {
                         super.onFailure(call, t);
                         stopRefresh();
-                        if (isRefresh) {//如果是下拉刷新情况，才判断要不要显示空页面
+                        //如果是下拉刷新情况，才判断要不要显示空页面
+                        if (isRefresh) {
                             enableEmptyView(taskAdapter.getData());
                         }
                     }
@@ -219,13 +239,13 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
                     public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
 
                         if (response.body().result != null) {
-                            if (response.body().result.contains("MAT:matter.task:edit")) {
+                            if (response.body().result.contains(PROJECT_EDIT_TASK_PREMISSION)) {
                                 isEditTask = true;
                             }
-                            if (response.body().result.contains("MAT:matter.task:delete")) {
+                            if (response.body().result.contains(PROJECT_DELETE_TASK_PREMISSION)) {
                                 isDeleteTask = true;
                             }
-                            if (response.body().result.contains("MAT:matter.timeLog:add")) {
+                            if (response.body().result.contains(PROJECT_ADD_TASK_PREMISSION)) {
                                 isAddTime = true;
                             }
                         }
@@ -266,8 +286,9 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
     @Override
     public void onItemClick(BaseQuickAdapter baseQuickAdapter, View view, int i) {
         TaskEntity.TaskItemEntity taskItemEntity = taskAdapter.getItem(i);
-        if (taskItemEntity != null)
+        if (taskItemEntity != null) {
             TaskDetailActivity.launch(view.getContext(), taskItemEntity.id);
+        }
     }
 
     @Override
@@ -275,8 +296,9 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
         final TaskEntity.TaskItemEntity itemEntity = taskAdapter.getItem(i);
         switch (view.getId()) {
             case R.id.task_item_start_timming:
-                if (itemEntity == null)
+                if (itemEntity == null) {
                     return;
+                }
                 if (!itemEntity.isTiming) {
                     MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
                     startTiming(itemEntity);
@@ -287,9 +309,11 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
                 break;
             case R.id.task_item_checkbox:
                 if (isEditTask) {
-                    if (itemEntity == null)
+                    if (itemEntity == null) {
                         return;
-                    if (!itemEntity.state) {//完成任务
+                    }
+                    //完成任务
+                    if (!itemEntity.state) {
                         if (itemEntity.attendeeUsers != null) {
                             if (itemEntity.attendeeUsers.size() > 1) {
                                 showFinishDialog(getActivity(), getString(R.string.task_is_confirm_complete_task), itemEntity, SHOW_FINISH_DIALOG);
@@ -299,12 +323,15 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
                         } else {
                             updateTaskState(itemEntity, true);
                         }
-                    } else {//取消完成任务
+                    } else {
+                        //取消完成任务
                         updateTaskState(itemEntity, false);
                     }
                 } else {
                     showTopSnackBar(getString(R.string.task_not_permission_edit_task));
                 }
+                break;
+            default:
                 break;
         }
     }
@@ -312,8 +339,10 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
     @Override
     public boolean onItemLongClick(BaseQuickAdapter baseQuickAdapter, View view, int i) {
         TaskEntity.TaskItemEntity item = taskAdapter.getItem(i);
-        if (item != null && item.type == 0)//说明是任务
+        //说明是任务
+        if (item != null && item.type == 0) {
             showLongMenu(item);
+        }
         return false;
     }
 
@@ -343,12 +372,14 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
 
     @Override
     protected void taskTimingUpdateEvent(String taskId) {
-        if (TextUtils.isEmpty(taskId)) {//停止计时的广播
+        //停止计时的广播
+        if (TextUtils.isEmpty(taskId)) {
             if (lastEntity != null) {
                 lastEntity.isTiming = false;
             }
             taskAdapter.notifyDataSetChanged();
-        } else {//开始计时的广播
+        } else {
+            //开始计时的广播
             taskAdapter.notifyDataSetChanged();
         }
     }

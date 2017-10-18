@@ -38,7 +38,7 @@ public class TaskCheckItemAdapter extends MultiSelectRecyclerAdapter<TaskCheckIt
     }
 
     @Override
-    public int bindView(int viewtype) {
+    public int bindView(int viewType) {
         return R.layout.adapter_item_task_check_layout;
     }
 
@@ -82,8 +82,8 @@ public class TaskCheckItemAdapter extends MultiSelectRecyclerAdapter<TaskCheckIt
                     if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
                         holder.itemView.setFocusable(true);
                         holder.itemView.setFocusableInTouchMode(true);
-                        holder.itemView.requestFocus();//请求焦点
-                        holder.itemView.findFocus();//获取焦点
+                        holder.itemView.requestFocus();
+                        holder.itemView.findFocus();
                         SystemUtils.hideSoftKeyBoard(textView.getContext(), textView);
                         return true;
                     }
@@ -97,6 +97,12 @@ public class TaskCheckItemAdapter extends MultiSelectRecyclerAdapter<TaskCheckIt
 
 
     public interface OnLoseFocusListener {
+        /**
+         * 取消焦点
+         * @param itemEntity
+         * @param position
+         * @param name
+         */
         void loseFocus(TaskCheckItemEntity.ItemEntity itemEntity, int position, String name);
     }
 

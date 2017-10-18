@@ -48,9 +48,10 @@ import retrofit2.Response;
 /**
  * Description 任务详情：检查项
  * Company Beijing icourt
- * author  lu.zhao  E-mail:zhaolu@icourt.cc
- * date createTime：17/5/12
- * version 2.0.0
+ *
+ * @author lu.zhao  E-mail:zhaolu@icourt.cc
+ *         date createTime：17/5/12
+ *         version 2.0.0
  */
 
 public class TaskCheckItemFragment extends BaseFragment
@@ -129,16 +130,18 @@ public class TaskCheckItemFragment extends BaseFragment
             emptyText.setText(R.string.task_no_check_item);
             taskCheckItemAdapter.setOnItemChildClickListener(this);
             taskCheckItemAdapter.setOnItemClickListener(this);
-            if (valid)
+            if (valid) {
                 taskCheckItemAdapter.setOnLoseFocusListener(this);
+            }
             checkItemEdit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
                 @Override
                 public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                     if (actionId == EditorInfo.IME_ACTION_DONE) {
-                        if (!TextUtils.isEmpty(checkItemEdit.getText().toString()))
+                        if (!TextUtils.isEmpty(checkItemEdit.getText().toString())) {
                             addCheckItem();
-                        else
+                        } else {
                             showTopSnackBar(R.string.task_please_input_check_name);
+                        }
                     }
                     return true;
                 }
@@ -171,8 +174,9 @@ public class TaskCheckItemFragment extends BaseFragment
                 new SimpleCallBack<TaskCheckItemEntity>() {
                     @Override
                     public void onSuccess(Call<ResEntity<TaskCheckItemEntity>> call, Response<ResEntity<TaskCheckItemEntity>> response) {
-                        if (getActivity() != null && !getActivity().isFinishing())
+                        if (getActivity() != null && !getActivity().isFinishing()) {
                             dismissLoadingDialog();
+                        }
                         if (listLayout != null) {
                             if (response.body().result.items != null) {
                                 taskCheckItemAdapter.bindData(true, response.body().result.items);
@@ -237,13 +241,14 @@ public class TaskCheckItemFragment extends BaseFragment
                     taskCheckItemAdapter.setOnItemChildClickListener(!isFinish && valid ? this : null);
                     taskCheckItemAdapter.setOnLoseFocusListener(!isFinish && valid ? this : null);
                 }
-                if (addItemLayout != null)
+                if (addItemLayout != null) {
                     addItemLayout.setVisibility(valid && !isFinish ? View.VISIBLE : View.GONE);
+                }
             }
         } else if (type == 101 && bundle != null) {
             boolean isSelectedCheckItem = bundle.getBoolean(KEY_IS_CHECK_ITEM, false);
             if (isSelectedCheckItem) {
-                SystemUtils.showSoftKeyBoard(getContext(),checkItemEdit);
+                SystemUtils.showSoftKeyBoard(getContext(), checkItemEdit);
             }
         }
     }
@@ -263,8 +268,9 @@ public class TaskCheckItemFragment extends BaseFragment
                                 String id = response.body().result.getAsString();
                                 itemEntity.id = id;
                                 taskCheckItemAdapter.addItem(itemEntity);
-                                if (checkItemEdit != null)
+                                if (checkItemEdit != null) {
                                     checkItemEdit.setText("");
+                                }
                                 EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
                                 updateCheckItemCount();
                             }
@@ -309,10 +315,10 @@ public class TaskCheckItemFragment extends BaseFragment
      * @param editText
      */
     private void edittextSetFocus(EditText editText) {
-        editText.setFocusable(true);//设置输入框可聚集
-        editText.setFocusableInTouchMode(true);//设置触摸聚焦
-        editText.requestFocus();//请求焦点
-        editText.findFocus();//获取焦点
+        editText.setFocusable(true);
+        editText.setFocusableInTouchMode(true);
+        editText.requestFocus();
+        editText.findFocus();
         editText.setSelection(editText.getText().length());
         SystemUtils.showSoftKeyBoard(getActivity());
 
@@ -335,7 +341,8 @@ public class TaskCheckItemFragment extends BaseFragment
                     break;
                 case R.id.check_item_delete_image:
                     deleteCheckItem(itemEntity, adapter.getRealPos(position));
-
+                    break;
+                default:
                     break;
             }
         }
@@ -380,7 +387,9 @@ public class TaskCheckItemFragment extends BaseFragment
      * @param itemEntity
      */
     private void updateCheckItem(final TaskCheckItemEntity.ItemEntity itemEntity, final String name) {
-        if (itemEntity == null) return;
+        if (itemEntity == null) {
+            return;
+        }
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("id", itemEntity.id);
         jsonObject.addProperty("name", name);
@@ -412,7 +421,9 @@ public class TaskCheckItemFragment extends BaseFragment
      * @param itemEntity
      */
     private void deleteCheckItem(final TaskCheckItemEntity.ItemEntity itemEntity, final int position) {
-        if (itemEntity == null) return;
+        if (itemEntity == null) {
+            return;
+        }
         callEnqueue(
                 getApi().taskCheckItemDelete(itemEntity.id),
                 new SimpleCallBack<JsonElement>() {

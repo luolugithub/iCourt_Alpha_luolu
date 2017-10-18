@@ -36,9 +36,10 @@ import static com.icourt.alpha.entity.event.TaskActionEvent.TASK_UPDATE_NAME_ACT
 /**
  * Description  修改任务描述
  * Company Beijing icourt
- * author  lu.zhao  E-mail:zhaolu@icourt.cc
- * date createTime：17/5/15
- * version 2.0.0
+ *
+ * @author lu.zhao  E-mail:zhaolu@icourt.cc
+ *         date createTime：17/5/15
+ *         version 2.0.0
  */
 
 public class TaskDescUpdateActivity extends BaseActivity {
@@ -70,9 +71,10 @@ public class TaskDescUpdateActivity extends BaseActivity {
 
     }
 
-
     public static void launch(@NonNull Context context, @NonNull String descOrName, @UPDATE_TASK_TYPE int type) {
-        if (context == null) return;
+        if (context == null) {
+        return;
+    }
         Intent intent = new Intent(context, TaskDescUpdateActivity.class);
         intent.putExtra(KEY_TASK_UPDATE, descOrName);
         intent.putExtra(KEY_TASK_TYPE, type);
@@ -96,21 +98,21 @@ public class TaskDescUpdateActivity extends BaseActivity {
         type = getIntent().getIntExtra(KEY_TASK_TYPE, -1);
         if (type == UPDATE_TASK_DESC) {
             if (TextUtils.isEmpty(descOrName)) {
-                setTitle("添加任务详情");
+                setTitle(getString(R.string.task_add_desc));
             } else {
-                setTitle("编辑任务详情");
+                setTitle(getString(R.string.task_edit_desc));
             }
-            descEditText.setHint("添加任务详情");
+            descEditText.setHint(getString(R.string.task_add_desc));
             descEditText.setMaxEms(3000);
             descEditText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(3000)});
             contentLengthTv.setVisibility(View.VISIBLE);
         } else if (type == UPDATE_TASK_NAME) {
             if (TextUtils.isEmpty(descOrName)) {
-                setTitle("添加任务名称");
+                setTitle(getString(R.string.task_add_name));
             } else {
-                setTitle("编辑任务名称");
+                setTitle(getString(R.string.task_edit_name));
             }
-            descEditText.setHint("添加任务名称");
+            descEditText.setHint(getString(R.string.task_add_name));
             descEditText.setMaxEms(200);
             descEditText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(200)});
             contentLengthTv.setVisibility(View.VISIBLE);
@@ -118,7 +120,7 @@ public class TaskDescUpdateActivity extends BaseActivity {
         descEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                contentLengthTv.setText("0/" + descEditText.getMaxEms());
+                contentLengthTv.setText(String.format("0/%s", descEditText.getMaxEms()));
             }
 
             @Override
@@ -128,7 +130,7 @@ public class TaskDescUpdateActivity extends BaseActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
-                contentLengthTv.setText(s.toString().length() + "/" + descEditText.getMaxEms());
+                contentLengthTv.setText(String.format("%s/%s", s.toString().length(), descEditText.getMaxEms()));
             }
         });
         descEditText.setText(descOrName);
@@ -142,7 +144,7 @@ public class TaskDescUpdateActivity extends BaseActivity {
             case R.id.titleAction:
                 if (StringUtils.isEmpty(descEditText.getText())) {
                     descEditText.setText("");
-                    showTopSnackBar("请输入具体内容");
+                    showTopSnackBar(R.string.task_input_content);
                     return;
                 }
                 if (type == UPDATE_TASK_DESC) {
@@ -150,7 +152,6 @@ public class TaskDescUpdateActivity extends BaseActivity {
                 } else if (type == UPDATE_TASK_NAME) {
                     EventBus.getDefault().post(new TaskActionEvent(TASK_UPDATE_NAME_ACTION, null, descEditText.getText().toString()));
                 }
-
                 this.finish();
                 break;
             default:

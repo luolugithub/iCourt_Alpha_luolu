@@ -18,19 +18,30 @@ import com.icourt.alpha.fragment.TaskListCalendarFragment;
 import butterknife.ButterKnife;
 
 /**
- * Description 搜索任务
- * Company Beijing icourt
- * author  zhaodanyang  E-mail:zhaodanyang@icourt.cc
- * date createTime：2017/9/7
- * version 2.0.0
+ * @Description 搜索任务
+ * @Company Beijing icourt
+ * @author  zhaodanyang  E-mail:zhaodanyang@icourt.cc
+ * @date createTime：2017/9/7
+ * @version 2.0.0
  */
 
 public class SearchTaskActivity extends BaseActivity {
-
-    int searchTaskType;//搜索任务type
-    int taskStatuType;//搜索任务状态type
-    String projectId;//项目的id
-    String assignTos;//负责人的id的集合
+    /**
+     * 搜索任务type
+     */
+    int searchTaskType;
+    /**
+     * 搜索任务状态type
+     */
+    int taskStatuType;
+    /**
+     * 项目的id
+     */
+    String projectId;
+    /**
+     * 负责人的id的集合
+     */
+    String assignTos;
 
     /**
      * ·
@@ -40,7 +51,7 @@ public class SearchTaskActivity extends BaseActivity {
      * @param searchTaskType 0:全部；1：新任务；2：我关注的；3我部门的
      */
     public static void launchTask(@NonNull Context context, String assignTos, int searchTaskType) {
-        if (context == null) return;
+        if (context == null) {return;}
         Intent intent = new Intent(context, SearchTaskActivity.class);
         intent.putExtra(SearchTaskFragment.KEY_SEARCH_TASK_TYPE, searchTaskType);
         intent.putExtra(SearchTaskFragment.KEY_ASSIGN_TOS, assignTos);
@@ -56,7 +67,7 @@ public class SearchTaskActivity extends BaseActivity {
      * @param projectId      项目id
      */
     public static void launchFinishTask(@NonNull Context context, String assignTos, int searchTaskType, int taskStatuType, String projectId) {
-        if (context == null) return;
+        if (context == null) {return;}
         Intent intent = new Intent(context, SearchTaskActivity.class);
         intent.putExtra(SearchTaskFragment.KEY_SEARCH_TASK_TYPE, searchTaskType);
         intent.putExtra(SearchTaskFragment.KEY_SEARCH_TASK_STATUS_TYPE, taskStatuType);

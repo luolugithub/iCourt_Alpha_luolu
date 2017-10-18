@@ -55,9 +55,10 @@ import retrofit2.Response;
 /**
  * Description  每天的任务 fragment
  * Company Beijing icourt
- * author  youxuan  E-mail:zhaolu@icourt.cc
- * date createTime：17/7/10
- * version 2.0.0
+ *
+ * @author youxuan  E-mail:zhaolu@icourt.cc
+ *         date createTime：17/7/10
+ *         version 2.0.0
  */
 
 
@@ -151,10 +152,10 @@ public class TaskEverydayFragment extends BaseFragment
     @Override
     protected void initView() {
         taskItemEntityList = (ArrayList<TaskEntity.TaskItemEntity>) getArguments().getSerializable(KEY_TASKS);
-        if (taskItemEntityList == null) taskItemEntityList = new ArrayList<>();
+        if (taskItemEntityList == null) {
+            taskItemEntityList = new ArrayList<>();
+        }
         Collections.sort(taskItemEntityList, taskItemEntityComparator);
-
-
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(taskSimpleAdapter = new TaskSimpleAdapter());
@@ -192,9 +193,13 @@ public class TaskEverydayFragment extends BaseFragment
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onTaskEvent(TaskActionEvent event) {
-        if (event == null) return;
+        if (event == null) {
+            return;
+        }
         if (event.action == TaskActionEvent.TASK_UPDATE_ITEM) {
-            if (event.entity == null) return;
+            if (event.entity == null) {
+                return;
+            }
 
             int indexOf = taskItemEntityList.indexOf(event.entity);
             if (indexOf >= 0) {
@@ -242,7 +247,9 @@ public class TaskEverydayFragment extends BaseFragment
     @Override
     public void notifyFragmentUpdate(Fragment targetFrgament, int type, Bundle bundle) {
         super.notifyFragmentUpdate(targetFrgament, type, bundle);
-        if (targetFrgament != this) return;
+        if (targetFrgament != this) {
+            return;
+        }
         if (bundle != null) {
             ArrayList<TaskEntity.TaskItemEntity> taskItemEntities = (ArrayList<TaskEntity.TaskItemEntity>) bundle.getSerializable(KEY_FRAGMENT_RESULT);
             if (taskItemEntities != null
@@ -262,7 +269,9 @@ public class TaskEverydayFragment extends BaseFragment
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onTimerEvent(TimingEvent event) {
-        if (event == null) return;
+        if (event == null) {
+            return;
+        }
         switch (event.action) {
             case TimingEvent.TIMING_ADD:
                 List<TaskEntity.TaskItemEntity> data = taskSimpleAdapter.getData();
@@ -285,6 +294,8 @@ public class TaskEverydayFragment extends BaseFragment
                     taskItemEntity.isTiming = false;
                 }
                 taskSimpleAdapter.notifyDataSetChanged();
+                break;
+            default:
                 break;
         }
     }
@@ -328,7 +339,7 @@ public class TaskEverydayFragment extends BaseFragment
      * 展示选择负责人对话框
      */
     public void showTaskAllotSelectDialogFragment(String projectId, List<TaskEntity.TaskItemEntity.AttendeeUserEntity> attendeeUsers) {
-        String tag = "TaskAllotSelectDialogFragment";
+        String tag = TaskAllotSelectDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
         Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
         if (fragment != null) {
@@ -343,7 +354,7 @@ public class TaskEverydayFragment extends BaseFragment
      * 展示选择项目对话框
      */
     public void showProjectSelectDialogFragment() {
-        String tag = "ProjectSelectDialogFragment";
+        String tag = ProjectSelectDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
         Fragment fragment = getChildFragmentManager().findFragmentByTag(tag);
         if (fragment != null) {
@@ -365,8 +376,9 @@ public class TaskEverydayFragment extends BaseFragment
     @Override
     public void showDateSelectDialog(TaskEntity.TaskItemEntity taskItemEntity) {
         updateTaskItemEntity = taskItemEntity;
-        if (taskItemEntity != null)
+        if (taskItemEntity != null) {
             showDateSelectDialogFragment(taskItemEntity.dueTime, taskItemEntity.id);
+        }
     }
 
     @Override
@@ -403,7 +415,9 @@ public class TaskEverydayFragment extends BaseFragment
      */
     private String getReminderJson(TaskReminderEntity taskReminderEntity) {
         try {
-            if (taskReminderEntity == null) return null;
+            if (taskReminderEntity == null) {
+                return null;
+            }
             Gson gson = new Gson();
             return gson.toJson(taskReminderEntity);
         } catch (Exception e) {
@@ -419,10 +433,16 @@ public class TaskEverydayFragment extends BaseFragment
      * @param taskReminderEntity
      */
     private void addReminders(TaskEntity.TaskItemEntity taskItemEntity, final TaskReminderEntity taskReminderEntity) {
-        if (taskReminderEntity == null) return;
-        if (taskItemEntity == null) return;
+        if (taskReminderEntity == null) {
+            return;
+        }
+        if (taskItemEntity == null) {
+            return;
+        }
         String json = getReminderJson(taskReminderEntity);
-        if (TextUtils.isEmpty(json)) return;
+        if (TextUtils.isEmpty(json)) {
+            return;
+        }
         callEnqueue(
                 getApi().taskReminderAdd(taskItemEntity.id, RequestUtils.createJsonBody(json)),
                 new SimpleCallBack<TaskReminderEntity>() {
@@ -452,8 +472,9 @@ public class TaskEverydayFragment extends BaseFragment
                     @Override
                     public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
                         dismissLoadingDialog();
-                        if (response.body().result != null)
+                        if (response.body().result != null) {
                             EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_UPDATE_ITEM, response.body().result));
+                        }
                         if (itemEntity != null && taskReminderEntity != null) {
                             addReminders(updateTaskItemEntity, taskReminderEntity);
                         }
@@ -475,7 +496,9 @@ public class TaskEverydayFragment extends BaseFragment
      * @return
      */
     private String getTaskJson(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
-        if (itemEntity == null) return null;
+        if (itemEntity == null) {
+            return null;
+        }
         try {
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty("id", itemEntity.id);
@@ -507,7 +530,6 @@ public class TaskEverydayFragment extends BaseFragment
 
     @Override
     public void onProjectTaskGroupSelect(ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
-
         updateTask2(updateTaskItemEntity, projectEntity, taskGroupEntity);
     }
 
@@ -524,8 +546,9 @@ public class TaskEverydayFragment extends BaseFragment
                     @Override
                     public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
                         dismissLoadingDialog();
-                        if (response.body().result != null)
+                        if (response.body().result != null) {
                             EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_UPDATE_ITEM, response.body().result));
+                        }
                     }
 
                     @Override
@@ -544,7 +567,9 @@ public class TaskEverydayFragment extends BaseFragment
      * @return
      */
     private String getTaskJson2(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
-        if (itemEntity == null) return null;
+        if (itemEntity == null) {
+            return null;
+        }
         try {
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty("id", itemEntity.id);
@@ -596,5 +621,4 @@ public class TaskEverydayFragment extends BaseFragment
             }
         }
     }
-
 }

@@ -3,7 +3,6 @@ package com.icourt.alpha.adapter;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.graphics.Color;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.View;
@@ -56,6 +55,9 @@ import static com.umeng.socialize.utils.ContextUtil.getContext;
 
 public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.TaskItemEntity>
         implements BaseRecyclerAdapter.OnItemChildClickListener, BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemLongClickListener {
+    private static final int TIME_HOUR_23 = 23;
+    private static final int TIME_MIN_59 = 59;
+
     public TaskSimpleAdapter() {
         this.setOnItemChildClickListener(this);
         this.setOnItemClickListener(this);
@@ -69,27 +71,29 @@ public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.Tas
     }
 
     @Override
-    public int bindView(int viewtype) {
+    public int bindView(int viewType) {
         return R.layout.adapter_item_simple_task;
     }
 
 
     @Override
     public void onBindSelectableHolder(ViewHolder holder, TaskEntity.TaskItemEntity taskItemEntity, boolean selected, int position) {
-        if (taskItemEntity == null) return;
+        if (taskItemEntity == null) {
+            return;
+        }
         ImageView task_item_checkbox = holder.obtainView(R.id.task_item_checkbox);
         TextView task_name_tv = holder.obtainView(R.id.task_name_tv);
         TextView task_desc_tv = holder.obtainView(R.id.task_desc_tv);
         ImageView task_item_timming_iv = holder.obtainView(R.id.task_item_timming_iv);
         task_name_tv.setText(taskItemEntity.name);
-        if (taskItemEntity.state)//已完成-->updateTime
-        {
+        //已完成-->updateTime
+        if (taskItemEntity.state) {
             task_item_checkbox.setImageResource(R.mipmap.checkbox_selected);
             String adjustTimeFormat = getAdjustTimeFormat(taskItemEntity.updateTime);
             if (!TextUtils.isEmpty(adjustTimeFormat)) {
                 task_desc_tv.setText(String.format("%s  %s",
-                        adjustTimeFormat
-                        , getProjectTaskGroupInfo(taskItemEntity)));
+                        adjustTimeFormat,
+                        getProjectTaskGroupInfo(taskItemEntity)));
             } else {
                 task_desc_tv.setText(getProjectTaskGroupInfo(taskItemEntity));
             }
@@ -98,8 +102,8 @@ public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.Tas
             String adjustTimeFormat = getAdjustTimeFormat(taskItemEntity.dueTime);
             if (!TextUtils.isEmpty(adjustTimeFormat)) {
                 task_desc_tv.setText(String.format("%s  %s",
-                        adjustTimeFormat
-                        , getProjectTaskGroupInfo(taskItemEntity)));
+                        adjustTimeFormat,
+                        getProjectTaskGroupInfo(taskItemEntity)));
             } else {
                 task_desc_tv.setText(getProjectTaskGroupInfo(taskItemEntity));
             }
@@ -131,7 +135,7 @@ public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.Tas
         int hourOfDay = calendar.get(Calendar.HOUR_OF_DAY);
         int minute = calendar.get(Calendar.MINUTE);
         int second = calendar.get(Calendar.SECOND);
-        if (hourOfDay == 23 && minute == 59 && second == 59) {
+        if (hourOfDay == TIME_HOUR_23 && minute == TIME_MIN_59 && second == TIME_MIN_59) {
             return "";
         } else {
             return DateUtils.getHHmm(millis);
@@ -148,15 +152,17 @@ public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.Tas
         if (taskItemEntity != null) {
             if (taskItemEntity.matter != null) {
                 if (taskItemEntity.parentFlow != null) {
-                    if (!TextUtils.isEmpty(taskItemEntity.parentFlow.name))
-                        return taskItemEntity.matter.name + " - " + taskItemEntity.parentFlow.name;
-                    else
+                    if (!TextUtils.isEmpty(taskItemEntity.parentFlow.name)) {
+                        return String.format("%s - %s", taskItemEntity.matter.name, taskItemEntity.parentFlow.name);
+                    } else {
                         return taskItemEntity.matter.name;
+                    }
                 } else {
-                    if (!TextUtils.isEmpty(taskItemEntity.parentName))
-                        return taskItemEntity.matter.name + " - " + taskItemEntity.parentName;
-                    else
+                    if (!TextUtils.isEmpty(taskItemEntity.parentName)) {
+                        return String.format("%s - %s", taskItemEntity.matter.name, taskItemEntity.parentName);
+                    } else {
                         return taskItemEntity.matter.name;
+                    }
                 }
             }
         }
@@ -166,7 +172,9 @@ public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.Tas
     @Override
     public void onItemChildClick(BaseRecyclerAdapter adapter, ViewHolder holder, final View view, int position) {
         final TaskEntity.TaskItemEntity itemEntity = getItem(adapter.getRealPos(position));
-        if (itemEntity == null) return;
+        if (itemEntity == null) {
+            return;
+        }
         switch (view.getId()) {
             case R.id.task_item_checkbox:
                 if (itemEntity.attendeeUsers != null && itemEntity.attendeeUsers.size() > 1) {
@@ -222,6 +230,9 @@ public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.Tas
                     });
                 }
                 break;
+            default:
+
+                break;
         }
     }
 
@@ -246,19 +257,31 @@ public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.Tas
                 itemEntity.matterPkId = taskItemEntity.matter.id;
                 itemEntity.matterName = taskItemEntity.matter.name;
             }
-//            if (taskItemEntity.parentFlow != null) {
-//                itemEntity.workTypeName = taskItemEntity.parentFlow.name;
-//                itemEntity.workTypeId = taskItemEntity.parentFlow.id;
-//            }
         }
         return itemEntity;
     }
 
     public interface OnShowFragmenDialogListener {
+        /**
+         * 显示选择负责人dialog
+         *
+         * @param projectId
+         * @param taskItemEntity
+         */
         void showUserSelectDialog(String projectId, TaskEntity.TaskItemEntity taskItemEntity);
 
+        /**
+         * 显示选择到期日dialog
+         *
+         * @param taskItemEntity
+         */
         void showDateSelectDialog(TaskEntity.TaskItemEntity taskItemEntity);
 
+        /**
+         * 显示选择所属项目dialog
+         *
+         * @param taskItemEntity
+         */
         void showProjectSelectDialog(TaskEntity.TaskItemEntity taskItemEntity);
     }
 
@@ -280,7 +303,7 @@ public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.Tas
                 if (view != null) {
                     TextView timeView = (TextView) view.findViewById(R.id.task_time_tv);
                     if (state) {
-                        timeView.setTextColor(Color.parseColor("#FF8c8f92"));
+                        timeView.setTextColor(0xFF8c8f92);
                         timeView.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.task_time_icon, 0, 0, 0);
                         timeView.setVisibility(View.VISIBLE);
                         timeView.setText(DateUtils.get23Hour59MinFormat(DateUtils.millis()));
@@ -289,10 +312,10 @@ public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.Tas
                             timeView.setVisibility(View.VISIBLE);
                             timeView.setText(DateUtils.get23Hour59MinFormat(itemEntity.dueTime));
                             if (itemEntity.dueTime < DateUtils.millis()) {
-                                timeView.setTextColor(Color.parseColor("#FF0000"));
+                                timeView.setTextColor(0xFF000000);
                                 timeView.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.ic_fail, 0, 0, 0);
                             } else {
-                                timeView.setTextColor(Color.parseColor("#FF8c8f92"));
+                                timeView.setTextColor(0xFF8c8f92);
                                 timeView.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.task_time_icon, 0, 0, 0);
                             }
                         } else {
@@ -363,12 +386,20 @@ public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.Tas
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
         TaskEntity.TaskItemEntity taskItemEntity = getItem(position);
-        if (taskItemEntity == null) return;
+        if (taskItemEntity == null) {
+            return;
+        }
         TaskDetailActivity.launch(view.getContext(), taskItemEntity.id);
     }
 
-    private static final int SHOW_DELETE_DIALOG = 0;//删除提示对话框
-    private static final int SHOW_FINISH_DIALOG = 1;//完成任务提示对话框
+    /**
+     * 删除提示对话框
+     */
+    private static final int SHOW_DELETE_DIALOG = 0;
+    /**
+     * 完成任务提示对话框
+     */
+    private static final int SHOW_FINISH_DIALOG = 1;
 
     @Override
     public boolean onItemLongClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
@@ -409,32 +440,41 @@ public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.Tas
 
         @Override
         public void onItemClick(final BaseRecyclerAdapter adapter, ViewHolder holder, final View view, int position) {
-            if (centerMenuDialog != null)
+            if (centerMenuDialog != null) {
                 centerMenuDialog.dismiss();
+            }
             if (adapter instanceof CenterMenuDialog.MenuAdapter) {
                 final ItemsEntity entity = (ItemsEntity) adapter.getItem(position);
                 if (taskItemEntity != null) {
                     switch (entity.getItemIconRes()) {
-                        case R.mipmap.assign_orange://分配给
-                            if (onShowFragmenDialogListener != null)
+                        //分配给
+                        case R.mipmap.assign_orange:
+                            if (onShowFragmenDialogListener != null) {
                                 if (taskItemEntity.matter != null) {
                                     onShowFragmenDialogListener.showUserSelectDialog(taskItemEntity.matter.id, taskItemEntity);
                                 } else {
                                     showToast("请先选择项目");
                                 }
+                            }
                             break;
-                        case R.mipmap.date_orange://到期日
-                            if (onShowFragmenDialogListener != null)
+                        //到期日
+                        case R.mipmap.date_orange:
+                            if (onShowFragmenDialogListener != null) {
                                 onShowFragmenDialogListener.showDateSelectDialog(taskItemEntity);
+                            }
                             break;
-                        case R.mipmap.info_orange://查看详情
+                        //查看详情
+                        case R.mipmap.info_orange:
                             TaskDetailActivity.launch(view.getContext(), taskItemEntity.id);
                             break;
-                        case R.mipmap.project_orange://项目/任务组
-                            if (onShowFragmenDialogListener != null)
+                        //项目/任务组
+                        case R.mipmap.project_orange:
+                            if (onShowFragmenDialogListener != null) {
                                 onShowFragmenDialogListener.showProjectSelectDialog(taskItemEntity);
+                            }
                             break;
-                        case R.mipmap.time_start_orange_task://开始计时
+                        //开始计时
+                        case R.mipmap.time_start_orange_task:
                             if (!taskItemEntity.isTiming) {
                                 showLoadingDialog(view.getContext(), null);
                                 TimerManager.getInstance().addTimer(getTimer(taskItemEntity), new Callback<TimeEntity.ItemEntity>() {
@@ -457,7 +497,8 @@ public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.Tas
 
                             }
                             break;
-                        case R.mipmap.time_stop_orange_task://停止计时
+                        //停止计时
+                        case R.mipmap.time_stop_orange_task:
                             if (taskItemEntity.isTiming) {
                                 MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
                                 TimerManager.getInstance().stopTimer();
@@ -466,7 +507,8 @@ public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.Tas
                                 ((CenterMenuDialog.MenuAdapter) adapter).updateItem(entity);
                             }
                             break;
-                        case R.mipmap.trash_orange://删除
+                        //删除
+                        case R.mipmap.trash_orange:
                             if (taskItemEntity.attendeeUsers != null) {
                                 if (taskItemEntity.attendeeUsers.size() > 1) {
                                     showFinishDialog(view.getContext(), "该任务由多人负责,确定删除?", taskItemEntity, SHOW_DELETE_DIALOG, null);
@@ -476,6 +518,9 @@ public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.Tas
                             } else {
                                 showFinishDialog(view.getContext(), "是非成败转头空，确定要删除吗?", taskItemEntity, SHOW_DELETE_DIALOG, null);
                             }
+                            break;
+                        default:
+
                             break;
                     }
                 }
@@ -498,7 +543,8 @@ public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.Tas
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
-                    case Dialog.BUTTON_POSITIVE://确定
+                    //确定
+                    case Dialog.BUTTON_POSITIVE:
                         if (type == SHOW_DELETE_DIALOG) {
                             deleteTask(context, itemEntity);
                         } else if (type == SHOW_FINISH_DIALOG) {
@@ -509,19 +555,23 @@ public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.Tas
                             }
                         }
                         break;
-                    case Dialog.BUTTON_NEGATIVE://取消
+                    //取消
+                    case Dialog.BUTTON_NEGATIVE:
                         if (type == SHOW_FINISH_DIALOG) {
-                            if (checkbox != null)
+                            if (checkbox != null) {
                                 checkbox.setChecked(itemEntity.state);
+                            }
                         }
+                        break;
+                    default:
                         break;
                 }
             }
         };
         //dialog参数设置
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);  //先得到构造器
-        builder.setTitle("提示"); //设置标题
-        builder.setMessage(message); //设置内容
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("提示");
+        builder.setMessage(message);
         builder.setPositiveButton("确认", dialogOnclicListener);
         builder.setNegativeButton("取消", dialogOnclicListener);
         builder.create().show();
@@ -548,6 +598,4 @@ public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.Tas
             }
         });
     }
-
-
 }
