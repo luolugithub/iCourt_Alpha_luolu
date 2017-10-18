@@ -456,6 +456,9 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
                 case Const.PROJECT_PERSON_TYPE://当事人
                     ProjectJudgeActivity.launch(getContext(), entity.key, projectDetailBean.litigants, entity.type);
                     break;
+                case Const.PROJECT_SERVER_CONTENT_TYPE://服务内容
+                    ProjectBasicTextInfoActivity.launch(view.getContext(), entity.key, entity.value, entity.type);
+                    break;
             }
         } else if (adapter instanceof ProjectClientAdapter) {
             Object object = adapter.getItem(position);
