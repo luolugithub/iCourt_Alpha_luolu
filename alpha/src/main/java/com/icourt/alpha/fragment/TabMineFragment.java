@@ -1,6 +1,7 @@
 package com.icourt.alpha.fragment;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -19,12 +20,14 @@ import com.icourt.alpha.activity.TaskMonthFinishActivity;
 import com.icourt.alpha.activity.UserInfoActivity;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
+import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.entity.bean.GroupBean;
 import com.icourt.alpha.entity.bean.UserDataEntity;
 import com.icourt.alpha.entity.event.ServerTimingEvent;
 import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.interfaces.callback.AppUpdateCallBack;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SystemUtils;
@@ -42,6 +45,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 import retrofit2.Call;
+import retrofit2.HttpException;
 import retrofit2.Response;
 
 /**
@@ -49,7 +53,7 @@ import retrofit2.Response;
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/4/8
- * version 1.0.0
+ * version 2.0.0
  */
 public class TabMineFragment extends BaseFragment {
 
@@ -86,11 +90,12 @@ public class TabMineFragment extends BaseFragment {
     LinearLayout monthDuractionLayout;
     @BindView(R.id.done_task_layout)
     LinearLayout doneTaskLayout;
+    @BindView(R.id.setting_about_count_view)
+    TextView settingAboutCountView;
 
     public static TabMineFragment newInstance() {
         return new TabMineFragment();
     }
-
 
     @Nullable
     @Override
@@ -149,7 +154,9 @@ public class TabMineFragment extends BaseFragment {
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onTimerEvent(TimingEvent event) {
-        if (event == null) return;
+        if (event == null) {
+            return;
+        }
         switch (event.action) {
             case TimingEvent.TIMING_ADD:
 
@@ -158,6 +165,8 @@ public class TabMineFragment extends BaseFragment {
                 break;
             case TimingEvent.TIMING_STOP:
                 getMyDoneTask();
+                break;
+            default:
                 break;
         }
     }
@@ -177,8 +186,12 @@ public class TabMineFragment extends BaseFragment {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onServerTimingEvent(ServerTimingEvent event) {
-        if (event == null) return;
-        if (TextUtils.equals(event.clientId, getlocalUniqueId())) return;
+        if (event == null) {
+            return;
+        }
+        if (TextUtils.equals(event.clientId, getlocalUniqueId())) {
+            return;
+        }
         if (event.isSyncObject() && event.isSyncTimingType()) {
             if (TextUtils.equals(event.scene, ServerTimingEvent.TIMING_SYNC_START)) {
 
@@ -209,19 +222,24 @@ public class TabMineFragment extends BaseFragment {
             case R.id.user_info_layout:
                 UserInfoActivity.launch(getContext());
                 break;
-            case R.id.today_duraction_layout://今日计时
+            //今日计时
+            case R.id.today_duraction_layout:
                 showTopSnackBar(R.string.mine_today_time);
                 break;
-            case R.id.month_duraction_layout://本月计时
+            //本月计时
+            case R.id.month_duraction_layout:
                 showTopSnackBar(R.string.mine_month_time);
                 break;
-            case R.id.done_task_layout://本月完成任务
+            //本月完成任务
+            case R.id.done_task_layout:
                 TaskMonthFinishActivity.launch(getContext());
                 break;
-            case R.id.my_center_set_layout://设置
+            //设置
+            case R.id.my_center_set_layout:
                 SetingActivity.launch(getContext());
                 break;
-            case R.id.my_center_collect_layout://收藏
+            //收藏
+            case R.id.my_center_collect_layout:
                 ChatMsgClassfyActivity.launchMyCollected(getContext());
                 break;
             case R.id.menu_test:
@@ -243,7 +261,6 @@ public class TabMineFragment extends BaseFragment {
                         AlphaUserInfo info = response.body().result;
                         AlphaUserInfo alphaUserInfo = getLoginUserInfo();
                         if (alphaUserInfo != null && info != null) {
-//                    info.setGroups(alphaUserInfo.getGroups());
                             alphaUserInfo.setMail(info.getMail());
                             alphaUserInfo.setPhone(info.getPhone());
                             alphaUserInfo.setName(info.getName());
@@ -259,8 +276,42 @@ public class TabMineFragment extends BaseFragment {
                         setDataToView(getLoginUserInfo());
                     }
                 });
+        checkVersion();
         getMyDoneTask();
         getGroupList();
+    }
+
+    /**
+     * 检测版本
+     */
+    private void checkVersion() {
+        callEnqueue(
+                getApi().getNewVersionAppInfo(BuildConfig.APK_UPDATE_URL), new AppUpdateCallBack() {
+                    @Override
+                    public void onSuccess(Call<AppVersionEntity> call, Response<AppVersionEntity> response) {
+                        if (settingAboutCountView == null) {
+                            return;
+                        }
+                        settingAboutCountView.setVisibility(shouldUpdate(response.body()) ? View.VISIBLE : View.INVISIBLE);
+                    }
+
+                    @Override
+                    public void onFailure(Call<AppVersionEntity> call, Throwable t) {
+                        if (t instanceof HttpException) {
+                            HttpException hx = (HttpException) t;
+                            if (hx.code() == 401) {
+                                showTopSnackBar("fir token 更改");
+                                return;
+                            }
+                        }
+                        super.onFailure(call, t);
+                    }
+                });
+    }
+
+    public final boolean shouldUpdate(@NonNull AppVersionEntity appVersionEntity) {
+        return appVersionEntity != null
+                && !TextUtils.equals(appVersionEntity.versionShort, BuildConfig.VERSION_NAME);
     }
 
     /**
@@ -318,7 +369,9 @@ public class TabMineFragment extends BaseFragment {
                                 for (GroupBean groupBean : myGroups) {
                                     stringBuilder.append(groupBean.getName()).append(",");
                                 }
-                                if (officeNameTv == null) return;
+                                if (officeNameTv == null) {
+                                    return;
+                                }
                                 officeNameTv.setText(stringBuilder.toString().substring(0, stringBuilder.toString().length() - 1));
                             }
                         }
