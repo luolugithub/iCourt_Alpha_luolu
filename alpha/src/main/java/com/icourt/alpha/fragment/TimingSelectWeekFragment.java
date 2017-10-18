@@ -43,6 +43,8 @@ import io.reactivex.schedulers.Schedulers;
 
 public class TimingSelectWeekFragment extends BaseFragment {
 
+    private static final String KEY_SELECTED_DATE = "keySelectedDate";
+
     Unbinder unbinder;
 
     @BindView(R.id.wheelview_week)
@@ -57,11 +59,15 @@ public class TimingSelectWeekFragment extends BaseFragment {
     TextView titleAction;
 
     TimeWheelAdapter adapter;
-    Calendar currentMonthDate;//用来记录当前选中的月的时间戳。
+    Calendar currentMonthDate = Calendar.getInstance();//用来记录当前选中的月的时间戳。
     private SimpleDateFormat dateFormatForMonth = new SimpleDateFormat("yyyy年MM月", Locale.getDefault());
 
-    public static TimingSelectWeekFragment newInstance() {
-        return new TimingSelectWeekFragment();
+    public static TimingSelectWeekFragment newInstance(long selectedDate) {
+        TimingSelectWeekFragment fragment = new TimingSelectWeekFragment();
+        Bundle bundle = new Bundle();
+        bundle.putLong(KEY_SELECTED_DATE, selectedDate);
+        fragment.setArguments(bundle);
+        return fragment;
     }
 
     @Nullable
@@ -75,8 +81,12 @@ public class TimingSelectWeekFragment extends BaseFragment {
 
     @Override
     protected void initView() {
-        currentMonthDate = Calendar.getInstance();
-        currentMonthDate.setTimeInMillis(System.currentTimeMillis());
+
+        if (getArguments() != null) {
+            long timeMillis = getArguments().getLong(KEY_SELECTED_DATE, System.currentTimeMillis());
+            currentMonthDate.setTimeInMillis(timeMillis);
+        }
+
         setMonthData(currentMonthDate);
 
         wheelView.setTextSize(20);
@@ -112,7 +122,7 @@ public class TimingSelectWeekFragment extends BaseFragment {
             @Override
             public void onItemSelected(int i) {
                 TimingSelectEntity item = adapter.getItem(i);
-                currentMonthDate.setTimeInMillis(item.endTimeMillis);
+                currentMonthDate.setTimeInMillis(item.endTimeMillis);//设置为周的结束时间，因为以周的结束时间所在月份来显示的
                 setMonthData(currentMonthDate);
             }
         });
@@ -150,7 +160,7 @@ public class TimingSelectWeekFragment extends BaseFragment {
                         adapter.setTimeList(timingDateEntities);
                         wheelView.invalidate();
                         wheelView.setCyclic(false);
-                        scrollToToday();
+                        selectMonthItem(currentMonthDate);
                     }
                 });
     }
@@ -255,7 +265,7 @@ public class TimingSelectWeekFragment extends BaseFragment {
         int position = 0;
         for (int i = 0; i < adapter.getTimeList().size(); i++) {
             TimingSelectEntity timingSelectEntity = adapter.getTimeList().get(i);
-            if (calendar.getTimeInMillis() <= timingSelectEntity.endTimeMillis && calendar.getTimeInMillis() > timingSelectEntity.startTimeMillis) {
+            if (calendar.getTimeInMillis() >= timingSelectEntity.startTimeMillis && calendar.getTimeInMillis() <= timingSelectEntity.endTimeMillis) {
                 position = i;
             }
         }

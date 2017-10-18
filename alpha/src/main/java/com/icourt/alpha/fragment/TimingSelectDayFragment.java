@@ -1,5 +1,6 @@
 package com.icourt.alpha.fragment;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -33,6 +34,8 @@ import butterknife.Unbinder;
 
 public class TimingSelectDayFragment extends BaseFragment {
 
+    private static final String KEY_SELECTED_DATE = "keySelectedDate";
+
     Unbinder unbinder;
 
     @BindView(R.id.titleBack)
@@ -52,8 +55,12 @@ public class TimingSelectDayFragment extends BaseFragment {
 
     private SimpleDateFormat dateFormatForMonth = new SimpleDateFormat("yyyy年MM月", Locale.getDefault());
 
-    public static TimingSelectDayFragment newInstance() {
-        return new TimingSelectDayFragment();
+    public static TimingSelectDayFragment newInstance(long selectedDate) {
+        TimingSelectDayFragment fragment = new TimingSelectDayFragment();
+        Bundle bundle = new Bundle();
+        bundle.putLong(KEY_SELECTED_DATE, selectedDate);
+        fragment.setArguments(bundle);
+        return fragment;
     }
 
     @Nullable
@@ -65,18 +72,24 @@ public class TimingSelectDayFragment extends BaseFragment {
     }
 
     @Override
-    protected void initView() {
-
+    public void onAttach(Context context) {
+        super.onAttach(context);
         Fragment parentFragment = getParentFragment();
         if (parentFragment instanceof OnDateSelectedListener) {
             onDateSelectedListener = (OnDateSelectedListener) parentFragment;
+        } else if (context instanceof OnDateSelectedListener) {
+            onDateSelectedListener = (OnDateSelectedListener) context;
         }
-        initCalendar();
     }
 
-    private void initCalendar() {
+    @Override
+    protected void initView() {
+        if (getArguments() != null) {
+            long timeMillis = getArguments().getLong(KEY_SELECTED_DATE, System.currentTimeMillis());
+            selectedDate.setTimeInMillis(timeMillis);
+        }
 
-        scrollToToday();
+        scrollToDate(selectedDate.getTimeInMillis());
 
         mcvCalendar.setOnCalendarClickListener(new OnCalendarClickListener() {
             @Override
@@ -131,6 +144,24 @@ public class TimingSelectDayFragment extends BaseFragment {
         }
     }
 
+    /**
+     * 日历滚动到指定日期
+     *
+     * @param timeMillis
+     */
+    private void scrollToDate(long timeMillis) {
+        selectedDate.clear();
+        selectedDate.setTimeInMillis(DateUtils.getDayStartTime(timeMillis));
+        setTitleContent(selectedDate.getTimeInMillis());
+        mcvCalendar.setDateToView(timeMillis);
+        if (onDateSelectedListener != null) {
+            onDateSelectedListener.onDateSelected(selectedDate.getTimeInMillis());
+        }
+    }
+
+    /**
+     * 日历滚动到今日
+     */
     private void scrollToToday() {
         selectedDate.setTimeInMillis(DateUtils.getDayStartTime(System.currentTimeMillis()));
         setTitleContent(selectedDate.getTimeInMillis());

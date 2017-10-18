@@ -1,21 +1,17 @@
 package com.icourt.alpha.fragment;
 
-import android.support.annotation.IntDef;
 import android.support.design.widget.AppBarLayout;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.constants.TimingConfig;
 import com.icourt.alpha.entity.bean.TimingStatisticEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnTimingChangeListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.LogUtils;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 
 import lecho.lib.hellocharts.view.LineChartView;
 import retrofit2.Call;
@@ -31,16 +27,16 @@ import retrofit2.Response;
 
 public abstract class BaseTimingListFragment extends BaseFragment {
 
-    public static final int TYPE_DAY = 1;
-    public static final int TYPE_WEEK = 2;
-    public static final int TYPE_MONTH = 3;
-    public static final int TYPE_YEAR = 4;
-
-    @IntDef({TYPE_DAY, TYPE_WEEK, TYPE_MONTH, TYPE_YEAR})
-    @Retention(RetentionPolicy.SOURCE)
-    @interface TimingQueryType {
-
-    }
+//    public static final int TYPE_DAY = 1;
+//    public static final int TYPE_WEEK = 2;
+//    public static final int TYPE_MONTH = 3;
+//    public static final int TYPE_YEAR = 4;
+//
+//    @IntDef({TYPE_DAY, TYPE_WEEK, TYPE_MONTH, TYPE_YEAR})
+//    @Retention(RetentionPolicy.SOURCE)
+//    @interface TimingQueryType {
+//
+//    }
 
     /**
      * 获取监听，监听Appbar的隐藏显示、监听日期的左右切换、监听获取总计时的接口
@@ -126,19 +122,19 @@ public abstract class BaseTimingListFragment extends BaseFragment {
      * @param startTime 起始时间，时间戳（服务端要格式化成yyyy-MM-dd格式的字符串）
      * @param endTime   结束时间，（服务端要格式化成yyyy-MM-dd格式的字符串）
      */
-    protected void getTimingStatistic(@TimingQueryType int queryType, long startTime, long endTime) {
+    protected void getTimingStatistic(@TimingConfig.TIMINGQUERYTYPE int queryType, long startTime, long endTime) {
         String type = "day";
         switch (queryType) {
-            case TYPE_DAY:
+            case TimingConfig.TIMING_QUERY_BY_DAY:
                 type = "day";
                 break;
-            case TYPE_WEEK:
+            case TimingConfig.TIMING_QUERY_BY_WEEK:
                 type = "week";
                 break;
-            case TYPE_MONTH:
+            case TimingConfig.TIMING_QUERY_BY_MONTH:
                 type = "month";
                 break;
-            case TYPE_YEAR:
+            case TimingConfig.TIMING_QUERY_BY_YEAR:
                 type = "year";
                 break;
         }

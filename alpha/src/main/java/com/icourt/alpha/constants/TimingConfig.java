@@ -13,10 +13,10 @@ import java.lang.annotation.RetentionPolicy;
  * version 2.1.0
  */
 public class TimingConfig {
-    public static final int TIMING_QUERY_BY_DAY = 0;
-    public static final int TIMING_QUERY_BY_WEEK = 1;
-    public static final int TIMING_QUERY_BY_MONTH = 2;
-    public static final int TIMING_QUERY_BY_YEAR = 3;
+    public static final int TIMING_QUERY_BY_DAY = 1;
+    public static final int TIMING_QUERY_BY_WEEK = 2;
+    public static final int TIMING_QUERY_BY_MONTH = 3;
+    public static final int TIMING_QUERY_BY_YEAR = 4;
 
     @IntDef({TIMING_QUERY_BY_DAY,
             TIMING_QUERY_BY_WEEK,
@@ -51,6 +51,6 @@ public class TimingConfig {
     /**
      * 计时标题最大长度
      */
-    public static final int TIMING_NAME_MAX_LENGTH=200;
+    public static final int TIMING_NAME_MAX_LENGTH = 200;
 
 }

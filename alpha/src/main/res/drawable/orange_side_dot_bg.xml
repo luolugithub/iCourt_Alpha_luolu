@@ -4,6 +4,10 @@
     android:useLevel="false">
 
     <solid android:color="@color/search_cutline_color" />
-    <size android:height="15dp" android:width="15dp"/>
 
+    <size
+        android:width="15dp"
+        android:height="15dp" />
+
+    <corners android:radius="1.5dp" />
 </shape>

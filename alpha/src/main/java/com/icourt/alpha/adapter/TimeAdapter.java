@@ -1,7 +1,9 @@
 package com.icourt.alpha.adapter;
 
 import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -11,8 +13,10 @@ import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
+import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.view.recyclerviewDivider.ITimeDividerInterface;
 import com.icourt.alpha.widget.manager.TimerManager;
@@ -128,7 +132,7 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
         TextView divider_time = holder.obtainView(R.id.divider_time);
         TextView divider_time_count = holder.obtainView(R.id.divider_time_count);
         timer_title_tv.setText(TextUtils.isEmpty(timeEntity.name) ? "未录入工作描述" : timeEntity.name);
-        if (timeEntity.state == TimeEntity.ItemEntity.TIMER_STATE_START) {
+        if (timeEntity.state == TimeEntity.ItemEntity.TIMER_STATE_START) {//说明是正在计时
 //            long useTime = timeEntity.useTime;
 //            if (useTime <= 0 && timeEntity.startTime > 0) {
 //                useTime = DateUtils.millis() - timeEntity.startTime;
@@ -140,15 +144,19 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
             if (useTime < 0) {
                 useTime = 0;
             }
+            timer_count_tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
+            timer_count_tv.setTextColor(SystemUtils.getColor(timer_count_tv.getContext(), R.color.colorPrimary));
             timer_count_tv.setText(toTime(useTime));
             timer_icon.setImageResource(R.drawable.orange_side_dot_bg);
-        } else {
-            timer_icon.setImageResource(R.mipmap.icon_start_20);
+        } else {//说明没有在计时
+            timer_count_tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+            timer_count_tv.setTextColor(SystemUtils.getColor(timer_count_tv.getContext(), R.color.textColorPrimary));
             try {
                 timer_count_tv.setText(DateUtils.getHm(timeEntity.useTime));
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            timer_icon.setImageResource(R.mipmap.icon_start_20);
         }
         holder.bindChildClick(timer_icon);
         addTimeDividerArray(timeEntity, position);

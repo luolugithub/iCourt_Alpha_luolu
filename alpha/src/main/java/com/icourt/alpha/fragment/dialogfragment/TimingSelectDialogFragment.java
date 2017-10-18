@@ -38,7 +38,7 @@ import butterknife.OnClick;
 import butterknife.Unbinder;
 
 /**
- * Description
+ * Description 计时列表时间筛选 - 日、周、月、年时间选择窗
  * Company Beijing icourt
  * author  youxuan  E-mail:zhaodanyang@icourt.cc
  * date createTime：2017/9/16
@@ -46,6 +46,9 @@ import butterknife.Unbinder;
  */
 
 public class TimingSelectDialogFragment extends BaseDialogFragment implements OnDateSelectedListener {
+
+    private static final String KEY_SELECTED_TYPE = "keySelectedType";
+    private static final String KEY_START_TIME = "keyStartTime";
 
     private Unbinder bind;
 
@@ -67,8 +70,17 @@ public class TimingSelectDialogFragment extends BaseDialogFragment implements On
     private BaseFragmentAdapter baseFragmentAdapter;
     OnFragmentCallBackListener onFragmentCallBackListener;
 
-    public static TimingSelectDialogFragment newInstance() {
-        return new TimingSelectDialogFragment();
+    @TimingConfig.TIMINGQUERYTYPE
+    int selectedType;//选中的类型
+    long startTime;//开始时间
+
+    public static TimingSelectDialogFragment newInstance(@TimingConfig.TIMINGQUERYTYPE int type, long startTime) {
+        TimingSelectDialogFragment dialogFragment = new TimingSelectDialogFragment();
+        Bundle bundle = new Bundle();
+        bundle.putInt(KEY_SELECTED_TYPE, type);
+        bundle.putLong(KEY_START_TIME, startTime);
+        dialogFragment.setArguments(bundle);
+        return dialogFragment;
     }
 
     @Nullable
@@ -82,16 +94,18 @@ public class TimingSelectDialogFragment extends BaseDialogFragment implements On
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        try {
+        if (context != null && context instanceof OnFragmentCallBackListener) {
             onFragmentCallBackListener = (OnFragmentCallBackListener) context;
-        } catch (ClassCastException e) {
-            e.printStackTrace();
-            bugSync("选择计时时间：onFragmentCallBackListener", e);
         }
     }
 
     @Override
     protected void initView() {
+        if (getArguments() != null) {
+            selectedType = TimingConfig.convert2timingQueryType(getArguments().getInt(KEY_SELECTED_TYPE, TimingConfig.TIMING_QUERY_BY_DAY));
+            startTime = getArguments().getLong(KEY_START_TIME, System.currentTimeMillis());
+        }
+
         Dialog dialog = getDialog();
         if (dialog != null) {
             Window window = dialog.getWindow();
@@ -107,12 +121,12 @@ public class TimingSelectDialogFragment extends BaseDialogFragment implements On
         }
 
         viewpager.setAdapter(baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager()));
-        viewpager.setOffscreenPageLimit(3);
+        viewpager.setOffscreenPageLimit(5);
         baseFragmentAdapter.bindData(true,
-                Arrays.asList(TimingSelectDayFragment.newInstance(),
-                        TimingSelectWeekFragment.newInstance(),
-                        TimingSelectMonthFragment.newInstance(),
-                        TimingSelectYearFragment.newInstance()));
+                Arrays.asList(TimingSelectDayFragment.newInstance(selectedType == TimingConfig.TIMING_QUERY_BY_DAY ? startTime : System.currentTimeMillis()),
+                        TimingSelectWeekFragment.newInstance(selectedType == TimingConfig.TIMING_QUERY_BY_WEEK ? startTime : System.currentTimeMillis()),
+                        TimingSelectMonthFragment.newInstance(selectedType == TimingConfig.TIMING_QUERY_BY_MONTH ? startTime : System.currentTimeMillis()),
+                        TimingSelectYearFragment.newInstance(selectedType == TimingConfig.TIMING_QUERY_BY_YEAR ? startTime : System.currentTimeMillis())));
         viewpager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -121,7 +135,7 @@ public class TimingSelectDialogFragment extends BaseDialogFragment implements On
 
             @Override
             public void onPageSelected(int position) {
-                selectDateItem(position);
+                selectTabItem(position);
             }
 
             @Override
@@ -129,36 +143,37 @@ public class TimingSelectDialogFragment extends BaseDialogFragment implements On
 
             }
         });
-        selectDateItem(0);
-    }
 
-    private void selectDateItem(int position) {
-        switch (position) {
-            case 0://说明是日
-                tvDateDay.setChecked(true);
-                tvDateWeek.setChecked(false);
-                tvDateMonth.setChecked(false);
-                tvDateYear.setChecked(false);
+        switch (selectedType) {//根据显示的type，切换到对应type页。
+            case TimingConfig.TIMING_QUERY_BY_DAY:
+                viewpager.setCurrentItem(0);
+                selectTabItem(0);
                 break;
-            case 1://说明是周
-                tvDateDay.setChecked(false);
-                tvDateWeek.setChecked(true);
-                tvDateMonth.setChecked(false);
-                tvDateYear.setChecked(false);
+            case TimingConfig.TIMING_QUERY_BY_WEEK:
+                viewpager.setCurrentItem(1);
+                selectTabItem(1);
                 break;
-            case 2://说明是月
-                tvDateDay.setChecked(false);
-                tvDateWeek.setChecked(false);
-                tvDateMonth.setChecked(true);
-                tvDateYear.setChecked(false);
+            case TimingConfig.TIMING_QUERY_BY_MONTH:
+                viewpager.setCurrentItem(2);
+                selectTabItem(2);
                 break;
-            case 3://说明是年
-                tvDateDay.setChecked(false);
-                tvDateWeek.setChecked(false);
-                tvDateMonth.setChecked(false);
-                tvDateYear.setChecked(true);
+            case TimingConfig.TIMING_QUERY_BY_YEAR:
+                viewpager.setCurrentItem(3);
+                selectTabItem(3);
                 break;
         }
+    }
+
+    /**
+     * 选中日、周、月、年的某个tab
+     *
+     * @param position
+     */
+    private void selectTabItem(int position) {
+        tvDateDay.setChecked(position == 0);//说明是日
+        tvDateWeek.setChecked(position == 1);//说明是周
+        tvDateMonth.setChecked(position == 2);//说明是月
+        tvDateYear.setChecked(position == 3);//说明是年
 
         if (position == 0) {//如果是日的选择时间，需要判断选择的时间是否在有效范围内
             Fragment fragment = baseFragmentAdapter.getItem(position);
@@ -219,14 +234,7 @@ public class TimingSelectDialogFragment extends BaseDialogFragment implements On
                 }
                 dismiss();
                 break;
-
         }
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        bind.unbind();
     }
 
     @Override
@@ -241,5 +249,11 @@ public class TimingSelectDialogFragment extends BaseDialogFragment implements On
             tvFinish.setEnabled(true);
             tvFinish.setBackgroundResource(R.drawable.bg_round_orange);
         }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        bind.unbind();
     }
 }
