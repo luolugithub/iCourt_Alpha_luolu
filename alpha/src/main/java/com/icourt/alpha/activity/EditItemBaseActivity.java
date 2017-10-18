@@ -38,10 +38,8 @@ public abstract class EditItemBaseActivity extends BaseActivity implements TextW
     protected static final String KEY_IS_SHOW_LIMIT_NUM = " key_is_show_limit_num";
     protected static final String KEY_LIMIT_NUM = "key_limit_num";
     protected static final String KEY_IS_ALLOW_INPUT_EMPTY = "key_isAllowInputEmpty";
-
-
     @BindView(R.id.titleBack)
-    CheckedTextView titleBack;
+    ImageView titleBack;
     @BindView(R.id.titleContent)
     TextView titleContent;
     @BindView(R.id.titleAction)
@@ -54,6 +52,7 @@ public abstract class EditItemBaseActivity extends BaseActivity implements TextW
     ImageView inputClearIv;
     @BindView(R.id.input_limit_num_tv)
     TextView inputLimitNumTv;
+
 
     /**
      * 子类不能再重写了
