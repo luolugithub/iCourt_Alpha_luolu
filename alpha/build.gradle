@@ -97,7 +97,7 @@ android {
             buildConfigField "String", "API_SENSORS_DATA_CONFIGURE", rootProject.ext.sensorsDataAPIConfigure.configure_url_test
             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.testAppKey]*/
             //预览版用
-            /*buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_preview
+          /*  buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_preview
             buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_preview
             buildConfigField "String", "API_SFILE_URL", rootProject.ext.alphaSFileUrl.api_url_preview
             buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_preview
@@ -261,7 +261,7 @@ dependencies {
     compile rootProject.ext.dependencies.multidex
     compile rootProject.ext.dependencies.bugtags
     //------------  Android support  -----------
-    compile rootProject.ext.dependencies.supportV4
+    //compile rootProject.ext.dependencies.supportV4
     compile rootProject.ext.dependencies.design
     compile rootProject.ext.dependencies.appcompatV7
     compile rootProject.ext.dependencies.cardview
@@ -311,6 +311,6 @@ dependencies {
     //RecyclerViewAdapter
     compile rootProject.ext.dependencies.recyclerview_adapter
     compile 'com.github.hackware1993:MagicIndicator:1.5.0'
-    compile 'com.asange.recyclerviewadapter:lib_recyclerview_adapter:1.0.5'
+    compile 'com.asange.recyclerviewadapter:lib_recyclerview_adapter:1.0.6.1'
 }
 
