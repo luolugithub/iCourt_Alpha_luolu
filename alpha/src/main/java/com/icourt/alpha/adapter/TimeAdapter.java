@@ -93,6 +93,8 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
                 return R.layout.adapter_item_time;
             case TIME_SIMPLE_TITLE:
                 return R.layout.adapter_item_timing_simple;
+            default:
+                break;
         }
         return R.layout.adapter_item_time;
     }
@@ -108,6 +110,8 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
                 break;
             case TIME_SIMPLE_TITLE:
                 setTypeSimpleTitle(holder, timeEntity, position);
+                break;
+            default:
                 break;
         }
     }
@@ -167,13 +171,14 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
             } else {
                 divider_time.setText(DateUtils.getMMMdd(timeEntity.workDate));
             }
-            long dayTimingLength = 0;//某天的计时时长
-            for (int i = position; i < getData().size(); i++) {
-                TimeEntity.ItemEntity item = getItem(i);
-                if (item != null && item.workDate == timeEntity.workDate) {
-                    dayTimingLength += item.useTime;
-                }
-            }
+//            long dayTimingLength = 0;//某天的计时时长
+//            for (int i = position; i < getData().size(); i++) {
+//                TimeEntity.ItemEntity item = getItem(i);
+//                if (item != null && item.workDate == timeEntity.workDate) {
+//                    dayTimingLength += item.useTime;
+//                }
+//            }
+            long dayTimingLength = timeEntity.todayTimingSum;
             divider_time_count.setText(DateUtils.getHm(dayTimingLength));
         } else {
             divider_ll.setVisibility(View.GONE);
@@ -295,7 +300,9 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
     @Override
     public void onItemChildClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
         TimeEntity.ItemEntity item = getItem(getRealPos(position));
-        if (item == null) return;
+        if (item == null) {
+            return;
+        }
         switch (view.getId()) {
             case R.id.timer_icon:
                 if (item.state == TimeEntity.TIMER_STATE_END_TYPE) {
@@ -308,6 +315,8 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
                     TimerManager.getInstance().stopTimer();
                 }
                 notifyDataSetChanged();
+                break;
+            default:
                 break;
         }
     }

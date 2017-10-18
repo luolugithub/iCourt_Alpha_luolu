@@ -1544,15 +1544,32 @@ public interface ApiAlphaService {
 
     /**
      * 获取计时模块，日、周、月、年的统计时间
-     * 接口地址：https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/timing-api/getPersonalTimingStatisticsUsingGET
+     * 接口地址：https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/timing-api/getPersonalStatisticsChartUsingGET
      *
      * @param type      查询的时间区间类型：day，天；week，周；month，月；year，年；
      * @param startTime 起始时间，yyyy-MM-dd
      * @param endTime   结束时间，yyyy-MM-dd
      * @return
      */
-    @GET("ilaw/api/v2/timing/timing/personal/statistics")
+    @GET("ilaw/api/v2/timing/statistics/personal/linechart")
     Call<ResEntity<TimingStatisticEntity>> getTimingStatistic(@Query("type") String type, @Query("startTime") String startTime, @Query("endTime") String endTime);
+
+    /**
+     * 获取指定时间段的计时
+     * <p>
+     * 文档地址：https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/timing-api/getPersonalStatisticsListUsingGET
+     *
+     * @param startTime 017-05-09
+     * @param endTime   017-05-15
+     * @param pageIndex
+     * @param pageSize
+     * @return
+     */
+    @GET("ilaw/api/v2/timing/statistics/personal/list")
+    Call<ResEntity<TimeEntity>> timingListStatistic(@Query("startTime") String startTime,
+                                                    @Query("endTime") String endTime,
+                                                    @Query("pageIndex") int pageIndex,
+                                                    @Query("pageSize") int pageSize);
 
 }
 

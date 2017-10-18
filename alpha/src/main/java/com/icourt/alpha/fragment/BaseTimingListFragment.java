@@ -27,17 +27,6 @@ import retrofit2.Response;
 
 public abstract class BaseTimingListFragment extends BaseFragment {
 
-//    public static final int TYPE_DAY = 1;
-//    public static final int TYPE_WEEK = 2;
-//    public static final int TYPE_MONTH = 3;
-//    public static final int TYPE_YEAR = 4;
-//
-//    @IntDef({TYPE_DAY, TYPE_WEEK, TYPE_MONTH, TYPE_YEAR})
-//    @Retention(RetentionPolicy.SOURCE)
-//    @interface TimingQueryType {
-//
-//    }
-
     /**
      * 获取监听，监听Appbar的隐藏显示、监听日期的左右切换、监听获取总计时的接口
      *
@@ -109,6 +98,8 @@ public abstract class BaseTimingListFragment extends BaseFragment {
                     case MotionEvent.ACTION_UP:
                         appBarLayout.getParent().requestDisallowInterceptTouchEvent(false);
                         break;
+                    default:
+                        break;
                 }
                 return false;
             }
@@ -136,6 +127,8 @@ public abstract class BaseTimingListFragment extends BaseFragment {
                 break;
             case TimingConfig.TIMING_QUERY_BY_YEAR:
                 type = "year";
+                break;
+            default:
                 break;
         }
         String startTimeStr = DateUtils.getyyyy_MM_dd(startTime);

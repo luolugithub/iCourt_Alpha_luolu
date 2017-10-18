@@ -200,7 +200,7 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
      */
     private void timingListQueryByTime(final boolean isRefresh, int pageIndex, int pageSize, String weekStartTime, String weekEndTime) {
         callEnqueue(
-                getApi().timingListQueryByTime(getLoginUserId(), weekStartTime, weekEndTime, pageIndex, pageSize),
+                getApi().timingListStatistic(weekStartTime, weekEndTime, pageIndex, pageSize),
                 new SimpleCallBack<TimeEntity>() {
                     @Override
                     public void onSuccess(Call<ResEntity<TimeEntity>> call, Response<ResEntity<TimeEntity>> response) {
