@@ -40,6 +40,8 @@ public interface IRealmDao<T extends RealmModel> {
 
     RealmResults<T> queryAll(Class<T> c);
 
+    RealmResults<T> queryAllAsync(Class<T> c);
+
     RealmResults<T> query(Class<T> c, String fieldName, String value);
 
     RealmResults<T> contains(Class<T> c, String fieldName, String value);

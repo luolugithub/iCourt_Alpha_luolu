@@ -1,32 +1,23 @@
 package com.icourt.alpha.adapter;
 
-import android.support.annotation.CheckResult;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.asange.recyclerviewadapter.BaseViewHolder;
+import com.asange.recyclerviewadapter.OnItemClickListener;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.ChatActivity;
-import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.IMUtils;
-import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SpannableUtils;
-import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
-import com.netease.nimlib.sdk.NIMClient;
-import com.netease.nimlib.sdk.RequestCallback;
-import com.netease.nimlib.sdk.team.TeamService;
 import com.netease.nimlib.sdk.team.model.Team;
-
-import java.util.List;
 
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_P2P;
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
@@ -38,65 +29,10 @@ import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
  * date createTime：2017/4/19
  * version 1.0.0
  */
-public class MyAtedAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> implements BaseRecyclerAdapter.OnItemClickListener {
+public class MyAtedAdapter extends ContactBaseAdapter<IMMessageCustomBody> implements OnItemClickListener {
 
-    private String loginName = null;
-    private List<Team> teams;
 
-    @Nullable
-    @CheckResult
-    public Team getTeam(String id) {
-        if (teams == null) return null;
-        for (Team team : teams) {
-            if (StringUtils.equalsIgnoreCase(id, team.getId(), false)) {
-                return team;
-            }
-        }
-        NIMClient.getService(TeamService.class).queryTeam(id).setCallback(new RequestCallback<Team>() {
-            @Override
-            public void onSuccess(Team team) {
-                if (team != null) {
-                    teams.add(team);
-                    notifyDataSetChanged();
-                }
-            }
-
-            @Override
-            public void onFailed(int i) {
-
-            }
-
-            @Override
-            public void onException(Throwable throwable) {
-
-            }
-        });
-        return null;
-    }
-
-    @Nullable
-    @CheckResult
-    private GroupContactBean getUser(String accid) {
-        if (groupContactBeans != null && !TextUtils.isEmpty(accid)) {
-            GroupContactBean groupContactBean = new GroupContactBean();
-            groupContactBean.accid = accid.toLowerCase();
-            int indexOf = groupContactBeans.indexOf(groupContactBean);
-            if (indexOf >= 0) {
-                return groupContactBeans.get(indexOf);
-            }
-        }
-        return null;
-    }
-
-    private List<GroupContactBean> groupContactBeans;
-
-    public MyAtedAdapter(List<Team> teams, List<GroupContactBean> groupContactBeans) {
-        AlphaUserInfo loginUserInfo = LoginInfoUtils.getLoginUserInfo();
-        if (loginUserInfo != null) {
-            loginName = loginUserInfo.getName();
-        }
-        this.teams = teams;
-        this.groupContactBeans = groupContactBeans;
+    public MyAtedAdapter() {
         this.setOnItemClickListener(this);
     }
 
@@ -114,17 +50,18 @@ public class MyAtedAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody>
         return R.layout.adapter_my_ated;
     }
 
-
     @Override
-    public void onBindHoder(ViewHolder holder, IMMessageCustomBody imAtEntity, int position) {
-        if (imAtEntity == null) return;
+    public void onBindHolder(BaseViewHolder holder, @Nullable IMMessageCustomBody imAtEntity, int i) {
+        if (imAtEntity == null) {
+            return;
+        }
         ImageView at_user_iv = holder.obtainView(R.id.at_user_iv);
         TextView at_user_tv = holder.obtainView(R.id.at_user_tv);
         TextView at_time_tv = holder.obtainView(R.id.at_time_tv);
         TextView at_from_group_tv = holder.obtainView(R.id.at_from_group_tv);
         TextView at_content_tv = holder.obtainView(R.id.at_content_tv);
 
-        Team team = getTeam(imAtEntity.to);
+        Team team = getTeamById(imAtEntity.to);
         if (team != null) {
             at_from_group_tv.setText(team.getName());
             if (!TextUtils.isEmpty(team.getIcon())) {
@@ -138,7 +75,7 @@ public class MyAtedAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody>
             at_from_group_tv.setText("未查询到讨论组");
         }
 
-        GroupContactBean user = getUser(imAtEntity.from);
+        GroupContactBean user = getContactByAccid(imAtEntity.from);
         if (user != null) {
             GlideUtils.loadUser(at_user_iv.getContext(),
                     user.pic,
@@ -157,6 +94,7 @@ public class MyAtedAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody>
         }
     }
 
+
     /**
      * 设置team头像
      *
@@ -164,15 +102,21 @@ public class MyAtedAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody>
      * @param ivSessionIcon
      */
     private void setTeamIcon(String teamName, ImageView ivSessionIcon) {
-        if (TextUtils.isEmpty(teamName)) return;
-        if (ivSessionIcon == null) return;
+        if (TextUtils.isEmpty(teamName)) {
+            return;
+        }
+        if (ivSessionIcon == null) {
+            return;
+        }
         IMUtils.setTeamIcon(teamName, ivSessionIcon);
     }
 
     @Override
-    public void onItemClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
-        IMMessageCustomBody item = getItem(getRealPos(position));
-        if (item == null) return;
+    public void onItemClick(com.asange.recyclerviewadapter.BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
+        IMMessageCustomBody item = getItem(i);
+        if (item == null) {
+            return;
+        }
         switch (item.ope) {
             case CHAT_TYPE_P2P:
                 ChatActivity.launchP2P(view.getContext(),
@@ -181,7 +125,7 @@ public class MyAtedAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody>
                         item.id, 0);
                 break;
             case CHAT_TYPE_TEAM:
-                Team team = getTeam(item.to);
+                Team team = getTeamById(item.to);
                 ChatActivity.launchTEAM(view.getContext(),
                         item.to,
                         team != null ? team.getName() : "",

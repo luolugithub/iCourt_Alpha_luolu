@@ -167,6 +167,13 @@ public abstract class BaseDao<T extends RealmModel> implements IRealmDao<T> {
         return realm.where(c).findAll();
     }
 
+
+    @Override
+    public RealmResults<T> queryAllAsync(Class<T> c) {
+        if (!isRealmAvailable()) return null;
+        return realm.where(c).findAllAsync();
+    }
+
     @Override
     public RealmResults<T> query(Class<T> c, String fieldName, String value) {
         if (!isRealmAvailable()) return null;
