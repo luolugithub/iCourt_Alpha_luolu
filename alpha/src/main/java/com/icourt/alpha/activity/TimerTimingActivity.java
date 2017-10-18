@@ -43,7 +43,6 @@ import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.JsonUtils;
-import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
@@ -69,11 +68,12 @@ import retrofit2.Call;
 import retrofit2.Response;
 
 /**
- * Description  计时详情
+ * Description  正在计时
  * Company Beijing icourt
- * author  lu.zhao  E-mail:zhaolu@icourt.cc
- * date createTime：17/5/10
- * version 2.0.0
+ *
+ * @author lu.zhao  E-mail:zhaolu@icourt.cc
+ *         date createTime：17/5/10
+ *         version 2.0.0
  */
 
 public class TimerTimingActivity extends BaseTimerActivity
@@ -117,13 +117,14 @@ public class TimerTimingActivity extends BaseTimerActivity
     @BindView(R.id.over_timing_title_tv)
     TextView overTimingTitleTv;
 
-    TimeEntity.ItemEntity itemEntity;
+    TimeEntity.ItemEntity mItemEntity;
     Calendar selectedStartDate = Calendar.getInstance();//选中的开始时间
 
     public static void launch(@NonNull Context context,
                               @NonNull TimeEntity.ItemEntity timeEntity) {
-        if (context == null) return;
-        if (timeEntity == null) return;
+        if (context == null || timeEntity == null) {
+            return;
+        }
         Intent intent = new Intent(context, TimerTimingActivity.class);
         intent.putExtra(KEY_TIME, timeEntity);
         context.startActivity(intent);
@@ -142,17 +143,18 @@ public class TimerTimingActivity extends BaseTimerActivity
         initView();
     }
 
-
     @Override
     protected void initView() {
         super.initView();
-        itemEntity = (TimeEntity.ItemEntity) getIntent().getSerializableExtra(KEY_TIME);
+        mItemEntity = (TimeEntity.ItemEntity) getIntent().getSerializableExtra(KEY_TIME);
         setTitle(R.string.timing_detail);
         ImageView titleActionImage = getTitleActionImage();
         if (titleActionImage != null) {
             titleActionImage.setImageResource(R.mipmap.header_icon_more);
         }
-        initTimingView();
+
+        initTimingView(mItemEntity);
+        initContentView(mItemEntity);
 
         timeNameTv.addTextChangedListener(new TextWatcher() {
             @Override
@@ -167,11 +169,13 @@ public class TimerTimingActivity extends BaseTimerActivity
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (itemEntity == null) return;
+                if (mItemEntity == null) {
+                    return;
+                }
                 if (!TextUtils.isEmpty(s)) {
-                    itemEntity.name = s.toString();
+                    mItemEntity.name = s.toString();
                 } else {
-                    itemEntity.name = "";
+                    mItemEntity.name = "";
                 }
             }
         });
@@ -180,27 +184,38 @@ public class TimerTimingActivity extends BaseTimerActivity
         timeNameTv.setOnEditorActionListener(new InputActionNextFilter());
     }
 
-    private void initTimingView() {
+    /**
+     * 初始化内容的显示（计时相关、标题、所属项目、工作类别、关联任务）
+     *
+     * @param itemEntity
+     */
+    private void initContentView(TimeEntity.ItemEntity itemEntity) {
         if (itemEntity != null) {
-            selectedStartDate.clear();
-            selectedStartDate.setTimeInMillis(itemEntity.startTime);
-            setDisplayTiming();
-            timingTv.setText(toTime(itemEntity.useTime / 1000));
             timeNameTv.setText(itemEntity.name);
             timeNameTv.setSelection(timeNameTv.getText().length());
             projectNameTv.setText(TextUtils.isEmpty(itemEntity.matterName) ? getString(R.string.timing_not_set) : itemEntity.matterName);
             worktypeNameTv.setText(TextUtils.isEmpty(itemEntity.workTypeName) ? getString(R.string.timing_not_set) : itemEntity.workTypeName);
             taskNameTv.setText(TextUtils.isEmpty(itemEntity.taskName) ? getString(R.string.timing_not_relevance) : itemEntity.taskName);
-
         }
     }
 
     /**
-     * 设置显示日期、开始时间的显示内容
+     * 设置显示日期、开始时间、正在计时的显示内容
      */
-    private void setDisplayTiming() {
-        tvStartDate.setText(DateUtils.getTimeDateFormatYear(itemEntity.startTime));
-        startTimeTv.setText(DateUtils.getHHmm(itemEntity.startTime));
+    private void initTimingView(TimeEntity.ItemEntity itemEntity) {
+        if (itemEntity == null) {
+            return;
+        }
+        selectedStartDate.clear();
+        selectedStartDate.setTimeInMillis(itemEntity.startTime);
+        long useTimeSecond = TimerManager.getInstance().getTimingSeconds();
+        if (useTimeSecond == 0) {
+            useTimeSecond = System.currentTimeMillis() - selectedStartDate.getTimeInMillis();
+            useTimeSecond = useTimeSecond / TimeUnit.SECONDS.toMillis(1);
+        }
+        timingTv.setText(DateUtils.getTimingStr(useTimeSecond));
+        tvStartDate.setText(DateUtils.getTimeDateFormatYear(mItemEntity.startTime));
+        startTimeTv.setText(DateUtils.getHHmm(mItemEntity.startTime));
     }
 
     /**
@@ -209,7 +224,7 @@ public class TimerTimingActivity extends BaseTimerActivity
      * @param isSyncServer true：同步到服务器，false：不同步
      */
     private void closeOverTimingRemind(boolean isSyncServer) {
-        itemEntity.noRemind = TimeEntity.ItemEntity.STATE_REMIND_OFF;
+        mItemEntity.noRemind = TimeEntity.ItemEntity.STATE_REMIND_OFF;
         viewMoveAnimation(false);
         EventBus.getDefault().post(new OverTimingRemindEvent(OverTimingRemindEvent.ACTION_TIMING_REMIND_NO_REMIND));
         if (isSyncServer) {
@@ -230,7 +245,7 @@ public class TimerTimingActivity extends BaseTimerActivity
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.titleBack:
-                saveTiming(false);
+                saveTiming(mItemEntity, false);
                 finish();
                 break;
             case R.id.titleAction:
@@ -241,35 +256,33 @@ public class TimerTimingActivity extends BaseTimerActivity
                             @Override
                             public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                                 dialog.dismiss();
-                                deleteTiming(itemEntity.pkId);
+                                deleteTiming(mItemEntity.pkId);
                             }
                         }).show();
                 break;
             case R.id.tv_start_date:
-                showDateTimeSelectDialogFragment(TimingChangeDialogFragment.TYPE_CHANGE_START_TIME, itemEntity.startTime, 0);
+                showDateTimeSelectDialogFragment(TimingChangeDialogFragment.TYPE_CHANGE_START_TIME, mItemEntity.startTime, 0);
                 break;
             case R.id.start_time_tv:
-                showDateTimeSelectDialogFragment(TimingChangeDialogFragment.TYPE_CHANGE_START_TIME, itemEntity.startTime, 0);
+                showDateTimeSelectDialogFragment(TimingChangeDialogFragment.TYPE_CHANGE_START_TIME, mItemEntity.startTime, 0);
                 break;
             case R.id.over_timing_close_ll:
                 closeOverTimingRemind(true);
                 break;
-            case R.id.project_layout://所属项目
-                showProjectSelectDialogFragment(itemEntity.matterPkId);
+            case R.id.project_layout:
+                //所属项目
+                showProjectSelectDialogFragment(mItemEntity.matterPkId);
                 break;
-            case R.id.worktype_layout://工作类型
-                //计时选择工作类别不需要判断是否选择项目    2017.8.1修改（暂时保留）
-                /*if (TextUtils.isEmpty(itemEntity.matterPkId)) {
-                    showTopSnackBar("请选择项目");
-                    return;
-                }*/
-                showWorkTypeSelectDialogFragment(itemEntity.matterPkId, itemEntity.workTypeId);
+            case R.id.worktype_layout:
+                //工作类型
+                showWorkTypeSelectDialogFragment(mItemEntity.matterPkId, mItemEntity.workTypeId);
                 break;
-            case R.id.task_layout://关联任务
-                showTaskSelectDialogFragment(itemEntity.matterPkId, itemEntity.taskPkId);
+            case R.id.task_layout:
+                //关联任务
+                showTaskSelectDialogFragment(mItemEntity.matterPkId, mItemEntity.taskPkId);
                 break;
             case R.id.stop_time_tv:
-                itemEntity.state = TimeEntity.ItemEntity.TIMER_STATE_STOP;
+                mItemEntity.state = TimeEntity.ItemEntity.TIMER_STATE_STOP;
                 showLoadingDialog(null);
                 MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
                 TimerManager.getInstance().stopTimer(new SimpleCallBack<TimeEntity.ItemEntity>() {
@@ -277,13 +290,12 @@ public class TimerTimingActivity extends BaseTimerActivity
                     public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
                         dismissLoadingDialog();
                         if (response.body().result != null) {
-                            itemEntity.endTime = response.body().result.endTime;
-                            itemEntity.createTime = response.body().result.createTime;
-                            itemEntity.useTime = response.body().result.useTime;
-                            itemEntity.workTypeId = response.body().result.workTypeId;
-                            itemEntity.taskPkId = response.body().result.taskPkId;
+                            mItemEntity.endTime = response.body().result.endTime;
+                            mItemEntity.createTime = response.body().result.createTime;
+                            mItemEntity.useTime = response.body().result.useTime;
+                            mItemEntity.workTypeId = response.body().result.workTypeId;
+                            mItemEntity.taskPkId = response.body().result.taskPkId;
                         }
-                        //TimerDetailActivity.launch(getContext(), response.body().result);
                         finish();
                     }
 
@@ -302,7 +314,7 @@ public class TimerTimingActivity extends BaseTimerActivity
 
     @Override
     public void onBackPressed() {
-        saveTiming(false);
+        saveTiming(mItemEntity, false);
         super.onBackPressed();
     }
 
@@ -312,6 +324,8 @@ public class TimerTimingActivity extends BaseTimerActivity
             case MotionEvent.ACTION_DOWN:
                 SystemUtils.hideSoftKeyBoard(getActivity(), true);
                 break;
+            default:
+                break;
         }
         return super.dispatchTouchEvent(ev);
     }
@@ -319,9 +333,9 @@ public class TimerTimingActivity extends BaseTimerActivity
     /**
      * 保存正在计时的修改内容
      *
-     * @param isChangeStartTime 是否修改来开始时间
+     * @param isChangeTime 是否修改了开始时间
      */
-    private void saveTiming(final boolean isChangeStartTime) {
+    private void saveTiming(final TimeEntity.ItemEntity itemEntity, final boolean isChangeTime) {
         //实时保存
         if (itemEntity != null) {
             JsonObject jsonBody = null;
@@ -330,8 +344,10 @@ public class TimerTimingActivity extends BaseTimerActivity
             } catch (JsonParseException e) {
                 e.printStackTrace();
             }
-            if (jsonBody == null) return;
-            if (isChangeStartTime) { //添加开始时间
+            if (jsonBody == null) {
+                return;
+            }
+            if (isChangeTime) {
                 jsonBody.addProperty("startTime", selectedStartDate.getTimeInMillis());
             }
             if (jsonBody.has("matterName")) {
@@ -361,17 +377,21 @@ public class TimerTimingActivity extends BaseTimerActivity
                         @Override
                         public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                             dismissLoadingDialog();
-                            if (isChangeStartTime) {//如果修改了开始时间，要让计时器同步一下服务器时间.
-                                itemEntity.startTime = selectedStartDate.getTimeInMillis();
-                                setDisplayTiming();
+                            mItemEntity = itemEntity;
+                            if (isChangeTime) {
+                                mItemEntity.startTime = selectedStartDate.getTimeInMillis();
+                                initTimingView(mItemEntity);
                                 TimerManager.getInstance().timerQuerySync();
                             }
+                            initContentView(mItemEntity);
                         }
 
                         @Override
                         public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
                             super.onFailure(call, t);
                             dismissLoadingDialog();
+                            selectedStartDate.clear();
+                            selectedStartDate.setTimeInMillis(mItemEntity.startTime);
                         }
                     });
         }
@@ -379,70 +399,74 @@ public class TimerTimingActivity extends BaseTimerActivity
 
     @Override
     public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
-        boolean isChangeStartTime = false;
+        boolean isChangeTime = false;
+        TimeEntity.ItemEntity cloneEntity;
+        try {
+            cloneEntity = (TimeEntity.ItemEntity) mItemEntity.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+            cloneEntity = new TimeEntity.ItemEntity();
+        }
         if (fragment instanceof WorkTypeSelectDialogFragment && params != null) {
             Serializable serializable = params.getSerializable(BaseDialogFragment.KEY_FRAGMENT_RESULT);
             if (serializable instanceof WorkType) {
-                itemEntity.workTypeId = ((WorkType) serializable).pkId;
-                itemEntity.workTypeName = ((WorkType) serializable).name;
-                worktypeNameTv.setText(((WorkType) serializable).name);
+                cloneEntity.workTypeId = ((WorkType) serializable).pkId;
+                cloneEntity.workTypeName = ((WorkType) serializable).name;
             }
         } else if (fragment instanceof TaskSelectDialogFragment && params != null) {
             Serializable serializable = params.getSerializable(BaseDialogFragment.KEY_FRAGMENT_RESULT);
             if (serializable instanceof TaskEntity.TaskItemEntity) {
                 TaskEntity.TaskItemEntity item = ((TaskEntity.TaskItemEntity) serializable);
-                itemEntity.taskPkId = item.id;
-                itemEntity.taskName = item.name;
-                taskNameTv.setText(itemEntity.taskName);
+                cloneEntity.taskPkId = item.id;
+                cloneEntity.taskName = item.name;
                 if (item.matter != null) {
                     ProjectEntity projectEntity = item.matter.convert2Model();
-                    if (!StringUtils.equalsIgnoreCase(itemEntity.matterPkId, projectEntity.pkId, false)) {
-                        itemEntity.workTypeId = "";
-                        itemEntity.workTypeName = "";
-                        worktypeNameTv.setText(R.string.timing_not_select);
+                    if (!StringUtils.equalsIgnoreCase(mItemEntity.matterPkId, projectEntity.pkId, false)) {
+                        cloneEntity.workTypeId = "";
+                        cloneEntity.workTypeName = "";
                     }
-                    itemEntity.matterPkId = projectEntity.pkId;
-                    itemEntity.matterName = projectEntity.name;
-                    projectNameTv.setText(projectEntity.name);
+                    cloneEntity.matterPkId = projectEntity.pkId;
+                    cloneEntity.matterName = projectEntity.name;
                 }
             }
         } else if (fragment instanceof ProjectSimpleSelectDialogFragment && params != null) {
             Serializable serializable = params.getSerializable(BaseDialogFragment.KEY_FRAGMENT_RESULT);
             if (serializable instanceof ProjectEntity) {
                 ProjectEntity projectEntity = (ProjectEntity) serializable;
-                if (projectEntity == null) return;
-                if (!TextUtils.equals(itemEntity.matterPkId, projectEntity.pkId)) {
-                    itemEntity.taskPkId = "";
-                    itemEntity.taskName = "";
-                    itemEntity.workTypeId = "";
-                    itemEntity.workTypeName = "";
-                    itemEntity.matterPkId = projectEntity.pkId;
-                    worktypeNameTv.setText(R.string.timing_not_select);
-                    taskNameTv.setText(R.string.timing_not_relevance);
+                if (projectEntity == null) {
+                    return;
                 }
-                itemEntity.matterPkId = projectEntity.pkId;
-                itemEntity.matterName = projectEntity.name;
-                projectNameTv.setText(projectEntity.name);
+                if (!TextUtils.equals(mItemEntity.matterPkId, projectEntity.pkId)) {
+                    cloneEntity.taskPkId = "";
+                    cloneEntity.taskName = "";
+                    cloneEntity.workTypeId = "";
+                    cloneEntity.workTypeName = "";
+                    cloneEntity.matterPkId = projectEntity.pkId;
+                }
+                cloneEntity.matterPkId = projectEntity.pkId;
+                cloneEntity.matterName = projectEntity.name;
             }
         } else if (fragment instanceof TimingChangeDialogFragment && params != null) {
-            isChangeStartTime = true;
+            isChangeTime = true;
             long timeMillis = params.getLong(TimingChangeDialogFragment.TIME_RESULT_MILLIS);
             selectedStartDate.clear();
             selectedStartDate.setTimeInMillis(timeMillis);
         }
-        saveTiming(isChangeStartTime);
+        saveTiming(cloneEntity, isChangeTime);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onTimerEvent(TimingEvent event) {
-        if (event == null) return;
-        if (itemEntity == null) return;
+        if (event == null || mItemEntity == null) {
+            return;
+        }
         switch (event.action) {
             case TimingEvent.TIMING_UPDATE_PROGRESS:
-                if (TextUtils.equals(event.timingId, itemEntity.pkId)) {
-                    timingTv.setText(toTime(event.timingSecond));
-                    if (itemEntity.noRemind == TimeEntity.ItemEntity.STATE_REMIND_ON) {
-                        if (TimeUnit.SECONDS.toHours(event.timingSecond) >= 2) {//如果该计时超过两小时，显示超过2小时的提醒。
+                if (TextUtils.equals(event.timingId, mItemEntity.pkId)) {
+                    timingTv.setText(DateUtils.getTimingStr(event.timingSecond));
+                    if (mItemEntity.noRemind == TimeEntity.ItemEntity.STATE_REMIND_ON) {
+                        //如果该计时超过两小时，显示超过2小时的提醒。
+                        if (TimeUnit.SECONDS.toHours(event.timingSecond) >= 2) {
                             if (overTimingRemind.getVisibility() != View.VISIBLE) {
                                 updateOverTimingRemindText(event.timingSecond);
                                 overTimingRemind.setVisibility(View.VISIBLE);
@@ -459,14 +483,18 @@ public class TimerTimingActivity extends BaseTimerActivity
                 break;
             case TimingEvent.TIMING_STOP:
                 if (!isDelete) {
-                    TimerDetailActivity.launch(getContext(), itemEntity);
+                    TimerDetailActivity.launch(getContext(), mItemEntity);
                     finish();
                 }
                 break;
-            case TimingEvent.TIMING_SYNC_SUCCESS://计时同步成功后的回调
-                if (TimeUnit.SECONDS.toHours(TimerManager.getInstance().getTimingSeconds()) < 2) {//计时成功后的回调小于2小时，隐藏计时提醒的窗体
+            case TimingEvent.TIMING_SYNC_SUCCESS:
+                //计时同步成功后的回调
+                if (TimeUnit.SECONDS.toHours(TimerManager.getInstance().getTimingSeconds()) < 2) {
+                    //计时成功后的回调小于2小时，隐藏计时提醒的窗体
                     viewMoveAnimation(false);
                 }
+                break;
+            default:
                 break;
         }
     }
@@ -490,7 +518,9 @@ public class TimerTimingActivity extends BaseTimerActivity
         } else if (overTimingRemind.getVisibility() != View.GONE) {
             animator = ValueAnimator.ofInt(DensityUtil.dip2px(getContext(), 42), 0);
         }
-        if (animator == null) return;
+        if (animator == null) {
+            return;
+        }
         animator.setDuration(durationTime).start();
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -524,30 +554,6 @@ public class TimerTimingActivity extends BaseTimerActivity
 
             }
         });
-    }
-
-    /**
-     * 获取本地唯一id
-     *
-     * @return
-     */
-    private String getlocalUniqueId() {
-        AlphaUserInfo loginUserInfo = LoginInfoUtils.getLoginUserInfo();
-        if (loginUserInfo != null) {
-            return loginUserInfo.localUniqueId;
-        }
-        return null;
-    }
-
-    public String createOverTimingRemindKey(String pkId) {
-        return TimerTimingActivity.class.getSimpleName() + pkId;
-    }
-
-    public String toTime(long timesSecond) {
-        long hour = timesSecond / 3600;
-        long minute = timesSecond % 3600 / 60;
-        long second = timesSecond % 60;
-        return String.format("%02d:%02d:%02d", hour, minute, second);
     }
 
     @Override
