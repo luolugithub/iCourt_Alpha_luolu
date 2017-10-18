@@ -41,7 +41,7 @@
         <item>@string/repo_share</item>
     </string-array>
 
-    <string name="repo_delete_confirm">删除后不可恢复, 确定删除吗?</string>
+    <string name="repo_delete_confirm">资料库删除后不可恢复, 确定删除?</string>
     <string name="repo_delete_ing">资料库删除中...</string>
     <string name="repo_delete_success">资料库删除成功</string>
     <string name="repo_delete_fail">资料库删除失败</string>
