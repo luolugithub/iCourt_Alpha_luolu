@@ -57,8 +57,10 @@ public class TaskCheckItemAdapter extends MultiSelectRecyclerAdapter<TaskCheckIt
         checkedTextView.setClickable(valid && !isFinish);
         deleteView.setVisibility(valid && !isFinish ? View.VISIBLE : View.GONE);
         nameView.setText(itemEntity.name);
-        nameView.setFocusable(valid && !isFinish);
-        nameView.setFocusableInTouchMode(valid && !isFinish);
+        nameView.setFocusable(valid && !isFinish && !itemEntity.state);
+        nameView.setFocusableInTouchMode(valid && !isFinish && !itemEntity.state);
+        nameView.setCursorVisible(valid && !isFinish && !itemEntity.state);
+        nameView.setEnabled(valid && !isFinish && !itemEntity.state);
         if (valid && !isFinish) {
             nameView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
                 @Override
@@ -94,7 +96,6 @@ public class TaskCheckItemAdapter extends MultiSelectRecyclerAdapter<TaskCheckIt
             holder.bindChildClick(deleteView);
         }
     }
-
 
     public interface OnLoseFocusListener {
         void loseFocus(TaskCheckItemEntity.ItemEntity itemEntity, int position, String name);
