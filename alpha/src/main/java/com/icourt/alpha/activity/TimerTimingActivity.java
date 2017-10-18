@@ -211,8 +211,10 @@ public class TimerTimingActivity extends BaseTimerActivity
             R.id.over_timing_close_ll})
     @Override
     public void onClick(View view) {
-        super.onClick(view);
         switch (view.getId()) {
+            case R.id.titleBack:
+                saveTiming(true);
+                break;
             case R.id.titleAction:
                 finish();
                 break;
@@ -259,13 +261,15 @@ public class TimerTimingActivity extends BaseTimerActivity
                     }
                 });
                 break;
+            default:
+                super.onClick(view);
+                break;
         }
     }
 
     @Override
-    protected void onPause() {
-        saveTiming();
-        super.onPause();
+    public void onBackPressed() {
+        saveTiming(true);
     }
 
     @Override
@@ -278,7 +282,7 @@ public class TimerTimingActivity extends BaseTimerActivity
         return super.dispatchTouchEvent(ev);
     }
 
-    private void saveTiming() {
+    private void saveTiming(final boolean isFinished) {
         //实时保存
         if (itemEntity != null) {
             JsonObject jsonBody = null;
@@ -315,6 +319,9 @@ public class TimerTimingActivity extends BaseTimerActivity
                         @Override
                         public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                             dismissLoadingDialog();
+                            if (isFinished) {
+                                finish();
+                            }
                         }
 
                         @Override
@@ -373,7 +380,7 @@ public class TimerTimingActivity extends BaseTimerActivity
                 projectNameTv.setText(projectEntity.name);
             }
         }
-        saveTiming();
+        saveTiming(false);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
