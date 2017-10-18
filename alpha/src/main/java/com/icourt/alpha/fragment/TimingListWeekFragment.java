@@ -6,7 +6,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -142,8 +141,9 @@ public class TimingListWeekFragment extends BaseTimingListFragment {
             public void onPageSelected(int position) {
                 TimingSelectEntity timingSelectEntity = weekData.get(position);
                 getTimingStatistic(TimingConfig.TIMING_QUERY_BY_WEEK, timingSelectEntity.startTimeMillis, timingSelectEntity.endTimeMillis);
-                if (getParentListener() != null)
+                if (getParentListener() != null) {
                     getParentListener().onTimeChanged(TimingConfig.TIMING_QUERY_BY_WEEK, timingSelectEntity.startTimeMillis);
+                }
             }
 
             @Override
@@ -170,20 +170,22 @@ public class TimingListWeekFragment extends BaseTimingListFragment {
         super.getTimingStatisticSuccess(statisticEntity);
         if (getParentListener() != null) {
             getParentListener().onTimeSumChanged(TimingConfig.TIMING_QUERY_BY_WEEK, statisticEntity.allTimingSum, statisticEntity.todayTimingSum);
-            if (statisticEntity.timingList != null)
+            if (statisticEntity.timingList != null) {
                 generateData(statisticEntity.timingList);
+            }
         }
     }
 
     private void resetViewport() {
-        if (timingChartView == null) return;
+        if (timingChartView == null) {
+            return;
+        }
         // Reset viewport height range to (0,100)
         final Viewport v = new Viewport(timingChartView.getMaximumViewport());
         v.bottom = 0;
         v.top = 24;
         v.left = 0;
         v.right = numberOfPoints;
-        // timingChartView.setMaximumViewport(v);
         timingChartView.setCurrentViewport(v);
     }
 
@@ -193,10 +195,13 @@ public class TimingListWeekFragment extends BaseTimingListFragment {
      * @param list
      */
     private void generateData(@NonNull List<Long> list) {
-        if (timingChartView == null) return;
+        if (timingChartView == null) {
+            return;
+        }
         resetViewport();
 
-        List<Line> lines = new ArrayList<>();//折线图上要现实的线的集合
+        //折线图上要现实的线的集合
+        List<Line> lines = new ArrayList<>();
 
         List<PointValue> values = new ArrayList<>();
         List<AxisValue> axisXValues = Arrays.asList(
@@ -264,10 +269,8 @@ public class TimingListWeekFragment extends BaseTimingListFragment {
         line.setHasLines(hasLines);
         line.setHasPoints(hasPoints);
         line.setColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_orange));
-        //line.setHasGradientToTransparent(hasGradientToTransparent);
         lines.add(line);
         LineChartData data = new LineChartData(lines);
-
 
         Axis axisX = new Axis()
                 .setHasLines(true)

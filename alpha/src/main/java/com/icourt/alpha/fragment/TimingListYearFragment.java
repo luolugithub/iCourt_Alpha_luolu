@@ -6,10 +6,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -106,24 +104,6 @@ public class TimingListYearFragment extends BaseTimingListFragment {
         timingChartView.setContainerScrollEnabled(false, ContainerScrollType.VERTICAL);
         addAppbarHidenListener(appBarLayout);
 
-        /*timingChartView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        appBarLayout.getParent().requestDisallowInterceptTouchEvent(true);
-                        break;
-                    case MotionEvent.ACTION_MOVE:
-                        appBarLayout.getParent().requestDisallowInterceptTouchEvent(true);
-                        break;
-                    case MotionEvent.ACTION_UP:
-                        appBarLayout.getParent().requestDisallowInterceptTouchEvent(false);
-                        break;
-                }
-                return false;
-            }
-        });*/
-
         if (getArguments() != null) {
             long startTime = getArguments().getLong(KEY_START_TIME);
             startTimeMillis = DateUtils.getYearStartTime(startTime);
@@ -187,25 +167,29 @@ public class TimingListYearFragment extends BaseTimingListFragment {
         super.getTimingStatisticSuccess(statisticEntity);
         if (getParentListener() != null) {
             getParentListener().onTimeSumChanged(TimingConfig.TIMING_QUERY_BY_YEAR, statisticEntity.allTimingSum, statisticEntity.todayTimingSum);
-            if (statisticEntity.timingList != null)
+            if (statisticEntity.timingList != null) {
                 generateData(statisticEntity.timingList);
+            }
         }
     }
 
     private void resetViewport() {
-        if (timingChartView == null) return;
+        if (timingChartView == null) {
+            return;
+        }
         // Reset viewport height range to (0,100)
         final Viewport v = new Viewport(timingChartView.getMaximumViewport());
         v.bottom = 0;
         v.top = 24;
         v.left = 0;
         v.right = numberOfPoints;
-        // timingChartView.setMaximumViewport(v);
         timingChartView.setCurrentViewport(v);
     }
 
     private void generateData(@NonNull List<Long> list) {
-        if (timingChartView == null) return;
+        if (timingChartView == null) {
+            return;
+        }
         resetViewport();
 
         List<Line> lines = new ArrayList<>();
@@ -288,7 +272,6 @@ public class TimingListYearFragment extends BaseTimingListFragment {
         line.setHasLines(hasLines);
         line.setHasPoints(hasPoints);
         line.setColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_orange));
-        //line.setHasGradientToTransparent(hasGradientToTransparent);
         lines.add(line);
         LineChartData data = new LineChartData(lines);
 

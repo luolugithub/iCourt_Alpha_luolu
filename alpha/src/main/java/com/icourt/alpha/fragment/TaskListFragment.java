@@ -221,12 +221,12 @@ public class TaskListFragment extends BaseTaskFragment implements
 
         recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, getEmptyContentId(stateType));
         recyclerView.setLayoutManager(linearLayoutManager = new LinearLayoutManager(getContext()));
-        recyclerView.addItemDecoration(ItemDecorationUtils.getCommTrans5Divider(getContext(), true));
+//        recyclerView.addItemDecoration(ItemDecorationUtils.getCommTrans5Divider(getContext(), true));
         recyclerView.getRecyclerView().setNestedScrollingEnabled(false);
         taskAdapter = new TaskAdapter();
-        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView.getRecyclerView());
-        View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
-        registerClick(rl_comm_search);
+        View headerView = LayoutInflater.from(getActivity()).inflate(R.layout.header_search_comm, recyclerView.getRecyclerView(), false);
+        View rlCommSearch = headerView.findViewById(R.id.rl_comm_search);
+        registerClick(rlCommSearch);
         taskAdapter.addHeaderView(headerView);
         recyclerView.setAdapter(taskAdapter);
         taskAdapter.setOnItemClickListener(this);
@@ -261,6 +261,8 @@ public class TaskListFragment extends BaseTaskFragment implements
                     return R.string.task_none_finished_task;
                 case Const.TASK_STATETYPE_DELETED:
                     return R.string.task_none_deleted_task;
+                default:
+                    break;
             }
         } else if (type == TYPE_MY_ATTENTION) {
             return R.string.task_none_attention_task;

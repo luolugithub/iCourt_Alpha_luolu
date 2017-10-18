@@ -140,8 +140,9 @@ public class TimingListDayFragment extends BaseTimingListFragment {
     protected void getTimingStatisticSuccess(TimingStatisticEntity statisticEntity) {
         super.getTimingStatisticSuccess(statisticEntity);
         showSumTime(statisticEntity.allTimingSum);
-        if (getParentListener() != null)
+        if (getParentListener() != null) {
             getParentListener().onTimeSumChanged(TimingConfig.TIMING_QUERY_BY_DAY, statisticEntity.allTimingSum, statisticEntity.todayTimingSum);
+        }
     }
 
     @Override

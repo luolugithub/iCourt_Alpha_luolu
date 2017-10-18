@@ -6,7 +6,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -143,8 +142,9 @@ public class TimingListMonthFragment extends BaseTimingListFragment {
             public void onPageSelected(int position) {
                 TimingSelectEntity timingSelectEntity = monthData.get(position);
                 getTimingStatistic(TimingConfig.TIMING_QUERY_BY_MONTH, timingSelectEntity.startTimeMillis, timingSelectEntity.endTimeMillis);
-                if (getParentListener() != null)
+                if (getParentListener() != null) {
                     getParentListener().onTimeChanged(TimingConfig.TIMING_QUERY_BY_MONTH, timingSelectEntity.startTimeMillis);
+                }
             }
 
             @Override
@@ -171,8 +171,9 @@ public class TimingListMonthFragment extends BaseTimingListFragment {
         super.getTimingStatisticSuccess(statisticEntity);
         if (getParentListener() != null) {
             getParentListener().onTimeSumChanged(TimingConfig.TIMING_QUERY_BY_MONTH, statisticEntity.allTimingSum, statisticEntity.todayTimingSum);
-            if (statisticEntity.timingList != null)
+            if (statisticEntity.timingList != null) {
                 generateData(statisticEntity.timingList);
+            }
         }
     }
 
@@ -180,19 +181,22 @@ public class TimingListMonthFragment extends BaseTimingListFragment {
      * 初始化折线图的上下左右刻度相关
      */
     private void resetViewport() {
-        if (timingChartView == null) return;
+        if (timingChartView == null) {
+            return;
+        }
         // Reset viewport height range to (0,100)
         final Viewport v = new Viewport(timingChartView.getMaximumViewport());
         v.bottom = 0;
         v.top = 24;
         v.left = 0;
         v.right = numberOfPoints;
-        // timingChartView.setMaximumViewport(v);
         timingChartView.setCurrentViewport(v);
     }
 
     private void generateData(@NonNull List<Long> list) {
-        if (timingChartView == null) return;
+        if (timingChartView == null) {
+            return;
+        }
         resetViewport();
 
         List<Line> lines = new ArrayList<>();
@@ -264,7 +268,6 @@ public class TimingListMonthFragment extends BaseTimingListFragment {
         line.setHasLines(hasLines);
         line.setHasPoints(hasPoints);
         line.setColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_orange));
-        //line.setHasGradientToTransparent(hasGradientToTransparent);
         lines.add(line);
         LineChartData data = new LineChartData(lines);
 

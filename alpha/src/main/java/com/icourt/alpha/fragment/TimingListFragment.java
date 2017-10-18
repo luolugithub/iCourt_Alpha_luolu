@@ -32,6 +32,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -115,34 +116,37 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
         queryType = TimingConfig.convert2timingQueryType(getArguments().getInt(KEY_QUERY_TYPE));
         long startTime = getArguments().getLong(KEY_START_TIME);
 
-        if (queryType == TimingConfig.TIMING_QUERY_BY_DAY) {//日
-            startTimeMillis = DateUtils.getDayStartTime(startTime);
-            endTimeMillis = DateUtils.getDayEndTime(startTimeMillis);
-        } else if (queryType == TimingConfig.TIMING_QUERY_BY_WEEK) {//周
-            startTimeMillis = DateUtils.getWeekStartTime(startTime);
-            endTimeMillis = DateUtils.getWeekEndTime(startTimeMillis);
-        } else if (queryType == TimingConfig.TIMING_QUERY_BY_MONTH) {//月
-            startTimeMillis = DateUtils.getMonthStartTime(startTime);
-            endTimeMillis = DateUtils.getMonthEndTime(startTimeMillis);
-        } else if (queryType == TimingConfig.TIMING_QUERY_BY_YEAR) {//年
-            startTimeMillis = DateUtils.getYearStartTime(startTime);
-            endTimeMillis = DateUtils.getYearEndTime(startTimeMillis);
+        switch (queryType) {
+            case TimingConfig.TIMING_QUERY_BY_DAY:
+                //日
+                startTimeMillis = DateUtils.getDayStartTime(startTime);
+                endTimeMillis = DateUtils.getDayEndTime(startTimeMillis);
+                break;
+            case TimingConfig.TIMING_QUERY_BY_WEEK:
+                //周
+                startTimeMillis = DateUtils.getWeekStartTime(startTime);
+                endTimeMillis = DateUtils.getWeekEndTime(startTimeMillis);
+                break;
+            case TimingConfig.TIMING_QUERY_BY_MONTH:
+                //月
+                startTimeMillis = DateUtils.getMonthStartTime(startTime);
+                endTimeMillis = DateUtils.getMonthEndTime(startTimeMillis);
+                break;
+            case TimingConfig.TIMING_QUERY_BY_YEAR:
+                //年
+                startTimeMillis = DateUtils.getYearStartTime(startTime);
+                endTimeMillis = DateUtils.getYearEndTime(startTimeMillis);
+                break;
+            default:
+                break;
         }
+
         recyclerView.setBackgroundColor(Color.WHITE);
         recyclerView.setItemAnimator(null);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(timeAdapter = new TimeAdapter(true));
         timeAdapter.setOnItemClickListener(this);
         recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_timing, R.string.timing_empty);
-//        refreshLayout.setMoveForHorizontal(true);
-//        timeAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, timeAdapter));
-//        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
-//            @Override
-//            public void onLoadMore(boolean isSilence) {
-//                super.onLoadMore(isSilence);
-//                getData(false);
-//            }
-//        });
 
         refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
             @Override
@@ -157,7 +161,8 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
         });
 
         refreshLayout.setEnableRefresh(false);
-        canLoadMore = (queryType != TimingConfig.TIMING_QUERY_BY_DAY && queryType != TimingConfig.TIMING_QUERY_BY_WEEK); //日周不可以上拉加载，年月可以上拉加载。
+        //日周不可以上拉加载，年月可以上拉加载。
+        canLoadMore = (queryType != TimingConfig.TIMING_QUERY_BY_DAY && queryType != TimingConfig.TIMING_QUERY_BY_WEEK);
         refreshLayout.setEnableLoadmore(canLoadMore);
         initData();
     }
@@ -171,15 +176,12 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-//        long dividerTime = (pageIndex * TimeUnit.DAYS.toMillis(7));
-//        long weekStartTimeMillSecond = startTimeMillis - dividerTime;
-//        long weekEndTimeMillSecond = weekStartTimeMillSecond + TimeUnit.DAYS.toMillis(7);
-//
         String weekStartTime = DateUtils.getyyyy_MM_dd(startTimeMillis);
         String weekEndTime = DateUtils.getyyyy_MM_dd(endTimeMillis);
 
         int pageSize;
-        if (queryType == TimingConfig.TIMING_QUERY_BY_DAY || queryType == TimingConfig.TIMING_QUERY_BY_WEEK) {//如果是日／周，则一次性加载完。
+        if (queryType == TimingConfig.TIMING_QUERY_BY_DAY || queryType == TimingConfig.TIMING_QUERY_BY_WEEK) {
+            //如果是日／周，则一次性加载完。
             pageSize = Integer.MAX_VALUE;
         } else {
             pageSize = ActionConstants.DEFAULT_PAGE_SIZE;
@@ -200,7 +202,7 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
      */
     private void timingListQueryByTime(final boolean isRefresh, int pageIndex, int pageSize, String weekStartTime, String weekEndTime) {
         callEnqueue(
-                getApi().timingListQueryByTime(getLoginUserId(), weekStartTime, weekEndTime, pageIndex, pageSize),
+                getApi().timingListStatistic(weekStartTime, weekEndTime, pageIndex, pageSize),
                 new SimpleCallBack<TimeEntity>() {
                     @Override
                     public void onSuccess(Call<ResEntity<TimeEntity>> call, Response<ResEntity<TimeEntity>> response) {
@@ -227,8 +229,9 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
 
     private boolean enableLoadMore(List result) {
         if (refreshLayout != null) {
-            if (result != null && result.size() >= ActionConstants.DEFAULT_PAGE_SIZE)
+            if (result != null && result.size() >= ActionConstants.DEFAULT_PAGE_SIZE) {
                 return true;
+            }
         }
         return false;
     }
@@ -247,7 +250,9 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onTimerEvent(TimingEvent event) {
-        if (event == null) return;
+        if (event == null) {
+            return;
+        }
         switch (event.action) {
             case TimingEvent.TIMING_ADD:
                 initData();
@@ -259,13 +264,15 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
                 if (indexOf >= 0) {
                     TimeEntity.ItemEntity item = timeAdapter.getItem(indexOf);
                     item.state = TimeEntity.ItemEntity.TIMER_STATE_START;
-                    item.useTime = event.timingSecond * 1_000;
+                    item.useTime = event.timingSecond * TimeUnit.SECONDS.toMillis(1);
 
                     timeAdapter.updateItem(item);
                 }
                 break;
             case TimingEvent.TIMING_STOP:
                 initData();
+                break;
+            default:
                 break;
         }
     }

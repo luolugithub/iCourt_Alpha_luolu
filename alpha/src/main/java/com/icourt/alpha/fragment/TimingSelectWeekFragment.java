@@ -237,14 +237,18 @@ public class TimingSelectWeekFragment extends BaseFragment {
     private void setBeforeOrLastMonth(boolean isNext) {
         int year = currentMonthDate.get(Calendar.YEAR);
         int month = currentMonthDate.get(Calendar.MONTH);
-        if (!isNext && year == 2015 && month == Calendar.JANUARY)//如果是减月份，并且当前已经到了2015年1月1日，说明到最起始时间了，不能再减了
+        //如果是减月份，并且当前已经到了2015年1月1日，说明到最起始时间了，不能再减了
+        if (!isNext && year == 2015 && month == Calendar.JANUARY) {
             return;
+        }
         Calendar instance = Calendar.getInstance();
         instance.setTimeInMillis(System.currentTimeMillis());
         int lastYear = instance.get(Calendar.YEAR);
         int lastMonth = instance.get(Calendar.MONTH);
-        if (isNext && year == lastYear && month == lastMonth)//如果是加月份，并且当前已经到了当前时间的最后一个月，不能再加了
+        //如果是加月份，并且当前已经到了当前时间的最后一个月，不能再加了
+        if (isNext && year == lastYear && month == lastMonth) {
             return;
+        }
         if (isNext) {
             currentMonthDate.add(Calendar.MONTH, 1);
         } else {
@@ -261,7 +265,9 @@ public class TimingSelectWeekFragment extends BaseFragment {
      * @param calendar
      */
     private void selectMonthItem(Calendar calendar) {
-        if (adapter == null || adapter.getTimeList().isEmpty()) return;
+        if (adapter == null || adapter.getTimeList().isEmpty()) {
+            return;
+        }
         int position = 0;
         for (int i = 0; i < adapter.getTimeList().size(); i++) {
             TimingSelectEntity timingSelectEntity = adapter.getTimeList().get(i);
