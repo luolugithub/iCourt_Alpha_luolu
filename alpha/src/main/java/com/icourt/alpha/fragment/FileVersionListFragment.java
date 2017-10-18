@@ -267,7 +267,7 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
      */
     private void restoreFile(final FileVersionEntity item) {
         if (item == null) return;
-        showLoadingDialog(R.string.sfile_backspacing);
+        showLoadingDialog(R.string.str_executing);
         callEnqueue(getSFileApi().fileRetroversion(
                 getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID),
                 getArguments().getString(KEY_SEA_FILE_FROM_FILE_PATH),
@@ -291,7 +291,7 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
                         if (t instanceof HttpException
                                 && ((HttpException) t).code() == 500) {
                             bugSync("文件回滚失败", item != null ? item.toString() : "");
-                            showToast(R.string.str_executing_error);
+                            showToast(R.string.sfile_backspace_fail);
                         } else {
                             super.onFailure(call, t);
                         }

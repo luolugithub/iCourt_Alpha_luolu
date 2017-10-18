@@ -267,7 +267,7 @@ public interface ApiSFileService {
      * @return https://testbox.alphalawyer.cn/api/v2.1/repos/d4f82446-a37f-478c-b6b5-ed0e779e1768/dir/?p=%2F22222
      */
     @POST("api/v2.1/repos/{seaFileRepoId}/dir/")
-    Call<RepoEntity> folderCreate(@Path("seaFileRepoId") String seaFileRepoId,
+    Call<FolderDocumentEntity> folderCreate(@Path("seaFileRepoId") String seaFileRepoId,
                                   @Query("p") String p,
                                   @Body RequestBody body);
 

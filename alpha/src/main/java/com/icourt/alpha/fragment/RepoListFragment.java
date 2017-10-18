@@ -1,6 +1,7 @@
 package com.icourt.alpha.fragment;
 
 import android.content.DialogInterface;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
@@ -545,15 +546,20 @@ public class RepoListFragment extends RepoBaseFragment
      * @param pos
      */
     private void showDelConfirmDialog(final int pos) {
-        new BottomActionDialog(getContext(),
-                getString(R.string.repo_delete_confirm),
-                Arrays.asList(getString(R.string.str_ok)), new BottomActionDialog.OnActionItemClickListener() {
-            @Override
-            public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-                dialog.dismiss();
-                delDocument(pos);
-            }
-        }).show();
+        AlertDialog alertDialog = new AlertDialog.Builder(getContext())
+                .setMessage(R.string.repo_delete_confirm)
+                .setPositiveButton(R.string.str_delete, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        delDocument(pos);
+                    }
+                })
+                .setNegativeButton(R.string.str_cancel, null)
+                .create();
+        alertDialog.show();
+        alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.GRAY);
+        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.RED);
     }
 
     /**
