@@ -17,7 +17,6 @@ import com.icourt.alpha.entity.event.UnReadEvent;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnPageFragmentCallBack;
 import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
-import com.icourt.alpha.service.SyncDataService;
 import com.icourt.alpha.view.tab.AlphaTabLayout;
 import com.icourt.alpha.view.tab.AlphaTitleNavigatorAdapter;
 import com.icourt.alpha.widget.nim.GlobalMessageObserver;
@@ -68,8 +67,6 @@ public class TabNewsFragment extends BaseFragment
         super.onCreate(savedInstanceState);
         NIMClient.getService(MsgServiceObserve.class)
                 .observeReceiveMessage(globalMessageObserver, true);
-        SyncDataService.startSyncContact(getActivity());
-        SyncDataService.startSysnClient(getActivity());
     }
 
     @Override
@@ -84,7 +81,6 @@ public class TabNewsFragment extends BaseFragment
     @Override
     public void onResume() {
         super.onResume();
-        SyncDataService.startSyncContact(getActivity());
     }
 
     @Nullable

@@ -487,6 +487,14 @@ public class TimerDetailActivity extends BaseTimerActivity
                         public void defNotify(String noticeStr) {
                             showToast(noticeStr);
                         }
+
+                        @Override
+                        public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                            super.onFailure(call, t);
+                            if (isFinish) {
+                                finish();
+                            }
+                        }
                     });
         }
     }

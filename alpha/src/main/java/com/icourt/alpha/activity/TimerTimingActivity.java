@@ -328,6 +328,9 @@ public class TimerTimingActivity extends BaseTimerActivity
                         public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
                             super.onFailure(call, t);
                             dismissLoadingDialog();
+                            if (isFinished) {
+                                finish();
+                            }
                         }
                     });
         }
