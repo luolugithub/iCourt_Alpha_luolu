@@ -35,4 +35,7 @@
     <string name="str_click_refresh">点击刷新</string>
 
     <string name="str_executing_error">操作失败</string>
+
+    <string name="str_null"></string>
+    <string name="str_empty">\u3000</string>
 </resources>
