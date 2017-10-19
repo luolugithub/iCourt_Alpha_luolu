@@ -267,6 +267,8 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
         int tabIndex = getArguments().getInt(KEY_LOCATION_TAB_INDEX);
         if (tabIndex < baseFragmentAdapter.getCount()) {
             viewPager.setCurrentItem(tabIndex);
+        } else {
+            viewPager.setCurrentItem(baseFragmentAdapter.getCount() - 1);
         }
         getData(true);
     }
