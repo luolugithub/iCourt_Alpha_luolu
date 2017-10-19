@@ -16,6 +16,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
@@ -70,6 +71,8 @@ public class SFileSearchActivity extends BaseActivity
     TextView contentEmptyText;
     @BindView(R.id.softKeyboardSizeWatchLayout)
     SoftKeyboardSizeWatchLayout softKeyboardSizeWatchLayout;
+    @BindView(R.id.search_pb)
+    ProgressBar searchPb;
 
     public static void launch(Activity context,
                               @Nullable View transitionView) {
@@ -146,7 +149,9 @@ public class SFileSearchActivity extends BaseActivity
             @Override
             public void afterTextChanged(Editable s) {
                 if (TextUtils.isEmpty(s)) {
+                    searchPb.setVisibility(View.GONE);
                     sFileSearchAdapter.clearData();
+                    cancelAllCall();
                 } else {
                     getData(true);
                 }
@@ -188,11 +193,15 @@ public class SFileSearchActivity extends BaseActivity
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
         if (isRefresh) {
+            sFileSearchAdapter.clearData();
+            searchPb.setVisibility(View.VISIBLE);
+            contentEmptyText.setVisibility(View.GONE);
             pageIndex = 1;
         }
         if (TextUtils.isEmpty(etSearchName.getText())) {
             sFileSearchAdapter.clearData();
             stopRefresh();
+            searchPb.setVisibility(View.GONE);
             return;
         }
         callEnqueue(
@@ -208,12 +217,14 @@ public class SFileSearchActivity extends BaseActivity
                         pageIndex += 1;
                         stopRefresh();
                         enableLoadMore(response.body().has_more);
+                        searchPb.setVisibility(View.GONE);
                     }
 
                     @Override
                     public void onFailure(Call<SFileSearchPage> call, Throwable t) {
                         super.onFailure(call, t);
                         stopRefresh();
+                        searchPb.setVisibility(View.GONE);
                     }
                 });
     }

@@ -13,8 +13,9 @@
 #merge requests  
    分支名称规则： br_dev_版本号(2.1.0)_模块名称(chat)_个人名字简写(xyw)  eg.  br_dev_2.1.0_chat_xyw   
    默认情况:都从dev分支开;不能独立操作test,master分支  
-   插件:GitLab Projects
- 4
+   插件:GitLab Projects  
+   【注意】:开分支必须申请与讨论(版本与影响范围)  
+   版本备注:(补充)  
 #fir账号
  内部：wangchu@icourt.cc   q****  
  外部：104421133@qq.com    a*****  
