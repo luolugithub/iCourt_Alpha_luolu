@@ -31,9 +31,6 @@ import com.icourt.alpha.activity.TaskDetailActivity;
 import com.icourt.alpha.activity.TimerDetailActivity;
 import com.icourt.alpha.activity.TimerTimingActivity;
 import com.icourt.alpha.adapter.TaskAdapter;
-import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
-import com.icourt.alpha.constants.Const;
-import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
@@ -42,7 +39,6 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnTasksChangeListener;
 import com.icourt.alpha.utils.DateUtils;
-import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
 import com.icourt.alpha.widget.manager.TimerManager;
@@ -291,6 +287,7 @@ public class TaskListFragment extends BaseTaskFragment implements
      * @param stateType
      * @return
      */
+    //TODO 1.加注解 2.不要返回0  getResources().getString(strid)会抛异常
     private int getEmptyContentId(int stateType) {
         if (type == TYPE_ALL) {
             switch (stateType) {
@@ -328,6 +325,7 @@ public class TaskListFragment extends BaseTaskFragment implements
             case TaskActionEvent.TASK_DELETE_ACTION://删除的动作
                 if (event.entity == null) return;
                 if (type == TYPE_ALL) {//所有任务列表
+                    //TODO 判断复杂: 改成switch
                     if (stateType == Const.TASK_STATETYPE_UN_FINISH) {//未完成
                         //删除动作暂时重新请求接口
                         getData(true);
