@@ -1016,6 +1016,7 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                 dismissOverTimingRemindDialogFragment(true);
                 break;
             case OverTimingRemindEvent.ACTION_SYNC_BUBBLE_CLOSE_TO_SERVER:
+                dismissOverTimingRemindDialogFragment(false);
                 TimerManager.getInstance().setOverTimingRemindClose(TimerManager.OVER_TIME_REMIND_BUBBLE_OFF);
                 break;
         }
