@@ -112,6 +112,12 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        initData();
+    }
+
+    @Override
     protected void initView() {
         queryType = TimingConfig.convert2timingQueryType(getArguments().getInt(KEY_QUERY_TYPE));
         long startTime = getArguments().getLong(KEY_START_TIME);
