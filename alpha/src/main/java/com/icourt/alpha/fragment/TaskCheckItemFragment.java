@@ -188,6 +188,7 @@ public class TaskCheckItemFragment extends BaseFragment
                 new SimpleCallBack<TaskCheckItemEntity>() {
                     @Override
                     public void onSuccess(Call<ResEntity<TaskCheckItemEntity>> call, Response<ResEntity<TaskCheckItemEntity>> response) {
+                        //TODO 没意义的判断
                         if (getActivity() != null && !getActivity().isFinishing())
                             dismissLoadingDialog();
                         if (listLayout != null) {
@@ -225,7 +226,9 @@ public class TaskCheckItemFragment extends BaseFragment
         }
         if (updateTaskListener != null) {
             if (taskCheckItemAdapter.getSelectedArray() != null) {
+                //TODO 日志去掉
                 LogUtils.e("size : ----   " + taskCheckItemAdapter.getSelectedArray().size());
+                // TODO 改成格式化
                 updateTaskListener.onUpdateCheckItem(taskCheckItemAdapter.getSelectedArray().size() + "/" + taskCheckItemAdapter.getItemCount());
             } else {
                 updateTaskListener.onUpdateCheckItem(0 + "/" + taskCheckItemAdapter.getItemCount());
