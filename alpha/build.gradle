@@ -97,7 +97,7 @@ android {
             buildConfigField "String", "API_SENSORS_DATA_CONFIGURE", rootProject.ext.sensorsDataAPIConfigure.configure_url_test
             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.testAppKey]*/
             //预览版用
-          /*  buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_preview
+            /*buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_preview
             buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_preview
             buildConfigField "String", "API_SFILE_URL", rootProject.ext.alphaSFileUrl.api_url_preview
             buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_preview

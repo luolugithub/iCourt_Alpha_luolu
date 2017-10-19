@@ -17,7 +17,10 @@ import com.icourt.alpha.entity.bean.TaskGroupEntity;
  */
 
 public class ProjectTaskGroupAdapter extends SelectedRecyclerAdapter<TaskGroupEntity> {
-    boolean isCanEditGroup = false;//是否可以编辑任务组
+    /**
+     * 是否可以编辑任务组
+     */
+    boolean isCanEditGroup = false;
 
     public ProjectTaskGroupAdapter(boolean selectable) {
         super(selectable);
@@ -48,5 +51,4 @@ public class ProjectTaskGroupAdapter extends SelectedRecyclerAdapter<TaskGroupEn
             countView.setText(String.valueOf(taskGroupEntity.taskCount));
         }
     }
-
 }

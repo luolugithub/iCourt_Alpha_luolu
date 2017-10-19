@@ -9,23 +9,22 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center_vertical"
         android:padding="@dimen/dp15">
 
-        <CheckBox
+        <CheckedTextView
             android:id="@+id/task_checkbox"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:button="@null"
-            android:drawableLeft="@drawable/sl_checkbox"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
             android:padding="@dimen/dp5"
-            android:src="@mipmap/tab_explorer" />
+            android:background="@drawable/sl_checkbox"
+            android:button="@null" />
 
         <com.icourt.alpha.view.ClickTouchTextView
             android:id="@+id/task_name"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/dp10"
-            android:layout_marginTop="3dp"
             android:layout_weight="1"
             android:textColor="@color/alpha_font_color_black"
             android:textSize="22sp" />

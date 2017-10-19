@@ -69,14 +69,35 @@ import static com.umeng.socialize.utils.DeviceConfig.context;
 
 public abstract class BaseTaskFragment extends BaseFragment implements OnFragmentCallBackListener, ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener {
 
-    protected boolean isEditTask = false;//编辑任务权限
-    protected boolean isDeleteTask = false;//删除任务权限
-    protected boolean isAddTime = false;//添加计时权限
+    /**
+     * 编辑任务权限
+     */
+    protected boolean isEditTask = false;
+    /**
+     * 删除任务权限
+     */
+    protected boolean isDeleteTask = false;
+    /**
+     * 添加计时权限
+     */
+    protected boolean isAddTime = false;
 
-    public static final int CHANGE_STATUS = 1;//修改任务完成状态
-    public static final int CHANGE_PROJECT = 2;//修改任务所属项目/任务组
-    public static final int CHANGE_ALLOT = 3;//将任务分配给其他负责人
-    public static final int CHANGE_DUETIME = 4;//修改任务到期时间和提醒时间
+    /**
+     * 修改任务完成状态
+     */
+    public static final int CHANGE_STATUS = 1;
+    /**
+     * 修改任务所属项目/任务组
+     */
+    public static final int CHANGE_PROJECT = 2;
+    /**
+     * 将任务分配给其他负责人
+     */
+    public static final int CHANGE_ALLOT = 3;
+    /**
+     * 修改任务到期时间和提醒时间
+     */
+    public static final int CHANGE_DUETIME = 4;
 
     /**
      * 以下为对任务的操作状态
@@ -86,9 +107,14 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
     public @interface ChangeType {
     }
 
-
-    protected static final int SHOW_DELETE_DIALOG = 0;//删除提示对话框
-    protected static final int SHOW_FINISH_DIALOG = 1;//完成任务提示对话框
+    /**
+     * 删除提示对话框
+     */
+    protected static final int SHOW_DELETE_DIALOG = 0;
+    /**
+     * 完成任务提示对话框
+     */
+    protected static final int SHOW_FINISH_DIALOG = 1;
 
     /**
      * 以下为弹出对话框的分类
@@ -98,8 +124,10 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
     public @interface DialogType {
     }
 
-
-    private TaskEntity.TaskItemEntity updateTaskItemEntity;//当前修改任务到期事件、负责人、所属项目的任务
+    /**
+     * 当前修改任务到期事件、负责人、所属项目的任务
+     */
+    private TaskEntity.TaskItemEntity updateTaskItemEntity;
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
@@ -115,18 +143,24 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onTimerEvent(TimingEvent event) {
-        if (event == null) return;
+        if (event == null) {
+            return;
+        }
         switch (event.action) {
             case TimingEvent.TIMING_ADD:
                 TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
-                if (timer != null && !TextUtils.isEmpty(timer.taskPkId))
+                if (timer != null && !TextUtils.isEmpty(timer.taskPkId)) {
                     taskTimingUpdateEvent(timer.taskPkId);
+                }
                 break;
             case TimingEvent.TIMING_UPDATE_PROGRESS:
 
                 break;
             case TimingEvent.TIMING_STOP:
                 taskTimingUpdateEvent(null);
+                break;
+            default:
+
                 break;
         }
     }
@@ -189,8 +223,9 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
                     @Override
                     public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
                         dismissLoadingDialog();
-                        if (response.body().result != null)
+                        if (response.body().result != null) {
                             taskUpdateBack(CHANGE_STATUS, response.body().result);
+                        }
                     }
 
                     @Override
@@ -242,10 +277,16 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
      * @param taskReminderEntity
      */
     private void addReminders(TaskEntity.TaskItemEntity taskItemEntity, final TaskReminderEntity taskReminderEntity) {
-        if (taskReminderEntity == null) return;
-        if (taskItemEntity == null) return;
+        if (taskReminderEntity == null) {
+            return;
+        }
+        if (taskItemEntity == null) {
+            return;
+        }
         String json = getReminderJson(taskReminderEntity);
-        if (TextUtils.isEmpty(json)) return;
+        if (TextUtils.isEmpty(json)) {
+            return;
+        }
         callEnqueue(
                 getApi().taskReminderAdd(taskItemEntity.id, RequestUtils.createJsonBody(json)),
                 new SimpleCallBack<TaskReminderEntity>() {
@@ -353,7 +394,8 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
      * @param taskItemEntity
      */
     protected void showLongMenu(TaskEntity.TaskItemEntity taskItemEntity) {
-        if (taskItemEntity.state) {//已完成的任务不能进行长按操作
+        //已完成的任务不能进行长按操作
+        if (taskItemEntity.state) {
             return;
         }
         ItemsEntity timeEntity = new ItemsEntity(getString(R.string.task_start_timing), R.mipmap.time_start_orange_task);
@@ -409,14 +451,15 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
 
         @Override
         public void onItemClick(final BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, final View view, int position) {
-            if (centerMenuDialog != null)
+            if (centerMenuDialog != null) {
                 centerMenuDialog.dismiss();
+            }
             if (adapter instanceof CenterMenuDialog.MenuAdapter) {
                 final ItemsEntity entity = (ItemsEntity) adapter.getItem(position);
-                final CenterMenuDialog.MenuAdapter menuAdapter = (CenterMenuDialog.MenuAdapter) adapter;
                 if (taskItemEntity != null) {
                     switch (entity.getItemIconRes()) {
-                        case R.mipmap.assign_orange://分配给
+                        //分配给
+                        case R.mipmap.assign_orange:
                             if (taskItemEntity.matter != null) {
                                 updateTaskItemEntity = taskItemEntity;
                                 showTaskAllotSelectDialogFragment(taskItemEntity.matter.id, taskItemEntity.attendeeUsers);
@@ -424,29 +467,35 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
                                 showToast(R.string.task_please_check_project);
                             }
                             break;
-                        case R.mipmap.date_orange://到期日
+                        //到期日
+                        case R.mipmap.date_orange:
                             updateTaskItemEntity = taskItemEntity;
                             showDateSelectDialogFragment(taskItemEntity.dueTime, taskItemEntity.id);
                             break;
-                        case R.mipmap.info_orange://查看详情
+                        //查看详情
+                        case R.mipmap.info_orange:
                             TaskDetailActivity.launch(view.getContext(), taskItemEntity.id);
                             break;
-                        case R.mipmap.project_orange://项目/任务组
+                        //项目/任务组
+                        case R.mipmap.project_orange:
                             updateTaskItemEntity = taskItemEntity;
                             showProjectSelectDialogFragment();
                             break;
-                        case R.mipmap.time_start_orange_task://开始计时
+                        //开始计时
+                        case R.mipmap.time_start_orange_task:
                             if (!taskItemEntity.isTiming) {
                                 MobclickAgent.onEvent(getContext(), UMMobClickAgent.start_timer_click_id);
                                 startTiming(taskItemEntity);
                             }
                             break;
-                        case R.mipmap.time_stop_orange_task://停止计时
+                        //停止计时
+                        case R.mipmap.time_stop_orange_task:
                             if (taskItemEntity.isTiming) {
                                 stopTiming(taskItemEntity);
                             }
                             break;
-                        case R.mipmap.trash_orange://删除
+                        //删除
+                        case R.mipmap.trash_orange:
                             if (taskItemEntity.attendeeUsers != null) {
                                 if (taskItemEntity.attendeeUsers.size() > 1) {
                                     showFinishDialog(view.getContext(), getString(R.string.task_is_confirm_delete_task), taskItemEntity, SHOW_DELETE_DIALOG);
@@ -456,6 +505,8 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
                             } else {
                                 showFinishDialog(view.getContext(), getString(R.string.task_is_confirm_delete), taskItemEntity, SHOW_DELETE_DIALOG);
                             }
+                            break;
+                        default:
                             break;
                     }
                 }
@@ -477,7 +528,8 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
-                    case Dialog.BUTTON_POSITIVE://确定
+                    //确定
+                    case Dialog.BUTTON_POSITIVE:
                         if (type == SHOW_DELETE_DIALOG) {
                             deleteTask(itemEntity);
                         } else if (type == SHOW_FINISH_DIALOG) {
@@ -488,17 +540,20 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
                             }
                         }
                         break;
-                    case Dialog.BUTTON_NEGATIVE://取消
+                    //取消
+                    case Dialog.BUTTON_NEGATIVE:
                         if (type == SHOW_FINISH_DIALOG) {
                         }
+                        break;
+                    default:
                         break;
                 }
             }
         };
         //dialog参数设置
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);  //先得到构造器
-        builder.setTitle(R.string.task_remind); //设置标题
-        builder.setMessage(message); //设置内容
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle(R.string.task_remind);
+        builder.setMessage(message);
         builder.setPositiveButton(R.string.task_confirm, dialogOnclicListener);
         builder.setNegativeButton(R.string.task_cancel, dialogOnclicListener);
         builder.create().show();
@@ -603,7 +658,9 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
      * @return
      */
     private String getTaskProjectOrGroupJson(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
-        if (itemEntity == null) return null;
+        if (itemEntity == null) {
+            return null;
+        }
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("id", itemEntity.id);
         jsonObject.addProperty("state", itemEntity.state);
@@ -636,7 +693,9 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
      */
     private String getReminderJson(TaskReminderEntity taskReminderEntity) {
         try {
-            if (taskReminderEntity == null) return null;
+            if (taskReminderEntity == null) {
+                return null;
+            }
             return JsonUtils.getGson().toJson(taskReminderEntity);
         } catch (Exception e) {
             e.printStackTrace();
@@ -648,6 +707,7 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
      * 任务开始计时成功的回调
      *
      * @param requestEntity 调用该方法传递的参数
+     * @param response
      */
     protected abstract void startTimingBack(TaskEntity.TaskItemEntity requestEntity, Response<TimeEntity.ItemEntity> response);
 
@@ -686,5 +746,4 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
         super.onDestroyView();
         EventBus.getDefault().unregister(this);
     }
-
 }

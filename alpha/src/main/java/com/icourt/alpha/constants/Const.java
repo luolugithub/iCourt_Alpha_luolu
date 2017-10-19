@@ -106,10 +106,18 @@ public class Const {
 
     }
 
+    public static final int TASK_STATETYPE_UN_FINISH = 0;//未完成任务
+    public static final int TASK_STATETYPE_FINISH = 1;//已完成任务
+    public static final int TASK_STATETYPE_DELETED = 3;//已删除任务
+
     public static final String PROJECT_TYPE_DISPUTE = "0";//争议解决
     public static final String PROJECT_TYPE_NOJUDICIAL = "1";//非诉专项
     public static final String PROJECT_TYPE_COUNSELOR = "2";//常年顾问
     public static final String PROJECT_TYPE_AFFAIR = "3";//内部事务
+
+    public static final int PROJECT_STATUS_ING = 2;//进行中
+    public static final int PROJECT_STATUS_FINISH = 4;//已完结
+    public static final int PROJECT_STATUS_END = 7;//已搁置
 
     @StringDef({PROJECT_TYPE_DISPUTE, PROJECT_TYPE_NOJUDICIAL, PROJECT_TYPE_COUNSELOR, PROJECT_TYPE_AFFAIR})
     @Retention(RetentionPolicy.SOURCE)

@@ -23,13 +23,15 @@ public class TaskMemberAdapter extends SelectedRecyclerAdapter<TaskMemberEntity>
     }
 
     @Override
-    public int bindView(int viewtype) {
+    public int bindView(int viewType) {
         return R.layout.adapter_item_im_contact;
     }
 
     @Override
     public void onBindSelectableHoder(ViewHolder holder, TaskMemberEntity taskMemberEntity, int position, boolean selected) {
-        if (taskMemberEntity == null) return;
+        if (taskMemberEntity == null) {
+            return;
+        }
         ImageView iv_contact_icon = holder.obtainView(R.id.iv_contact_icon);
         TextView tv_contact_name = holder.obtainView(R.id.tv_contact_name);
         GlideUtils.loadUser(iv_contact_icon.getContext(), taskMemberEntity.userPic, iv_contact_icon);

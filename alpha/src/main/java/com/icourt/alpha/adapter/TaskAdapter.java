@@ -15,7 +15,6 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
-import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.widget.manager.TimerManager;
 
 /**
@@ -28,12 +27,21 @@ import com.icourt.alpha.widget.manager.TimerManager;
 
 public class TaskAdapter extends BaseMultiItemQuickAdapter<TaskEntity.TaskItemEntity, BaseViewHolder> {
 
-    private boolean isAddTime = true;//添加计时权限
+    /**
+     * 添加计时权限
+     */
+    private boolean isAddTime = true;
     private static final int BLACK_COLOR = 0xFFa6a6a6;
     private static final int RED_COLOR = 0xFFec1d37;
 
-    private static final int TYPE_TASK = 0;//0,任务
-    private static final int TYPE_TASK_GROUP = 1;//1，任务组
+    /**
+     * 0,任务
+     */
+    private static final int TYPE_TASK = 0;
+    /**
+     * 1，任务组
+     */
+    private static final int TYPE_TASK_GROUP = 1;
 
     public TaskAdapter() {
         super(null);
@@ -47,7 +55,8 @@ public class TaskAdapter extends BaseMultiItemQuickAdapter<TaskEntity.TaskItemEn
 
     @Override
     protected void convert(BaseViewHolder baseViewHolder, TaskEntity.TaskItemEntity taskItemEntity) {
-        if (taskItemEntity.type == TYPE_TASK_GROUP) {//说明是标题
+        //说明是标题
+        if (taskItemEntity.type == TYPE_TASK_GROUP) {
             initTaskTitle(baseViewHolder, taskItemEntity);
         } else {
             initTaskItem(baseViewHolder, taskItemEntity);
@@ -70,9 +79,6 @@ public class TaskAdapter extends BaseMultiItemQuickAdapter<TaskEntity.TaskItemEn
         TextView documentNumView = baseViewHolder.getView(R.id.task_file_num_tv);
         TextView commentNumView = baseViewHolder.getView(R.id.task_comment_num_tv);
 
-        LinearLayout parentLayout = baseViewHolder.getView(R.id.item_bottom_parent_layout);
-        LinearLayout otherLayout = baseViewHolder.getView(R.id.item_bottom_other_layout);
-
         RecyclerView recyclerView = baseViewHolder.getView(R.id.tasl_member_recyclerview);
 
         taskNameView.setText(taskItemEntity.name);
@@ -88,7 +94,7 @@ public class TaskAdapter extends BaseMultiItemQuickAdapter<TaskEntity.TaskItemEn
             timeTextSetData(timeView, taskItemEntity.dueTime);
         }
 
-        textViewSetData(checkListView, taskItemEntity.doneItemCount + "/" + taskItemEntity.itemCount, taskItemEntity.itemCount);
+        textViewSetData(checkListView, String.format("%s/%s", taskItemEntity.doneItemCount, taskItemEntity.itemCount), taskItemEntity.itemCount);
         textViewSetData(documentNumView, String.valueOf(taskItemEntity.attachmentCount), taskItemEntity.attachmentCount);
         textViewSetData(commentNumView, String.valueOf(taskItemEntity.commentCount), taskItemEntity.commentCount);
         if (taskItemEntity.attendeeUsers != null) {
@@ -116,14 +122,8 @@ public class TaskAdapter extends BaseMultiItemQuickAdapter<TaskEntity.TaskItemEn
         } else {
             recyclerView.setVisibility(View.VISIBLE);
         }
-        //动态计算任务底部宽度，是否显示负责人头像： 暂时不做
-//        if (isShowUserRecyclerView(parentLayout,otherLayout,recyclerView)) {
-//            recyclerView.setVisibility(View.VISIBLE);
-//        } else {
-//            recyclerView.setVisibility(View.INVISIBLE);
-//        }
-        String timerTaskid = TimerManager.getInstance().getTimerTaskId();
-        taskItemEntity.isTiming = !TextUtils.isEmpty(timerTaskid) && TextUtils.equals(timerTaskid, taskItemEntity.id);
+        String timerTaskId = TimerManager.getInstance().getTimerTaskId();
+        taskItemEntity.isTiming = !TextUtils.isEmpty(timerTaskId) && TextUtils.equals(timerTaskId, taskItemEntity.id);
         startTimmingViewSelect(startTimmingView, taskItemEntity.isTiming);
         if (!taskItemEntity.valid) {
             startTimmingView.setVisibility(View.GONE);
@@ -140,14 +140,19 @@ public class TaskAdapter extends BaseMultiItemQuickAdapter<TaskEntity.TaskItemEn
 
     /**
      * 动态计算任务底部宽度，是否显示负责人头像： 暂时不做
+     *
      * @param parentLayout
      * @param otherLayout
      * @param recyclerView
      * @return
      */
     private boolean isShowUserRecyclerView(LinearLayout parentLayout, LinearLayout otherLayout, RecyclerView recyclerView) {
-        if (recyclerView == null) return false;
-        if (recyclerView.getAdapter() == null) return false;
+        if (recyclerView == null) {
+            return false;
+        }
+        if (recyclerView.getAdapter() == null) {
+            return false;
+        }
         int itemCount = recyclerView.getAdapter().getItemCount();
         int parentWidth = parentLayout.getWidth();
         int otherWidth = otherLayout.getWidth();
@@ -174,16 +179,20 @@ public class TaskAdapter extends BaseMultiItemQuickAdapter<TaskEntity.TaskItemEn
      * @return
      */
     private String getProjectName(TaskEntity.TaskItemEntity taskItemEntity) {
-        if (taskItemEntity == null) return "";
+        if (taskItemEntity == null) {
+            return "";
+        }
         StringBuilder stringBuilder = new StringBuilder();
         if (taskItemEntity.matter != null) {
             stringBuilder.append(taskItemEntity.matter.name);
             if (taskItemEntity.parentFlow != null) {
-                if (!TextUtils.isEmpty(taskItemEntity.parentFlow.name))
+                if (!TextUtils.isEmpty(taskItemEntity.parentFlow.name)) {
                     stringBuilder.append(" － ").append(taskItemEntity.parentFlow.name);
+                }
             } else {
-                if (!TextUtils.isEmpty(taskItemEntity.parentName))
+                if (!TextUtils.isEmpty(taskItemEntity.parentName)) {
                     stringBuilder.append(" － ").append(taskItemEntity.parentName);
+                }
             }
         } else {
             stringBuilder.append("未指定所属项目");
@@ -211,7 +220,9 @@ public class TaskAdapter extends BaseMultiItemQuickAdapter<TaskEntity.TaskItemEn
      * @param isTiming
      */
     private void startTimmingViewSelect(ImageView startTimmingView, boolean isTiming) {
-        if (startTimmingView == null) return;
+        if (startTimmingView == null) {
+            return;
+        }
         startTimmingView.setImageResource(isTiming ? R.drawable.orange_side_dot_bg : R.mipmap.icon_start_20);
         startTimmingView.setTag(isTiming ? R.drawable.orange_side_dot_bg : R.mipmap.icon_start_20);
     }
@@ -223,7 +234,9 @@ public class TaskAdapter extends BaseMultiItemQuickAdapter<TaskEntity.TaskItemEn
      * @param content
      */
     private void textViewSetData(TextView textView, String content, long count) {
-        if (textView == null) return;
+        if (textView == null) {
+            return;
+        }
         textView.setVisibility(count > 0 ? View.VISIBLE : View.GONE);
         textView.setText(content);
     }
@@ -235,7 +248,9 @@ public class TaskAdapter extends BaseMultiItemQuickAdapter<TaskEntity.TaskItemEn
      * @return
      */
     public boolean removeItem(TaskEntity.TaskItemEntity t) {
-        if (t == null) return false;
+        if (t == null) {
+            return false;
+        }
         int index = getData().indexOf(t);
         if (index >= 0) {
             //remove方法已经对header进行判断了
@@ -252,11 +267,12 @@ public class TaskAdapter extends BaseMultiItemQuickAdapter<TaskEntity.TaskItemEn
      * @return
      */
     public boolean updateItem(TaskEntity.TaskItemEntity t) {
-        if (t == null) return false;
+        if (t == null) {
+            return false;
+        }
         int index = getData().indexOf(t);
         if (index >= 0 && index < getData().size()) {
             getData().set(index, t);
-            LogUtils.i("修改了=============>" + index);
             notifyItemChanged(index + getHeaderLayoutCount());
             return true;
         }
