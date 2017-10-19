@@ -25,12 +25,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseDialogFragment;
+import com.icourt.alpha.entity.bean.RepoIdResEntity;
 import com.icourt.alpha.fragment.FileDirListFragment;
 import com.icourt.alpha.fragment.ProjectSaveListFragment;
+import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.callback.SimpleCallBack2;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DensityUtil;
@@ -50,7 +52,6 @@ import butterknife.OnClick;
 import butterknife.Unbinder;
 import okhttp3.RequestBody;
 import retrofit2.Call;
-import retrofit2.Callback;
 import retrofit2.Response;
 
 /**
@@ -78,7 +79,7 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
     Fragment currentFragment;
 
     SparseArray<CharSequence> titleArray = new SparseArray<>();
-    String projectId, authToken, seaFileRepoId, filePath, rootName;
+    String projectId, seaFileRepoId, filePath, rootName;
     @BindView(R.id.bt_cancel)
     TextView btCancel;
 
@@ -159,7 +160,7 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
                 if (TextUtils.isEmpty(seaFileRepoId)) {
                     getDocumentId();
                 } else {
-                    shareFile2Project(filePath, authToken, seaFileRepoId, rootName);
+                    shareFile2Project(filePath, seaFileRepoId, rootName);
                 }
                 break;
             default:
@@ -172,29 +173,16 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
      * 获取根目录id
      */
     private void getDocumentId() {
-        getApi().projectQueryDocumentId(projectId).enqueue(new Callback<JsonObject>() {
+        callEnqueue(getApi().projectQueryDocumentId(projectId), new SimpleCallBack2<RepoIdResEntity>() {
             @Override
-            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
-                if (response.code() == 200) {
-                    if (response.body() != null) {
-                        if (response.body().has("seaFileRepoId")) {
-                            JsonElement element = response.body().get("seaFileRepoId");
-                            if (!TextUtils.isEmpty(element.toString()) && !TextUtils.equals("null", element.toString())) {
-                                seaFileRepoId = element.getAsString();
-                                shareFile2Project(filePath, authToken, seaFileRepoId, rootName);
-                            } else {
-                                onFailure(call, new retrofit2.HttpException(response));
-                            }
-                        }
-                    }
+            public void onSuccess(Call<RepoIdResEntity> call, Response<RepoIdResEntity> response) {
+                if (!TextUtils.isEmpty(response.body().seaFileRepoId)) {
+                    seaFileRepoId = response.body().seaFileRepoId;
+                    shareFile2Project(filePath, seaFileRepoId, rootName);
                 } else {
-                    onFailure(call, new retrofit2.HttpException(response));
+                    bugSync("项目repo 获取null", "projectid:" + projectId);
+                    showTopSnackBar("seaFileRepoId 返回null");
                 }
-            }
-
-            @Override
-            public void onFailure(Call<JsonObject> call, Throwable throwable) {
-                showTopSnackBar("获取文档根目录id失败");
             }
         });
     }
@@ -202,7 +190,7 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
     /**
      * 保存文件到项目
      */
-    private void shareFile2Project(String filePath, String authToken, String seaFileRepoId, String rootName) {
+    private void shareFile2Project(String filePath, String seaFileRepoId, String rootName) {
         if (TextUtils.isEmpty(filePath)) return;
         ParcelFileDescriptor n_fileDescriptor = null;
         File file = null;
@@ -225,7 +213,7 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
                 return;
             }
         }
-        getUploadUrl(filePath, authToken, seaFileRepoId, rootName);
+        getUploadUrl(filePath, seaFileRepoId, rootName);
     }
 
     private void showFragment(Fragment fragment) {
@@ -234,6 +222,7 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
 
     @Override
     protected Fragment addOrShowFragment(@NonNull Fragment targetFragment, Fragment currentFragment, @IdRes int containerViewId) {
+        if (isDetached()) return currentFragment;
         if (targetFragment == null) return currentFragment;
         if (targetFragment == currentFragment) return currentFragment;
         FragmentManager fm = getChildFragmentManager();
@@ -259,25 +248,27 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
      * 获取项目权限
      */
     private void checkAddTaskAndDocumentPms(String projectId) {
-        getApi().permissionQuery(getLoginUserId(), "MAT", projectId).enqueue(new SimpleCallBack<List<String>>() {
-            @Override
-            public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
-                if (response.body().result != null) {
-                    if (response.body().result.contains("MAT:matter.document:readwrite")) {
-                        showOrHiddenSaveBtn(true);
-                    } else {
-                        showOrHiddenSaveBtn(false);
+        callEnqueue(
+                getApi().permissionQuery(getLoginUserId(), "MAT", projectId),
+                new SimpleCallBack<List<String>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+                        if (response.body().result != null) {
+                            if (response.body().result.contains("MAT:matter.document:readwrite")) {
+                                showOrHiddenSaveBtn(true);
+                            } else {
+                                showOrHiddenSaveBtn(false);
+                            }
+                        } else {
+                            showOrHiddenSaveBtn(false);
+                        }
                     }
-                } else {
-                    showOrHiddenSaveBtn(false);
-                }
-            }
 
-            @Override
-            public void onFailure(Call<ResEntity<List<String>>> call, Throwable t) {
-                super.onFailure(call, t);
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<List<String>>> call, Throwable t) {
+                        super.onFailure(call, t);
+                    }
+                });
     }
 
     /**
@@ -293,37 +284,30 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
     public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
         if (params == null) return;
         projectId = params.getString("projectId");
-        authToken = params.getString("authToken");
         seaFileRepoId = params.getString("seaFileRepoId");
-        log("projectId --- " + projectId);
-        log("authToken --- " + authToken);
-        log("seaFileRepoId --- " + seaFileRepoId);
-        if (TextUtils.isEmpty(projectId) || TextUtils.isEmpty(authToken)) return;
+        if (TextUtils.isEmpty(projectId)) return;
         checkAddTaskAndDocumentPms(projectId);
         titleBack.setVisibility(View.VISIBLE);
         if (fragment instanceof ProjectSaveListFragment) {
             String projectName = params.getString("projectName");
-            log("projectName --- " + projectName);
 
             //1.保存标题
             titleArray.put(getChildFragmentManager().getBackStackEntryCount(), projectName);
 
             //2.替换
-            showFragment(FileDirListFragment.newInstance(projectId, authToken, filePath, null, null));
+            showFragment(FileDirListFragment.newInstance(projectId, filePath, null, null));
 
         } else if (fragment instanceof FileDirListFragment) {
             //文件夹嵌套
             String dirName = params.getString("dirName");
             rootName = params.getString("rootName");
-            log("dirName --- " + dirName);
-            log("rootName --- " + rootName);
 
             if (TextUtils.isEmpty(rootName)) return;
             //1.保存标题
             titleArray.put(getChildFragmentManager().getBackStackEntryCount(), dirName);
 
             //2.替换
-            showFragment(FileDirListFragment.newInstance(projectId, authToken, filePath, rootName, seaFileRepoId));
+            showFragment(FileDirListFragment.newInstance(projectId, filePath, rootName, seaFileRepoId));
         }
     }
 
@@ -346,7 +330,7 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
      *
      * @param filePath
      */
-    private void getUploadUrl(final String filePath, final String authToken, String seaFileRepoId, final String rootName) {
+    private void getUploadUrl(final String filePath, String seaFileRepoId, final String rootName) {
         if (TextUtils.isEmpty(filePath)) return;
         File file = new File(filePath);
         if (!file.exists()) {
@@ -354,25 +338,27 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
             return;
         }
         showLoadingDialog("正在上传...");
-        getSFileApi().projectUploadUrlQuery("Token " + authToken, seaFileRepoId).enqueue(new Callback<JsonElement>() {
-            @Override
-            public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
-                if (response.body() != null) {
-                    String uploadUrl = response.body().getAsString();
-                    uploadFile(uploadUrl, filePath, authToken, rootName);
-                } else {
-                    dismissLoadingDialog();
-                    showTopSnackBar("上传失败");
-                }
-            }
+        callEnqueue(
+                getSFileApi().projectUploadUrlQuery(seaFileRepoId),
+                new SFileCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<JsonElement> call, Response<JsonElement> response) {
+                        if (response.body() != null) {
+                            String uploadUrl = response.body().getAsString();
+                            uploadFile(uploadUrl, filePath, rootName);
+                        } else {
+                            dismissLoadingDialog();
+                            showToast("获取上传文件地址失败");
+                        }
+                    }
 
-            @Override
-            public void onFailure(Call<JsonElement> call, Throwable throwable) {
-                dismissLoadingDialog();
-                showTopSnackBar("上传失败");
-            }
-
-        });
+                    @Override
+                    public void onFailure(Call<JsonElement> call, Throwable throwable) {
+                        super.onFailure(call, throwable);
+                        dismissLoadingDialog();
+                        showToast("获取上传文件地址失败");
+                    }
+                });
     }
 
 
@@ -382,7 +368,7 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
      * @param uploadUrl
      * @param filePath
      */
-    private void uploadFile(String uploadUrl, String filePath, String authToken, String rootName) {
+    private void uploadFile(String uploadUrl, String filePath, String rootName) {
         if (TextUtils.isEmpty(filePath)) return;
         File file = new File(filePath);
         String fileName = file.getName();
@@ -390,20 +376,23 @@ public class ProjectSaveFileDialogFragment extends BaseDialogFragment
         Map<String, RequestBody> params = new HashMap<>();
         params.put("parent_dir", TextUtils.isEmpty(rootName) ? RequestUtils.createTextBody("/") : RequestUtils.createTextBody(rootName));
         params.put(key, RequestUtils.createStreamBody(file));
-        getSFileApi().projectUploadFile("Token " + authToken, uploadUrl, params).enqueue(new Callback<JsonElement>() {
-            @Override
-            public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
-                dismissLoadingDialog();
-                showTopSnackBar("上传成功");
-                dismiss();
-            }
+        callEnqueue(
+                getSFileApi().sfileUploadFile(uploadUrl, params),
+                new SFileCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<JsonElement> call, Response<JsonElement> response) {
+                        dismissLoadingDialog();
+                        showToast("上传成功");
+                        dismissAllowingStateLoss();
+                    }
 
-            @Override
-            public void onFailure(Call<JsonElement> call, Throwable t) {
-                dismissLoadingDialog();
-                showTopSnackBar("上传失败");
-            }
-        });
+                    @Override
+                    public void onFailure(Call<JsonElement> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                        showTopSnackBar("文件上传失败");
+                    }
+                });
     }
 
 }

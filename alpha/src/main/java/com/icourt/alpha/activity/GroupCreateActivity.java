@@ -48,6 +48,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import retrofit2.Call;
+import retrofit2.HttpException;
 import retrofit2.Response;
 
 /**
@@ -241,8 +242,9 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
         }
         groupJsonObject.add("members", memberArray);
 
-        getChatApi().groupCreate(RequestUtils.createJsonBody(groupJsonObject.toString()))
-                .enqueue(new SimpleCallBack<GroupEntity>() {
+        callEnqueue(
+                getChatApi().groupCreate(RequestUtils.createJsonBody(groupJsonObject.toString())),
+                new SimpleCallBack<GroupEntity>() {
                     @Override
                     public void onSuccess(Call<ResEntity<GroupEntity>> call, Response<ResEntity<GroupEntity>> response) {
                         dismissLoadingDialog();
@@ -261,8 +263,12 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
 
                     @Override
                     public void onFailure(Call<ResEntity<GroupEntity>> call, Throwable t) {
-                        super.onFailure(call, t);
                         dismissLoadingDialog();
+                        super.onFailure(call, t);
+                        if (t instanceof HttpException
+                                && ((HttpException) t).code() == 400) {
+                            showToast("资料库名字可能太长啦");
+                        }
                     }
                 });
     }

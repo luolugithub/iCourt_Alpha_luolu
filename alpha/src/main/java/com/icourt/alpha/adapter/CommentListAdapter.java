@@ -1,5 +1,6 @@
 package com.icourt.alpha.adapter;
 
+import android.text.TextUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -36,12 +37,13 @@ public class CommentListAdapter extends BaseArrayRecyclerAdapter<CommentEntity.C
             GlideUtils.loadUser(photoView.getContext(), commentItemEntity.createUser.pic, photoView);
             nameView.setText(commentItemEntity.createUser.userName);
         }
-        timeView.setText(DateUtils.getFormatChatTime(commentItemEntity.createTime));
+        //优先网络格式化时间
+        timeView.setText(TextUtils.isEmpty(commentItemEntity.createTimeFormat)
+                ? DateUtils.getStandardFormatTime(commentItemEntity.createTime) : commentItemEntity.createTimeFormat);
         holder.bindChildClick(photoView);
         SpannableUtils.setCommentUrlView(contentView, commentItemEntity.content);
 
     }
-
 
 
 }

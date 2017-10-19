@@ -1,19 +1,20 @@
 package com.icourt.alpha.fragment;
 
+import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
-import android.widget.TextView;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -27,7 +28,13 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DensityUtil;
+import com.icourt.alpha.view.tab.AlphaTabLayout;
+import com.icourt.alpha.view.tab.AlphaTitleNavigatorAdapter;
+import com.icourt.alpha.view.tab.pagertitleview.ScaleTransitionPagerTitleView;
 import com.icourt.alpha.widget.popupwindow.TopMiddlePopup;
+
+import net.lucode.hackware.magicindicator.buildins.commonnavigator.CommonNavigator;
+import net.lucode.hackware.magicindicator.buildins.commonnavigator.abs.IPagerTitleView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,9 +55,10 @@ import retrofit2.Response;
  * version 1.0.0
  */
 public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.OnItemClickListener, OnFragmentCallBackListener {
-    private int select_position = 0;//选择的筛选选项
+    private int selectPosition = 0;//选择的筛选选项
+
     @BindView(R.id.tabLayout)
-    TabLayout tabLayout;
+    AlphaTabLayout tabLayout;
     @BindView(R.id.titleAction)
     ImageView titleAction;
     @BindView(R.id.titleView)
@@ -61,6 +69,8 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
     BaseFragmentAdapter baseFragmentAdapter;
     @BindView(R.id.titleAction2)
     ImageView titleAction2;
+
+    ScaleTransitionPagerTitleView firstTabView;//第一个Tab，用来显示进行中、已完结、已搁置的tab。
     TopMiddlePopup topMiddlePopup;
     MyProjectFragment myProjectFragment;
     List<Integer> selectedList = new ArrayList<>();
@@ -86,40 +96,73 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
 
     @Override
     protected void initView() {
-        select_position = 0;
+        selectPosition = 0;
         baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager());
         viewPager.setAdapter(baseFragmentAdapter);
         tabLayout.setupWithViewPager(viewPager);
-//        baseFragmentAdapter.bindTitle(true, Arrays.asList("全部", "我关注的"));
         baseFragmentAdapter.bindData(true,
                 Arrays.asList(myProjectFragment = MyProjectFragment.newInstance(MyProjectFragment.TYPE_ALL_PROJECT),
                         MyProjectFragment.newInstance(MyProjectFragment.TYPE_MY_ATTENTION_PROJECT)
 //                        MyProjectFragment.newInstance(MyProjectFragment.TYPE_MY_PARTIC_PROJECT)
                 ));
+        baseFragmentAdapter.bindTitle(true, Arrays.asList("进行中", "我关注的"));
+        CommonNavigator commonNavigator = new CommonNavigator(getContext());
+        AlphaTitleNavigatorAdapter indicatorAdapter = new AlphaTitleNavigatorAdapter() {
+
+            @Override
+            public IPagerTitleView getTitleView(Context context, int index) {
+                IPagerTitleView titleView = super.getTitleView(context, index);
+                if (index == 0 && titleView instanceof ScaleTransitionPagerTitleView) {
+                    firstTabView = (ScaleTransitionPagerTitleView) titleView;
+                    setFirstTabImage(false);
+                    return firstTabView;
+                }
+                return titleView;
+            }
+
+            @Nullable
+            @Override
+            public CharSequence getTitle(int index) {
+                if (index == 0 && topMiddlePopup != null && topMiddlePopup.getAdapter() != null) {
+                    FilterDropEntity filterDropEntity = topMiddlePopup.getAdapter().getItem(selectPosition);
+                    if (filterDropEntity != null) {
+                        setFirstTabText(filterDropEntity.name, selectPosition);
+                        return filterDropEntity.name;
+                    }
+                }
+                return baseFragmentAdapter.getPageTitle(index);
+            }
+
+            @Override
+            public int getCount() {
+                return baseFragmentAdapter.getCount();
+            }
+
+            @Override
+            public void onTabClick(View v, int pos) {
+                if (viewPager.getCurrentItem() == 0 && pos == 0) {//说明当前是第0个，并且点击了第0个，需要弹出筛选已完成、未完成、已删除的弹出窗。
+                    postDismissPop();
+                    topMiddlePopup.show(titleView, dropEntities, selectPosition);
+                    setFirstTabImage(true);
+                    if (topMiddlePopup.isShowing()) {
+                        getMatterStateCount(getMatterTypes());
+                    }
+                } else {
+                    viewPager.setCurrentItem(pos, true);
+                }
+            }
+        };
+        commonNavigator.setAdapter(indicatorAdapter);
+        tabLayout.setNavigator2(commonNavigator)
+                .setupWithViewPager(viewPager);
+
+
         topMiddlePopup = new TopMiddlePopup(getContext(), DensityUtil.getWidthInDp(getContext()), (int) (DensityUtil.getHeightInPx(getContext()) - DensityUtil.dip2px(getContext(), 75)), this);
         dropEntities.add(doingEntity);
         dropEntities.add(doneEntity);
         dropEntities.add(pendingEntity);
         getMatterStateCount(null);//默认获取所有类型的项目数量
-        for (int i = 0; i < baseFragmentAdapter.getCount(); i++) {
-            TabLayout.Tab tab = tabLayout.getTabAt(i);
-            tab.setCustomView(R.layout.task_unfinish_tab_custom_view);
-            TextView titleTv = tab.getCustomView().findViewById(R.id.tab_custom_title_tv);
-            ImageView downIv = tab.getCustomView().findViewById(R.id.tab_custom_title_iv);
-            switch (i) {
-                case 0:
-                    titleTv.setTextColor(0xFF313131);
-                    titleTv.setText("进行中");
-                    downIv.setVisibility(View.VISIBLE);
-                    tab.getCustomView().setOnClickListener(new OnTabClickListener());
-                    break;
-                case 1:
-                    titleTv.setTextColor(0xFF979797);
-                    titleTv.setText("我关注的");
-                    downIv.setVisibility(View.GONE);
-                    break;
-            }
-        }
+
         topMiddlePopup.setOnDismissListener(new PopupWindow.OnDismissListener() {
             @Override
             public void onDismiss() {
@@ -135,19 +178,10 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
             @Override
             public void onPageSelected(int position) {
                 titleAction.setVisibility(position == 0 ? View.VISIBLE : View.GONE);
-                if (tabLayout.getTabAt(0).getCustomView() != null && tabLayout.getTabAt(1).getCustomView() != null) {
-                    TextView titleTv_0 = tabLayout.getTabAt(0).getCustomView().findViewById(R.id.tab_custom_title_tv);
-                    TextView titleTv_1 = tabLayout.getTabAt(1).getCustomView().findViewById(R.id.tab_custom_title_tv);
-                    switch (position) {
-                        case 0:
-                            titleTv_0.setTextColor(0xFF313131);
-                            titleTv_1.setTextColor(0xFF979797);
-                            break;
-                        case 1:
-                            titleTv_0.setTextColor(0xFF979797);
-                            titleTv_1.setTextColor(0xFF313131);
-                            break;
-                    }
+                if (position == 0) {//进行中、已完结、已搁置
+                    setFirstTabImage(false);
+                } else {//我关注的
+                    setFirstTabImage(false);
                 }
             }
 
@@ -156,25 +190,6 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
 
             }
         });
-    }
-
-    private class OnTabClickListener implements View.OnClickListener {
-
-        @Override
-        public void onClick(View view) {
-            if (tabLayout.getTabAt(0) != null) {
-                if (view.isSelected()) {
-                    postDismissPop();
-                    topMiddlePopup.show(titleView, dropEntities, select_position);
-                    setFirstTabImage(true);
-                    if (topMiddlePopup.isShowing()) {
-                        getMatterStateCount(getMatterTypes());
-                    }
-                } else {
-                    tabLayout.getTabAt(0).select();
-                }
-            }
-        }
     }
 
     /**
@@ -216,34 +231,36 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
      * 获取各个状态的任务数量
      */
     private void getMatterStateCount(String matterTypes) {
-        getApi().matterStateCountQuery(matterTypes).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                JsonElement jsonElement = response.body().result;
-                if (jsonElement != null) {
-                    JsonObject jsonObject = jsonElement.getAsJsonObject();
-                    if (jsonObject != null) {
-                        doingEntity.count = jsonObject.get("openCount").getAsString();
-                        doneEntity.count = jsonObject.get("closeCount").getAsString();
-                        pendingEntity.count = jsonObject.get("terminationCount").getAsString();
-                        dropEntities.clear();
-                        dropEntities.add(doingEntity);
-                        dropEntities.add(doneEntity);
-                        dropEntities.add(pendingEntity);
-                        if (topMiddlePopup != null && topMiddlePopup.isShowing()) {
-                            if (topMiddlePopup.getAdapter() != null) {
-                                topMiddlePopup.getAdapter().bindData(true, dropEntities);
+        callEnqueue(
+                getApi().matterStateCountQuery(matterTypes),
+                new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        JsonElement jsonElement = response.body().result;
+                        if (jsonElement != null) {
+                            JsonObject jsonObject = jsonElement.getAsJsonObject();
+                            if (jsonObject != null) {
+                                doingEntity.count = jsonObject.get("openCount").getAsString();
+                                doneEntity.count = jsonObject.get("closeCount").getAsString();
+                                pendingEntity.count = jsonObject.get("terminationCount").getAsString();
+                                dropEntities.clear();
+                                dropEntities.add(doingEntity);
+                                dropEntities.add(doneEntity);
+                                dropEntities.add(pendingEntity);
+                                if (topMiddlePopup != null && topMiddlePopup.isShowing()) {
+                                    if (topMiddlePopup.getAdapter() != null) {
+                                        topMiddlePopup.getAdapter().bindData(true, dropEntities);
+                                    }
+                                }
                             }
                         }
                     }
-                }
-            }
 
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        super.onFailure(call, t);
+                    }
+                });
     }
 
     /**
@@ -252,14 +269,19 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
      * @param isOpen
      */
     private void setFirstTabImage(boolean isOpen) {
-        if (tabLayout != null)
-            if (tabLayout.getTabAt(0) != null) {
-                if (tabLayout.getTabAt(0).getCustomView() != null) {
-                    ImageView iv = tabLayout.getTabAt(0).getCustomView().findViewById(R.id.tab_custom_title_iv);
-                    iv.setImageResource(isOpen ? R.mipmap.task_dropup : R.mipmap.task_dropdown);
+        if (tabLayout != null) {
+            if (firstTabView != null) {
+                if (isOpen) {
+                    Drawable drawable = ContextCompat.getDrawable(getActivity(), R.mipmap.task_dropup);
+                    drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getMinimumHeight());
+                    firstTabView.setCompoundDrawables(null, null, drawable, null);
+                } else {
+                    Drawable drawable = ContextCompat.getDrawable(getActivity(), R.mipmap.task_dropdown);
+                    drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getMinimumHeight());
+                    firstTabView.setCompoundDrawables(null, null, drawable, null);
                 }
             }
-
+        }
     }
 
     /**
@@ -269,12 +291,11 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
      */
     public void setFirstTabText(String content, int position) {
         if (tabLayout == null) return;
-        if (tabLayout.getTabAt(0) == null) return;
-        if (tabLayout.getTabAt(0).getCustomView() == null) return;
-        TextView titleTv = tabLayout.getTabAt(0).getCustomView().findViewById(R.id.tab_custom_title_tv);
-        titleTv.setText(content);
-        select_position = position;
-        topMiddlePopup.getAdapter().setSelectedPos(select_position);
+        if (firstTabView != null) {
+            firstTabView.setText(content);
+            selectPosition = position;
+            topMiddlePopup.getAdapter().setSelectedPos(selectPosition);
+        }
     }
 
     @OnClick({R.id.titleAction, R.id.titleAction2})

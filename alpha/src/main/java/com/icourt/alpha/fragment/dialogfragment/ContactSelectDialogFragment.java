@@ -19,6 +19,7 @@ import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
@@ -35,9 +36,9 @@ import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.IndexUtils;
-import com.icourt.alpha.widget.comparators.PinyinComparator;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.widget.comparators.PinyinComparator;
 import com.icourt.alpha.widget.filter.ListFilter;
 
 import java.util.ArrayList;
@@ -56,6 +57,9 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import io.realm.RealmResults;
 
+import static com.icourt.alpha.constants.SFileConfig.PERMISSION_R;
+import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
+
 /**
  * Description
  * Company Beijing icourt
@@ -64,6 +68,10 @@ import io.realm.RealmResults;
  * version 1.0.0
  */
 public class ContactSelectDialogFragment extends BaseDialogFragment {
+    private static final String KEY_DATA = "data";
+    private static final String KEY_IS_SELECT_PERMISSION = "isSelectPermission";
+    private static final String KEY_SELECTED_USER_IDS = "selectedUserIds";
+    private static final String KEY_TITLE = "title";
 
     @BindView(R.id.titleContent)
     TextView titleContent;
@@ -84,13 +92,41 @@ public class ContactSelectDialogFragment extends BaseDialogFragment {
     LinearLayout headerCommSearchInputLl;
     @BindView(R.id.empty_layout)
     LinearLayout emptyLayout;
+    @BindView(R.id.share_permission_rw_rb)
+    RadioButton sharePermissionRwRb;
+    @BindView(R.id.title_share_permission)
+    LinearLayout titleSharePermission;
+    @BindView(R.id.share_permission_r_rb)
+    RadioButton sharePermissionRRb;
+    String title;
 
-    public static ContactSelectDialogFragment newInstance(@Nullable ArrayList<GroupContactBean> selectedList) {
+    public static ContactSelectDialogFragment newInstance(
+            @Nullable ArrayList<GroupContactBean> selectedList,
+            boolean isSelectPermission) {
         ContactSelectDialogFragment contactSelectDialogFragment = new ContactSelectDialogFragment();
         Bundle args = new Bundle();
-        args.putSerializable("data", selectedList);
+        args.putSerializable(KEY_DATA, selectedList);
+        args.putSerializable(KEY_IS_SELECT_PERMISSION, isSelectPermission);
         contactSelectDialogFragment.setArguments(args);
         return contactSelectDialogFragment;
+    }
+
+    public static ContactSelectDialogFragment newInstanceWithUids(
+            @Nullable ArrayList<String> selectedUserIds,
+            boolean isSelectPermission) {
+        ContactSelectDialogFragment contactSelectDialogFragment = new ContactSelectDialogFragment();
+        Bundle args = new Bundle();
+        args.putSerializable(KEY_SELECTED_USER_IDS, selectedUserIds);
+        args.putSerializable(KEY_IS_SELECT_PERMISSION, isSelectPermission);
+        args.putString(KEY_TITLE, "添加共享成员");
+        contactSelectDialogFragment.setArguments(args);
+        return contactSelectDialogFragment;
+    }
+
+
+    public static ContactSelectDialogFragment newInstance(
+            @Nullable ArrayList<GroupContactBean> selectedList) {
+        return newInstance(selectedList, false);
     }
 
     OnFragmentCallBackListener onFragmentCallBackListener;
@@ -122,7 +158,16 @@ public class ContactSelectDialogFragment extends BaseDialogFragment {
     }
 
     private ArrayList<GroupContactBean> getSelectedData() {
-        return (ArrayList<GroupContactBean>) getArguments().getSerializable("data");
+        return (ArrayList<GroupContactBean>) getArguments().getSerializable(KEY_DATA);
+    }
+
+    /**
+     * 获取选中的uids
+     *
+     * @return
+     */
+    private ArrayList<String> getSelectedUserIds() {
+        return (ArrayList<String>) getArguments().getSerializable(KEY_SELECTED_USER_IDS);
     }
 
     @Override
@@ -138,8 +183,12 @@ public class ContactSelectDialogFragment extends BaseDialogFragment {
                     int dp20 = DensityUtil.dip2px(getContext(), 20);
                     decorView.setPadding(dp20 / 2, dp20, dp20 / 2, dp20);
                 }
+                WindowManager.LayoutParams attributes = window.getAttributes();
+                attributes.windowAnimations = R.style.SlideAnimBottom;
+                window.setAttributes(attributes);
             }
         }
+        titleContent.setText(title = getArguments().getString(KEY_TITLE, "选择成员"));
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
         headerFooterAdapter = new HeaderFooterAdapter<>(imContactAdapter = new IMContactAdapter());
@@ -169,7 +218,7 @@ public class ContactSelectDialogFragment extends BaseDialogFragment {
                     currSelectedList.remove(item);
                 }
                 int selectedSize = currSelectedList.size();
-                titleContent.setText(selectedSize > 0 ? String.format("选择成员(%s)", selectedSize) : "选择成员");
+                titleContent.setText(selectedSize > 0 ? String.format("%s(%s)", title, selectedSize) : title);
             }
         });
         headerCommSearchInputEt.addTextChangedListener(new TextWatcher() {
@@ -209,6 +258,7 @@ public class ContactSelectDialogFragment extends BaseDialogFragment {
             }
         });
         headerCommSearchInputLl.setVisibility(View.GONE);
+        titleSharePermission.setVisibility(getArguments().getBoolean(KEY_IS_SELECT_PERMISSION, false) ? View.VISIBLE : View.GONE);
         getData(true);
     }
 
@@ -230,6 +280,7 @@ public class ContactSelectDialogFragment extends BaseDialogFragment {
                 if (selectedData != null) {
                     contactBeen.removeAll(selectedData);
                 }
+                filterSelectedUsers(contactBeen);
                 try {
                     if (contactBeen != null) {
                         IndexUtils.setSuspensions(getContext(), contactBeen);
@@ -246,6 +297,27 @@ public class ContactSelectDialogFragment extends BaseDialogFragment {
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * 过滤用户 通过user_id 过滤
+     *
+     * @param datas
+     */
+    private void filterSelectedUsers(List<GroupContactBean> datas) {
+        ArrayList<String> selectedUserIds = getSelectedUserIds();
+        if (selectedUserIds != null
+                && !selectedUserIds.isEmpty()
+                && datas != null
+                && !datas.isEmpty()) {
+            for (int i = datas.size() - 1; i >= 0; i--) {
+                GroupContactBean contactBean = datas.get(i);
+                if (contactBean == null) continue;
+                if (selectedUserIds.contains(contactBean.userId)) {
+                    datas.remove(i);
+                }
+            }
         }
     }
 
@@ -291,7 +363,9 @@ public class ContactSelectDialogFragment extends BaseDialogFragment {
                         if (selectedData != null) {
                             contactBeen.removeAll(selectedData);
                         }
+                        filterSelectedUsers(contactBeen);
                         filterRobot(contactBeen);
+                        filterMySelf(contactBeen);
                         if (contactBeen != null) {
                             IndexUtils.setSuspensions(getContext(), contactBeen);
                             try {
@@ -354,6 +428,7 @@ public class ContactSelectDialogFragment extends BaseDialogFragment {
                 }
                 if (onFragmentCallBackListener != null) {
                     Bundle params = new Bundle();
+                    params.putString("permission", sharePermissionRwRb.isChecked() ? PERMISSION_RW : PERMISSION_R);
                     params.putSerializable(KEY_FRAGMENT_RESULT, imContactAdapter.getSelectedData());
                     onFragmentCallBackListener.onFragmentCallBack(this, 0, params);
                 }

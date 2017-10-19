@@ -120,9 +120,9 @@ public class TaskAllotSelectDialogFragment extends BaseDialogFragment implements
         }
         projectId = getArguments().getString("projectId");
         attendeeUserEntities.clear();
-        ArrayList<TaskEntity.TaskItemEntity.AttendeeUserEntity> list = (ArrayList<TaskEntity.TaskItemEntity.AttendeeUserEntity>)getArguments().getSerializable("list");
-        if(list!=null)
-        attendeeUserEntities.addAll(list);
+        ArrayList<TaskEntity.TaskItemEntity.AttendeeUserEntity> list = (ArrayList<TaskEntity.TaskItemEntity.AttendeeUserEntity>) getArguments().getSerializable("list");
+        if (list != null)
+            attendeeUserEntities.addAll(list);
 
         recyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerview.setHasFixedSize(true);
@@ -181,7 +181,6 @@ public class TaskAllotSelectDialogFragment extends BaseDialogFragment implements
             R.id.header_comm_search_cancel_tv})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.bt_ok:
                 if (getParentFragment() instanceof OnFragmentCallBackListener) {
@@ -208,6 +207,9 @@ public class TaskAllotSelectDialogFragment extends BaseDialogFragment implements
                 headerCommSearchInputLl.setVisibility(View.VISIBLE);
                 SystemUtils.showSoftKeyBoard(getActivity(), headerCommSearchInputEt);
                 break;
+            default:
+                super.onClick(v);
+                break;
         }
     }
 
@@ -216,27 +218,29 @@ public class TaskAllotSelectDialogFragment extends BaseDialogFragment implements
         super.getData(isRefresh);
         taskOwerListAdapter.clearData();
         taskOwerListAdapter.getSelectedArray().clear();
-        getApi().taskOwerListQuery(projectId, "").enqueue(new SimpleCallBack<List<TaskEntity.TaskItemEntity.AttendeeUserEntity>>() {
-            @Override
-            public void onSuccess(Call<ResEntity<List<TaskEntity.TaskItemEntity.AttendeeUserEntity>>> call, Response<ResEntity<List<TaskEntity.TaskItemEntity.AttendeeUserEntity>>> response) {
-                if (response.body().result != null) {
-                    taskOwerListAdapter.bindData(true, response.body().result);
-                    attendeeUserEntitys = response.body().result;
-                    if (attendeeUserEntities != null) {
-                        if (attendeeUserEntities.size() > 0) {
-                            for (int i = 0; i < response.body().result.size(); i++) {
-                                for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUserEntity : attendeeUserEntities) {
-                                    if (attendeeUserEntity == null) continue;
-                                    if (TextUtils.equals(attendeeUserEntity.userId, response.body().result.get(i).userId)) {
-                                        taskOwerListAdapter.setSelected(i, true);
+        callEnqueue(
+                getApi().taskOwerListQuery(projectId, ""),
+                new SimpleCallBack<List<TaskEntity.TaskItemEntity.AttendeeUserEntity>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<TaskEntity.TaskItemEntity.AttendeeUserEntity>>> call, Response<ResEntity<List<TaskEntity.TaskItemEntity.AttendeeUserEntity>>> response) {
+                        if (response.body().result != null) {
+                            taskOwerListAdapter.bindData(true, response.body().result);
+                            attendeeUserEntitys = response.body().result;
+                            if (attendeeUserEntities != null) {
+                                if (attendeeUserEntities.size() > 0) {
+                                    for (int i = 0; i < response.body().result.size(); i++) {
+                                        for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUserEntity : attendeeUserEntities) {
+                                            if (attendeeUserEntity == null) continue;
+                                            if (TextUtils.equals(attendeeUserEntity.userId, response.body().result.get(i).userId)) {
+                                                taskOwerListAdapter.setSelected(i, true);
+                                            }
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                }
-            }
-        });
+                });
     }
 
     /**

@@ -1,20 +1,16 @@
 package com.icourt.alpha.activity;
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
-import android.os.SystemClock;
 import android.support.annotation.CheckResult;
-import android.support.annotation.NonNull;
+import android.support.annotation.IntDef;
+import android.support.annotation.IntRange;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -26,7 +22,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.DrawableRequestBuilder;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
@@ -37,47 +32,33 @@ import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BasePagerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.base.BaseUmengActivity;
 import com.icourt.alpha.constants.Const;
+import com.icourt.alpha.constants.DownloadConfig;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
+import com.icourt.alpha.entity.bean.ChatFileInfoEntity;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
-import com.icourt.alpha.entity.bean.SFileImageInfoEntity;
+import com.icourt.alpha.entity.bean.ISeaFile;
 import com.icourt.alpha.fragment.dialogfragment.ContactShareDialogFragment;
-import com.icourt.alpha.fragment.dialogfragment.ProjectSaveFileDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
-import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.JsonUtils;
-import com.icourt.alpha.utils.Md5Utils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.HackyViewPager;
-import com.icourt.alpha.view.TouchImageView;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.api.RequestUtils;
 import com.liulishuo.filedownloader.BaseDownloadTask;
-import com.liulishuo.filedownloader.FileDownloadListener;
-import com.liulishuo.filedownloader.FileDownloader;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.functions.Consumer;
-import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -93,166 +74,72 @@ import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
  * 图片浏览器
  */
 
-public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAdapter.OnPagerItemClickListener, BasePagerAdapter.OnPagerItemLongClickListener {
+public class ImagePagerActivity extends ImageViewBaseActivity implements BasePagerAdapter.OnPagerItemClickListener, BasePagerAdapter.OnPagerItemLongClickListener {
     //收藏的消息列表
     protected final Set<Long> msgCollectedIdsList = new HashSet<>();
     //钉的消息列表
     protected final Set<Long> msgDingedIdsList = new HashSet<>();
 
 
-    private static final int CODE_PERMISSION_FILE = 1009;
-
-    private static final String KEY_URLS = "key_urls";
     private static final String KEY_S_FILE_INFO = "key_s_file_info";
-    private static final String KEY_POS = "key_pos";
     private static final String KEY_CHAT_TYPE = "key_chat_type";
     private static final String KEY_CHAT_ID = "key_chat_id";
-    private static final String KEY_MSG_ID = "key_msg_id";
+    private static final String KEY_POS = "key_pos";
+    private static final String KEY_IMAGE_FROM = "key_image_from";
     @BindView(R.id.imagePager)
     HackyViewPager imagePager;
     @BindView(R.id.tvPagerTitle)
     TextView tvPagerTitle;
     ImagePagerAdapter pagerAdapter;
-    String[] urls;
-    ArrayList<SFileImageInfoEntity> sFileImageInfoEntities;
+    ArrayList<ChatFileInfoEntity> sFileImageInfoEntities;
     Handler handler = new Handler();
     int realPos;
-    private FileDownloadListener picDownloadListener = new FileDownloadListener() {
+    int imageFrom;
 
-        @Override
-        protected void pending(BaseDownloadTask task, int soFarBytes, int totalBytes) {
-        }
+    public static final int IMAGE_FROM_CHAT_WINDOW = 1;
+    public static final int IMAGE_FROM_CHAT_FILE = 2;
+    public static final int IMAGE_FROM_DING = 3;
+    public static final int IMAGE_FROM_COLLECT = 4;
 
-        @Override
-        protected void progress(BaseDownloadTask task, int soFarBytes, int totalBytes) {
-        }
-
-        @Override
-        protected void completed(BaseDownloadTask task) {
-            showTopSnackBar("保存成功!");
-            if (task != null && !TextUtils.isEmpty(task.getPath())) {
-                try {
-                    sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(new File(task.getPath()))));
-                } catch (NullPointerException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        @Override
-        protected void paused(BaseDownloadTask task, int soFarBytes, int totalBytes) {
-        }
-
-        @Override
-        protected void error(BaseDownloadTask task, Throwable e) {
-            log("----------->图片下载异常:" + StringUtils.throwable2string(e));
-            showTopSnackBar(String.format("下载异常!" + StringUtils.throwable2string(e)));
-        }
-
-        @Override
-        protected void warn(BaseDownloadTask task) {
-
-        }
-    };
-
-    /**
-     * @param context
-     * @param urls
-     * @param pos     从0开始
-     */
-    public static void launch(Context context, String[] urls, int pos) {
-        if (context == null) return;
-        if (urls == null) return;
-        if (urls.length == 0) return;
-        if (pos >= 0 && pos < urls.length) {
-            Intent intent = new Intent(context, ImagePagerActivity.class);
-            intent.putExtra(KEY_URLS, urls);
-            intent.putExtra(KEY_POS, pos);
-            context.startActivity(intent);
-        }
+    @IntDef({
+            IMAGE_FROM_CHAT_WINDOW,
+            IMAGE_FROM_CHAT_FILE,
+            IMAGE_FROM_DING,
+            IMAGE_FROM_COLLECT,
+    })
+    public @interface ImageFrom {
     }
 
     /**
-     * @param context
-     * @param urls
-     */
-    public static void launch(Context context, String[] urls) {
-        launch(context, urls, 0);
-    }
-
-    /**
-     * @param context
-     * @param urls
-     */
-    public static void launch(Context context, String[] urls, int pos, long chatMsgId) {
-        if (context == null) return;
-        if (urls == null) return;
-        if (urls.length == 0) return;
-        if (pos >= 0 && pos < urls.length) {
-            Intent intent = new Intent(context, ImagePagerActivity.class);
-            intent.putExtra(KEY_URLS, urls);
-            intent.putExtra(KEY_POS, pos);
-            intent.putExtra(KEY_MSG_ID, chatMsgId);
-            context.startActivity(intent);
-        }
-    }
-
-    /**
-     * @param context
-     * @param urls
-     */
-    public static void launch(Context context, List<String> urls) {
-        launch(context, urls, 0);
-    }
-
-    /**
-     * @param context
-     * @param urls
-     * @param pos     从0开始
-     */
-    public static void launch(Context context, List<String> urls, int pos) {
-        if (context == null) return;
-        if (urls == null) return;
-        if (urls.size() == 0) return;
-        String[] urlsArr = (String[]) urls.toArray(new String[urls.size()]);
-        launch(context, urlsArr, pos);
-    }
-
-    /**
-     * 先展示中图 查看原图
+     * 显示图片
      *
      * @param context
-     * @param mediumUrls             中等图片
-     * @param sFileImageInfoEntities sfile对应详细信息
+     * @param sFileImageInfoEntities
+     * @param selectedPos
+     * @param transitionView
      */
+
     public static void launch(Context context,
-                              @NonNull List<String> mediumUrls,
-                              @Nullable ArrayList<SFileImageInfoEntity> sFileImageInfoEntities,
-                              int pos,
-                              @Nullable View transitionView,
-                              @Const.CHAT_TYPE int chatType,
-                              String chatId) {
-        if (context == null) return;
-        if (mediumUrls == null) return;
-        if (mediumUrls.size() == 0) return;
+                              @ImageFrom int imageFrom,
+                              @Nullable ArrayList<ChatFileInfoEntity> sFileImageInfoEntities,
+                              @IntRange(from = 0, to = Integer.MAX_VALUE) int selectedPos,
+                              int chatType,
+                              String chatId,
+                              @Nullable View transitionView) {
+        if (sFileImageInfoEntities == null || sFileImageInfoEntities.isEmpty()) return;
+        if (selectedPos >= sFileImageInfoEntities.size()) {
+            selectedPos = sFileImageInfoEntities.size() - 1;
+        }
         Intent intent = new Intent(context, ImagePagerActivity.class);
-        String[] urlsArr = (String[]) mediumUrls.toArray(new String[mediumUrls.size()]);
-        intent.putExtra(KEY_URLS, urlsArr);
-        if (pos < 0) {
-            pos = 0;
-        } else if (pos >= mediumUrls.size()) {
-            pos = mediumUrls.size() - 1;
-        }
-        intent.putExtra(KEY_POS, pos);
-        intent.putExtra(KEY_CHAT_ID, chatId);
+        intent.putExtra(KEY_IMAGE_FROM, imageFrom);
+        intent.putExtra(KEY_POS, selectedPos);
+        intent.putExtra(KEY_S_FILE_INFO, sFileImageInfoEntities);
         intent.putExtra(KEY_CHAT_TYPE, chatType);
-        if (sFileImageInfoEntities != null) {
-            intent.putExtra(KEY_S_FILE_INFO, sFileImageInfoEntities);
-        }
+        intent.putExtra(KEY_CHAT_ID, chatId);
         if (context instanceof Activity
                 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
                 && transitionView != null) {
-            String transitionName = mediumUrls.get(pos);
+            String transitionName = sFileImageInfoEntities.get(selectedPos).getChatMiddlePic();
             if (TextUtils.isEmpty(transitionName)) {
                 transitionName = "transitionView";
             }
@@ -263,6 +150,7 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
             context.startActivity(intent);
         }
     }
+
 
     private static void setTransitionView(View transitionView, String transitionName) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
@@ -287,11 +175,11 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
     @Override
     protected void initView() {
         super.initView();
-        urls = getIntent().getStringArrayExtra(KEY_URLS);
-        sFileImageInfoEntities = (ArrayList<SFileImageInfoEntity>) getIntent().getSerializableExtra(KEY_S_FILE_INFO);
+        imageFrom = getIntent().getIntExtra(KEY_IMAGE_FROM, 0);
+        sFileImageInfoEntities = (ArrayList<ChatFileInfoEntity>) getIntent().getSerializableExtra(KEY_S_FILE_INFO);
         realPos = getIntent().getIntExtra(KEY_POS, 0);
         pagerAdapter = new ImagePagerAdapter();
-        pagerAdapter.bindData(true, Arrays.asList(urls));
+        pagerAdapter.bindData(true, sFileImageInfoEntities);
         pagerAdapter.setOnPagerItemClickListener(this);
         pagerAdapter.setOnPagerItemLongClickListener(this);
         tvPagerTitle.setVisibility(View.GONE);
@@ -337,16 +225,13 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
         return getIntent().getStringExtra(KEY_CHAT_ID);
     }
 
-    protected Long getIMMsgId() {
-        return getIntent().getLongExtra(KEY_MSG_ID, 0);
-    }
-
     /**
      * 获取被钉的ids列表
      */
     private void getMsgDingedIds() {
-        getChatApi().msgQueryAllDingIds(getIMChatType(), getIMChatId())
-                .enqueue(new SimpleCallBack<List<Long>>() {
+        callEnqueue(
+                getChatApi().msgQueryAllDingIds(getIMChatType(), getIMChatId()),
+                new SimpleCallBack<List<Long>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<Long>>> call, Response<ResEntity<List<Long>>> response) {
                         if (response.body().result != null) {
@@ -386,8 +271,9 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
      * 获取已经收藏的id列表
      */
     private void getMsgCollectedIds() {
-        getChatApi().msgQueryAllCollectedIds(getIMChatType(), getIMChatId())
-                .enqueue(new SimpleCallBack<List<Long>>() {
+        callEnqueue(
+                getChatApi().msgQueryAllCollectedIds(getIMChatType(), getIMChatId()),
+                new SimpleCallBack<List<Long>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<Long>>> call, Response<ResEntity<List<Long>>> response) {
                         if (response.body().result != null) {
@@ -404,24 +290,16 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
                 });
     }
 
-    /**
-     * 获取当前image url
-     *
-     * @return
-     */
-    private String getCurrImageUrl() {
-        if (urls != null && urls.length > 0) {
-            return urls[imagePager.getCurrentItem()];
-        }
-        return null;
-    }
 
     @OnClick({R.id.download_img})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.download_img:
-                checkPermissionOrDownload();
+                //下载原图
+                final String originalImageUrl = pagerAdapter.getOriginalImageUrl(imagePager.getCurrentItem());
+                final String picSavePath = getPicSavePath(getSFileImageInfoEntity(imagePager.getCurrentItem()));
+                downloadFile(originalImageUrl, picSavePath);
                 break;
             default:
                 super.onClick(v);
@@ -452,76 +330,55 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
     @Override
     public boolean OnItemLongClick(BasePagerAdapter adapter, final View v, final int pos) {
         if (v instanceof ImageView) {
-            SFileImageInfoEntity sFileImageInfoEntity = getSFileImageInfoEntity(pos);
+            final ChatFileInfoEntity chatFileInfoEntity = getSFileImageInfoEntity(pos);
             ImageView imageView = (ImageView) v;
             final Drawable drawable = imageView.getDrawable();
             if (drawable == null) return false;
-            final SFileImageInfoEntity finalSFileImageInfoEntity = sFileImageInfoEntity;
-            if (finalSFileImageInfoEntity != null) {
-                final boolean isCollected = isCollected(sFileImageInfoEntity.chatMsgId);
-                final boolean isDinged = isDinged(sFileImageInfoEntity.chatMsgId);
+            final ChatFileInfoEntity finalChatFileInfoEntity = chatFileInfoEntity;
+
+            final String originalImageUrl = pagerAdapter.getOriginalImageUrl(pos);
+            final String picSavePath = getPicSavePath(getSFileImageInfoEntity(pos));
+
+            if (finalChatFileInfoEntity != null) {
+                final boolean isCollected = isCollected(chatFileInfoEntity.getChatMsgId());
+                final boolean isDinged = isDinged(chatFileInfoEntity.getChatMsgId());
+                ArrayList<String> menus = new ArrayList<>();
+                switch (imageFrom) {
+                    case IMAGE_FROM_CHAT_WINDOW:
+                        menus.add("转发给同事");
+                        menus.add("分享");
+                        menus.add(isCollected ? "取消收藏" : "收藏");
+                        menus.add(isDinged ? "取消钉" : "钉");
+                        menus.add("保存到文档");
+                        break;
+                    default:
+                        menus.add("转发给同事");
+                        menus.add("分享");
+                        menus.add("保存到文档");
+                        break;
+                }
                 new BottomActionDialog(getContext(),
                         null,
-                        Arrays.asList("分享", "发送到享聊", isCollected ? "取消收藏" : "收藏", isDinged ? "取消钉" : "钉", "保存到项目"),
+                        menus,
                         new BottomActionDialog.OnActionItemClickListener() {
                             @Override
                             public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
                                 dialog.dismiss();
-                                switch (position) {
-                                    case 0:
-                                        shareImage2WeiXin(drawable);
-                                        break;
-                                    case 1:
-                                        showContactShareDialogFragment(finalSFileImageInfoEntity.chatMsgId);
-                                        break;
-                                    case 2:
-                                        if (isCollected) {
-                                            msgActionCollectCancel(finalSFileImageInfoEntity.chatMsgId);
-                                        } else {
-                                            msgActionCollect(finalSFileImageInfoEntity.chatMsgId);
-                                        }
-                                        break;
-                                    case 3:
-                                        msgActionDing(!isDinged, finalSFileImageInfoEntity.chatMsgId);
-                                        break;
-                                    case 4:
-                                        if (checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                                            String fileName = getFileName(adapter.getItem(position));
-                                            savedImport2Project(drawable, fileName);
-                                        } else {
-                                            reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, "下载文件需要文件写入权限!", CODE_PERMISSION_FILE);
-                                        }
-                                        break;
-                                }
-                            }
-                        }).show();
-            } else {
-                new BottomActionDialog(getContext(),
-                        null,
-                        Arrays.asList("分享", "发送到享聊", "保存到项目"),
-                        new BottomActionDialog.OnActionItemClickListener() {
-                            @Override
-                            public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-                                dialog.dismiss();
-                                switch (position) {
-                                    case 0:
-                                        shareImage2WeiXin(drawable);
-                                        break;
-                                    case 1:
-                                        if (getIMMsgId() <= 0 && urls != null && urls.length > 0) {
-                                            showContactShareDialogFragment(urls[0]);
-                                        } else {
-                                            showContactShareDialogFragment(getIMMsgId());
-                                        }
-                                        break;
-                                    case 2:
-                                        if (checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                                            String fileName = getFileName(adapter.getItem(position));
-                                            savedImport2Project(drawable, fileName);
-                                        } else {
-                                            reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, "下载文件需要文件写入权限!", CODE_PERMISSION_FILE);
-                                        }
-                                        break;
+                                String action = adapter.getItem(position);
+                                if (TextUtils.equals(action, "转发给同事")) {
+                                    showContactShareDialogFragment(finalChatFileInfoEntity.getChatMsgId());
+                                } else if (TextUtils.equals(action, "分享")) {
+                                    shareHttpFile(originalImageUrl, picSavePath);
+                                } else if (TextUtils.equals(action, "取消收藏")) {
+                                    msgActionCollectCancel(finalChatFileInfoEntity.getChatMsgId());
+                                } else if (TextUtils.equals(action, "收藏")) {
+                                    msgActionCollect(finalChatFileInfoEntity.getChatMsgId());
+                                } else if (TextUtils.equals(action, "取消钉")) {
+                                    msgActionDing(!isDinged, finalChatFileInfoEntity.getChatMsgId());
+                                } else if (TextUtils.equals(action, "钉")) {
+                                    msgActionDing(!isDinged, finalChatFileInfoEntity.getChatMsgId());
+                                } else if (TextUtils.equals(action, "保存到文档")) {
+                                    shareHttpFile2repo(originalImageUrl, picSavePath);
                                 }
                             }
                         }).show();
@@ -532,14 +389,33 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
     }
 
     /**
+     * 展示联系人转发对话框
+     * 软拷贝
+     *
+     * @param id msgid
+     */
+    public void showContactShareDialogFragment(long id) {
+        String tag = ContactShareDialogFragment.class.getSimpleName();
+        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        ContactShareDialogFragment.newInstance(id, true)
+                .show(mFragTransaction, tag);
+    }
+
+
+    /**
      * 收藏消息
      *
      * @param msgId
      */
 
     protected final void msgActionCollect(final long msgId) {
-        getChatApi().msgCollect(msgId, getIMChatType(), getIMChatId())
-                .enqueue(new SimpleCallBack<Boolean>() {
+        callEnqueue(
+                getChatApi().msgCollect(msgId, getIMChatType(), getIMChatId()),
+                new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         if (response.body().result != null && response.body().result.booleanValue()) {
@@ -558,8 +434,9 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
      * @param msgId
      */
     protected final void msgActionCollectCancel(final long msgId) {
-        getChatApi().msgCollectCancel(msgId, getIMChatType(), getIMChatId())
-                .enqueue(new SimpleCallBack<Boolean>() {
+        callEnqueue(
+                getChatApi().msgCollectCancel(msgId, getIMChatType(), getIMChatId()),
+                new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         if (response.body().result != null && response.body().result.booleanValue()) {
@@ -594,8 +471,9 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
             e.printStackTrace();
         }
         showLoadingDialog(null);
-        getChatApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
-                .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
+        callEnqueue(
+                getChatApi().msgAdd(RequestUtils.createJsonBody(jsonBody)),
+                new SimpleCallBack<IMMessageCustomBody>() {
                     @Override
                     public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
                         dismissLoadingDialog();
@@ -620,180 +498,15 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
                 });
     }
 
+
     /**
-     * 展示联系人转发对话框
+     * 获取保存路径
      *
-     * @param id msgid
-     */
-    public void showContactShareDialogFragment(long id) {
-        String tag = ContactShareDialogFragment.class.getSimpleName();
-        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
-        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
-        if (fragment != null) {
-            mFragTransaction.remove(fragment);
-        }
-        ContactShareDialogFragment.newInstance(id, true)
-                .show(mFragTransaction, tag);
-    }
-
-    /**
-     * 展示联系人转发对话框
-     *
-     * @param filePath
-     */
-    public void showContactShareDialogFragment(String filePath) {
-        String tag = ContactShareDialogFragment.class.getSimpleName();
-        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
-        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
-        if (fragment != null) {
-            mFragTransaction.remove(fragment);
-        }
-        ContactShareDialogFragment.newInstanceFile(filePath, true)
-                .show(mFragTransaction, tag);
-    }
-
-    private String getFileName(String url) {
-        if (!TextUtils.isEmpty(url)) {
-            int indexOf = url.lastIndexOf("/");
-            if (indexOf >= 0 && indexOf < url.length() - 1) {
-                return url.substring(indexOf, url.length());
-            }
-        }
-        return SystemClock.elapsedRealtime() + ".png";
-    }
-
-    /**
-     * 分享到项目
-     *
-     * @param drawable
-     * @param name
-     */
-    private void savedImport2Project(final Drawable drawable, final String name) {
-        if (drawable == null) return;
-        showLoadingDialog(null);
-        Observable
-                .create(new ObservableOnSubscribe<String>() {
-                    @Override
-                    public void subscribe(ObservableEmitter<String> e) throws Exception {
-                        if (e.isDisposed()) return;
-                        boolean b = FileUtils.saveBitmap(getContext(), name, FileUtils.drawableToBitmap(drawable));
-                        String changeSendfilePath = FileUtils.dirFilePath + File.separator + name + ".png";
-                        if (b) {
-                            e.onNext(changeSendfilePath);
-                        } else {
-                            e.onError(new NullPointerException());
-                        }
-                        e.onComplete();
-                    }
-                })
-                .compose(this.<String>bindToLifecycle())
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<String>() {
-                    @Override
-                    public void accept(String s) throws Exception {
-                        dismissLoadingDialog();
-                        showProjectSaveFileDialogFragment(s);
-                    }
-                }, new Consumer<Throwable>() {
-                    @Override
-                    public void accept(Throwable throwable) throws Exception {
-                        dismissLoadingDialog();
-                    }
-                });
-    }
-
-    /**
-     * 展示项目转发对话框
-     *
-     * @param filePath
-     */
-    public void showProjectSaveFileDialogFragment(String filePath) {
-        String tag = ProjectSaveFileDialogFragment.class.getSimpleName();
-        FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
-        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
-        if (fragment != null) {
-            mFragTransaction.remove(fragment);
-        }
-        ProjectSaveFileDialogFragment.newInstance(filePath, ProjectSaveFileDialogFragment.ALPHA_TYPE)
-                .show(mFragTransaction, tag);
-    }
-
-    /**
-     * 检查权限或者下载
-     */
-    private void checkPermissionOrDownload() {
-        if (checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            downloadFile(getCurrImageUrl());
-        } else {
-            reqPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, "下载文件需要文件写入权限!", CODE_PERMISSION_FILE);
-        }
-    }
-
-    /**
-     * 图片下载
-     *
-     * @param url
-     */
-    private void downloadFile(String url) {
-        if (TextUtils.isEmpty(url)) {
-            showTopSnackBar("下载地址为null");
-            return;
-        }
-        if (!FileUtils.sdAvailable()) {
-            showTopSnackBar("sd卡不可用!");
-            return;
-        }
-        if (isFileExists(url)) {
-            showTopSnackBar("文件已保存");
-            return;
-        }
-        FileDownloader
-                .getImpl()
-                .create(url)
-                .setPath(getPicSavePath(url))
-                .setListener(picDownloadListener).start();
-    }
-
-    private String getPicSavePath(String url) {
-        if (url.startsWith("http")) {
-            StringBuilder pathBuilder = new StringBuilder(Environment.getExternalStorageDirectory().getAbsolutePath());
-            pathBuilder.append(File.separator);
-            pathBuilder.append(ActionConstants.FILE_DOWNLOAD_PATH);
-            pathBuilder.append(File.separator);
-            pathBuilder.append(Md5Utils.md5(url, url));
-            pathBuilder.append(".png");
-            return pathBuilder.toString();
-        } else {
-            return url;
-        }
-    }
-
-    /**
-     * 是否文件已经存在
-     *
-     * @param url
+     * @param iSeaFile
      * @return
      */
-    private boolean isFileExists(String url) {
-        return FileUtils.isFileExists(getPicSavePath(url));
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (grantResults == null) return;
-        if (grantResults.length <= 0) return;
-        switch (requestCode) {
-            case CODE_PERMISSION_FILE:
-                if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
-                    showTopSnackBar("文件写入权限被拒绝!");
-                }
-                break;
-            default:
-                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-                break;
-        }
-
+    private String getPicSavePath(ISeaFile iSeaFile) {
+        return DownloadConfig.getSeaFileDownloadPath(getLoginUserId(), iSeaFile);
     }
 
 //    @Override
@@ -805,25 +518,54 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
 //    }
 
     @CheckResult
-    private SFileImageInfoEntity getSFileImageInfoEntity(int pos) {
-        if (sFileImageInfoEntities != null
-                && pos < sFileImageInfoEntities.size()) {
-            return sFileImageInfoEntities.get(pos);
-        }
-        return null;
+    private ChatFileInfoEntity getSFileImageInfoEntity(int pos) {
+        return sFileImageInfoEntities.get(pos);
     }
 
-    class ImagePagerAdapter extends BasePagerAdapter<String> {
+    class ImagePagerAdapter extends BasePagerAdapter<ChatFileInfoEntity> {
 
         @Override
         public int bindView(int pos) {
             return R.layout.adapter_item_image_pager;
         }
 
+        /**
+         * 获取原图地址
+         *
+         * @param iSeaFile
+         * @return
+         */
+        public String getOriginalImageUrl(ISeaFile iSeaFile) {
+            if (iSeaFile == null) return null;
+            StringBuilder bigUrlBuilder = new StringBuilder(BuildConfig.API_CHAT_URL);
+            bigUrlBuilder.append("im/v1/msgs/files/download/refer");
+            bigUrlBuilder.append("?");
+            bigUrlBuilder.append("repo_id=");
+            bigUrlBuilder.append(iSeaFile.getSeaFileRepoId());
+            bigUrlBuilder.append("&path=");
+            bigUrlBuilder.append(FileUtils.getFileParentDir(iSeaFile.getSeaFileFullPath()));
+            bigUrlBuilder.append("&name=");
+            bigUrlBuilder.append(FileUtils.getFileName(iSeaFile.getSeaFileFullPath()));
+            bigUrlBuilder.append("&token=");
+            bigUrlBuilder.append(getUserToken());
+            return bigUrlBuilder.toString();
+        }
+
+        /**
+         * 获取原图地址
+         *
+         * @param pos
+         * @return
+         */
+        public String getOriginalImageUrl(int pos) {
+            ChatFileInfoEntity item = getItem(pos);
+            return getOriginalImageUrl(item);
+        }
+
         @Override
-        public void bindDataToItem(final String s, ViewGroup container, View itemView, final int pos) {
-            final TouchImageView touchImageView = (TouchImageView) itemView.findViewById(R.id.imageView);
-            setTransitionView(touchImageView, s);
+        public void bindDataToItem(final ChatFileInfoEntity chatFileInfoEntity, ViewGroup container, View itemView, final int pos) {
+            final ImageView touchImageView = itemView.findViewById(R.id.imageView);
+            setTransitionView(touchImageView, chatFileInfoEntity.getChatMiddlePic());
             touchImageView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -839,97 +581,76 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
                     return false;
                 }
             });
+
             final TextView img_look_original_tv = (TextView) itemView.findViewById(R.id.img_look_original_tv);
             img_look_original_tv.setVisibility(View.GONE);
-            final String bigUrl = getBigUrl(pos);
             img_look_original_tv.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    //putItem(pos, bigUrl);
-                    loadOriginalPic(img_look_original_tv, bigUrl, touchImageView);
+                    loadOriginalImage(chatFileInfoEntity, touchImageView, img_look_original_tv);
                 }
             });
-            img_look_original_tv.setVisibility(View.GONE);
+
+            final String thumbUrl = chatFileInfoEntity.getChatThumbPic();
+            final String middleUrl = chatFileInfoEntity.getChatMiddlePic();
+            final String picSavePath = getPicSavePath(chatFileInfoEntity);
+
+            //已经有原图
+            if (FileUtils.isFileExists(picSavePath)) {
+                GlideUtils.loadSFilePicWithoutPlaceholder(getContext(), picSavePath, touchImageView);
+                return;
+            }
+
             if (GlideUtils.canLoadImage(getContext())) {
-                log("---------->load url:pos:" + pos + "  url:" + s);
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         if (!GlideUtils.canLoadImage(getContext())) return;
+                        //1.先加载缩略图
+                        //2.加载中等图片
+                        //3.加载原图
+                        Glide.with(getContext())
+                                .load(thumbUrl)
+                                .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                                .listener(new RequestListener<String, GlideDrawable>() {
+                                    @Override
+                                    public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+                                        loadMiddleImage(img_look_original_tv,
+                                                middleUrl,
+                                                touchImageView);
+                                        return false;
+                                    }
 
-                        final SFileImageInfoEntity sFileImageInfoEntity = getSFileImageInfoEntity(pos);
-                        if (sFileImageInfoEntity != null
-                                && !TextUtils.isEmpty(sFileImageInfoEntity.thumb)) {
-                            Glide.with(getContext())
-                                    .load(sFileImageInfoEntity.thumb)
-                                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-                                    .listener(new RequestListener<String, GlideDrawable>() {
-                                        @Override
-                                        public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
-                                            loadBigImage(img_look_original_tv,
-                                                    null,
-                                                    null,
-                                                    s,
-                                                    bigUrl,
-                                                    touchImageView);
-                                            return true;
-                                        }
-
-                                        @Override
-                                        public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                                            loadBigImage(img_look_original_tv,
-                                                    resource,
-                                                    resource,
-                                                    s,
-                                                    bigUrl,
-                                                    touchImageView);
-                                            return true;
-                                        }
-                                    }).dontAnimate()
-                                    .into(touchImageView);
-
-                        } else {
-                            loadBigImage(img_look_original_tv,
-                                    null,
-                                    null,
-                                    s,
-                                    bigUrl,
-                                    touchImageView);
-                        }
+                                    @Override
+                                    public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                                        loadMiddleImage(img_look_original_tv,
+                                                middleUrl,
+                                                touchImageView);
+                                        return false;
+                                    }
+                                })
+                                .dontAnimate()
+                                .into(touchImageView);
                     }
                 }, new Random().nextInt(50));
             }
         }
 
         /**
-         * 加载大图
+         * 加载中图
          *
-         * @param img_look_original_tv 加载原图的按钮
-         * @param url                  大图地址
-         * @param bigUrl               原图地址
+         * @param img_look_original_tv
+         * @param middleUrl
          * @param imageView
          */
-        private void loadBigImage(final View img_look_original_tv,
-                                  Drawable placeholder,
-                                  Drawable errorDrawable,
-                                  String url,
-                                  final String bigUrl,
-                                  final ImageView imageView) {
+        private void loadMiddleImage(final View img_look_original_tv,
+                                     final String middleUrl,
+                                     final ImageView imageView) {
             if (!GlideUtils.canLoadImage(getContext())) return;
-            final DrawableRequestBuilder<String> drawableRequestBuilder = Glide.with(getContext())
-                    .load(url)
-                    .diskCacheStrategy(DiskCacheStrategy.SOURCE);
-            if (placeholder != null) {
-                drawableRequestBuilder.placeholder(placeholder);
-            } else {
-                drawableRequestBuilder.thumbnail(0.1f);
-            }
-            if (errorDrawable != null) {
-                drawableRequestBuilder.error(errorDrawable);
-            } else {
-                drawableRequestBuilder.error(R.mipmap.default_img_failed);
-            }
-            drawableRequestBuilder
+            Glide.with(getContext())
+                    .load(middleUrl)
+                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                    .error(R.mipmap.filetype_image)
                     .listener(new RequestListener<String, GlideDrawable>() {
                         @Override
                         public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
@@ -940,46 +661,17 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
                         @Override
                         public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
                             //有sfile原图 原图的分界线是高度>=800
-                            if (!TextUtils.isEmpty(bigUrl)
-                                    && resource != null
+                            if (resource != null
                                     && resource.getIntrinsicHeight() >= 800) {
-                                Observable.create(new ObservableOnSubscribe<Boolean>() {
-                                    @Override
-                                    public void subscribe(ObservableEmitter<Boolean> e) throws Exception {
-                                        if (e.isDisposed()) return;
-                                        File file = null;
-                                        try {
-                                            file = Glide.with(getContext())
-                                                    .load(bigUrl)
-                                                    .downloadOnly(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
-                                                    .get(200, TimeUnit.MILLISECONDS);
-                                        } catch (Exception ex) {
-                                            ex.printStackTrace();
-                                        }
-                                        e.onNext(file != null && file.exists());
-                                        e.onComplete();
-                                    }
-                                }).compose(ImagePagerActivity.this.<Boolean>bindToLifecycle())
-                                        .subscribeOn(Schedulers.newThread())
-                                        .observeOn(AndroidSchedulers.mainThread())
-                                        .subscribe(new io.reactivex.functions.Consumer<Boolean>() {
-                                            @Override
-                                            public void accept(Boolean aBoolean) throws Exception {
-                                                if (!GlideUtils.canLoadImage(getContext())) return;
-
-                                                if (aBoolean != null && aBoolean.booleanValue()) {
-                                                    loadOriginalPic2(img_look_original_tv, bigUrl, imageView);
-                                                } else {
-                                                    img_look_original_tv.setVisibility(View.VISIBLE);
-                                                }
-                                            }
-                                        });
+                                img_look_original_tv.setVisibility(View.VISIBLE);
                             } else {
                                 img_look_original_tv.setVisibility(View.GONE);
                             }
                             return false;
                         }
-                    }).dontAnimate()
+                    })
+                    .error(R.mipmap.filetype_image)
+                    .dontAnimate()
                     .into(imageView);
         }
 
@@ -994,89 +686,21 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
         /**
          * 加载原图
          *
-         * @param img_look_original_tv
-         * @param originalUrl
+         * @param iSeaFile
          * @param imageView
+         * @param imgLookOriginalTv
          */
-        private void loadOriginalPic(final View img_look_original_tv, String originalUrl, ImageView imageView) {
-            if (imageView == null) return;
-            if (TextUtils.isEmpty(originalUrl)) return;
-            if (img_look_original_tv == null) return;
-            log("---------->load Original url:" + originalUrl);
-            if (!GlideUtils.canLoadImage(getContext()))
-                return;
-            //加载原图
-            showLoadingDialog(null);
-            Glide.with(getContext())
-                    .load(originalUrl)
-                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-                    .placeholder(imageView.getDrawable())
-                    .listener(new RequestListener<String, GlideDrawable>() {
-                        @Override
-                        public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
-                            dismissLoadingDialog();
-                            img_look_original_tv.setVisibility(View.GONE);
-                            return false;
-                        }
-
-                        @Override
-                        public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                            dismissLoadingDialog();
-                            img_look_original_tv.setVisibility(View.GONE);
-                            return false;
-                        }
-                    })
-                    .into(imageView);
-        }
-
-        /**
-         * @param img_look_original_tv
-         * @param originalUrl
-         * @param imageView
-         */
-        private void loadOriginalPic2(final View img_look_original_tv, String originalUrl, ImageView imageView) {
-            if (imageView == null) return;
-            if (TextUtils.isEmpty(originalUrl)) return;
-            if (img_look_original_tv == null) return;
-            log("---------->load Original url2:" + originalUrl);
-            if (!GlideUtils.canLoadImage(getContext()))
-                return;
-            //加载原图
-            img_look_original_tv.setVisibility(View.GONE);
-            Glide.with(getContext())
-                    .load(originalUrl)
-                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-                    .placeholder(imageView.getDrawable())
-                    .into(imageView);
-        }
-
-
-        /**
-         * 获取大图地址
-         *
-         * @param pos
-         * @return
-         */
-        private String getBigUrl(int pos) {
-            if (sFileImageInfoEntities != null
-                    && sFileImageInfoEntities.size() > pos) {
-                SFileImageInfoEntity sFileImageInfoEntity = sFileImageInfoEntities.get(pos);
-                if (sFileImageInfoEntity != null && sFileImageInfoEntity.size > 500_000) {
-                    StringBuilder bigUrlBuilder = new StringBuilder(BuildConfig.API_CHAT_URL);
-                    bigUrlBuilder.append("im/v1/msgs/files/download/refer");
-                    bigUrlBuilder.append("?");
-                    bigUrlBuilder.append("repo_id=");
-                    bigUrlBuilder.append(sFileImageInfoEntity.repo_id);
-                    bigUrlBuilder.append("&path=");
-                    bigUrlBuilder.append(sFileImageInfoEntity.path);
-                    bigUrlBuilder.append("&name=");
-                    bigUrlBuilder.append(sFileImageInfoEntity.name);
-                    bigUrlBuilder.append("&token=");
-                    bigUrlBuilder.append(getUserToken());
-                    return bigUrlBuilder.toString();
+        private void loadOriginalImage(final ISeaFile iSeaFile, final ImageView imageView, final View imgLookOriginalTv) {
+            imgLookOriginalTv.setVisibility(View.GONE);
+            final String picSavePath = getPicSavePath(iSeaFile);
+            String originalImageUrl = pagerAdapter.getOriginalImageUrl(iSeaFile);
+            downloadFile(originalImageUrl, picSavePath, new LoadingDownloadListener() {
+                @Override
+                protected void completed(BaseDownloadTask task) {
+                    super.completed(task);
+                    GlideUtils.loadSFilePicWithoutPlaceholder(getContext(), picSavePath, imageView);
                 }
-            }
-            return null;
+            });
         }
 
 
@@ -1091,7 +715,6 @@ public class ImagePagerActivity extends BaseUmengActivity implements BasePagerAd
             }
             super.destroyItem(container, position, object);
         }
-
     }
 
 

@@ -6,6 +6,7 @@ import android.os.Build;
 import android.text.TextUtils;
 
 import com.icourt.alpha.BuildConfig;
+import com.icourt.alpha.utils.BugUtils;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.api.SimpleClient;
 import com.orhanobut.logger.Logger;
@@ -13,7 +14,6 @@ import com.orhanobut.logger.Logger;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 
-import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -25,7 +25,7 @@ import okhttp3.logging.HttpLoggingInterceptor;
  * date createTime：17/3/29
  * version
  */
-public class AlphaClient extends SimpleClient implements HttpLoggingInterceptor.Logger, Interceptor {
+public class AlphaClient extends SimpleClient implements HttpLoggingInterceptor.Logger {
     private static final ConcurrentHashMap<String, AlphaClient> clientMap = new ConcurrentHashMap<>();
 
     /**
@@ -47,6 +47,7 @@ public class AlphaClient extends SimpleClient implements HttpLoggingInterceptor.
 
     private static String officeId;
     private static String token;
+    private static String sFileToken;
 
     public static void setToken(String tk) {
         token = tk;
@@ -64,29 +65,42 @@ public class AlphaClient extends SimpleClient implements HttpLoggingInterceptor.
         officeId = ofId;
     }
 
+    public static String getSFileToken() {
+        return String.valueOf(sFileToken);
+    }
+
+    public static void setSFileToken(String sftk) {
+        sFileToken = sftk;
+    }
+
     private AlphaClient(Context context, String api_url) {
-        attachBaseUrl(context, api_url, this, this);
+        HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor(this)
+                .setLevel(BuildConfig.IS_DEBUG ? HttpLoggingInterceptor.Level.BODY : HttpLoggingInterceptor.Level.NONE);
+        attachBaseUrl(
+                context,
+                api_url,
+                httpLoggingInterceptor);
     }
 
     @Override
     public void log(String message) {
-        if (HConst.HTTP_LOG_ENABLE) {
-            logHttp(message);
-        }
+        logHttp(message);
     }
 
-    @Override
-    protected boolean isInterceptHttpLog() {
-        return !HConst.HTTP_LOG_ENABLE;
-    }
 
     protected void logHttp(String message) {
         if (TextUtils.isEmpty(message)) return;
-        LogUtils.d("logger-http", message);
-        if (message.startsWith("{") && message.endsWith("}")) {
-            Logger.t("http-format").json(message);
-        } else if (message.startsWith("[") && message.endsWith("]")) {
-            Logger.t("http-format").json(message);
+        try {
+            LogUtils.d("logger-http", message);
+            if (message.startsWith("{") && message.endsWith("}")) {
+                Logger.t("http-format").json(message);
+            } else if (message.startsWith("[") && message.endsWith("]")) {
+                Logger.t("http-format").json(message);
+            }
+        } catch (OutOfMemoryError e) {
+            System.gc();
+            e.printStackTrace();
+            BugUtils.bugSync("logHttp OutOfMemoryError:", e);
         }
     }
 
@@ -95,6 +109,7 @@ public class AlphaClient extends SimpleClient implements HttpLoggingInterceptor.
     public Response intercept(Chain chain) throws IOException {
         Request request = chain.request();
         Request requestBuilder = request.newBuilder()
+                .addHeader("Authorization", String.format("Token %s", getSFileToken()))
                 .addHeader("Cookie", "officeId=" + getOfficeId())
                 .addHeader("token", getToken())
                 .addHeader("osVer", String.valueOf(Build.VERSION.SDK_INT))
@@ -103,10 +118,6 @@ public class AlphaClient extends SimpleClient implements HttpLoggingInterceptor.
                 .addHeader("buildVer", String.valueOf(BuildConfig.VERSION_CODE))
                 .build();
         Response response = chain.proceed(requestBuilder);
-        String cookeHeader = response.header("Set-Cookie", "");
-        if (!TextUtils.isEmpty(cookeHeader)) {
-            HConst.cookie = cookeHeader.split(";")[0];
-        }
         return response;
     }
 }

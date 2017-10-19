@@ -304,9 +304,9 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
                 int minute = calendar.get(Calendar.MINUTE);
                 int second = calendar.get(Calendar.SECOND);
                 if ((hour == 23 && minute == 59 && second == 59) || (hour == 0 && minute == 0)) {
-                    taskDuetimeTv.setText(DateUtils.getMMMdd(dueTime) + "(" + DateUtils.getWeekOfDateFromZ(dueTime) + ")");
+                    taskDuetimeTv.setText(String.format("%s(%s)", DateUtils.getMMMdd(dueTime), DateUtils.getWeekOfDateFromZ(dueTime)));
                 } else {
-                    taskDuetimeTv.setText(DateUtils.getMMMdd(dueTime) + "(" + DateUtils.getWeekOfDateFromZ(dueTime) + ") " + DateUtils.getHHmm(dueTime));
+                    taskDuetimeTv.setText(String.format("%s(%s)%s", DateUtils.getMMMdd(dueTime), DateUtils.getWeekOfDateFromZ(dueTime), DateUtils.getHHmm(dueTime)));
                 }
                 taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
 
@@ -336,27 +336,29 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
         if (!TextUtils.isEmpty(bodyStr)) {
             MobclickAgent.onEvent(this, UMMobClickAgent.creat_task_click_id);
             showLoadingDialog(null);
-            getApi().taskCreate(RequestUtils.createJsonBody(getNewTaskJson())).enqueue(new SimpleCallBack<TaskEntity.TaskItemEntity>() {
-                @Override
-                public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
-                    if (response.body().result != null) {
-                        showToast("新建任务成功");
-                        if (taskReminderEntity != null) {
-                            addReminders(response.body().result, taskReminderEntity);
-                        } else {
-                            dismissLoadingDialog();
-                            EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
-                            finish();
+            callEnqueue(
+                    getApi().taskCreate(RequestUtils.createJsonBody(getNewTaskJson())),
+                    new SimpleCallBack<TaskEntity.TaskItemEntity>() {
+                        @Override
+                        public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
+                            if (response.body().result != null) {
+                                showToast("新建任务成功");
+                                if (taskReminderEntity != null) {
+                                    addReminders(response.body().result, taskReminderEntity);
+                                } else {
+                                    dismissLoadingDialog();
+                                    EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
+                                    finish();
+                                }
+                            }
                         }
-                    }
-                }
 
-                @Override
-                public void onFailure(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Throwable t) {
-                    super.onFailure(call, t);
-                    dismissLoadingDialog();
-                }
-            });
+                        @Override
+                        public void onFailure(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Throwable t) {
+                            super.onFailure(call, t);
+                            dismissLoadingDialog();
+                        }
+                    });
         }
     }
 
@@ -415,20 +417,22 @@ public class TaskCreateActivity extends BaseActivity implements ProjectSelectDia
         if (taskItemEntity == null) return;
         String json = getReminderJson(taskReminderEntity);
         if (TextUtils.isEmpty(json)) return;
-        getApi().taskReminderAdd(taskItemEntity.id, RequestUtils.createJsonBody(json)).enqueue(new SimpleCallBack<TaskReminderEntity>() {
-            @Override
-            public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
-                dismissLoadingDialog();
-                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
-                finish();
-            }
+        callEnqueue(
+                getApi().taskReminderAdd(taskItemEntity.id, RequestUtils.createJsonBody(json)),
+                new SimpleCallBack<TaskReminderEntity>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
+                        dismissLoadingDialog();
+                        EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
+                        finish();
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<TaskReminderEntity>> call, Throwable t) {
-                super.onFailure(call, t);
-                finish();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<TaskReminderEntity>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        finish();
+                    }
+                });
     }
 
     /**

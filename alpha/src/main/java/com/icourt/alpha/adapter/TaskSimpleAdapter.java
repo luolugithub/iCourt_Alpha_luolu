@@ -382,7 +382,7 @@ public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.Tas
             timeEntity.itemIconRes = R.mipmap.time_start_orange_task;
             timeEntity.itemTitle = "开始计时";
         }
-        showLongMeau(view.getContext(), Arrays.asList(
+        showLongMenu(view.getContext(), Arrays.asList(
                 new ItemsEntity("项目/任务组", R.mipmap.project_orange),
                 new ItemsEntity("分配给", R.mipmap.assign_orange),
                 new ItemsEntity("到期日", R.mipmap.date_orange),
@@ -392,7 +392,7 @@ public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.Tas
         return true;
     }
 
-    private void showLongMeau(Context context, List<ItemsEntity> itemsEntities, TaskEntity.TaskItemEntity taskItemEntity) {
+    private void showLongMenu(Context context, List<ItemsEntity> itemsEntities, TaskEntity.TaskItemEntity taskItemEntity) {
         CenterMenuDialog centerMenuDialog = new CenterMenuDialog(context, null, itemsEntities);
         centerMenuDialog.show();
         centerMenuDialog.setOnItemClickListener(new CustOnItemClickListener(centerMenuDialog, taskItemEntity));

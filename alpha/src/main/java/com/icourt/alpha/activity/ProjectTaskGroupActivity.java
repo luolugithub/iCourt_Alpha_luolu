@@ -23,6 +23,7 @@ import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.TaskGroupEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 
 import java.util.List;
@@ -95,6 +96,7 @@ public class ProjectTaskGroupActivity extends BaseActivity implements BaseRecycl
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
 
+        recyclerView.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(this, true));
         recyclerView.setAdapter(projectTaskGroupAdapter = new ProjectTaskGroupAdapter(false));
         projectTaskGroupAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, projectTaskGroupAdapter));
         projectTaskGroupAdapter.setOnItemClickListener(this);
@@ -118,10 +120,12 @@ public class ProjectTaskGroupActivity extends BaseActivity implements BaseRecycl
 
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.titleAction://添加任务组
                 TaskGroupCreateActivity.launchForResult(this, projectId, TaskGroupCreateActivity.CREAT_TASK_GROUP_TYPE, CREATE_GROUP_REQUEST_CODE);
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }
@@ -130,25 +134,27 @@ public class ProjectTaskGroupActivity extends BaseActivity implements BaseRecycl
      * 获取项目权限
      */
     private void checkProjectPms() {
-        getApi().permissionQuery(getLoginUserId(), "MAT", projectId).enqueue(new SimpleCallBack<List<String>>() {
-            @Override
-            public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+        callEnqueue(
+                getApi().permissionQuery(getLoginUserId(), "MAT", projectId),
+                new SimpleCallBack<List<String>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
 
-                if (response.body().result != null) {
-                    if (response.body().result.contains("MAT:matter.task:add")) {
-                        isCanAddGroup = true;
-                        titleAction.setVisibility(View.VISIBLE);
+                        if (response.body().result != null) {
+                            if (response.body().result.contains("MAT:matter.task:add")) {
+                                isCanAddGroup = true;
+                                titleAction.setVisibility(View.VISIBLE);
+                            }
+                            if (response.body().result.contains("MAT:matter.task:edit")) {
+                                isCanEditGroup = true;
+                            }
+                            if (projectTaskGroupAdapter != null) {
+                                projectTaskGroupAdapter.setCanEditGroup(isCanEditGroup);
+                                projectTaskGroupAdapter.notifyDataSetChanged();
+                            }
+                        }
                     }
-                    if (response.body().result.contains("MAT:matter.task:edit")) {
-                        isCanEditGroup = true;
-                    }
-                    if (projectTaskGroupAdapter != null) {
-                        projectTaskGroupAdapter.setCanEditGroup(isCanEditGroup);
-                        projectTaskGroupAdapter.notifyDataSetChanged();
-                    }
-                }
-            }
-        });
+                });
     }
 
     @Override
@@ -169,15 +175,17 @@ public class ProjectTaskGroupActivity extends BaseActivity implements BaseRecycl
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        getApi().projectQueryTaskGroupList(projectId).enqueue(new SimpleCallBack<List<TaskGroupEntity>>() {
-            @Override
-            public void onSuccess(Call<ResEntity<List<TaskGroupEntity>>> call, Response<ResEntity<List<TaskGroupEntity>>> response) {
-                stopRefresh();
-                if (response.body().result != null) {
-                    projectTaskGroupAdapter.bindData(isRefresh, response.body().result);
-                }
-            }
-        });
+        callEnqueue(
+                getApi().projectQueryTaskGroupList(projectId),
+                new SimpleCallBack<List<TaskGroupEntity>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<TaskGroupEntity>>> call, Response<ResEntity<List<TaskGroupEntity>>> response) {
+                        stopRefresh();
+                        if (response.body().result != null) {
+                            projectTaskGroupAdapter.bindData(isRefresh, response.body().result);
+                        }
+                    }
+                });
     }
 
     private void stopRefresh() {

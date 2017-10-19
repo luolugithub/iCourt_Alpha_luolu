@@ -29,7 +29,8 @@
                 android:maxLines="1"
                 android:text="选择成员"
                 android:textColor="@color/alpha_font_color_title"
-                android:textSize="@dimen/alpha_font_size_title" />
+                android:textSize="@dimen/alpha_font_size_comm"
+                android:textStyle="bold" />
 
         </RelativeLayout>
 
@@ -37,6 +38,47 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/alpha_height_divider"
             android:background="@color/alpha_divider_color" />
+
+        <LinearLayout
+            android:id="@+id/title_share_permission"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingBottom="10dp"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:paddingTop="10dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="共享权限" />
+
+            <RadioGroup
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/share_permission_rw_rb"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="可读写"
+                    android:textColor="@color/alpha_font_color_gray" />
+
+                <RadioButton
+                    android:id="@+id/share_permission_r_rb"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:text="只读"
+                    android:textColor="@color/alpha_font_color_gray" />
+            </RadioGroup>
+        </LinearLayout>
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -99,6 +141,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
                 android:background="@drawable/orange_circle_bg"
+                android:elevation="@dimen/dp2"
                 android:ems="6"
                 android:gravity="center"
                 android:paddingBottom="8dp"

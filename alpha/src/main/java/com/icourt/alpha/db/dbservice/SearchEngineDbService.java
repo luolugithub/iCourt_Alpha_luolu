@@ -19,7 +19,7 @@ import io.realm.RealmResults;
  * date createTime：2017/5/25
  * version 1.0.0
  */
-public class SearchEngineDbService extends BaseRealmService<SearchEngineModel, SearchEngineDao> {
+public class SearchEngineDbService extends BaseRealmService<SearchEngineDao> {
 
     public SearchEngineDbService(String uid) {
         super(new SearchEngineDao(uid));

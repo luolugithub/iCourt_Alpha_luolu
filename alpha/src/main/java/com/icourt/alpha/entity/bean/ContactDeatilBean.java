@@ -13,184 +13,23 @@ import java.util.List;
 
 public class ContactDeatilBean implements Serializable{
 
-
-    /**
-     * pkid : E52F4046C66811E69FB200163E162ADD
-     * contactType : P
-     * name : 我还是姓名
-     * abbr : null
-     * officeId : 4d792e316a0511e6aa7600163e162add
-     * isValid : 1
-     * isHistory : 0
-     * isPotential : 0
-     * isCurrent : 0
-     * isPause : 0
-     * pinyin : wohuanshixingming,wohaishixingming
-     * pinyinInitial : whsxm
-     * logoUrl : null
-     * sex : null
-     * title : null
-     * tycId : null
-     * impression : null
-     * crtTime : 1482206450000
-     * crtUser : D7AE70BCBA9211E6834900163E001EAA
-     * updTime : 1482206450000
-     * updUser : D7AE70BCBA9211E6834900163E001EAA
-     * crtUserName : 王江
-     */
-
     private ContactBean contact;
-    /**
-     * pkid : E5303AD1C66811E69FB200163E162ADD
-     * contactPkid : E52F4046C66811E69FB200163E162ADD
-     * isValid : 1
-     * isPrimary : 0
-     * itemType : ADDRESS
-     * crtTime : 1482206450000
-     * crtUser : D7AE70BCBA9211E6834900163E001EAA
-     * updTime : 1482206450000
-     * updUser : D7AE70BCBA9211E6834900163E001EAA
-     * itemSubType : 工作
-     * itemValue : e1
-     * resvTxt1 : null
-     * resvTxt2 : null
-     * resvTxt3 : null
-     * officeId : 4d792e316a0511e6aa7600163e162add
-     */
 
     private List<AddressesBean> addresses;
-    /**
-     * pkid : E532CC41C66811E69FB200163E162ADD
-     * contactPkid : E52F4046C66811E69FB200163E162ADD
-     * isValid : 1
-     * isPrimary : 0
-     * itemType : TEL
-     * crtTime : 1482206450000
-     * crtUser : D7AE70BCBA9211E6834900163E001EAA
-     * updTime : 1482206450000
-     * updUser : D7AE70BCBA9211E6834900163E001EAA
-     * itemSubType : 主要
-     * itemValue : 12313
-     * resvTxt1 : null
-     * resvTxt2 : null
-     * resvTxt3 : null
-     * officeId : 4d792e316a0511e6aa7600163e162add
-     */
 
     private List<TelsBean> tels;
-    /**
-     * pkid : E53478D6C66811E69FB200163E162ADD
-     * contactPkid : E52F4046C66811E69FB200163E162ADD
-     * isValid : 1
-     * isPrimary : 0
-     * itemType : EMAIL
-     * crtTime : 1482206450000
-     * crtUser : D7AE70BCBA9211E6834900163E001EAA
-     * updTime : 1482206450000
-     * updUser : D7AE70BCBA9211E6834900163E001EAA
-     * itemSubType : 主要
-     * itemValue : 23@123.com
-     * resvTxt1 : null
-     * resvTxt2 : null
-     * resvTxt3 : null
-     * officeId : 4d792e316a0511e6aa7600163e162add
-     */
 
     private List<MailsBean> mails;
-    /**
-     * contact : {"pkid":"E52F4046C66811E69FB200163E162ADD","contactType":"P","name":"我还是姓名","abbr":null,"officeId":"4d792e316a0511e6aa7600163e162add","isValid":"1","isHistory":"0","isPotential":"0","isCurrent":"0","isPause":"0","pinyin":"wohuanshixingming,wohaishixingming","pinyinInitial":"whsxm","logoUrl":null,"sex":null,"title":null,"tycId":null,"impression":null,"crtTime":1482206450000,"crtUser":"D7AE70BCBA9211E6834900163E001EAA","updTime":1482206450000,"updUser":"D7AE70BCBA9211E6834900163E001EAA","crtUserName":"王江"}
-     * addresses : [{"pkid":"E5303AD1C66811E69FB200163E162ADD","contactPkid":"E52F4046C66811E69FB200163E162ADD","isValid":"1","isPrimary":"0","itemType":"ADDRESS","crtTime":1482206450000,"crtUser":"D7AE70BCBA9211E6834900163E001EAA","updTime":1482206450000,"updUser":"D7AE70BCBA9211E6834900163E001EAA","itemSubType":"工作","itemValue":"e1","resvTxt1":null,"resvTxt2":null,"resvTxt3":null,"officeId":"4d792e316a0511e6aa7600163e162add"},{"pkid":"E531C6E3C66811E69FB200163E162ADD","contactPkid":"E52F4046C66811E69FB200163E162ADD","isValid":"1","isPrimary":"0","itemType":"ADDRESS","crtTime":1482206450000,"crtUser":"D7AE70BCBA9211E6834900163E001EAA","updTime":1482206450000,"updUser":"D7AE70BCBA9211E6834900163E001EAA","itemSubType":"家庭","itemValue":"sdf","resvTxt1":null,"resvTxt2":null,"resvTxt3":null,"officeId":"4d792e316a0511e6aa7600163e162add"}]
-     * tels : [{"pkid":"E532CC41C66811E69FB200163E162ADD","contactPkid":"E52F4046C66811E69FB200163E162ADD","isValid":"1","isPrimary":"0","itemType":"TEL","crtTime":1482206450000,"crtUser":"D7AE70BCBA9211E6834900163E001EAA","updTime":1482206450000,"updUser":"D7AE70BCBA9211E6834900163E001EAA","itemSubType":"主要","itemValue":"12313","resvTxt1":null,"resvTxt2":null,"resvTxt3":null,"officeId":"4d792e316a0511e6aa7600163e162add"},{"pkid":"E533D42EC66811E69FB200163E162ADD","contactPkid":"E52F4046C66811E69FB200163E162ADD","isValid":"1","isPrimary":"0","itemType":"TEL","crtTime":1482206450000,"crtUser":"D7AE70BCBA9211E6834900163E001EAA","updTime":1482206450000,"updUser":"D7AE70BCBA9211E6834900163E001EAA","itemSubType":"家庭","itemValue":"weqe","resvTxt1":null,"resvTxt2":null,"resvTxt3":null,"officeId":"4d792e316a0511e6aa7600163e162add"}]
-     * mails : [{"pkid":"E53478D6C66811E69FB200163E162ADD","contactPkid":"E52F4046C66811E69FB200163E162ADD","isValid":"1","isPrimary":"0","itemType":"EMAIL","crtTime":1482206450000,"crtUser":"D7AE70BCBA9211E6834900163E001EAA","updTime":1482206450000,"updUser":"D7AE70BCBA9211E6834900163E001EAA","itemSubType":"主要","itemValue":"23@123.com","resvTxt1":null,"resvTxt2":null,"resvTxt3":null,"officeId":"4d792e316a0511e6aa7600163e162add"},{"pkid":"E534DEC7C66811E69FB200163E162ADD","contactPkid":"E52F4046C66811E69FB200163E162ADD","isValid":"1","isPrimary":"0","itemType":"EMAIL","crtTime":1482206450000,"crtUser":"D7AE70BCBA9211E6834900163E001EAA","updTime":1482206450000,"updUser":"D7AE70BCBA9211E6834900163E001EAA","itemSubType":"工作","itemValue":"q3e@123.com","resvTxt1":null,"resvTxt2":null,"resvTxt3":null,"officeId":"4d792e316a0511e6aa7600163e162add"}]
-     * dates : []
-     * certificates : [{"pkid":"E535A62DC66811E69FB200163E162ADD","contactPkid":"E52F4046C66811E69FB200163E162ADD","isValid":"1","isPrimary":"0","itemType":"CERTIFICATE","crtTime":1482206450000,"crtUser":"D7AE70BCBA9211E6834900163E001EAA","updTime":1482206450000,"updUser":"D7AE70BCBA9211E6834900163E001EAA","itemSubType":"身份证","itemValue":"sdf","resvTxt1":null,"resvTxt2":null,"resvTxt3":null,"officeId":"4d792e316a0511e6aa7600163e162add"},{"pkid":"E536B704C66811E69FB200163E162ADD","contactPkid":"E52F4046C66811E69FB200163E162ADD","isValid":"1","isPrimary":"0","itemType":"CERTIFICATE","crtTime":1482206450000,"crtUser":"D7AE70BCBA9211E6834900163E001EAA","updTime":1482206450000,"updUser":"D7AE70BCBA9211E6834900163E001EAA","itemSubType":"护照","itemValue":"sadf","resvTxt1":null,"resvTxt2":null,"resvTxt3":null,"officeId":"4d792e316a0511e6aa7600163e162add"}]
-     * ims : [{"pkid":"E5379414C66811E69FB200163E162ADD","contactPkid":"E52F4046C66811E69FB200163E162ADD","isValid":"1","isPrimary":"0","itemType":"IM","crtTime":1482206450000,"crtUser":"D7AE70BCBA9211E6834900163E001EAA","updTime":1482206450000,"updUser":"D7AE70BCBA9211E6834900163E001EAA","itemSubType":"微信","itemValue":"sadf","resvTxt1":null,"resvTxt2":null,"resvTxt3":null,"officeId":"4d792e316a0511e6aa7600163e162add"},{"pkid":"E537FE5CC66811E69FB200163E162ADD","contactPkid":"E52F4046C66811E69FB200163E162ADD","isValid":"1","isPrimary":"0","itemType":"IM","crtTime":1482206450000,"crtUser":"D7AE70BCBA9211E6834900163E001EAA","updTime":1482206450000,"updUser":"D7AE70BCBA9211E6834900163E001EAA","itemSubType":"QQ","itemValue":"asdf","resvTxt1":null,"resvTxt2":null,"resvTxt3":null,"officeId":"4d792e316a0511e6aa7600163e162add"}]
-     * usedNames : [{"pkid":"E5386BD4C66811E69FB200163E162ADD","contactPkid":"E52F4046C66811E69FB200163E162ADD","isValid":"1","isPrimary":"0","itemType":"USERDNAME","crtTime":1482206450000,"crtUser":"D7AE70BCBA9211E6834900163E001EAA","updTime":1482206450000,"updUser":"D7AE70BCBA9211E6834900163E001EAA","itemSubType":"","itemValue":"曾用名","resvTxt1":null,"resvTxt2":null,"resvTxt3":null,"officeId":"4d792e316a0511e6aa7600163e162add"}]
-     * companies : [{"pkid":"E5395721C66811E69FB200163E162ADD","contactPkid":"E52F4046C66811E69FB200163E162ADD","isValid":"1","isPrimary":"0","itemType":"COMPANY","crtTime":1482206450000,"crtUser":"D7AE70BCBA9211E6834900163E001EAA","updTime":1482206450000,"updUser":"D7AE70BCBA9211E6834900163E001EAA","itemSubType":null,"itemValue":null,"resvTxt1":null,"resvTxt2":null,"resvTxt3":null,"officeId":"4d792e316a0511e6aa7600163e162add"}]
-     * groups : [{"groupId":"62F7E17BA02011E69A3800163E0020D1","groupName":"Alpha"},{"groupId":"10182C0FB2C111E6834900163E001EAA","groupName":"Alpha新橙"}]
-     */
 
     private List<DateBean> dates;
-    /**
-     * pkid : E535A62DC66811E69FB200163E162ADD
-     * contactPkid : E52F4046C66811E69FB200163E162ADD
-     * isValid : 1
-     * isPrimary : 0
-     * itemType : CERTIFICATE
-     * crtTime : 1482206450000
-     * crtUser : D7AE70BCBA9211E6834900163E001EAA
-     * updTime : 1482206450000
-     * updUser : D7AE70BCBA9211E6834900163E001EAA
-     * itemSubType : 身份证
-     * itemValue : sdf
-     * resvTxt1 : null
-     * resvTxt2 : null
-     * resvTxt3 : null
-     * officeId : 4d792e316a0511e6aa7600163e162add
-     */
 
     private List<CertificatesBean> certificates;
-    /**
-     * pkid : E5379414C66811E69FB200163E162ADD
-     * contactPkid : E52F4046C66811E69FB200163E162ADD
-     * isValid : 1
-     * isPrimary : 0
-     * itemType : IM
-     * crtTime : 1482206450000
-     * crtUser : D7AE70BCBA9211E6834900163E001EAA
-     * updTime : 1482206450000
-     * updUser : D7AE70BCBA9211E6834900163E001EAA
-     * itemSubType : 微信
-     * itemValue : sadf
-     * resvTxt1 : null
-     * resvTxt2 : null
-     * resvTxt3 : null
-     * officeId : 4d792e316a0511e6aa7600163e162add
-     */
 
     private List<ImsBean> ims;
-    /**
-     * pkid : E5386BD4C66811E69FB200163E162ADD
-     * contactPkid : E52F4046C66811E69FB200163E162ADD
-     * isValid : 1
-     * isPrimary : 0
-     * itemType : USERDNAME
-     * crtTime : 1482206450000
-     * crtUser : D7AE70BCBA9211E6834900163E001EAA
-     * updTime : 1482206450000
-     * updUser : D7AE70BCBA9211E6834900163E001EAA
-     * itemSubType :
-     * itemValue : 曾用名
-     * resvTxt1 : null
-     * resvTxt2 : null
-     * resvTxt3 : null
-     * officeId : 4d792e316a0511e6aa7600163e162add
-     */
 
     private List<UsedNamesBean> usedNames;
-    /**
-     * pkid : E5395721C66811E69FB200163E162ADD
-     * contactPkid : E52F4046C66811E69FB200163E162ADD
-     * isValid : 1
-     * isPrimary : 0
-     * itemType : COMPANY
-     * crtTime : 1482206450000
-     * crtUser : D7AE70BCBA9211E6834900163E001EAA
-     * updTime : 1482206450000
-     * updUser : D7AE70BCBA9211E6834900163E001EAA
-     * itemSubType : null
-     * itemValue : null
-     * resvTxt1 : null
-     * resvTxt2 : null
-     * resvTxt3 : null
-     * officeId : 4d792e316a0511e6aa7600163e162add
-     */
 
     private List<CompaniesBean> companies;
-    /**
-     * groupId : 62F7E17BA02011E69A3800163E0020D1
-     * groupName : Alpha
-     */
 
     private List<GroupsBean> groups;
 

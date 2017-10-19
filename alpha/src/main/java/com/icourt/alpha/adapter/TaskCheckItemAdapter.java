@@ -1,10 +1,6 @@
 package com.icourt.alpha.adapter;
 
-import android.text.Spannable;
-import android.text.SpannableString;
 import android.text.TextUtils;
-import android.text.method.LinkMovementMethod;
-import android.text.util.Linkify;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
@@ -27,7 +23,7 @@ import com.icourt.alpha.utils.SystemUtils;
 public class TaskCheckItemAdapter extends MultiSelectRecyclerAdapter<TaskCheckItemEntity.ItemEntity> {
 
     OnLoseFocusListener onLoseFocusListener;
-    boolean valid;
+    boolean valid, isFinish;
 
     public void setOnLoseFocusListener(OnLoseFocusListener onLoseFocusListener) {
         this.onLoseFocusListener = onLoseFocusListener;
@@ -35,6 +31,10 @@ public class TaskCheckItemAdapter extends MultiSelectRecyclerAdapter<TaskCheckIt
 
     public void setValid(boolean valid) {
         this.valid = valid;
+    }
+
+    public void setFinish(boolean finish) {
+        isFinish = finish;
     }
 
     @Override
@@ -54,46 +54,51 @@ public class TaskCheckItemAdapter extends MultiSelectRecyclerAdapter<TaskCheckIt
             checkedTextView.setImageResource(R.mipmap.checkbox_square);
             nameView.setTextColor(0xFF4A4A4A);
         }
-        checkedTextView.setClickable(valid);
-        deleteView.setVisibility(valid ? View.VISIBLE : View.GONE);
-        nameView.setMovementMethod(LinkMovementMethod.getInstance());
-        Spannable spannable = new SpannableString(itemEntity.name);
-        Linkify.addLinks(spannable, Linkify.WEB_URLS);
-
-        final CharSequence text = TextUtils.concat(spannable, "\u200B");
-        nameView.setText(text);
-        holder.bindChildClick(checkedTextView);
-        holder.bindChildClick(deleteView);
-        nameView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View view, boolean hasFocus) {
-                if (!hasFocus) {
-                    if (onLoseFocusListener != null) {
-                        onLoseFocusListener.loseFocus(holder, position);
+        checkedTextView.setClickable(valid && !isFinish);
+        deleteView.setVisibility(valid && !isFinish ? View.VISIBLE : View.GONE);
+        nameView.setText(itemEntity.name);
+        nameView.setFocusable(valid && !isFinish && !itemEntity.state);
+        nameView.setFocusableInTouchMode(valid && !isFinish && !itemEntity.state);
+        nameView.setCursorVisible(valid && !isFinish && !itemEntity.state);
+        nameView.setEnabled(valid && !isFinish && !itemEntity.state);
+        if (valid && !isFinish) {
+            nameView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(View view, boolean hasFocus) {
+                    if (!hasFocus) {
+                        if (TextUtils.equals(nameView.getText().toString(), itemEntity.name)) {
+                            //如果内容没有改变，就不走接口了。
+                            return;
+                        }
+                        if (onLoseFocusListener != null) {
+                            onLoseFocusListener.loseFocus(itemEntity, position, nameView.getText().toString());
+                        }
                     }
                 }
-            }
-        });
-        //屏蔽回车键 回车键表示完成
-        nameView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
-                if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
-                    holder.itemView.setFocusable(true);
-                    holder.itemView.setFocusableInTouchMode(true);
-                    holder.itemView.requestFocus();//请求焦点
-                    holder.itemView.findFocus();//获取焦点
-                    SystemUtils.hideSoftKeyBoard(textView.getContext(), textView);
-                    return true;
+            });
+
+            //屏蔽回车键 回车键表示完成
+            nameView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                @Override
+                public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+                    if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+                        holder.itemView.setFocusable(true);
+                        holder.itemView.setFocusableInTouchMode(true);
+                        holder.itemView.requestFocus();//请求焦点
+                        holder.itemView.findFocus();//获取焦点
+                        SystemUtils.hideSoftKeyBoard(textView.getContext(), textView);
+                        return true;
+                    }
+                    return false;
                 }
-                return false;
-            }
-        });
+            });
+            holder.bindChildClick(checkedTextView);
+            holder.bindChildClick(deleteView);
+        }
     }
 
-
     public interface OnLoseFocusListener {
-        void loseFocus(ViewHolder holder, int position);
+        void loseFocus(TaskCheckItemEntity.ItemEntity itemEntity, int position, String name);
     }
 
 }

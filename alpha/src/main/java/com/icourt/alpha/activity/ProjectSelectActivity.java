@@ -14,8 +14,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ProjectAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
@@ -32,7 +30,6 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import retrofit2.Call;
-import retrofit2.Callback;
 import retrofit2.Response;
 
 /**
@@ -45,7 +42,10 @@ import retrofit2.Response;
 
 public class ProjectSelectActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
     private static final String CLOSE_ACTION = "close_action";//关闭当前页面
-    String authToken, seaFileRepoId, filePath;
+    private static final String KEY_SEAFILEREPOID = "key_seaFileRepoId";
+    private static final String KEY_AUTHTOKEN = "key_authToken";
+    private static final String KEY_FILEPATH= "key_filePath";
+    String seaFileRepoId, filePath;
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -64,9 +64,9 @@ public class ProjectSelectActivity extends BaseActivity implements BaseRecyclerA
                               @NonNull String filePath) {
         if (context == null) return;
         Intent intent = new Intent(context, ProjectSelectActivity.class);
-        intent.putExtra("authToken", authToken);
-        intent.putExtra("seaFileRepoId", seaFileRepoId);
-        intent.putExtra("filePath", filePath);
+        intent.putExtra(KEY_AUTHTOKEN, authToken);
+        intent.putExtra(KEY_SEAFILEREPOID, seaFileRepoId);
+        intent.putExtra(KEY_FILEPATH, filePath);
         context.startActivity(intent);
     }
 
@@ -107,12 +107,11 @@ public class ProjectSelectActivity extends BaseActivity implements BaseRecyclerA
     @Override
     protected void initView() {
         super.initView();
-        setTitle("我参与的项目");
-        authToken = getIntent().getStringExtra("authToken");
-        seaFileRepoId = getIntent().getStringExtra("seaFileRepoId");
-        filePath = getIntent().getStringExtra("filePath");
+        setTitle(getString(R.string.project_my_participation));
+        seaFileRepoId = getIntent().getStringExtra(KEY_SEAFILEREPOID);
+        filePath = getIntent().getStringExtra(KEY_FILEPATH);
 
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, "暂无项目");
+        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, getString(R.string.project_no));
         refreshLayout.setMoveForHorizontal(true);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -131,7 +130,7 @@ public class ProjectSelectActivity extends BaseActivity implements BaseRecyclerA
             @Override
             public void onRefresh(boolean isPullDown) {
                 super.onRefresh(isPullDown);
-                getFileBoxToken();
+                getData(true);
             }
 
             @Override
@@ -146,8 +145,9 @@ public class ProjectSelectActivity extends BaseActivity implements BaseRecyclerA
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-        getApi().projectPmsSelectListQuery("MAT:matter.document:readwrite")
-                .enqueue(new SimpleCallBack<List<ProjectEntity>>() {
+        callEnqueue(
+                getApi().projectPmsSelectListQuery("MAT:matter.document:readwrite"),
+                new SimpleCallBack<List<ProjectEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<ProjectEntity>>> call, Response<ResEntity<List<ProjectEntity>>> response) {
                         stopRefresh();
@@ -162,36 +162,6 @@ public class ProjectSelectActivity extends BaseActivity implements BaseRecyclerA
                 });
     }
 
-    /**
-     * 获取文档token
-     */
-    private void getFileBoxToken() {
-        getApi().projectQueryFileBoxToken().enqueue(new Callback<JsonObject>() {
-            @Override
-            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
-                if (response.code() == 200) {
-                    if (response.body() != null) {
-                        if (response.body().has("authToken")) {
-                            JsonElement element = response.body().get("authToken");
-                            if (!TextUtils.isEmpty(element.toString()) && !TextUtils.equals("null", element.toString())) {
-                                authToken = element.getAsString();
-                                getData(true);
-                            } else {
-                                onFailure(call, new retrofit2.HttpException(response));
-                            }
-                        }
-                    }
-                } else {
-                    onFailure(call, new retrofit2.HttpException(response));
-                }
-            }
-
-            @Override
-            public void onFailure(Call<JsonObject> call, Throwable throwable) {
-                showTopSnackBar("获取文档token失败");
-            }
-        });
-    }
 
     private void stopRefresh() {
         if (refreshLayout != null) {
@@ -204,7 +174,11 @@ public class ProjectSelectActivity extends BaseActivity implements BaseRecyclerA
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         ProjectEntity projectEntity = (ProjectEntity) adapter.getItem(position);
         if (projectEntity != null) {
-            FolderboxSelectActivity.launch(this, projectEntity.pkId, authToken, null, filePath, null);
+            FolderboxSelectActivity.launch(this,
+                    projectEntity.pkId,
+                    null,
+                    filePath,
+                    null);
         }
     }
 }

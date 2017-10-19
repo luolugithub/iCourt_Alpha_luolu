@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/over_timing_remind_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#fff9f4"
+    android:visibility="gone">
+
+    <com.icourt.alpha.view.fittextview.AutofitTextView
+        android:id="@+id/over_timing_title_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginLeft="18dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:text="@string/timer_over_timing_remind_text"
+        android:textSize="12sp"
+        app:minTextSize="8sp" />
+
+    <LinearLayout
+        android:id="@+id/over_timing_close_ll"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical|right"
+        android:layout_marginRight="16dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingBottom="2dp"
+        android:paddingTop="2dp">
+
+        <ImageView
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_marginRight="1dp"
+            android:src="@mipmap/header_icon_close" />
+
+        <TextView
+            android:id="@+id/over_timing_close_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="不再提醒"
+            android:textColor="#fa8919"
+            android:textSize="12sp" />
+
+    </LinearLayout>
+
+</FrameLayout>

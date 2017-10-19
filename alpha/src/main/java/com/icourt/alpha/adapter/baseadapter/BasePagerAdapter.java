@@ -1,12 +1,14 @@
 package com.icourt.alpha.adapter.baseadapter;
 
+import android.support.annotation.CheckResult;
 import android.support.annotation.LayoutRes;
+import android.support.annotation.Nullable;
 import android.support.v4.view.PagerAdapter;
+import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -23,14 +25,14 @@ public abstract class BasePagerAdapter<T> extends PagerAdapter implements View.O
     @Override
     public void onClick(View v) {
         if (onPagerItemClickListener != null) {
-            onPagerItemClickListener.OnItemClick(BasePagerAdapter.this, v, viewIntegerHashMap.get(v));
+            onPagerItemClickListener.OnItemClick(BasePagerAdapter.this, v, viewSparseArray.keyAt(viewSparseArray.indexOfValue(v)));
         }
     }
 
     @Override
     public boolean onLongClick(View v) {
         if (onPagerItemLongClickListener != null) {
-            return onPagerItemLongClickListener.OnItemLongClick(BasePagerAdapter.this, v, viewIntegerHashMap.get(v));
+            return onPagerItemLongClickListener.OnItemLongClick(BasePagerAdapter.this, v, viewSparseArray.keyAt(viewSparseArray.indexOfValue(v)));
         }
         return false;
     }
@@ -57,7 +59,13 @@ public abstract class BasePagerAdapter<T> extends PagerAdapter implements View.O
 
 
     private final List<T> datas = new ArrayList<>();
-    private HashMap<View, Integer> viewIntegerHashMap = new HashMap<>();
+    private SparseArray<View> viewSparseArray = new SparseArray<>();
+
+    @Nullable
+    @CheckResult
+    public View getItemView(int pos) {
+        return viewSparseArray.get(pos);
+    }
 
     public void bindData(boolean isRefresh, List<T> data) {
         if (isRefresh) {
@@ -131,7 +139,7 @@ public abstract class BasePagerAdapter<T> extends PagerAdapter implements View.O
         itemView.setOnClickListener(this);
         itemView.setOnLongClickListener(this);
         container.addView(itemView);
-        viewIntegerHashMap.put(itemView, position);
+        viewSparseArray.put(position, itemView);
         bindDataToItem(getItem(position), container, itemView, position);
         return itemView;
     }
@@ -140,7 +148,7 @@ public abstract class BasePagerAdapter<T> extends PagerAdapter implements View.O
 
     @Override
     public void destroyItem(ViewGroup container, int position, Object object) {
-        viewIntegerHashMap.remove(object);
+        viewSparseArray.remove(position);
         container.removeView((View) object);
     }
 

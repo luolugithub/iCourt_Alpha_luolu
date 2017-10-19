@@ -1,6 +1,7 @@
 package com.icourt.alpha.widget.manager;
 
 import android.support.annotation.CheckResult;
+import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -17,6 +18,8 @@ import com.icourt.alpha.utils.StringUtils;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -36,6 +39,18 @@ public class TimerManager {
 
     private static final String KEY_TIMER = "key_timer_entity_%s";
     private static final String KEY_TIMER_TASK_ID = "key_timer_entity_task_id_%s";
+
+    public static final int OVER_TIME_REMIND_NO_REMIND = 1;//计时超过2小时，设置不再提醒
+    public static final int OVER_TIME_REMIND_BUBBLE_OFF = 2;//计时超过2小时，设置关闭气泡
+
+    @IntDef({
+            OVER_TIME_REMIND_NO_REMIND,
+            OVER_TIME_REMIND_BUBBLE_OFF
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface OverTimeRemindType {
+
+    }
 
     private TimerManager() {
 
@@ -85,7 +100,8 @@ public class TimerManager {
     public static TimerManager getInstance() {
         if (timerManager == null) {
             synchronized (TimerManager.class) {
-                timerManager = new TimerManager();
+                if (timerManager == null)
+                    timerManager = new TimerManager();
             }
         }
         return timerManager;
@@ -198,9 +214,9 @@ public class TimerManager {
 
                         SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), response.body().result);
                         SpUtils.getInstance().putData(String.format(KEY_TIMER_TASK_ID, getUid()), response.body().result.taskPkId);
-                        broadTimingEvent(response.body().result.pkId, TimingEvent.TIMING_ADD);
                         setBase(0);
                         startTimingTask();
+                        broadTimingEvent(response.body().result.pkId, TimingEvent.TIMING_ADD);
                         if (callBack != null) {
                             callBack.onResponse(null, Response.success(response.body().result));
                         }
@@ -341,6 +357,7 @@ public class TimerManager {
                             } else {
                                 TimerManager.getInstance().resumeTimer(response.body().result);
                             }
+                            broadTimingEvent(response.body().result.pkId, TimingEvent.TIMING_SYNC_SUCCESS);
                         }
                     }
 
@@ -353,7 +370,95 @@ public class TimerManager {
     }
 
     /**
-     * 更新原计时对象
+     * 请求网络 关闭持续计时过久时的提醒覆层 或者 不再提醒标记
+     *
+     * @param operType 1设置不再提醒；2设置关闭气泡。
+     */
+    public void setOverTimingRemindClose(@OverTimeRemindType final int operType) {
+        if (TextUtils.isEmpty(getTimerId())) {
+            return;
+        }
+        AlphaUserInfo loginUserInfo = LoginInfoUtils.getLoginUserInfo();
+        String clientId = loginUserInfo == null ? "" : loginUserInfo.localUniqueId;
+        RetrofitServiceFactory
+                .getAlphaApiService()
+                .timerOverTimingRemindClose(getTimerId(), operType, clientId)
+                .enqueue(new SimpleCallBack<String>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<String>> call, Response<ResEntity<String>> response) {
+                        if (response.body().succeed) {
+                            if (operType == OVER_TIME_REMIND_BUBBLE_OFF) {//设置关闭气泡提醒
+                                setOverBubbleRemind(false);
+                            } else if (operType == OVER_TIME_REMIND_NO_REMIND) {//设置不再提醒
+                                setOverTimingRemind(false);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<String>> call, Throwable t) {
+                        super.onFailure(call, t);
+                    }
+                });
+    }
+
+    /**
+     * 设置超过2小时是否再提醒
+     *
+     * @param remind true:提醒；false：不提醒
+     */
+    public void setOverTimingRemind(boolean remind) {
+        if (getTimer() != null) {
+            if (remind) {
+                getTimer().noRemind = TimeEntity.ItemEntity.STATE_REMIND_ON;
+            } else {
+                getTimer().noRemind = TimeEntity.ItemEntity.STATE_REMIND_OFF;
+            }
+        }
+    }
+
+    /**
+     * 是否超过2小时，是否再提醒
+     *
+     * @return true:提醒；false：不提醒
+     */
+    public boolean isOverTimingRemind() {
+        if (getTimer() != null) {
+            return getTimer().noRemind == TimeEntity.ItemEntity.STATE_REMIND_ON;
+        }
+        return false;
+    }
+
+    /**
+     * 设置泡泡是否再提醒
+     *
+     * @param remind true:提醒；false：不提醒
+     */
+    public void setOverBubbleRemind(boolean remind) {
+        if (getTimer() != null) {
+            if (remind) {
+                getTimer().bubbleOff = TimeEntity.ItemEntity.STATE_BUBBLE_ON;
+            } else {
+                getTimer().bubbleOff = TimeEntity.ItemEntity.STATE_BUBBLE_OFF;
+            }
+        }
+    }
+
+    /**
+     * 是否超过2小时，泡泡是否再提醒
+     *
+     * @return true:提醒；false：不提醒
+     */
+    public boolean isBubbleRemind() {
+        if (getTimer() != null) {
+            return getTimer().bubbleOff == TimeEntity.ItemEntity.STATE_BUBBLE_ON;
+        }
+        return false;
+    }
+
+
+    /**
+     * 更新原计时对象（之前已经有对象正在计时了）
      *
      * @return
      */

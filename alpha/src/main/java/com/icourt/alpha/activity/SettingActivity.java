@@ -18,7 +18,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
-import com.icourt.alpha.utils.TextFormater;
+import com.icourt.alpha.utils.StringUtils;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -79,12 +79,14 @@ public class SettingActivity extends BaseActivity {
     @OnClick({R.id.titleAction, R.id.photo_layout})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.titleAction:
                 updateInfo();
                 break;
             case R.id.photo_layout:
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }
@@ -98,27 +100,29 @@ public class SettingActivity extends BaseActivity {
             showTopSnackBar("请输入正确的邮箱格式");
             return;
         }*/
-        if (!TextFormater.isMobileNO(phone)) {
+        if (!StringUtils.isMobileNO(phone)) {
             showTopSnackBar("请输入正确的手机格式");
             return;
         }
         showLoadingDialog(null);
-        getApi().updateUserInfo(alphaUserInfo.getUserId(), phone, email).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                alphaUserInfo.setPhone(phone);
-                alphaUserInfo.setMail(email);
-                LoginInfoUtils.clearLoginUserInfo();
-                LoginInfoUtils.saveLoginUserInfo(alphaUserInfo);
-                SettingActivity.this.finish();
-            }
+        callEnqueue(
+                getApi().updateUserInfo(alphaUserInfo.getUserId(), phone, email),
+                new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        dismissLoadingDialog();
+                        alphaUserInfo.setPhone(phone);
+                        alphaUserInfo.setMail(email);
+                        LoginInfoUtils.clearLoginUserInfo();
+                        LoginInfoUtils.saveLoginUserInfo(alphaUserInfo);
+                        SettingActivity.this.finish();
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
     }
 }

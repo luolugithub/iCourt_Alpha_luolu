@@ -30,7 +30,12 @@ import com.icourt.alpha.http.ApiAlphaService;
 import com.icourt.alpha.http.ApiChatService;
 import com.icourt.alpha.http.ApiProjectService;
 import com.icourt.alpha.http.ApiSFileService;
+import com.icourt.alpha.http.IContextCallQueue;
+import com.icourt.alpha.http.IContextObservable;
+import com.icourt.alpha.http.ResEntityFunction;
+import com.icourt.alpha.http.ResEntitySimpleFunction;
 import com.icourt.alpha.http.RetrofitServiceFactory;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.IContextResourcesImp;
 import com.icourt.alpha.interfaces.ProgressHUDImp;
 import com.icourt.alpha.utils.LogUtils;
@@ -39,6 +44,7 @@ import com.icourt.alpha.utils.SnackbarUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.ToastUtils;
+import com.icourt.api.RequestUtils;
 import com.kaopiz.kprogresshud.KProgressHUD;
 import com.trello.rxlifecycle2.LifecycleProvider;
 import com.trello.rxlifecycle2.LifecycleTransformer;
@@ -47,8 +53,14 @@ import com.trello.rxlifecycle2.android.ActivityEvent;
 import com.trello.rxlifecycle2.android.RxLifecycleAndroid;
 import com.umeng.analytics.MobclickAgent;
 
+import java.lang.ref.WeakReference;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import io.reactivex.Observable;
 import io.reactivex.subjects.BehaviorSubject;
+import retrofit2.Call;
+import retrofit2.Callback;
 
 import static com.umeng.socialize.utils.DeviceConfig.context;
 
@@ -63,11 +75,20 @@ import static com.umeng.socialize.utils.DeviceConfig.context;
 public class BaseActivity
         extends BasePermisionActivity
         implements ProgressHUDImp,
+        IContextCallQueue,
+        IContextObservable,
         View.OnClickListener,
         IContextResourcesImp,
         LifecycleProvider<ActivityEvent> {
+    Queue<WeakReference<Call>> contextCallQueue = new ConcurrentLinkedQueue<>();
     private final BehaviorSubject<ActivityEvent> lifecycleSubject = BehaviorSubject.create();
     public static final String KEY_ACTIVITY_RESULT = "ActivityResult";
+
+    private Fragment currAttachFragment;
+
+    public Fragment getCurrAttachFragment() {
+        return currAttachFragment;
+    }
 
     /**
      * @return 上下文
@@ -82,6 +103,13 @@ public class BaseActivity
      */
     protected final BaseActivity getContext() {
         return this;
+    }
+
+
+    @Override
+    public void onAttachFragment(Fragment fragment) {
+        currAttachFragment = fragment;
+        super.onAttachFragment(fragment);
     }
 
 
@@ -193,6 +221,21 @@ public class BaseActivity
     }
 
     /**
+     * 设置标题右上角的操作按钮
+     *
+     * @param charSequence
+     * @return
+     */
+    public boolean setTitleActionTextView(CharSequence charSequence) {
+        TextView titleActionTextView = getTitleActionTextView();
+        if (titleActionTextView != null) {
+            titleActionTextView.setText(charSequence);
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * 获取数据 标准方法 请主动调用
      *
      * @param isRefresh 是否刷新
@@ -208,7 +251,7 @@ public class BaseActivity
      * @return
      */
     @NonNull
-    private KProgressHUD getSvProgressHUD() {
+    protected final KProgressHUD getSvProgressHUD() {
         if (progressHUD == null) {
             progressHUD = KProgressHUD.create(getContext())
                     .setDimAmount(0.5f)
@@ -544,13 +587,11 @@ public class BaseActivity
      * @return 当前已经显示的fragment
      */
     protected final Fragment addOrShowFragment(@NonNull Fragment targetFragment, Fragment currentFragment, @IdRes int containerViewId) {
+        if (isDestroyOrFinishing()) return currentFragment;
         if (targetFragment == null) return currentFragment;
         if (targetFragment == currentFragment) return currentFragment;
         FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction transaction = fm.beginTransaction();
-   /*     transaction.setCustomAnimations(
-                R.anim.fragment_slide_right_in, R.anim.fragment_slide_left_out,
-                R.anim.fragment_slide_left_in, R.anim.fragment_slide_right_out);*/
         if (!targetFragment.isAdded()) { // 如果当前fragment添加，则添加到Fragment管理器中
             if (currentFragment == null) {
                 transaction
@@ -667,6 +708,7 @@ public class BaseActivity
     @Override
     protected void onDestroy() {
         dismissLoadingDialog();
+        cancelAllCall();
         lifecycleSubject.onNext(ActivityEvent.DESTROY);
         super.onDestroy();
     }
@@ -726,4 +768,129 @@ public class BaseActivity
         return LoginInfoUtils.getUserToken();
     }
 
+
+    /**
+     * 加入队列
+     *
+     * @param call
+     * @param callback
+     * @param <T>
+     * @return
+     */
+    @Override
+    public <T> Call<T> callEnqueue(@NonNull Call<T> call, Callback<T> callback) {
+        if (isDestroyOrFinishing()) return null;
+        if (call != null) {
+            contextCallQueue.offer(new WeakReference<Call>(call));
+            return RequestUtils.callEnqueue(call, callback);
+        }
+        return call;
+    }
+
+    /**
+     * 取消当前页面所有请求
+     */
+    @Override
+    public void cancelAllCall() {
+        while (contextCallQueue.peek() != null) {
+            WeakReference<Call> poll = contextCallQueue.poll();
+            if (poll != null) {
+                RequestUtils.cancelCall(poll.get());
+            }
+        }
+    }
+
+    /**
+     * 取消单个请求
+     *
+     * @param call
+     * @param <T>
+     */
+    @Override
+    public <T> void cancelCall(@NonNull Call<T> call) {
+        for (WeakReference<Call> poll : contextCallQueue) {
+            if (poll != null && call == poll.get()) {
+                contextCallQueue.remove(poll);
+                break;
+            }
+        }
+        RequestUtils.cancelCall(call);
+    }
+
+
+    /**
+     * 1.绑定生命周期
+     * 2.分发常规模型 {@link ResEntity#succeed}
+     *
+     * @param observable
+     * @param <T>
+     * @return
+     */
+    @Override
+    public final <T> Observable<T> sendObservable(Observable<? extends ResEntity<T>> observable) {
+        if (observable != null) {
+            return observable
+                    .map(new ResEntitySimpleFunction<T>())
+                    .compose(this.<T>bindToLifecycle());
+        }
+        return null;
+    }
+
+    /**
+     * 1.绑定生命周期
+     * 2.分发常规模型 {@link ResEntity#succeed}
+     *
+     * @param observable
+     * @param <T>
+     * @return
+     */
+    @Override
+    public final <T> Observable<? extends ResEntity<T>> sendObservable2(Observable<? extends ResEntity<T>> observable) {
+        if (observable != null) {
+            return observable
+                    .map(new ResEntityFunction<ResEntity<T>>())
+                    .compose(this.<ResEntity<T>>bindToLifecycle());
+        }
+        return null;
+    }
+
+    /**
+     * 1.绑定生命周期
+     * 2.分发常规模型 {@link ResEntity#succeed}
+     * 3.默认主线程接收数据
+     *
+     * @param observable
+     * @param <T>
+     * @return
+     */
+    @Override
+    public final <T extends ResEntity> Observable<T> sendObservable3(Observable<T> observable) {
+        if (observable != null) {
+            return observable
+                    .map(new ResEntityFunction<T>())
+                    .compose(this.<T>bindToLifecycle());
+        }
+        return null;
+    }
+
+
+    /**
+     * 获取字符串 安全
+     *
+     * @param id
+     * @return
+     */
+    protected final CharSequence getContextString(@StringRes int id) {
+        return SystemUtils.getString(getContext(), id);
+    }
+
+    /**
+     * 获取字符串 安全
+     *
+     * @param id
+     * @return
+     */
+    protected final CharSequence getContextString(@StringRes int id, CharSequence defaultStr) {
+        return SystemUtils.getString(getContext(), id, defaultStr);
+    }
 }

@@ -8,6 +8,7 @@ import android.support.annotation.StringRes;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
@@ -29,12 +30,15 @@ public class RefreshLayout extends XRefreshView {
 
     private View defalutContentEmptyView;
     private TextView contentEmptyText;
+    private ImageView contentEmptyImage;
+
 
     public RefreshLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
         defalutContentEmptyView = View.inflate(context, R.layout.refresh_empty_view, null);
         setEmptyView(defalutContentEmptyView);
         contentEmptyText = (TextView) defalutContentEmptyView.findViewById(R.id.contentEmptyText);
+        contentEmptyImage = (ImageView) defalutContentEmptyView.findViewById(R.id.contentEmptyImage);
     }
 
     public View getDefalutContentEmptyView() {
@@ -51,7 +55,7 @@ public class RefreshLayout extends XRefreshView {
      * @param id
      */
     public void setNoticeEmptyImage(@DrawableRes int id) {
-        contentEmptyText.setCompoundDrawablesWithIntrinsicBounds(0, id, 0, 0);
+        contentEmptyImage.setImageResource(id);
     }
 
 

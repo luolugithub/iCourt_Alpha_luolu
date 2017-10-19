@@ -17,6 +17,7 @@ import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.SearchProjectActivity;
+import com.icourt.alpha.activity.SearchTaskActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseRefreshFragmentAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TaskEntity;
@@ -62,6 +63,8 @@ public class TaskListCalendarFragment extends BaseFragment {
 
 
     private static final String KEY_TASKS = "key_tasks";
+    private Unbinder unbinder;
+
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -82,21 +85,22 @@ public class TaskListCalendarFragment extends BaseFragment {
     RelativeLayout rlScheduleList;
     @BindView(R.id.slSchedule)
     ScheduleLayout slSchedule;
-    ArrayList<TaskEntity.TaskItemEntity> taskItemEntityList;
-    BaseRefreshFragmentAdapter fragmentPagerAdapter;
     @BindView(R.id.rl_comm_search)
     RelativeLayout rlCommSearch;
     @BindView(R.id.header_comm_search_ll)
     LinearLayout headerCommSearchLl;
     @BindView(R.id.calendar_title_ll)
     LinearLayout calendarTitleLl;
-    Unbinder unbinder;
     @BindView(R.id.gestureDetectorLayout)
     GestureDetectorLayout gestureDetectorLayout;
     @BindView(R.id.new_task_count_tv)
     TextView newTaskCountTv;
     @BindView(R.id.new_task_cardview)
     CardView newTaskCardview;
+
+    ArrayList<TaskEntity.TaskItemEntity> taskItemEntityList;
+    BaseRefreshFragmentAdapter fragmentPagerAdapter;
+
     private int MAXDAILYPAGE = 5000;
     private int dailyTaskPagePOS;
 
@@ -206,22 +210,18 @@ public class TaskListCalendarFragment extends BaseFragment {
 
     private void getTaskData() {
         //重新获取一遍数据
-        getApi().taskListQuery(0,
-                getLoginUserId(),
-                0,
-                0,
-                "dueTime",
-                1,
-                -1,
-                0).enqueue(new SimpleCallBack<TaskEntity>() {
-            @Override
-            public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
-                if (response.body().result != null) {
-                    updateClendarTasks(response.body().result.items);
-                    getNewTasksCount();
+        callEnqueue(
+                getApi().taskListQuery(0, getLoginUserId(), 0, 0, "dueTime", 1, -1, 0),
+                new SimpleCallBack<TaskEntity>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
+                        if (response.body().result != null) {
+                            updateClendarTasks(response.body().result.items);
+                            getNewTasksCount();
+                        }
+                    }
                 }
-            }
-        });
+        );
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -239,22 +239,25 @@ public class TaskListCalendarFragment extends BaseFragment {
      * 获取新任务数量
      */
     private void getNewTasksCount() {
-        getApi().newTasksCountQuery().enqueue(new SimpleCallBack<List<String>>() {
-            @Override
-            public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
-                if (response.body().result != null) {
-                    int totalCount = response.body().result.size();
-                    if (newTaskCardview != null) {
-                        if (totalCount > 0) {
-                            newTaskCardview.setVisibility(View.VISIBLE);
-                            newTaskCountTv.setText(String.valueOf(totalCount));
-                        } else {
-                            newTaskCardview.setVisibility(View.GONE);
+        callEnqueue(
+                getApi().newTasksCountQuery(),
+                new SimpleCallBack<List<String>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
+                        if (response.body().result != null) {
+                            int totalCount = response.body().result.size();
+                            if (newTaskCardview != null) {
+                                if (totalCount > 0) {
+                                    newTaskCardview.setVisibility(View.VISIBLE);
+                                    newTaskCountTv.setText(String.valueOf(totalCount));
+                                } else {
+                                    newTaskCardview.setVisibility(View.GONE);
+                                }
+                            }
                         }
                     }
                 }
-            }
-        });
+        );
     }
 
     /**
@@ -267,13 +270,15 @@ public class TaskListCalendarFragment extends BaseFragment {
 
             @Override
             public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                if (Math.abs(velocityX) > Math.abs(velocityY))
+                    return super.onFling(e1, e2, velocityX, velocityY);
                 if (Math.abs(velocityY) > DensityUtil.dip2px(getContext(), 50)) {
-                    if (slSchedule.getmState() == ScheduleState.CLOSE) {
+                    if (slSchedule.getmState() == ScheduleState.CLOSE) {//日历处于收起状态
                         if (gestureDetectorLayout.getY() > -calendarTitleLl.getHeight()
                                 && velocityY < 0) {
                             gestureDetectorLayout.setY(-calendarTitleLl.getHeight());
                         }
-                    } else if (slSchedule.getmState() == ScheduleState.OPEN) {
+                    } else if (slSchedule.getmState() == ScheduleState.OPEN) {//日历处于打开状态
                         if (gestureDetectorLayout.getY() < 0
                                 && velocityY > 0) {
                             gestureDetectorLayout.setY(0);
@@ -562,10 +567,9 @@ public class TaskListCalendarFragment extends BaseFragment {
                 mcvCalendar.setTodayToView();
                 break;
             case R.id.header_comm_search_ll:
-                SearchProjectActivity.launchTask(getContext(),
+                SearchTaskActivity.launchTask(getContext(),
                         getLoginUserId(),
-                        0,
-                        SearchProjectActivity.SEARCH_TASK);
+                        0);
                 break;
             case R.id.new_task_cardview:
                 if (getParentFragment() != null) {

@@ -17,16 +17,18 @@ import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.http.AlphaClient;
 import com.icourt.alpha.http.HConst;
+import com.icourt.alpha.service.DaemonService;
 import com.icourt.alpha.utils.ActivityLifecycleTaskCallbacks;
+import com.icourt.alpha.utils.BugUtils;
 import com.icourt.alpha.utils.GlideImageLoader;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
+import com.icourt.alpha.utils.SFileTokenUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UserPreferences;
 import com.icourt.alpha.widget.nim.AlphaMessageNotifierCustomization;
 import com.icourt.alpha.widget.nim.NimAttachParser;
 import com.icourt.lib.daemon.DaemonEnv;
-import com.icourt.alpha.service.DaemonService;
 import com.iflytek.cloud.SpeechConstant;
 import com.iflytek.cloud.SpeechUtility;
 import com.liulishuo.filedownloader.FileDownloader;
@@ -51,9 +53,8 @@ import com.umeng.socialize.PlatformConfig;
 import com.umeng.socialize.UMShareAPI;
 import com.umeng.socialize.utils.Log;
 
+import java.io.IOException;
 import java.net.Proxy;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -62,8 +63,13 @@ import cn.finalteam.galleryfinal.FunctionConfig;
 import cn.finalteam.galleryfinal.GalleryFinal;
 import cn.finalteam.galleryfinal.ImageLoader;
 import cn.finalteam.galleryfinal.ThemeConfig;
+import io.reactivex.functions.Consumer;
+import io.reactivex.plugins.RxJavaPlugins;
 import io.realm.Realm;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 import static com.icourt.alpha.utils.LoginInfoUtils.getLoginUserInfo;
 
@@ -106,6 +112,21 @@ public class BaseApplication extends MultiDexApplication {
         initGalleryFinal();
         initShengCe();
         initApiInfo();
+        initRxJavaErrorHandler();
+    }
+
+    /*
+     * RxJava2 当取消订阅后(dispose())，RxJava抛出的异常后续无法接收(此时后台线程仍在跑，可能会抛出IO等异常),全部由RxJavaPlugin接收，需要提前设置ErrorHandler
+     * 详情：http://engineering.rallyhealth.com/mobile/rxjava/reactive/2017/03/15/migrating-to-rxjava-2.html#Error Handling
+     */
+    private void initRxJavaErrorHandler() {
+        RxJavaPlugins.setErrorHandler(new Consumer<Throwable>() {
+            @Override
+            public void accept(Throwable throwable) throws Exception {
+                BugUtils.bugSync("RxJava error", throwable);
+                LogUtils.d("---------->RxJava error:" + throwable);
+            }
+        });
     }
 
     /**
@@ -124,6 +145,7 @@ public class BaseApplication extends MultiDexApplication {
             AlphaUserInfo loginUserInfo = LoginInfoUtils.getLoginUserInfo();
             AlphaClient.setToken(loginUserInfo.getToken());
             AlphaClient.setOfficeId(loginUserInfo.getOfficeId());
+            AlphaClient.setSFileToken(SFileTokenUtils.getSFileToken());
         }
     }
 
@@ -361,18 +383,19 @@ public class BaseApplication extends MultiDexApplication {
                         builder.connectTimeout(35_000, TimeUnit.MILLISECONDS);
                         // you can set the HTTP proxy.
                         builder.proxy(Proxy.NO_PROXY);
-
-                      /*  builder.addInterceptor(new Interceptor() {
+                        builder.addInterceptor(new Interceptor() {
                             @Override
                             public Response intercept(Chain chain) throws IOException {
                                 Request request = chain.request();
                                 Request requestBuilder = request.newBuilder()
-                                        .addHeader("Cookie", "officeId==" + AlphaClient.getInstance().getOfficeId())
-                                        .addHeader("token", AlphaClient.getInstance().getToken())
+                                        .addHeader("Cookie", "officeId=" + AlphaClient.getOfficeId())
+                                        .addHeader("token", AlphaClient.getToken())
                                         .build();
-                                return chain.proceed(requestBuilder);
+                                Response response = chain.proceed(requestBuilder);
+                                return response;
                             }
-                        });*/
+                        });
+
                         // etc.
                         return builder.build();
                     }

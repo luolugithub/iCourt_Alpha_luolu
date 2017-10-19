@@ -32,8 +32,8 @@ import com.icourt.alpha.entity.bean.SelectGroupBean;
 import com.icourt.alpha.entity.event.UpdateCustomerEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
-import com.icourt.alpha.utils.TextFormater;
 import com.icourt.api.RequestUtils;
 
 import org.greenrobot.eventbus.EventBus;
@@ -294,7 +294,6 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
             R.id.activity_add_group_contact_add_liaisons_layout})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         SystemUtils.hideSoftKeyBoard(this);
         switch (v.getId()) {
             case R.id.titleAction://完成
@@ -335,6 +334,9 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
                     pkid = contactDeatilBean.getContact().getPkid();
                 }
                 SelectLiaisonActivity.launchForResult(this, Const.SELECT_ENTERPRISE_LIAISONS_TAG_ACTION, pkid, liaisonsList, SELECT_OTHER_REQUEST);
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }
@@ -581,16 +583,16 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
                 String time = null;
                 String month = null, day = null;
                 if (i1 + 1 < 10) {
-                    month = "0" + (i1 + 1);
+                    month = String.format("0%d", i1 + 1);
                 } else {
-                    month = (i1 + 1) + "";
+                    month = String.valueOf((i1 + 1));
                 }
                 if (i2 < 10) {
-                    day = "0" + i2;
+                    day = String.format("0%d", i2);
                 } else {
-                    day = i2 + "";
+                    day = String.valueOf((i2));
                 }
-                time = i + "年" + month + "月" + day + "日";
+                time = String.format("%d年%s月%s日", i, month, day);
                 textView.setText(time);
             }
         }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
@@ -713,7 +715,8 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
      * 修改团队信息
      */
     private void updataGroup() {
-        getApi().customerGroupInfoUpdate(RequestUtils.createJsonBody(getUpdateGroupJson())).enqueue(new SimpleCallBack<JsonElement>() {
+        callEnqueue(getApi().customerGroupInfoUpdate(RequestUtils.createJsonBody(getUpdateGroupJson())),
+                new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
 
@@ -731,7 +734,8 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
      * 检测填写的姓名是否有重名
      */
     private void checkName(String name) {
-        getApi().companyCheckReName(name).enqueue(new SimpleCallBack<List<CustomerEntity>>() {
+        callEnqueue(getApi().companyCheckReName(name),
+                new SimpleCallBack<List<CustomerEntity>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<CustomerEntity>>> call, Response<ResEntity<List<CustomerEntity>>> response) {
                 if (response.body().result != null) {
@@ -752,7 +756,8 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
         String json = getAddContactJson();
         if (TextUtils.isEmpty(json)) return;
         showLoadingDialog(null);
-        getApi().customerCompanyCreate(RequestUtils.createJsonBody(json)).enqueue(new SimpleCallBack<List<ContactDeatilBean>>() {
+        callEnqueue(getApi().customerCompanyCreate(RequestUtils.createJsonBody(json)),
+                new SimpleCallBack<List<ContactDeatilBean>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<ContactDeatilBean>>> call, Response<ResEntity<List<ContactDeatilBean>>> response) {
                 showToast("添加联系人成功");
@@ -781,7 +786,8 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
         String json = getUpdateContactJson();
         if (TextUtils.isEmpty(json)) return;
         showLoadingDialog(null);
-        getApi().customerUpdate(RequestUtils.createJsonBody(json)).enqueue(new SimpleCallBack<List<ContactDeatilBean>>() {
+        callEnqueue(getApi().customerUpdate(RequestUtils.createJsonBody(json)),
+                new SimpleCallBack<List<ContactDeatilBean>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<ContactDeatilBean>>> call, Response<ResEntity<List<ContactDeatilBean>>> response) {
                 dismissLoadingDialog();
@@ -806,7 +812,8 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
      * 获取负责团队列表
      */
     private void getGroupList() {
-        getApi().lawyerGroupListQuery().enqueue(new SimpleCallBack<List<GroupBean>>() {
+        callEnqueue(getApi().lawyerGroupListQuery(),
+                new SimpleCallBack<List<GroupBean>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<GroupBean>>> call, Response<ResEntity<List<GroupBean>>> response) {
                 List<GroupBean> myGroups = response.body().result;
@@ -831,7 +838,8 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
      * 获取企业联络人
      */
     private void getLiaisons(String id) {
-        getApi().liaisonsQuery(id).enqueue(new SimpleCallBack<List<ContactDeatilBean>>() {
+        callEnqueue(getApi().liaisonsQuery(id),
+                new SimpleCallBack<List<ContactDeatilBean>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<ContactDeatilBean>>> call, Response<ResEntity<List<ContactDeatilBean>>> response) {
                 oldLiaisonsList = response.body().result;
@@ -1085,7 +1093,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
                 String value = ((TextView) entry.getValue().findViewById(R.id.activity_add_contact_item_valuename_text)).getText().toString().trim();
                 if (value != null && value.length() > 0) {
                     if ("mails".equals(type)) {
-                        if (!TextFormater.isMailNO(value)) {
+                        if (!StringUtils.isMailNO(value)) {
                             showTopSnackBar("请输入正确的邮箱地址");
                             return null;
                         }

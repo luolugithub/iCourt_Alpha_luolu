@@ -45,13 +45,16 @@ public class LoginSelectActivity extends LoginBaseActivity {
     @OnClick({R.id.loginWeixinBtn, R.id.actionLoginWithPwd})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
+
         switch (v.getId()) {
             case R.id.loginWeixinBtn:
                 loginWithWeiXin();
                 break;
             case R.id.actionLoginWithPwd:
                 LoginWithPwdActivity.launch(getContext());
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }

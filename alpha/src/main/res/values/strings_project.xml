@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--项目模块-->
+    <string name="project_tab_detail">概览</string>
+    <string name="project_tab_task">任务</string>
+    <string name="project_tab_time">计时</string>
+    <string name="project_tab_document">文档</string>
+
+    <string name="project_finished_task">已完成的任务</string>
+    <string name="project_look_finished_task">查看已完成任务</string>
+    <string name="project_manage_group">管理任务组</string>
+
+    <string name="project_my_participation">我参与的项目</string>
+
+    <string name="project_no">暂无项目</string>
+    <string name="project_no_star">暂无关注项目</string>
+    <string name="project_no_participation">暂无参与项目</string>
+    <string name="project_no_timer">暂无计时</string>
+
+    <string name="project_type">项目类型</string>
+    <string name="project_name">项目名称</string>
+    <string name="project_number">项目编号</string>
+    <string name="project_server_content">服务内容</string>
+    <string name="project_remark">项目备注</string>
+    <string name="project_date">项目时间</string>
+    <string name="project_start_date">开始时间</string>
+    <string name="project_end_date">结束时间</string>
+    <string name="project_members_format">项目成员(%s)</string>
+    <string name="project_members">项目成员</string>
+    <string name="project_clients_format">客户(%s)</string>
+    <string name="project_clients">客户</string>
+    <string name="project_litigants_format">当事人(%s)</string>
+    <string name="project_litigants">当事人</string>
+    <string name="project_groups_format">所属部门(%s)</string>
+    <string name="project_groups">所属部门</string>
+    <string name="project_attorneys_format">案源律师(%s)</string>
+    <string name="project_attorneys">案源律师</string>
+    <string name="project_info">项目信息</string>
+
+    <string name="project_range">程序</string>
+    <string name="project_range_name">程序名称</string>
+    <string name="project_priceStr">标的额</string>
+    <string name="project_connected_price">涉案金额</string>
+    <string name="project_case">案由</string>
+    <string name="project_case_code">案号</string>
+    <string name="project_charge">罪名</string>
+    <string name="project_court">法院</string>
+
+    <string name="project_add_range_content">添加程序信息</string>
+    <string name="project_member_info">成员资料</string>
+    <string name="project_not_look_info_premission">您没有访问该客户的权限</string>
+
+</resources>

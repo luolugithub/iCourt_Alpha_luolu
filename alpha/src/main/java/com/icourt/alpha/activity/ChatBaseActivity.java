@@ -175,6 +175,7 @@ public abstract class ChatBaseActivity
     @Override
     protected void onPause() {
         super.onPause();
+        clearUnReadNum();
         NIMClient.getService(MsgService.class)
                 .setChattingAccount(MsgService.MSG_CHATTING_ACCOUNT_NONE, SessionTypeEnum.None);
     }
@@ -273,8 +274,8 @@ public abstract class ChatBaseActivity
      * 获取被钉的ids列表
      */
     private void getMsgDingedIds() {
-        getChatApi().msgQueryAllDingIds(getIMChatType(), getIMChatId())
-                .enqueue(new SimpleCallBack<List<Long>>() {
+        callEnqueue(getChatApi().msgQueryAllDingIds(getIMChatType(), getIMChatId()),
+                new SimpleCallBack<List<Long>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<Long>>> call, Response<ResEntity<List<Long>>> response) {
                         if (response.body().result != null) {
@@ -289,8 +290,8 @@ public abstract class ChatBaseActivity
      * 获取已经收藏的id列表
      */
     private void getMsgCollectedIds() {
-        getChatApi().msgQueryAllCollectedIds(getIMChatType(), getIMChatId())
-                .enqueue(new SimpleCallBack<List<Long>>() {
+        callEnqueue(getChatApi().msgQueryAllCollectedIds(getIMChatType(), getIMChatId()),
+                new SimpleCallBack<List<Long>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<Long>>> call, Response<ResEntity<List<Long>>> response) {
                         if (response.body().result != null) {
@@ -300,7 +301,6 @@ public abstract class ChatBaseActivity
                     }
                 });
     }
-
 
 
     private void registerObservers(boolean register) {
@@ -489,8 +489,8 @@ public abstract class ChatBaseActivity
             e.printStackTrace();
         }
         final String finalJsonBody = jsonBody;
-        getChatApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
-                .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
+        callEnqueue(getChatApi().msgAdd(RequestUtils.createJsonBody(jsonBody)),
+                new SimpleCallBack<IMMessageCustomBody>() {
                     @Override
                     public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
                         if (response.body().result != null) {
@@ -527,8 +527,8 @@ public abstract class ChatBaseActivity
         MobclickAgent.onEvent(this, UMMobClickAgent.resend_im_message_click_id);
         msgPostEntity.msg_statu = Const.MSG_STATU_SENDING;
         updateCustomBody(msgPostEntity);
-        getChatApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
-                .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
+        callEnqueue(getChatApi().msgAdd(RequestUtils.createJsonBody(jsonBody)),
+                new SimpleCallBack<IMMessageCustomBody>() {
                     @Override
                     public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
                         if (response.body().result != null) {
@@ -569,8 +569,8 @@ public abstract class ChatBaseActivity
             e.printStackTrace();
         }
         final String finalJsonBody = jsonBody;
-        getChatApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
-                .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
+        callEnqueue(getChatApi().msgAdd(RequestUtils.createJsonBody(jsonBody)),
+                new SimpleCallBack<IMMessageCustomBody>() {
                     @Override
                     public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
                         if (response.body().result != null) {
@@ -627,8 +627,8 @@ public abstract class ChatBaseActivity
         params.put("magic_id", RequestUtils.createTextBody(msgPostEntity.magic_id));
 
         params.put(RequestUtils.createStreamKey(file), RequestUtils.createStreamBody(file));
-        getChatApi().msgImageAdd(params)
-                .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
+        callEnqueue(getChatApi().msgImageAdd(params),
+                new SimpleCallBack<IMMessageCustomBody>() {
                     @Override
                     public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
                         if (response.body().result != null) {
@@ -685,8 +685,8 @@ public abstract class ChatBaseActivity
                 msgPostEntity.msg_statu = Const.MSG_STATU_SENDING;
                 updateCustomBody(msgPostEntity);
 
-                getChatApi().msgImageAdd(params)
-                        .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
+                callEnqueue(getChatApi().msgImageAdd(params),
+                        new SimpleCallBack<IMMessageCustomBody>() {
                             @Override
                             public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
                                 if (response.body().result != null) {
@@ -863,8 +863,8 @@ public abstract class ChatBaseActivity
             e.printStackTrace();
         }
         final String finalJsonBody = jsonBody;
-        getChatApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
-                .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
+        callEnqueue(getChatApi().msgAdd(RequestUtils.createJsonBody(jsonBody)),
+                new SimpleCallBack<IMMessageCustomBody>() {
                     @Override
                     public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
                         if (response.body().result != null) {
@@ -1012,9 +1012,12 @@ public abstract class ChatBaseActivity
                 case MSG_TYPE_VOICE://暂时不用处理
                     break;
             }
+            //已经被钉的消息 不能撤回
+            if (isDinged(iMMessageCustomBody.id)) {
+                menuItems.remove("撤回");
+            }
             showMsgActionDialog(iMMessageCustomBody, menuItems);
         }
-
         return true;
     }
 
@@ -1153,8 +1156,8 @@ public abstract class ChatBaseActivity
         final String textContentFinal = textContent;
         MobclickAgent.onEvent(ChatBaseActivity.this, UMMobClickAgent.turn_task_im_message_click_id);
         showLoadingDialog(null);
-        getApi().msgConvert2Task(textContentFinal)
-                .enqueue(new SimpleCallBack<MsgConvert2Task>() {
+        callEnqueue(getApi().msgConvert2Task(textContentFinal),
+                new SimpleCallBack<MsgConvert2Task>() {
                     @Override
                     public void onSuccess(Call<ResEntity<MsgConvert2Task>> call, Response<ResEntity<MsgConvert2Task>> response) {
                         dismissLoadingDialog();
@@ -1217,8 +1220,8 @@ public abstract class ChatBaseActivity
         }
         MobclickAgent.onEvent(ChatBaseActivity.this, UMMobClickAgent.pin_im_message_click_id);
         final String finalJsonBody = jsonBody;
-        getChatApi().msgAdd(RequestUtils.createJsonBody(jsonBody))
-                .enqueue(new SimpleCallBack<IMMessageCustomBody>() {
+        callEnqueue(getChatApi().msgAdd(RequestUtils.createJsonBody(jsonBody)),
+                new SimpleCallBack<IMMessageCustomBody>() {
                     @Override
                     public void onSuccess(Call<ResEntity<IMMessageCustomBody>> call, Response<ResEntity<IMMessageCustomBody>> response) {
                         if (response.body().result != null) {
@@ -1249,8 +1252,8 @@ public abstract class ChatBaseActivity
      */
 
     protected final void msgActionCollect(final long msgId) {
-        getChatApi().msgCollect(msgId, getIMChatType(), getIMChatId())
-                .enqueue(new SimpleCallBack<Boolean>() {
+        callEnqueue(getChatApi().msgCollect(msgId, getIMChatType(), getIMChatId()),
+                new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         if (response.body().result != null && response.body().result.booleanValue()) {
@@ -1270,8 +1273,8 @@ public abstract class ChatBaseActivity
      */
     protected final void msgActionCollectCancel(final long msgId) {
         MobclickAgent.onEvent(ChatBaseActivity.this, UMMobClickAgent.collect_im_message_click_id);
-        getChatApi().msgCollectCancel(msgId, getIMChatType(), getIMChatId())
-                .enqueue(new SimpleCallBack<Boolean>() {
+        callEnqueue(getChatApi().msgCollectCancel(msgId, getIMChatType(), getIMChatId()),
+                new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         if (response.body().result != null && response.body().result.booleanValue()) {
@@ -1294,8 +1297,8 @@ public abstract class ChatBaseActivity
     protected final void msgActionRevoke(@NonNull final long msgId, @Nullable final IMMessage imMessage) {
         if (msgId <= 0) return;
         if (imMessage == null) {
-            getChatApi().msgRevoke(msgId)
-                    .enqueue(new SimpleCallBack<JsonElement>() {
+            callEnqueue(getChatApi().msgRevoke(msgId),
+                    new SimpleCallBack<JsonElement>() {
                         @Override
                         public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                             onMessageRevoke(msgId);
@@ -1309,8 +1312,8 @@ public abstract class ChatBaseActivity
                         public void onSuccess(Void param) {
                             //deleteItem(imMessage, true);
                             //网络
-                            getChatApi().msgRevoke(msgId)
-                                    .enqueue(new SimpleCallBack<JsonElement>() {
+                            callEnqueue(getChatApi().msgRevoke(msgId),
+                                    new SimpleCallBack<JsonElement>() {
                                         @Override
                                         public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                                         }
@@ -1322,13 +1325,13 @@ public abstract class ChatBaseActivity
                             if (code == 508) {
                                 showTopSnackBar("消息撤回时间超限");
                             } else {
-                                showTopSnackBar("消息撤回:" + code);
+                                showTopSnackBar(String.format("消息撤回:%d", code));
                             }
                         }
 
                         @Override
                         public void onException(Throwable exception) {
-                            showTopSnackBar("消息撤回异常:" + exception);
+                            showTopSnackBar(String.format("消息撤回异常:%s", exception));
                         }
                     });
         }

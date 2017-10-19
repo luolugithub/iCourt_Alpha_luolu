@@ -7,9 +7,13 @@ import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
 import android.os.Environment;
 import android.os.ParcelFileDescriptor;
+import android.os.StatFs;
+import android.support.annotation.DrawableRes;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.icourt.alpha.R;
+import com.icourt.alpha.constants.SFileConfig;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -29,7 +33,6 @@ import static com.icourt.alpha.utils.ImageUtils.addPictureToGallery;
  * version 1.0.0
  */
 public class FileUtils {
-    public static final String dirFilePath = FileUtils.getSDPath() + ActionConstants.FILE_DOWNLOAD_PATH;
 
     public static final String ALPHA_PAGENAME_FILE = "com.icourt.alpha";
     public static final String THUMB_IMAGE_ROOT_PATH = getSDPath() + "/" + ALPHA_PAGENAME_FILE + "/image";
@@ -105,17 +108,26 @@ public class FileUtils {
             {"", "*/*"}
     };
 
+
     /**
      * 获取跟目录
      *
      * @return
      */
     public static String getSDPath() {
-        return Environment.getExternalStorageDirectory() + "/";
+        return Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator;
     }
 
     /**
      * 获取 友好提示文件单位
+     * <p>
+     * <p>
+     * 大小单位逐级使用 B, K, M, G, T
+     * 大小为 0 时（比如某文件夹内无内容）显示为 0B
+     * 最多保留小数点后两位，四舍五入
+     * 四舍五入后小数点后末尾为 “00” 时省略 “00”，只有一个 “0” 时不省略，如
+     * 13.00M 显示为 13M
+     * 13.80M 依然显示为 13.80M
      *
      * @param b B
      * @return
@@ -124,16 +136,21 @@ public class FileUtils {
         long kb = 1024;
         long mb = kb * 1024;
         long gb = mb * 1024;
-        if (b >= gb) {
-            return String.format("%.1f G", (float) b / gb);
+        long tb = gb * 1024;
+        if (b >= tb) {
+            float f = (float) b / tb;
+            return String.format(b % tb == 0 ? "%.0fT" : "%.2fT", f);
+        } else if (b >= gb) {
+            float f = (float) b / gb;
+            return String.format(b % gb == 0 ? "%.0fG" : "%.2fG", f);
         } else if (b >= mb) {
             float f = (float) b / mb;
-            return String.format(f > 100 ? "%.0f M" : "%.1f M", f);
+            return String.format(b % mb == 0 ? "%.0fM" : "%.2fM", f);
         } else if (b >= kb) {
             float f = (float) b / kb;
-            return String.format(f > 100 ? "%.0f K" : "%.1f K", f);
+            return String.format(b % kb == 0 ? "%.0fK" : "%.2fK", f);
         } else
-            return String.format("%d B", b);
+            return String.format("%dB", b);
     }
 
     /**
@@ -154,8 +171,13 @@ public class FileUtils {
      */
     public static final boolean isFileExists(String path) {
         if (TextUtils.isEmpty(path)) return false;
-        File file = new File(path);
-        return file != null && file.exists();
+        try {
+            File file = new File(path);
+            return file != null && file.exists();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     /**
@@ -190,32 +212,30 @@ public class FileUtils {
      *
      * @param fileName
      * @return
+     * @link{ getSFileIcon}
      */
+    @Deprecated
     public static int getFileIcon40(String fileName) {
-        if (!TextUtils.isEmpty(fileName) && fileName.length() > 0) {
-            String type = fileName.substring(fileName.lastIndexOf(".") + 1);
-            if (ActionConstants.resourcesMap40.containsKey(type)) {
-                return ActionConstants.resourcesMap40.get(type);
-            }
-        }
-        return R.mipmap.filetype_default_40;
+        return getSFileIcon(fileName);
     }
 
     /**
-     * 获取文件对应图标 20
+     * 获取sfile文件的图标
      *
      * @param fileName
      * @return
      */
-    public static int getFileIcon20(String fileName) {
+    @DrawableRes
+    public static int getSFileIcon(String fileName) {
         if (!TextUtils.isEmpty(fileName) && fileName.length() > 0) {
             String type = fileName.substring(fileName.lastIndexOf(".") + 1);
-            if (ActionConstants.resourcesMap.containsKey(type)) {
-                return ActionConstants.resourcesMap.get(type);
+            if (SFileConfig.resourcesDocumentIcon.containsKey(type)) {
+                return SFileConfig.resourcesDocumentIcon.get(type);
             }
         }
-        return R.mipmap.filetype_default_20;
+        return R.mipmap.filetype_default;
     }
+
 
     /**
      * @data 创建时间:16/12/7
@@ -251,18 +271,6 @@ public class FileUtils {
         return new File(filePath);
     }
 
-    //判断文件是否存在
-    public static boolean fileIsExists(String strFile) {
-        try {
-            File f = new File(strFile);
-            if (!f.exists()) {
-                return false;
-            }
-        } catch (Exception e) {
-            return false;
-        }
-        return true;
-    }
 
     /**
      * 根据文件后缀名获得对应的MIME类型。
@@ -289,13 +297,101 @@ public class FileUtils {
         return type;
     }
 
+
+    /**
+     * 获取文件名 并且没有后缀 不转换大小写
+     *
+     * @return
+     */
+    public static String getFileNameWithoutSuffix(String fileName) {
+        if (!TextUtils.isEmpty(fileName)) {
+            int dotIndex = fileName.lastIndexOf(".");
+            if (dotIndex > 0
+                    && dotIndex < fileName.length() - 1) {
+                return fileName.substring(0, dotIndex);
+            }
+        }
+        return fileName;
+    }
+
+    /**
+     * 获取文件的父路径
+     *
+     * @param filePath
+     * @return
+     */
+    public static final String getFileParentDir(String filePath) {
+        try {
+            if (!TextUtils.isEmpty(filePath)) {
+                int separatorIndex = filePath.lastIndexOf(File.separator);
+                if (separatorIndex > 0) {
+                    if (separatorIndex == filePath.length() - 1) {
+                        String temp = filePath.substring(0, filePath.length() - 2);
+                        separatorIndex = temp.lastIndexOf(File.separator);
+                        if (separatorIndex > 0) {
+                            return filePath.substring(0, separatorIndex + 1);
+                        }
+                    }
+                    return filePath.substring(0, separatorIndex + 1);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return File.separator;
+    }
+
+    /**
+     * 获取文件名
+     *
+     * @return
+     */
+    public static String getFileName(String path) {
+        if (!TextUtils.isEmpty(path)) {
+            int separatorIndex = path.lastIndexOf(File.separator);
+            if (separatorIndex >= 0
+                    && separatorIndex < path.length() - 1) {
+                return path.substring(separatorIndex + 1, path.length());
+            }
+        }
+        return path;
+    }
+
     /**
      * 获取文件后缀名
      *
      * @param fileName
      * @return
      */
+    public static String getFileSuffix(String fileName) {
+        if (!TextUtils.isEmpty(fileName)) {
+            int dotIndex = fileName.lastIndexOf(".");
+            if (dotIndex > 0
+                    && dotIndex < fileName.length() - 1) {
+                return fileName.substring(dotIndex, fileName.length());
+            }
+        }
+        return "";
+    }
+
+    /**
+     * 是否是gif图片
+     *
+     * @param path
+     * @return
+     */
+    public static boolean isGif(String path) {
+        return TextUtils.equals(getFileSuffix(path), ".gif");
+    }
+
+    /**
+     * 获取文件类型
+     *
+     * @param fileName
+     * @return
+     */
     public static String getFileType(String fileName) {
+        if (TextUtils.isEmpty(fileName)) return null;
         //获取后缀名前的分隔符"."在fName中的位置。
         int dotIndex = fileName.lastIndexOf(".");
         if (dotIndex < 0) {
@@ -348,11 +444,21 @@ public class FileUtils {
         return buffer;
     }
 
+
     /**
-     * 保存方法
+     * 保存drawable 到sd卡中...
+     *
+     * @param context
+     * @param dir
+     * @param picName
+     * @param bitmap
+     * @return
      */
-    public static boolean saveBitmap(Context context, String picName, Bitmap bitmap) {
-        File f = new File(dirFilePath, picName + ".png");
+    public static boolean saveBitmap(Context context,
+                                     String dir,
+                                     String picName,
+                                     Bitmap bitmap) {
+        File f = new File(dir, picName);
         if (f.exists()) {
             f.delete();
         }
@@ -371,6 +477,79 @@ public class FileUtils {
             return false;
         }
 
+    }
+
+    /**
+     * 删除文件
+     *
+     * @param filePath
+     */
+    public static void deleteFile(@Nullable String filePath) {
+        if (TextUtils.isEmpty(filePath)) {
+            try {
+                File file = new File(filePath);
+                if (file.exists() && file.isFile()) {
+                    file.delete();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                BugUtils.bugSync("删除文件异常", new StringBuilder("path\n")
+                        .append(filePath)
+                        .append("exception\n")
+                        .append(StringUtils.throwable2string(e))
+                        .toString());
+            }
+        }
+    }
+
+    /**
+     * 获取内置存储空间大小
+     *
+     * @return MB -1表示未挂载
+     */
+    public static long getAvaiableSpaceMB() {
+        long avaiableSpace = getAvaiableSpace();
+        return avaiableSpace > 0 ? avaiableSpace / (1024 * 1024) : avaiableSpace;
+    }
+
+    /**
+     * 获取内置存储空间 单位b
+     *
+     * @return b -1表示未挂载
+     */
+    public static long getAvaiableSpace() {
+        try {
+            if (android.os.Environment.getExternalStorageState().equals(
+                    android.os.Environment.MEDIA_MOUNTED)) {
+                String sdcard = Environment.getExternalStorageDirectory().getPath();
+                StatFs statFs = new StatFs(sdcard);
+                long blockSize = 0;
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                    blockSize = statFs.getBlockSizeLong();
+                } else {
+                    blockSize = statFs.getBlockSize();
+                }
+                long blocks = 0;
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                    blocks = statFs.getAvailableBlocksLong();
+                } else {
+                    blocks = statFs.getAvailableBlocks();
+                }
+                return (blocks * blockSize);
+            }
+        } catch (Exception e) {
+        }
+        return -1;
+    }
+
+    /**
+     * 判断是否剩余可用的空间[内置存储]
+     *
+     * @param sizeMb
+     * @return
+     */
+    public static boolean isAvaiableSpace(int sizeMb) {
+        return sizeMb >= getAvaiableSpaceMB();
     }
 
 }

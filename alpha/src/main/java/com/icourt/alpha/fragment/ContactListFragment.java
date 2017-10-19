@@ -166,11 +166,13 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
 
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.rl_comm_search:
                 SearchPolymerizationActivity.launch(getContext(),
                         SearchPolymerizationActivity.SEARCH_PRIORITY_CONTACT);
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }
@@ -207,8 +209,9 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
      */
     @Override
     protected void getData(boolean isRefresh) {
-        getChatApi().usersQuery()
-                .enqueue(new SimpleCallBack<List<GroupContactBean>>() {
+        callEnqueue(
+                getChatApi().usersQuery(),
+                new SimpleCallBack<List<GroupContactBean>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<GroupContactBean>>> call, Response<ResEntity<List<GroupContactBean>>> response) {
                         if (response.body().result != null) {
@@ -291,7 +294,7 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
      * @param data
      */
     private void insertAsynContact(List<GroupContactBean> data) {
-        if (data == null||data.isEmpty()) return;
+        if (data == null || data.isEmpty()) return;
         try {
             contactDbService.deleteAll();
             contactDbService.insertOrUpdateAsyn(new ArrayList<IConvertModel<ContactDbModel>>(data));

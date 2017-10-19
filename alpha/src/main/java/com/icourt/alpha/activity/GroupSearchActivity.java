@@ -17,7 +17,7 @@ import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
-import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
@@ -29,7 +29,9 @@ import com.icourt.alpha.entity.bean.GroupEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.view.ClearEditText;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
+import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.team.TeamService;
 import com.netease.nimlib.sdk.team.model.Team;
@@ -56,17 +58,21 @@ public class GroupSearchActivity extends BaseActivity implements BaseRecyclerAda
     private static final String KEY_GROUP_QUERY_TYPE = "GroupQueryType";
     public static final String KEY_KEYWORD = "keyWord";
     GroupAdapter groupAdapter;
-
-    @BindView(R.id.et_input_name)
-    EditText etInputName;
+    @BindView(R.id.et_search_name)
+    ClearEditText etSearchName;
     @BindView(R.id.tv_search_cancel)
     TextView tvSearchCancel;
+    @BindView(R.id.searchLayout)
+    LinearLayout searchLayout;
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
-    @BindView(R.id.softKeyboardSizeWatchLayout)
-    SoftKeyboardSizeWatchLayout softKeyboardSizeWatchLayout;
+    @BindView(R.id.refreshLayout)
+    RefreshLayout refreshLayout;
     @BindView(R.id.contentEmptyText)
     TextView contentEmptyText;
+    @BindView(R.id.softKeyboardSizeWatchLayout)
+    SoftKeyboardSizeWatchLayout softKeyboardSizeWatchLayout;
+
 
     public static void launch(@NonNull Context context,
                               View searchLayout,
@@ -109,6 +115,7 @@ public class GroupSearchActivity extends BaseActivity implements BaseRecyclerAda
     @Override
     protected void initView() {
         super.initView();
+        refreshLayout.setPullRefreshEnable(false);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(groupAdapter = new GroupAdapter());
         groupAdapter.setOnItemClickListener(this);
@@ -120,7 +127,7 @@ public class GroupSearchActivity extends BaseActivity implements BaseRecyclerAda
                     case RecyclerView.SCROLL_STATE_DRAGGING: {
                         if (softKeyboardSizeWatchLayout != null
                                 && softKeyboardSizeWatchLayout.isSoftKeyboardPop()) {
-                            SystemUtils.hideSoftKeyBoard(getActivity(), etInputName, true);
+                            SystemUtils.hideSoftKeyBoard(getActivity(), etSearchName, true);
                         }
                     }
                     break;
@@ -132,7 +139,7 @@ public class GroupSearchActivity extends BaseActivity implements BaseRecyclerAda
                 super.onScrolled(recyclerView, dx, dy);
             }
         });
-        etInputName.addTextChangedListener(new TextWatcher() {
+        etSearchName.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -154,13 +161,13 @@ public class GroupSearchActivity extends BaseActivity implements BaseRecyclerAda
                 }
             }
         });
-        etInputName.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        etSearchName.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 switch (actionId) {
                     case EditorInfo.IME_ACTION_SEARCH: {
-                        SystemUtils.hideSoftKeyBoard(getActivity(), etInputName);
-                        if (!TextUtils.isEmpty(etInputName.getText())) {
+                        SystemUtils.hideSoftKeyBoard(getActivity(), etSearchName);
+                        if (!TextUtils.isEmpty(etSearchName.getText())) {
                             getData(true);
                         }
                     }
@@ -170,8 +177,8 @@ public class GroupSearchActivity extends BaseActivity implements BaseRecyclerAda
                 }
             }
         });
-        etInputName.setText(getIntent().getStringExtra(KEY_KEYWORD));
-        etInputName.setSelection(etInputName.getText().length());
+        etSearchName.setText(getIntent().getStringExtra(KEY_KEYWORD));
+        etSearchName.setSelection(etSearchName.getText().length());
 
 
         groupAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
@@ -185,9 +192,10 @@ public class GroupSearchActivity extends BaseActivity implements BaseRecyclerAda
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        String keyWord = etInputName.getText().toString();
-        getChatApi().groupQueryByName(keyWord)
-                .enqueue(new SimpleCallBack<List<GroupEntity>>() {
+        String keyWord = etSearchName.getText().toString();
+        callEnqueue(
+                getChatApi().groupQueryByName(keyWord),
+                new SimpleCallBack<List<GroupEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<GroupEntity>>> call, Response<ResEntity<List<GroupEntity>>> response) {
                         groupAdapter.bindData(true, response.body().result);
@@ -199,11 +207,13 @@ public class GroupSearchActivity extends BaseActivity implements BaseRecyclerAda
     @OnClick({R.id.tv_search_cancel})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.tv_search_cancel:
-                SystemUtils.hideSoftKeyBoard(getActivity(), etInputName, true);
+                SystemUtils.hideSoftKeyBoard(getActivity(), etSearchName, true);
                 finish();
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }

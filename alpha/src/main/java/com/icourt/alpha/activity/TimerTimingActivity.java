@@ -1,5 +1,7 @@
 package com.icourt.alpha.activity;
 
+import android.animation.Animator;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,6 +15,7 @@ import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.CheckedTextView;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -29,7 +32,7 @@ import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.bean.WorkType;
-import com.icourt.alpha.entity.event.ServerTimingEvent;
+import com.icourt.alpha.entity.event.OverTimingRemindEvent;
 import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.fragment.dialogfragment.ProjectSimpleSelectDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.TaskSelectDialogFragment;
@@ -38,6 +41,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.StringUtils;
@@ -52,6 +56,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.Serializable;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -71,7 +76,7 @@ public class TimerTimingActivity extends BaseTimerActivity
         implements
         OnFragmentCallBackListener {
 
-    private static final String KEY_TIME = "key_time";
+    public static final String KEY_TIME = "key_time";
 
 
     TimeEntity.ItemEntity itemEntity;
@@ -105,7 +110,10 @@ public class TimerTimingActivity extends BaseTimerActivity
     LinearLayout taskLayout;
     @BindView(R.id.root_view)
     LinearLayout rootView;
-
+    @BindView(R.id.over_timing_remind_layout)
+    ViewGroup overTimingRemind;
+    @BindView(R.id.over_timing_title_tv)
+    TextView overTimingTitleTv;
 
     public static void launch(@NonNull Context context,
                               @NonNull TimeEntity.ItemEntity timeEntity) {
@@ -136,6 +144,7 @@ public class TimerTimingActivity extends BaseTimerActivity
             titleActionTextView.setText("完成");
         }
         initTimingView();
+
         timeNameTv.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -175,22 +184,42 @@ public class TimerTimingActivity extends BaseTimerActivity
             projectNameTv.setText(TextUtils.isEmpty(itemEntity.matterName) ? "未设置" : itemEntity.matterName);
             worktypeNameTv.setText(TextUtils.isEmpty(itemEntity.workTypeName) ? "未设置" : itemEntity.workTypeName);
             taskNameTv.setText(TextUtils.isEmpty(itemEntity.taskName) ? "未关联" : itemEntity.taskName);
+
         }
     }
 
+    /**
+     * 关闭计时提醒
+     *
+     * @param isSyncServer true：同步到服务器，false：不同步
+     */
+    private void closeOverTimingRemind(boolean isSyncServer) {
+        itemEntity.noRemind = TimeEntity.ItemEntity.STATE_REMIND_OFF;
+        viewMoveAnimation(false);
+        EventBus.getDefault().post(new OverTimingRemindEvent(OverTimingRemindEvent.ACTION_TIMING_REMIND_NO_REMIND));
+        if (isSyncServer) {
+            TimerManager.getInstance().setOverTimingRemindClose(TimerManager.OVER_TIME_REMIND_NO_REMIND);
+        }
+    }
 
     @OnClick({
             R.id.project_layout,
             R.id.worktype_layout,
             R.id.task_layout,
             R.id.titleAction,
-            R.id.stop_time_tv})
+            R.id.stop_time_tv,
+            R.id.over_timing_close_ll})
     @Override
     public void onClick(View view) {
-        super.onClick(view);
         switch (view.getId()) {
+            case R.id.titleBack:
+                saveTiming(true);
+                break;
             case R.id.titleAction:
                 finish();
+                break;
+            case R.id.over_timing_close_ll:
+                closeOverTimingRemind(true);
                 break;
             case R.id.project_layout://所属项目
                 showProjectSelectDialogFragment(itemEntity.matterPkId);
@@ -232,13 +261,15 @@ public class TimerTimingActivity extends BaseTimerActivity
                     }
                 });
                 break;
+            default:
+                super.onClick(view);
+                break;
         }
     }
 
     @Override
-    protected void onPause() {
-        saveTiming();
-        super.onPause();
+    public void onBackPressed() {
+        saveTiming(true);
     }
 
     @Override
@@ -251,7 +282,7 @@ public class TimerTimingActivity extends BaseTimerActivity
         return super.dispatchTouchEvent(ev);
     }
 
-    private void saveTiming() {
+    private void saveTiming(final boolean isFinished) {
         //实时保存
         if (itemEntity != null) {
             JsonObject jsonBody = null;
@@ -282,17 +313,24 @@ public class TimerTimingActivity extends BaseTimerActivity
             jsonBody.addProperty("taskPkId", TextUtils.isEmpty(itemEntity.taskPkId) ? "" : itemEntity.taskPkId);
             jsonBody.addProperty("workTypeId", TextUtils.isEmpty(itemEntity.workTypeId) ? "" : itemEntity.workTypeId);
             showLoadingDialog(null);
-            getApi().timingUpdate(RequestUtils.createJsonBody(jsonBody.toString()))
-                    .enqueue(new SimpleCallBack<JsonElement>() {
+            callEnqueue(
+                    getApi().timingUpdate(RequestUtils.createJsonBody(jsonBody.toString())),
+                    new SimpleCallBack<JsonElement>() {
                         @Override
                         public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                             dismissLoadingDialog();
+                            if (isFinished) {
+                                finish();
+                            }
                         }
 
                         @Override
                         public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
                             super.onFailure(call, t);
                             dismissLoadingDialog();
+                            if (isFinished) {
+                                finish();
+                            }
                         }
                     });
         }
@@ -345,7 +383,7 @@ public class TimerTimingActivity extends BaseTimerActivity
                 projectNameTv.setText(projectEntity.name);
             }
         }
-        saveTiming();
+        saveTiming(false);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -356,6 +394,23 @@ public class TimerTimingActivity extends BaseTimerActivity
             case TimingEvent.TIMING_UPDATE_PROGRESS:
                 if (TextUtils.equals(event.timingId, itemEntity.pkId)) {
                     timingTv.setText(toTime(event.timingSecond));
+
+                    if (itemEntity.noRemind == TimeEntity.ItemEntity.STATE_REMIND_ON) {
+                        if (TimeUnit.SECONDS.toHours(event.timingSecond) >= 2) {//如果该计时超过两小时，显示超过2小时的提醒。
+
+                            if (overTimingRemind.getVisibility() != View.VISIBLE) {
+                                updateOverTimingRemindText(event.timingSecond);
+                                overTimingRemind.setVisibility(View.VISIBLE);
+                                viewMoveAnimation(true);
+                            }
+
+                            if (event.timingSecond % 3600 == 0) {
+                                updateOverTimingRemindText(event.timingSecond);
+                            }
+                        }
+                    } else if (overTimingRemind.getVisibility() != View.GONE) {
+                        viewMoveAnimation(false);
+                    }
                 }
                 break;
             case TimingEvent.TIMING_STOP:
@@ -363,6 +418,61 @@ public class TimerTimingActivity extends BaseTimerActivity
                 finish();
                 break;
         }
+    }
+
+    private void updateOverTimingRemindText(long timingSecond) {
+        String overTimingString = String.format(getContext().getResources().getString(R.string.timer_over_timing_remind_text), TimeUnit.SECONDS.toHours(timingSecond));
+        overTimingTitleTv.setText(overTimingString);
+    }
+
+    /**
+     * 显示超过两小时的任务的提醒
+     *
+     * @param isShow true：显示；false：不显示。
+     */
+    private void viewMoveAnimation(final boolean isShow) {
+        final int durationTime = 300;
+
+        ValueAnimator animator = null;
+        if (isShow) {
+            animator = ValueAnimator.ofInt(0, DensityUtil.dip2px(getContext(), 42));
+        } else if (overTimingRemind.getVisibility() != View.GONE) {
+            animator = ValueAnimator.ofInt(DensityUtil.dip2px(getContext(), 42), 0);
+        }
+        if (animator == null) return;
+        animator.setDuration(durationTime).start();
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                int height = (Integer) animation.getAnimatedValue();
+
+                ViewGroup.LayoutParams params = overTimingRemind.getLayoutParams();
+                params.height = height;
+                overTimingRemind.setLayoutParams(params);
+            }
+        });
+        animator.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animator) {
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animator) {
+                if (!isShow) {
+                    overTimingRemind.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animator) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animator) {
+
+            }
+        });
     }
 
     /**
@@ -378,25 +488,8 @@ public class TimerTimingActivity extends BaseTimerActivity
         return null;
     }
 
-    /**
-     * 产品确认：这个页面不做同步
-     *
-     * @param event
-     */
-//    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onServerTimingEvent(ServerTimingEvent event) {
-        if (event == null) return;
-        if (itemEntity == null) return;
-        if (TextUtils.equals(event.clientId, getlocalUniqueId())) return;
-        if (event.isSyncObject() && event.isSyncTimingType()) {
-            //信息更新发生变化
-            if (TextUtils.equals(event.scene, ServerTimingEvent.TIMING_SYNC_EDIT)) {
-                if (TextUtils.equals(event.pkId, itemEntity.pkId)) {
-                    itemEntity = event;
-                    initTimingView();
-                }
-            }
-        }
+    public String createOverTimingRemindKey(String pkId) {
+        return TimerTimingActivity.class.getSimpleName() + pkId;
     }
 
     public String toTime(long timesSecond) {

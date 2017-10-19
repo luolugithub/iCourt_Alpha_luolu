@@ -170,7 +170,6 @@ public class SelectLiaisonActivity extends BaseActivity implements BaseRecyclerA
 
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.rl_comm_search:
                 if (TextUtils.equals(action, Const.SELECT_LIAISONS_TAG_ACTION))
@@ -178,14 +177,18 @@ public class SelectLiaisonActivity extends BaseActivity implements BaseRecyclerA
                 else if (TextUtils.equals(action, Const.SELECT_ENTERPRISE_LIAISONS_TAG_ACTION))
                     CustomerSearchActivity.launchResult(this, v, CustomerSearchActivity.SEARCH_LIAISON_TYPE, CustomerSearchActivity.CUSTOMER_COMPANY_TYPE, SEARCH_LIAISON_REQUEST_CODE);
                 break;
+            default:
+                super.onClick(v);
+                break;
         }
     }
 
     @Override
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
-        getApi().getCustomers(100000)
-                .enqueue(new SimpleCallBack<List<CustomerEntity>>() {
+        callEnqueue(
+                getApi().getCustomers(100000),
+                new SimpleCallBack<List<CustomerEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<CustomerEntity>>> call, Response<ResEntity<List<CustomerEntity>>> response) {
                         stopRefresh();

@@ -1,5 +1,6 @@
 package com.icourt.alpha.utils;
 
+import android.os.SystemClock;
 import android.text.TextUtils;
 
 import java.text.SimpleDateFormat;
@@ -9,6 +10,10 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeUnit;
+
+import static cn.finalteam.toolsfinal.DateUtils.date;
+import static cn.finalteam.toolsfinal.DateUtils.reformatTime;
 
 public class DateUtils {
 
@@ -86,6 +91,125 @@ public class DateUtils {
             dataString = dateformatter.format(currentTime);
         }
         return dataString;
+    }
+
+    /**
+     * 格式1
+     * http://wiki.alphalawyer.cn/pages/viewpage.action?pageId=1773098
+     * 注意:别轻易修改
+     * 文档地址:http://wiki.alphalawyer.cn/pages/viewpage.action?pageId=1773098
+     * 获取标准的时间格式化:
+     * 对近期时间点敏感、显示区域有限
+     * 1:  t < 60 分钟：x分钟前（x = 1～59）
+     * 2:  1 小时 ≤ t < 24 小时：x小时前（x = 1～23）
+     * 3:  24 小时 ≤ t ≤ 前一天零点：昨天
+     * 4:  前一天零点 < t ≤ 24*5 小时：x天前（x = 2～5）
+     * 5:  t > 24*5 小时：yyyy-mm-dd
+     *
+     * @param milliseconds
+     * @return
+     */
+    public static final String getStandardSimpleFormatTime(long milliseconds) {
+        SimpleDateFormat sdf = new SimpleDateFormat();
+        if (isOverToday(milliseconds)) {//1.未来
+            sdf.applyPattern("yyyy-MM-dd HH:mm");
+            return sdf.format(milliseconds);
+        } else if (isToday(milliseconds)) {//2.今天
+            long distanceMilliseconds = System.currentTimeMillis() - milliseconds;
+            if (distanceMilliseconds < TimeUnit.HOURS.toMillis(1)) {//3.x分钟前
+                long distanceSeconds = TimeUnit.MILLISECONDS.toMinutes(distanceMilliseconds);
+                if (distanceMilliseconds < 0) {
+                    sdf.applyPattern("yyyy-MM-dd HH:mm");
+                    return sdf.format(milliseconds);
+                } else if (distanceSeconds == 0) {
+                    return "刚刚";
+                } else {
+                    return String.format("%s分钟前", TimeUnit.MILLISECONDS.toMinutes(distanceMilliseconds));
+                }
+            } else {//4.x小时前
+                return String.format("%s小时前", TimeUnit.MILLISECONDS.toHours(distanceMilliseconds));
+            }
+        } else if (isYesterday(milliseconds)) {
+            return "昨天";//5.昨天
+        } else {
+            int todayOfYear = Calendar.getInstance().get(Calendar.DAY_OF_YEAR);
+            Calendar targetCalendar = Calendar.getInstance();
+            targetCalendar.setTimeInMillis(milliseconds);
+
+            int targetDayOfYear = targetCalendar.get(Calendar.DAY_OF_YEAR);
+            long distanceDayInt = todayOfYear - targetDayOfYear;
+
+            long distanceMilliseconds = System.currentTimeMillis() - milliseconds;
+            long distanceDay = TimeUnit.MILLISECONDS.toDays(distanceMilliseconds);
+            //避免相差年份的问题
+            if (distanceDay < 10 && distanceDayInt <= 5) {//x天前（x = 2～5）
+                return String.format("%s天前", distanceDayInt);
+            } else {//yyyy-mm-dd
+                sdf.applyPattern("yyyy-MM-dd");
+                return sdf.format(milliseconds);
+            }
+        }
+    }
+
+    /**
+     * 格式2
+     * http://wiki.alphalawyer.cn/pages/viewpage.action?pageId=1773098
+     * 注意:别轻易修改
+     * 文档地址:http://wiki.alphalawyer.cn/pages/viewpage.action?pageId=1773098
+     * 获取标准的时间格式化:
+     * <p>
+     * 对近期时间点敏感、对具体时间点要求高、显示区域充裕
+     * 通常不带有社交属性
+     * <p>
+     * 1. t < 60 分钟：x分钟前（x = 1～59）
+     * 2. 1 小时 ≤ t < 24 小时：x小时前（x = 1～23）
+     * 3. 24 小时 ≤ t ≤ 前一天零点：昨天 + hh:mm
+     * 4. t > 前一天零点：yyyy-mm-dd + hh:mm
+     *
+     * @param milliseconds
+     * @return
+     */
+    public static final String getStandardFormatTime(long milliseconds) {
+        SimpleDateFormat sdf = new SimpleDateFormat();
+        if (isOverToday(milliseconds)) {//1.未来
+            sdf.applyPattern("yyyy-MM-dd HH:mm");
+            return sdf.format(milliseconds);
+        } else if (isToday(milliseconds)) {//2.今天
+            long distanceMilliseconds = System.currentTimeMillis() - milliseconds;
+            if (distanceMilliseconds < TimeUnit.HOURS.toMillis(1)) {//3.x分钟前
+                long distanceSeconds = TimeUnit.MILLISECONDS.toMinutes(distanceMilliseconds);
+                if (distanceMilliseconds < 0) {
+                    sdf.applyPattern("yyyy-MM-dd HH:mm");
+                    return sdf.format(milliseconds);
+                } else if (distanceSeconds == 0) {
+                    return "刚刚";
+                } else {
+                    return String.format("%s分钟前", TimeUnit.MILLISECONDS.toMinutes(distanceMilliseconds));
+                }
+            } else {//4.x小时前
+                return String.format("%s小时前", TimeUnit.MILLISECONDS.toHours(distanceMilliseconds));
+            }
+        } else if (isYesterday(milliseconds)) {
+            sdf.applyPattern("昨天 HH:mm");
+            return sdf.format(milliseconds);
+        } else {
+            int todayOfYear = Calendar.getInstance().get(Calendar.DAY_OF_YEAR);
+            Calendar targetCalendar = Calendar.getInstance();
+            targetCalendar.setTimeInMillis(milliseconds);
+
+            int targetDayOfYear = targetCalendar.get(Calendar.DAY_OF_YEAR);
+            long distanceDayInt = todayOfYear - targetDayOfYear;//相差的天 不是间隔的时间/每天的毫秒
+
+            long distanceMilliseconds = System.currentTimeMillis() - milliseconds;
+            long distanceDay = TimeUnit.MILLISECONDS.toDays(distanceMilliseconds);
+            //避免相差年份的问题
+            if (distanceDay < 10 && distanceDayInt <= 5) {//x天前（x = 2～5）
+                return String.format("%s天前", distanceDayInt);
+            } else {//yyyy-mm-dd
+                sdf.applyPattern("yyyy-MM-dd HH:mm");
+                return sdf.format(milliseconds);
+            }
+        }
     }
 
     /**
@@ -288,6 +412,28 @@ public class DateUtils {
     }
 
     /**
+     * yyyy-MM-dd 格式
+     *
+     * @param milliseconds
+     * @return
+     */
+    public static String getyyyy_MM_dd(long milliseconds) {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+        return formatter.format(milliseconds);
+    }
+
+    /**
+     * MM-dd HH:mm 格式
+     *
+     * @param milliseconds
+     * @return
+     */
+    public static String getMM_dd_HH_mm(long milliseconds) {
+        SimpleDateFormat formatter = new SimpleDateFormat("MM-dd HH:mm");
+        return formatter.format(milliseconds);
+    }
+
+    /**
      * @param milliseconds
      * @return
      */
@@ -438,6 +584,40 @@ public class DateUtils {
      */
     public static long getCurrWeekEndTime() {
         return getWeekEndTime(System.currentTimeMillis());
+    }
+
+    /**
+     * 获取周的开始时间
+     *
+     * @param timeMillis
+     * @return
+     */
+    public static long getWeekStartTime(long timeMillis) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(timeMillis);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        int d = 0;
+        if (calendar.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {//如果是周日，则在当前日期上减去6天，就是周一了
+            d = -6;
+        } else {//如果不是周日，周一的起始值是减去今天所对应周几，得出这周的第一天。
+            d = Calendar.MONDAY - calendar.get(Calendar.DAY_OF_WEEK);
+        }
+        //所在周开始日期
+        calendar.add(Calendar.DAY_OF_WEEK, d);
+        return calendar.getTimeInMillis();
+    }
+
+    /**
+     * 获取周的结束时间
+     *
+     * @param timeMillis
+     * @return
+     */
+    public static long getWeekEndTime(long timeMillis) {
+        return getWeekStartTime(timeMillis) + TimeUnit.DAYS.toMillis(7) - 1;
     }
 
     /**

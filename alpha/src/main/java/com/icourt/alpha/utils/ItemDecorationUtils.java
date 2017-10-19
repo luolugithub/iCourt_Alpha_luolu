@@ -21,7 +21,7 @@ import com.yqritc.recyclerviewflexibledivider.VerticalDividerItemDecoration;
  * version
  */
 public class ItemDecorationUtils {
-    public static int color_comm_divider = 0xFFededed;
+    public static int color_comm_divider = 0xFFEAEAEA;
 
     public static int getStyleDividerColor(Context context) {
         /*if (!(context instanceof BaseActivity)) return color_comm_divider;

@@ -7,7 +7,9 @@ import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.CheckedTextView;
 import android.widget.EditText;
@@ -30,6 +32,7 @@ import java.lang.annotation.RetentionPolicy;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -55,6 +58,10 @@ public class TaskGroupCreateActivity extends BaseActivity {
     AppBarLayout titleView;
     @BindView(R.id.group_name_edittext)
     EditText groupNameEdittext;
+    @BindView(R.id.edit_clear_tv)
+    ImageView editClearTv;
+    @BindView(R.id.edit_length_tv)
+    TextView editLengthTv;
 
     @IntDef({CREAT_TASK_GROUP_TYPE,
             UPDATE_TASK_GROUP_TYPE})
@@ -97,6 +104,7 @@ public class TaskGroupCreateActivity extends BaseActivity {
         projectId = getIntent().getStringExtra(KEY_PROJECT_ID);
         type = getIntent().getIntExtra("type", -1);
         entity = (TaskGroupEntity) getIntent().getSerializableExtra("entity");
+        titleAction.setText("完成");
         if (type == UPDATE_TASK_GROUP_TYPE) {
             setTitle("编辑任务组");
             if (entity != null) {
@@ -106,24 +114,58 @@ public class TaskGroupCreateActivity extends BaseActivity {
         } else {
             setTitle("新建任务组");
         }
+        setSaveBtnState();
         groupNameEdittext.requestFocus();
         SystemUtils.showSoftKeyBoard(this);
+        groupNameEdittext.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                setSaveBtnState();
+            }
+        });
     }
 
+    /**
+     * 设置保存按钮/clear/数量状态
+     */
+    private void setSaveBtnState() {
+        int length = groupNameEdittext.getText().length();
+        editLengthTv.setVisibility(length > 0 ? View.VISIBLE : View.GONE);
+        editClearTv.setVisibility(length > 0 ? View.VISIBLE : View.GONE);
+        editLengthTv.setText(String.format("%s/%s", length, 200));
+
+        titleAction.setTextColor(length > 0 ? SystemUtils.getColor(this, R.color.alpha_font_color_orange) : SystemUtils.getColor(this, R.color.alpha_font_color_gray));
+        titleAction.setClickable(length > 0);
+    }
+
+    @OnClick({R.id.titleAction,
+            R.id.edit_clear_tv})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.titleAction:
-                if (!TextUtils.isEmpty(groupNameEdittext.getText().toString())) {
-                    if (type == UPDATE_TASK_GROUP_TYPE) {
-                        updateGroup();
-                    } else {
-                        createGroup();
-                    }
+                if (type == UPDATE_TASK_GROUP_TYPE) {
+                    updateGroup();
                 } else {
-                    showTopSnackBar("请输入任务组名称");
+                    createGroup();
                 }
+                break;
+            case R.id.edit_clear_tv:
+                groupNameEdittext.setText("");
+                setSaveBtnState();
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }
@@ -133,22 +175,24 @@ public class TaskGroupCreateActivity extends BaseActivity {
      */
     private void createGroup() {
         showLoadingDialog(null);
-        getApi().taskGroupCreate(RequestUtils.createJsonBody(getAddGroupJson())).enqueue(new SimpleCallBack<TaskGroupEntity>() {
-            @Override
-            public void onSuccess(Call<ResEntity<TaskGroupEntity>> call, Response<ResEntity<TaskGroupEntity>> response) {
-                dismissLoadingDialog();
-                if (response.body().result != null) {
-                    ProjectTaskGroupActivity.launchSetResult(TaskGroupCreateActivity.this, response.body().result);
-                    TaskGroupCreateActivity.this.finish();
-                }
-            }
+        callEnqueue(
+                getApi().taskGroupCreate(RequestUtils.createJsonBody(getAddGroupJson())),
+                new SimpleCallBack<TaskGroupEntity>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<TaskGroupEntity>> call, Response<ResEntity<TaskGroupEntity>> response) {
+                        dismissLoadingDialog();
+                        if (response.body().result != null) {
+                            ProjectTaskGroupActivity.launchSetResult(TaskGroupCreateActivity.this, response.body().result);
+                            TaskGroupCreateActivity.this.finish();
+                        }
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<TaskGroupEntity>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<TaskGroupEntity>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
     }
 
     /**
@@ -156,23 +200,25 @@ public class TaskGroupCreateActivity extends BaseActivity {
      */
     private void updateGroup() {
         showLoadingDialog(null);
-        getApi().taskUpdate(RequestUtils.createJsonBody(updateGroupJson())).enqueue(new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                if (response.body().result != null) {
-                    entity.name = groupNameEdittext.getText().toString();
-                    ProjectTaskGroupActivity.launchSetResult(TaskGroupCreateActivity.this, entity);
-                    TaskGroupCreateActivity.this.finish();
-                }
-            }
+        callEnqueue(
+                getApi().taskUpdate(RequestUtils.createJsonBody(updateGroupJson())),
+                new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        dismissLoadingDialog();
+                        if (response.body().result != null) {
+                            entity.name = groupNameEdittext.getText().toString();
+                            ProjectTaskGroupActivity.launchSetResult(TaskGroupCreateActivity.this, entity);
+                            TaskGroupCreateActivity.this.finish();
+                        }
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
     }
 
     /**

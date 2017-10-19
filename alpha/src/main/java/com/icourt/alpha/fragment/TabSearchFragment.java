@@ -1,6 +1,7 @@
 package com.icourt.alpha.fragment;
 
 import android.Manifest;
+import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -18,6 +19,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -27,10 +29,12 @@ import android.widget.TextView;
 import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.MainActivity;
 import com.icourt.alpha.activity.SearchTabActivity;
 import com.icourt.alpha.adapter.SearchEngineAdapter;
 import com.icourt.alpha.adapter.SearchHistoryAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.db.convertor.ListConvertor;
@@ -46,6 +50,7 @@ import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
+import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
 import com.icourt.alpha.view.recyclerviewDivider.DividerItemDecoration;
 import com.umeng.analytics.MobclickAgent;
 
@@ -73,6 +78,7 @@ public class TabSearchFragment extends BaseFragment implements OnFragmentCallBac
     Unbinder unbinder;
     SearchEngineAdapter searchEngineAdapter;
     SearchHistoryAdapter searchHistoryAdapter;
+
     @BindView(R.id.search_edit)
     EditText searchEdit;
     @BindView(R.id.search_input_clear_btn)
@@ -93,6 +99,8 @@ public class TabSearchFragment extends BaseFragment implements OnFragmentCallBac
     RelativeLayout historyRl;
     SearchEngineDbService searchEngineDbService;
     final List<SearchHistoryEntity> recordSearchHistories = new ArrayList<>();
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
 
     public static TabSearchFragment newInstance() {
         return new TabSearchFragment();
@@ -133,6 +141,13 @@ public class TabSearchFragment extends BaseFragment implements OnFragmentCallBac
         });
         engineRecyclerView.addItemDecoration(engineItemDecoration);
         engineRecyclerView.setAdapter(searchEngineAdapter = new SearchEngineAdapter());
+        contentEmptyText.setText(R.string.str_click_refresh);
+        searchEngineAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                contentEmptyText.setVisibility(searchEngineAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+            }
+        });
 
 
         historyRecyclerView.setNestedScrollingEnabled(false);
@@ -240,8 +255,9 @@ public class TabSearchFragment extends BaseFragment implements OnFragmentCallBac
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
         getFromLocal();
-        getApi().getSearchEngines()
-                .enqueue(new SimpleCallBack<List<SearchEngineEntity>>() {
+        callEnqueue(
+                getApi().getSearchEngines(),
+                new SimpleCallBack<List<SearchEngineEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<SearchEngineEntity>>> call, Response<ResEntity<List<SearchEngineEntity>>> response) {
                         if (response.body().result != null) {
@@ -310,12 +326,30 @@ public class TabSearchFragment extends BaseFragment implements OnFragmentCallBac
     }
 
 
-    @OnClick({R.id.search_input_clear_btn,
+    @OnClick({R.id.search_edit,
+            R.id.search_input_clear_btn,
             R.id.search_history_clear_btn,
-            R.id.search_audio_btn})
+            R.id.search_audio_btn,
+            R.id.contentEmptyText})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
+            case R.id.search_edit:
+                if (getActivity() instanceof MainActivity) {
+                    MainActivity activity = (MainActivity) getActivity();
+                    activity.dismissOverTimingRemindDialogFragment(true);
+                    searchEdit.setFocusable(true);
+                    searchEdit.setFocusableInTouchMode(true);
+                    searchEdit.requestFocus();
+                    searchEdit.requestFocusFromTouch();
+                    searchEdit.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            SystemUtils.showSoftKeyBoard(getActivity(), searchEdit);
+                        }
+                    });
+                }
+                break;
             case R.id.search_input_clear_btn:
                 searchEdit.setText("");
                 break;
@@ -328,6 +362,9 @@ public class TabSearchFragment extends BaseFragment implements OnFragmentCallBac
                     return;
                 }
                 showAudioWaveDialogFragment();
+                break;
+            case R.id.contentEmptyText:
+                getData(true);
                 break;
             default:
                 super.onClick(v);

@@ -168,8 +168,9 @@ public class GroupDetailActivity extends BaseActivity
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
         showLoadingDialog(null);
-        getChatApi().groupQueryDetail(getIntent().getStringExtra(KEY_TID))
-                .enqueue(new SimpleCallBack<GroupDetailEntity>() {
+        callEnqueue(
+                getChatApi().groupQueryDetail(getIntent().getStringExtra(KEY_TID)),
+                new SimpleCallBack<GroupDetailEntity>() {
                     @Override
                     public void onSuccess(Call<ResEntity<GroupDetailEntity>> call, Response<ResEntity<GroupDetailEntity>> response) {
                         dismissLoadingDialog();
@@ -310,7 +311,7 @@ public class GroupDetailActivity extends BaseActivity
     /**
      * 到成员列表
      */
-    private void gotoMembersList(){
+    private void gotoMembersList() {
         if (groupDetailEntity == null) return;
         if (isAdmin) {
             ArrayList<GroupContactBean> contactBeanArrayList = new ArrayList<>(contactAdapter.getData());
@@ -354,8 +355,9 @@ public class GroupDetailActivity extends BaseActivity
      * 获取所有置顶的会话ids
      */
     private void getSetTopSessions() {
-        getChatApi().sessionQueryAllsetTopIds()
-                .enqueue(new SimpleCallBack<List<String>>() {
+        callEnqueue(
+                getChatApi().sessionQueryAllsetTopIds(),
+                new SimpleCallBack<List<String>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
                         if (response.body().result != null) {
@@ -376,8 +378,9 @@ public class GroupDetailActivity extends BaseActivity
      */
     private void getIsSetGroupNoDisturbing() {
         //先拿网络 保持三端一致
-        getChatApi().sessionQueryAllNoDisturbingIds()
-                .enqueue(new SimpleCallBack<List<String>>() {
+        callEnqueue(
+                getChatApi().sessionQueryAllNoDisturbingIds(),
+                new SimpleCallBack<List<String>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
                         if (response.body().result != null) {
@@ -394,8 +397,9 @@ public class GroupDetailActivity extends BaseActivity
      */
     private void setGroupTop() {
         showLoadingDialog(null);
-        getChatApi().sessionSetTop(CHAT_TYPE_TEAM, getIMChatId())
-                .enqueue(new SimpleCallBack<Boolean>() {
+        callEnqueue(
+                getChatApi().sessionSetTop(CHAT_TYPE_TEAM, getIMChatId()),
+                new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         dismissLoadingDialog();
@@ -421,8 +425,9 @@ public class GroupDetailActivity extends BaseActivity
      */
     private void setGroupTopCancel() {
         showLoadingDialog(null);
-        getChatApi().sessionSetTopCancel(CHAT_TYPE_TEAM, getIMChatId())
-                .enqueue(new SimpleCallBack<Boolean>() {
+        callEnqueue(
+                getChatApi().sessionSetTopCancel(CHAT_TYPE_TEAM, getIMChatId()),
+                new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         dismissLoadingDialog();
@@ -448,8 +453,9 @@ public class GroupDetailActivity extends BaseActivity
      */
     private void setGroupNoDisturbing() {
         showLoadingDialog(null);
-        getChatApi().sessionNoDisturbing(CHAT_TYPE_TEAM, getIMChatId())
-                .enqueue(new SimpleCallBack<Boolean>() {
+        callEnqueue(
+                getChatApi().sessionNoDisturbing(CHAT_TYPE_TEAM, getIMChatId()),
+                new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         dismissLoadingDialog();
@@ -493,8 +499,9 @@ public class GroupDetailActivity extends BaseActivity
      */
     private void setGroupNoDisturbingCancel() {
         showLoadingDialog(null);
-        getChatApi().sessionNoDisturbingCancel(CHAT_TYPE_TEAM, getIMChatId())
-                .enqueue(new SimpleCallBack<Boolean>() {
+        callEnqueue(
+                getChatApi().sessionNoDisturbingCancel(CHAT_TYPE_TEAM, getIMChatId()),
+                new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         dismissLoadingDialog();
@@ -522,8 +529,9 @@ public class GroupDetailActivity extends BaseActivity
      */
     private void joinGroup() {
         showLoadingDialog(null);
-        getChatApi().groupJoin(getIntent().getStringExtra(KEY_TID))
-                .enqueue(new SimpleCallBack<Boolean>() {
+        callEnqueue(
+                getChatApi().groupJoin(getIntent().getStringExtra(KEY_TID)),
+                new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         getData(true);
@@ -545,8 +553,9 @@ public class GroupDetailActivity extends BaseActivity
      */
     private void quitGroup() {
         showLoadingDialog(null);
-        getChatApi().groupQuit(getIntent().getStringExtra(KEY_TID))
-                .enqueue(new SimpleCallBack<Boolean>() {
+        callEnqueue(
+                getChatApi().groupQuit(getIntent().getStringExtra(KEY_TID)),
+                new SimpleCallBack<Boolean>() {
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         dismissLoadingDialog();
@@ -600,8 +609,9 @@ public class GroupDetailActivity extends BaseActivity
             e.printStackTrace();
         }
         showLoadingDialog(null);
-        getChatApi().groupMemberAdd(getIntent().getStringExtra(KEY_TID), RequestUtils.createJsonBody(paramJsonStr))
-                .enqueue(new SimpleCallBack<JsonElement>() {
+        callEnqueue(
+                getChatApi().groupMemberAdd(getIntent().getStringExtra(KEY_TID), RequestUtils.createJsonBody(paramJsonStr)),
+                new SimpleCallBack<JsonElement>() {
                     @Override
                     public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                         dismissLoadingDialog();
@@ -639,7 +649,7 @@ public class GroupDetailActivity extends BaseActivity
      * @param hiddenChatBtn
      */
     public void showContactDialogFragment(String accid, boolean hiddenChatBtn) {
-        String tag = "ContactDialogFragment";
+        String tag = ContactDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
         if (fragment != null) {

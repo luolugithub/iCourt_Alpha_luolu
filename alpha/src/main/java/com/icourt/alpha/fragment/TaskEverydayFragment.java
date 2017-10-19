@@ -106,6 +106,11 @@ public class TaskEverydayFragment extends BaseFragment
                 } else if (isAllDayTask2) {
                     return 1;
                 } else {
+                    //到期时间不同
+                    long dueTimeDistance = calendarTask1.getTimeInMillis() - calendarTask2.getTimeInMillis();
+                    if (dueTimeDistance != 0) {
+                        return (int) dueTimeDistance;
+                    }
                     //同一时间到期的任务，应该按修改时间刷新排序
                     long distanceCreateTime = calendarTask1.getTimeInMillis() - calendarTask1.getTimeInMillis();
                     if (distanceCreateTime == 0) {
@@ -378,13 +383,13 @@ public class TaskEverydayFragment extends BaseFragment
                 if (updateTaskItemEntity.attendeeUsers != null) {
                     updateTaskItemEntity.attendeeUsers.clear();
                     updateTaskItemEntity.attendeeUsers.addAll(attusers);
-                    updateTask(updateTaskItemEntity, null, null,null);
+                    updateTask(updateTaskItemEntity, null, null, null);
                 }
             } else if (fragment instanceof DateSelectDialogFragment) {
                 long millis = params.getLong(KEY_FRAGMENT_RESULT);
                 updateTaskItemEntity.dueTime = millis;
                 TaskReminderEntity taskReminderEntity = (TaskReminderEntity) params.getSerializable("taskReminder");
-                updateTask(updateTaskItemEntity, null, null,taskReminderEntity);
+                updateTask(updateTaskItemEntity, null, null, taskReminderEntity);
 
             }
         }
@@ -418,17 +423,20 @@ public class TaskEverydayFragment extends BaseFragment
         if (taskItemEntity == null) return;
         String json = getReminderJson(taskReminderEntity);
         if (TextUtils.isEmpty(json)) return;
-        getApi().taskReminderAdd(taskItemEntity.id, RequestUtils.createJsonBody(json)).enqueue(new SimpleCallBack<TaskReminderEntity>() {
-            @Override
-            public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
+        callEnqueue(
+                getApi().taskReminderAdd(taskItemEntity.id, RequestUtils.createJsonBody(json)),
+                new SimpleCallBack<TaskReminderEntity>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
 
-            }
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<TaskReminderEntity>> call, Throwable t) {
-                super.onFailure(call, t);
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<TaskReminderEntity>> call, Throwable t) {
+                        super.onFailure(call, t);
+                    }
+                }
+        );
     }
 
     /**
@@ -438,8 +446,9 @@ public class TaskEverydayFragment extends BaseFragment
      */
     private void updateTask(final TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity, final TaskReminderEntity taskReminderEntity) {
         showLoadingDialog(null);
-        getApi().taskUpdateNew(RequestUtils.createJsonBody(getTaskJson(itemEntity, projectEntity, taskGroupEntity)))
-                .enqueue(new SimpleCallBack<TaskEntity.TaskItemEntity>() {
+        callEnqueue(
+                getApi().taskUpdateNew(RequestUtils.createJsonBody(getTaskJson(itemEntity, projectEntity, taskGroupEntity))),
+                new SimpleCallBack<TaskEntity.TaskItemEntity>() {
                     @Override
                     public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
                         dismissLoadingDialog();
@@ -455,7 +464,8 @@ public class TaskEverydayFragment extends BaseFragment
                         dismissLoadingDialog();
                         super.onFailure(call, t);
                     }
-                });
+                }
+        );
     }
 
     /**
@@ -508,8 +518,9 @@ public class TaskEverydayFragment extends BaseFragment
      */
     private void updateTask2(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
         showLoadingDialog(null);
-        getApi().taskUpdateNew(RequestUtils.createJsonBody(getTaskJson2(itemEntity, projectEntity, taskGroupEntity)))
-                .enqueue(new SimpleCallBack<TaskEntity.TaskItemEntity>() {
+        callEnqueue(
+                getApi().taskUpdateNew(RequestUtils.createJsonBody(getTaskJson2(itemEntity, projectEntity, taskGroupEntity))),
+                new SimpleCallBack<TaskEntity.TaskItemEntity>() {
                     @Override
                     public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
                         dismissLoadingDialog();
@@ -522,7 +533,8 @@ public class TaskEverydayFragment extends BaseFragment
                         dismissLoadingDialog();
                         super.onFailure(call, t);
                     }
-                });
+                }
+        );
     }
 
     /**

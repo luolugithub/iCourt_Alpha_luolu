@@ -12,6 +12,7 @@ import android.support.v4.graphics.drawable.DrawableCompat;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.icourt.alpha.R;
 import com.icourt.alpha.utils.transformations.GlideCircleTransform;
 
@@ -89,6 +90,7 @@ public class GlideUtils {
         if (canLoadImage(context)) {
             Glide.with(context)
                     .load(path)
+                    .thumbnail(0.2f)
                     .transform(new GlideCircleTransform(context))
                     .placeholder(R.mipmap.avatar_default_80)
                     .error(R.mipmap.avatar_default_80)
@@ -110,6 +112,7 @@ public class GlideUtils {
         if (canLoadImage(context)) {
             Glide.with(context)
                     .load(path)
+                    .thumbnail(0.2f)
                     // .transform(new GlideCircleTransform(context))
                     .placeholder(R.mipmap.ic_group_icon_default)
                     .error(R.mipmap.ic_group_icon_default)
@@ -136,6 +139,41 @@ public class GlideUtils {
         }
     }
 
+    /**
+     * @param context
+     * @param path
+     * @param imageView
+     */
+    public static void loadSFilePic(Context context, String path, ImageView imageView) {
+        if (imageView == null) return;
+        if (canLoadImage(context)) {
+            Glide.with(context)
+                    .load(path)
+                    .placeholder(R.mipmap.filetype_image)
+                    .error(R.mipmap.filetype_image)
+                    .into(imageView);
+        }
+    }
+
+    /**
+     * 适合本地加载  必须s设置  .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+     * 否则本地gif有问题
+     *
+     * @param context
+     * @param path
+     * @param imageView
+     */
+    public static void loadSFilePicWithoutPlaceholder(Context context, String path, ImageView imageView) {
+        if (imageView == null) return;
+        if (canLoadImage(context)) {
+            Glide.with(context)
+                    .load(path)
+                    .error(R.mipmap.filetype_image)
+                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                    .dontAnimate()
+                    .into(imageView);
+        }
+    }
 
     /**
      * 为图片着色

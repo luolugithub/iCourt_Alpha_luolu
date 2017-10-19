@@ -11,7 +11,7 @@
         android:id="@+id/file_image"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@mipmap/filetype_default_20" />
+        android:src="@mipmap/filetype_default" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -34,14 +34,6 @@
                 android:textColor="@color/alpha_font_color_black"
                 android:textSize="16sp" />
 
-            <TextView
-                android:id="@+id/file_upload_time_day_tv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/dp10"
-                android:textColor="@color/alpha_font_color_gray"
-                android:textSize="12sp"
-                android:visibility="gone" />
         </LinearLayout>
 
         <RelativeLayout

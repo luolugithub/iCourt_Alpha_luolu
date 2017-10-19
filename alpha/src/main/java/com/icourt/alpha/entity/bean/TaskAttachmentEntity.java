@@ -10,13 +10,45 @@ import java.io.Serializable;
  * version 2.0.0
  */
 
-public class TaskAttachmentEntity implements Serializable {
+public class TaskAttachmentEntity implements ISeaFile {
 
     public String id;
     public String taskId;
     public String fileExt;
     public long fileSize;
     public PathInfoVoEntity pathInfoVo;
+    public String filePermission;//rw,r
+    public long fileUpdateTime;//文件更新的时间戳
+
+    @Override
+    public String getSeaFileFullPath() {
+        return pathInfoVo != null ? pathInfoVo.filePath : "";
+    }
+
+    @Override
+    public String getSeaFileVersionId() {
+        return String.valueOf(fileUpdateTime);
+    }
+
+    @Override
+    public long getSeaFileSize() {
+        return fileSize;
+    }
+
+    @Override
+    public String getSeaFilePermission() {
+        return filePermission;
+    }
+
+    @Override
+    public String getSeaFileId() {
+        return id;
+    }
+
+    @Override
+    public String getSeaFileRepoId() {
+        return pathInfoVo != null ? pathInfoVo.repoId : "";
+    }
 
     public static class PathInfoVoEntity implements Serializable {
         public String repoId;

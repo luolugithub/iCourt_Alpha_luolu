@@ -20,7 +20,7 @@ import io.realm.RealmResults;
  * date createTime：2017/4/11
  * version 1.0.0
  */
-public class ContactDbService extends BaseRealmService<ContactDbModel, ContactDao> {
+public class ContactDbService extends BaseRealmService<ContactDao> {
     public ContactDbService(String uid) {
         super(new ContactDao(uid));
     }
@@ -129,6 +129,19 @@ public class ContactDbService extends BaseRealmService<ContactDbModel, ContactDa
     public RealmResults<ContactDbModel> queryAll() {
         if (isServiceAvailable()) {
             return dao.queryAll(ContactDbModel.class);
+        }
+        return null;
+    }
+
+    /**
+     * 查询所有 异步
+     *
+     * @return
+     */
+    @CheckResult
+    public RealmResults<ContactDbModel> queryAllAsync() {
+        if (isServiceAvailable()) {
+            return dao.queryAllAsync(ContactDbModel.class);
         }
         return null;
     }

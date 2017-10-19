@@ -18,6 +18,11 @@ import java.util.List;
  * date createTime：16/6/9
  * version
  */
+/**
+ * 新版本 @see {@link BaseAdapter}
+ * @param <T>
+ */
+@Deprecated
 public class HeaderFooterAdapter<T extends RecyclerView.Adapter> extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private final T mBase;
@@ -63,20 +68,6 @@ public class HeaderFooterAdapter<T extends RecyclerView.Adapter> extends Recycle
         mFooters.add(view);
     }
 
-    public void setHeaderVisibility(boolean shouldShow) {
-        for (View header : mHeaders) {
-            header.setVisibility(shouldShow ? View.VISIBLE : View.GONE);
-        }
-    }
-
-
-    public void setFooterVisibility(boolean shouldShow) {
-        for (View footer : mFooters) {
-            footer.setVisibility(shouldShow ? View.VISIBLE : View.GONE);
-        }
-    }
-
-
     public int getHeaderCount() {
         return mHeaders.size();
     }
@@ -111,6 +102,17 @@ public class HeaderFooterAdapter<T extends RecyclerView.Adapter> extends Recycle
         if (mHeaders != null && mHeaders.size() > 0) {
             if (mHeaders.contains(view)) {
                 mHeaders.remove(view);
+            }
+        }
+    }
+
+    public void removeFooter(View view) {
+        if (view == null) {
+            throw new IllegalArgumentException("You can't have a null header!");
+        }
+        if (mFooters != null && mFooters.size() > 0) {
+            if (mFooters.contains(view)) {
+                mFooters.remove(view);
             }
         }
     }

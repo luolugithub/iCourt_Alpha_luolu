@@ -145,7 +145,6 @@ public class ProjectListFragment extends BaseFragment implements BaseRecyclerAda
     @OnClick({R.id.header_comm_search_cancel_tv})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.header_comm_search_cancel_tv:
                 headerCommSearchInputEt.setText("");
@@ -156,14 +155,17 @@ public class ProjectListFragment extends BaseFragment implements BaseRecyclerAda
                 headerCommSearchInputLl.setVisibility(View.VISIBLE);
                 SystemUtils.showSoftKeyBoard(getActivity(), headerCommSearchInputEt);
                 break;
+            default:
+                super.onClick(v);
+                break;
         }
     }
 
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-        getApi().projectSelectByTask("0,2,7", null)
-                .enqueue(new SimpleCallBack<List<ProjectEntity>>() {
+        callEnqueue(getApi().projectSelectByTask("0,2,7", null),
+                new SimpleCallBack<List<ProjectEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<ProjectEntity>>> call, Response<ResEntity<List<ProjectEntity>>> response) {
                         dismissLoadingDialog();
@@ -186,8 +188,8 @@ public class ProjectListFragment extends BaseFragment implements BaseRecyclerAda
     private void searchProjectByName(final String projectName) {
         if (TextUtils.isEmpty(projectName)) return;
         //pms独有 带权限
-        getApi().projectSelectByTask("0,2,7", projectName)
-                .enqueue(new SimpleCallBack<List<ProjectEntity>>() {
+        callEnqueue(getApi().projectSelectByTask("0,2,7", projectName),
+                new SimpleCallBack<List<ProjectEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<ProjectEntity>>> call, Response<ResEntity<List<ProjectEntity>>> response) {
                         projectAdapter.clearData();

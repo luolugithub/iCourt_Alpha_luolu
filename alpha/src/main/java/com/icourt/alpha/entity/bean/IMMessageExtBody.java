@@ -1,9 +1,10 @@
 package com.icourt.alpha.entity.bean;
 
+import android.text.TextUtils;
+
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.db.convertor.IConvertModel;
 
-import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -13,7 +14,7 @@ import java.util.List;
  * date createTime：2017/4/28
  * version 1.0.0
  */
-public final class IMMessageExtBody implements Serializable, IConvertModel<SFileImageInfoEntity> {
+public final class IMMessageExtBody implements ISeaFile, IConvertModel<ChatFileInfoEntity> {
     public IMMessageExtBody() {
 
     }
@@ -51,7 +52,7 @@ public final class IMMessageExtBody implements Serializable, IConvertModel<SFile
     public String from;         //发送方名称
     public String to;           //对方id uid或者tid
     @Const.CHAT_TYPE
-    private int ope;            //0点对点，1群聊
+    public int ope;            //0点对点，1群聊
     @Const.MSG_TYPE
     public int show_type;
     public long send_time;
@@ -154,7 +155,51 @@ public final class IMMessageExtBody implements Serializable, IConvertModel<SFile
     }
 
     @Override
-    public SFileImageInfoEntity convert2Model() {
-        return new SFileImageInfoEntity(size, path, name, repo_id, thumb, width, height);
+    public ChatFileInfoEntity convert2Model() {
+        return new ChatFileInfoEntity(size, path, name, repo_id, thumb, getChatMediumImageUrl(), 0);
+    }
+
+    /**
+     * 获取聊天中等图片
+     *
+     * @return
+     */
+    public String getChatMediumImageUrl() {
+        if (!TextUtils.isEmpty(thumb)
+                && thumb.contains("/imgs/1x/"))//有中等图片
+        {
+            return thumb.replace("/imgs/1x/", "/imgs/2x/");
+        }
+        return thumb;
+    }
+
+    @Override
+    public String getSeaFileId() {
+        return null;
+    }
+
+    @Override
+    public String getSeaFileRepoId() {
+        return repo_id;
+    }
+
+    @Override
+    public String getSeaFileFullPath() {
+        return String.format("%s/%s", path, name);
+    }
+
+    @Override
+    public String getSeaFileVersionId() {
+        return null;
+    }
+
+    @Override
+    public long getSeaFileSize() {
+        return size;
+    }
+
+    @Override
+    public String getSeaFilePermission() {
+        return null;
     }
 }

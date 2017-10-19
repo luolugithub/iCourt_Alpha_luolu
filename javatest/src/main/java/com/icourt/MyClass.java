@@ -1,14 +1,14 @@
 package com.icourt;
 
+import java.io.File;
+import java.lang.ref.WeakReference;
 import java.text.CollationKey;
 import java.text.Collator;
-import java.util.ArrayList;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 public class MyClass {
 
@@ -32,15 +32,115 @@ public class MyClass {
         }
     };
 
+    /**
+     * Description 中国字符比较
+     * Company Beijing icourt
+     * author  youxuan  E-mail:xuanyouwu@163.com
+     * date createTime：2017/8/18
+     * version 2.1.0
+     */
+    public static class ChinaComparator implements Comparator<String> {
+        Collator cmp = Collator.getInstance(java.util.Locale.CHINA);
+
+        @Override
+        public int compare(String t0, String t1) {
+            int result = 0;
+            if (null != t0 && null != t1) {
+                CollationKey c1 = cmp.getCollationKey(t0);
+                CollationKey c2 = cmp.getCollationKey(t1);
+                result = cmp.compare(c1.getSourceString(), c2.getSourceString());
+            } else if (null == t0) {
+                result = 1;
+            } else if (null == t1) {
+                result = -1;
+            }
+            return result;
+        }
+    }
+
+    /**
+     * 获取文件名
+     *
+     * @return
+     */
+    public static String getFileName(String path) {
+        int separatorIndex = path.lastIndexOf(File.separator);
+        if (separatorIndex >= 0
+                && separatorIndex < path.length() - 1) {
+            return path.substring(separatorIndex + 1, path.length());
+        }
+        return path;
+    }
+
+    /**
+     * 获取文件的父路径
+     *
+     * @param filePath
+     * @return
+     */
+    public static final String getFileParentDir(String filePath) {
+        try {
+            int separatorIndex = filePath.lastIndexOf(File.separator);
+            if (separatorIndex > 0) {
+                if (separatorIndex == filePath.length() - 1) {
+                    String temp = filePath.substring(0, filePath.length() - 2);
+                    separatorIndex = temp.lastIndexOf(File.separator);
+                    if (separatorIndex > 0) {
+                        return filePath.substring(0, separatorIndex + 1);
+                    }
+                }
+                return filePath.substring(0, separatorIndex + 1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return File.separator;
+    }
+
     public static void main(String[] args) throws Exception {
-        List<String> data = Arrays.asList("测试二","测5","测试三", "aa");
+        String s = "/";
+        log("-------->sub:" + getFileParentDir(s));
+
+
+        String abc = new String("abc");
+        WeakReference<String> abcWeakRef = new WeakReference<String>(abc);
+        //abc=null;
+        System.out.println("before gc: " + abcWeakRef.get());
+        System.out.println("before gc1: " + abc);
+        System.gc();
+        System.out.println("after gc: " + abcWeakRef.get());
+
+        SimpleDateFormat sdf = new SimpleDateFormat();
+        sdf.applyPattern("yyyy-MM-dd: hh:mm");
+        log("------->1:" + sdf.format(new Date(1503745957)));
+        sdf.applyPattern("yyyy年MM-dd: hh:mm");
+        log("------->2:" + sdf.format(new Date(1503745957)));
+
+        /*
+        String s = "668f5488bccd4592f0888c5042f6b5f17aab8dd4";
+        String ss = "dshhggsd/sdbh/";
+        log("--------->sss:" + ss.substring(0, ss.lastIndexOf("/") + 2));
+
+        log("------->" + s.hashCode());
+        // * 特殊字符不能作为资料库名称：'\\', '/', ':', '*', '?', '"', '<', '>', '|', '\b', '\t'
+        Pattern pattern = Pattern.compile("[\\|/|:|*|?|\"|<|>|\\||\\\\b|\t]", Pattern.CASE_INSENSITIVE);
+        String text = "xx\\/:*?\"<>|\b\tdfggsf";
+        log("-----替换前:" + text);
+        Matcher matcher = pattern.matcher(text);
+        while (matcher.find()) {
+            log("保护字符 " + text.substring(matcher.start(), matcher.end()));
+        }
+        log("-----替换后:" + matcher.replaceAll(""));
+
+
+        List<String> data = Arrays.asList("测试二", "测5", "测试三", "aa");
         Collections.sort(data, new Comparator<String>() {
             @Override
             public int compare(String s, String t1) {
                 Collator cmp = Collator.getInstance(java.util.Locale.CHINA);
                 CollationKey c1 = cmp.getCollationKey(s);
                 CollationKey c2 = cmp.getCollationKey(t1);
-                return cmp.compare(c1.getSourceString(),c2.getSourceString());
+                return cmp.compare(c1.getSourceString(), c2.getSourceString());
 //                return s.compareTo(t1);
             }
         });
@@ -51,9 +151,9 @@ public class MyClass {
         log("------M:" + keyClendar.get(Calendar.MONTH));
         log("------H:" + keyClendar.get(Calendar.HOUR));
         log("------H2:" + keyClendar.get(Calendar.MILLISECOND));
-    /*    keyClendar.set(Calendar.HOUR,0);
+    *//*    keyClendar.set(Calendar.HOUR,0);
         keyClendar.set(Calendar.SECOND,0);
-        keyClendar.set(Calendar.MINUTE,0);*/
+        keyClendar.set(Calendar.MINUTE,0);*//*
 
 
         int age = Integer.parseInt("06");
@@ -87,7 +187,7 @@ public class MyClass {
         Collections.sort(list, longComparator2);
         log("------list3:" + list);
 
-      /*  String a = "cdgsgyfgsggfgfggfgfhds";
+      *//*  String a = "cdgsgyfgsggfgfggfgfhds";
         String b = "cdgsgyfgsggfgfggfgfhds0";
         new Thread(new Runnable() {
             @Override
@@ -96,12 +196,12 @@ public class MyClass {
                     String ba = a + "_" + b;
                 }
             }
-        });*/
+        });*//*
 
 
         long time = 60 + 1; //秒
         long minite = (time + 59) / 60;
-
+*/
     }
 
 
