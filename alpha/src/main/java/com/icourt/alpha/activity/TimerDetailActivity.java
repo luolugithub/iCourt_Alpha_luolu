@@ -349,6 +349,11 @@ public class TimerDetailActivity extends BaseTimerActivity
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        saveTiming(mItemEntity, true);
+    }
+
     /**
      * 显示底部菜单
      */
@@ -572,9 +577,4 @@ public class TimerDetailActivity extends BaseTimerActivity
         }
     }
 
-    @Override
-    public void onBackPressed() {
-        saveTiming(mItemEntity, true);
-        super.onBackPressed();
-    }
 }

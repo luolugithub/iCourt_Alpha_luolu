@@ -245,8 +245,7 @@ public class TimerTimingActivity extends BaseTimerActivity
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.titleBack:
-                saveTiming(mItemEntity, false);
-                finish();
+                saveTiming(mItemEntity, false, true);
                 break;
             case R.id.titleAction:
                 new BottomActionDialog(getContext(),
@@ -314,8 +313,7 @@ public class TimerTimingActivity extends BaseTimerActivity
 
     @Override
     public void onBackPressed() {
-        saveTiming(mItemEntity, false);
-        super.onBackPressed();
+        saveTiming(mItemEntity, false, true);
     }
 
     @Override
@@ -334,8 +332,9 @@ public class TimerTimingActivity extends BaseTimerActivity
      * 保存正在计时的修改内容
      *
      * @param isChangeTime 是否修改了开始时间
+     * @param isFinish     是否销毁界面
      */
-    private void saveTiming(final TimeEntity.ItemEntity itemEntity, final boolean isChangeTime) {
+    private void saveTiming(final TimeEntity.ItemEntity itemEntity, final boolean isChangeTime, final boolean isFinish) {
         //实时保存
         if (itemEntity != null) {
             JsonObject jsonBody = null;
@@ -384,6 +383,9 @@ public class TimerTimingActivity extends BaseTimerActivity
                                 TimerManager.getInstance().timerQuerySync();
                             }
                             initContentView(mItemEntity);
+                            if (isFinish) {
+                                finish();
+                            }
                         }
 
                         @Override
@@ -452,7 +454,7 @@ public class TimerTimingActivity extends BaseTimerActivity
             selectedStartDate.clear();
             selectedStartDate.setTimeInMillis(timeMillis);
         }
-        saveTiming(cloneEntity, isChangeTime);
+        saveTiming(cloneEntity, isChangeTime, false);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
