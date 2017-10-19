@@ -265,6 +265,8 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
             if (type == 100 && bundle != null) {
                 boolean isFinish = bundle.getBoolean("isFinish");
                 boolean valid = bundle.getBoolean("valid");
+                if (footerAddView != null)
+                    footerAddView.setVisibility((!isFinish && valid && hasAddAttachmentPermission) ? View.VISIBLE : View.GONE);
                 if (footerAddView != null) {
                     footerAddView.setVisibility(!isFinish && valid ? View.VISIBLE : View.GONE);
                 }
@@ -370,11 +372,11 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
                         return !strings.isEmpty();
                     }
                 })
-                .flatMap(new Function<List<String>, ObservableSource<JsonElement>>() {
+                .flatMap(new Function<List<String>, ObservableSource<ResEntity<JsonElement>>>() {
 
                     @Override
-                    public ObservableSource<JsonElement> apply(@io.reactivex.annotations.NonNull List<String> strings) throws Exception {
-                        List<Observable<JsonElement>> observables = new ArrayList<Observable<JsonElement>>();
+                    public ObservableSource<ResEntity<JsonElement>> apply(@io.reactivex.annotations.NonNull List<String> strings) throws Exception {
+                        List<Observable<ResEntity<JsonElement>>> observables = new ArrayList<Observable<ResEntity<JsonElement>>>();
                         for (int i = 0; i < strings.size(); i++) {
                             String filePath = strings.get(i);
                             if (TextUtils.isEmpty(filePath)) {
@@ -386,23 +388,24 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
                             }
                             Map<String, RequestBody> params = new HashMap<>();
                             params.put(RequestUtils.createStreamKey(file), RequestUtils.createImgBody(file));
-                            observables.add(getApi().taskAttachmentUploadObservable(taskId, params));
+                            observables.add(sendObservable3(getApi().taskAttachmentUploadObservable(taskId, params)));
                         }
                         return Observable.concat(observables);
                     }
                 })
-                .compose(this.<JsonElement>bindToLifecycle())
+                .compose(this.<ResEntity<JsonElement>>bindToLifecycle())
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new BaseObserver<JsonElement>() {
+                .subscribe(new BaseObserver<ResEntity<JsonElement>>() {
                     @Override
                     public void onSubscribe(@io.reactivex.annotations.NonNull Disposable disposable) {
                         super.onSubscribe(disposable);
                         showLoadingDialog(R.string.str_uploading);
+
                     }
 
                     @Override
-                    public void onNext(@io.reactivex.annotations.NonNull JsonElement jsonElement) {
+                    public void onNext(@io.reactivex.annotations.NonNull ResEntity<JsonElement> resEntity) {
 
                     }
 

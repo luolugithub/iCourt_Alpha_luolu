@@ -835,7 +835,7 @@ public interface ApiAlphaService {
      */
     @Multipart
     @POST("ilaw/api/v2/task/{taskId}/attachment/addFromFile")
-    Observable<JsonElement> taskAttachmentUploadObservable(@Path("taskId") String taskId, @PartMap Map<String, RequestBody> params);
+    Observable<ResEntity<JsonElement>> taskAttachmentUploadObservable(@Path("taskId") String taskId, @PartMap Map<String, RequestBody> params);
 
     /**
      * 获取指定时间段的计时

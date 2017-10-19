@@ -314,19 +314,21 @@ public class TaskCheckItemFragment extends BaseFragment
      *
      * @param editText
      */
-    private void edittextSetFocus(EditText editText) {
-        editText.setFocusable(true);
-        editText.setFocusableInTouchMode(true);
-        editText.requestFocus();
-        editText.findFocus();
-        editText.setSelection(editText.getText().length());
-        SystemUtils.showSoftKeyBoard(getActivity());
-
+    private void edittextSetFocus(EditText editText, TaskCheckItemEntity.ItemEntity itemEntity) {
+        if (valid && !isFinish && !itemEntity.state) {
+            editText.setFocusable(true);//设置输入框可聚集
+            editText.setFocusableInTouchMode(true);//设置触摸聚焦
+            editText.requestFocus();//请求焦点
+            editText.findFocus();//获取焦点
+            editText.setSelection(editText.getText().length());
+            SystemUtils.showSoftKeyBoard(getActivity());
+        }
     }
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        edittextSetFocus((EditText) holder.itemView.findViewById(R.id.check_item_name_tv));
+        TaskCheckItemEntity.ItemEntity itemEntity = (TaskCheckItemEntity.ItemEntity) adapter.getItem(position);
+        edittextSetFocus((EditText) holder.itemView.findViewById(R.id.check_item_name_tv), itemEntity);
     }
 
     @Override

@@ -320,6 +320,11 @@ public class TimerDetailActivity extends BaseTimerActivity
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        saveTiming(true);
+    }
+
     /**
      * 显示底部菜单
      */
@@ -553,9 +558,4 @@ public class TimerDetailActivity extends BaseTimerActivity
         saveTiming(false);
     }
 
-    @Override
-    public void onBackPressed() {
-        saveTiming(true);
-        super.onBackPressed();
-    }
 }
