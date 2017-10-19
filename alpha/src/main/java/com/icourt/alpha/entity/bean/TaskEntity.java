@@ -90,6 +90,7 @@ public class TaskEntity implements Serializable {
         }
 
 
+    public static class TaskItemEntity implements Serializable, MultiItemEntity, Cloneable {
         public String groupName;//任务所在分组名称
         public String groupId;//分组id
         public int groupTaskCount;//分组有多少个任务
@@ -134,7 +135,7 @@ public class TaskEntity implements Serializable {
         }
 
         public static class MatterEntity
-                implements Serializable, IConvertModel<ProjectEntity> {
+                implements Serializable, IConvertModel<ProjectEntity>, Cloneable {
             public String id;
             public String name;
             public String matterType;
@@ -147,21 +148,31 @@ public class TaskEntity implements Serializable {
                 projectEntity.matterType = matterType;
                 return projectEntity;
             }
+
+            @Override
+            public Object clone() throws CloneNotSupportedException {
+                return super.clone();
+            }
         }
 
         /**
          * 任务创建人
          */
-        public static class CreateUserEntity implements Serializable {
+        public static class CreateUserEntity implements Serializable, Cloneable {
             public String userId;
             public String userName;
             public String pic;
+
+            @Override
+            public Object clone() throws CloneNotSupportedException {
+                return super.clone();
+            }
         }
 
         /**
          * 任务相关人
          */
-        public static class AttendeeUserEntity implements Serializable {
+        public static class AttendeeUserEntity implements Serializable, Cloneable {
             @SerializedName(value = "userId", alternate = {"id"})
             public String userId;
             @SerializedName(value = "userName", alternate = {"name"})
@@ -178,11 +189,21 @@ public class TaskEntity implements Serializable {
                 final AttendeeUserEntity other = (AttendeeUserEntity) o;
                 return TextUtils.equals(this.userId, other.userId);
             }
+
+            @Override
+            public Object clone() throws CloneNotSupportedException {
+                return super.clone();
+            }
         }
 
-        public static class ParentFlowEntity implements Serializable {
+        public static class ParentFlowEntity implements Serializable, Cloneable {
             public String id;
             public String name;
+
+            @Override
+            public Object clone() throws CloneNotSupportedException {
+                return super.clone();
+            }
         }
 
         @Override
@@ -196,7 +217,9 @@ public class TaskEntity implements Serializable {
             return TextUtils.equals(this.id, other.id);
         }
 
+        @Override
+        public Object clone() throws CloneNotSupportedException {
+            return super.clone();
+        }
     }
-
-
 }

@@ -18,7 +18,7 @@ import com.icourt.alpha.utils.GlideUtils;
 
 public class TaskOwerListAdapter extends MultiSelectRecyclerAdapter<TaskEntity.TaskItemEntity.AttendeeUserEntity> {
     @Override
-    public int bindView(int viewtype) {
+    public int bindView(int viewType) {
         return R.layout.adapter_item_task_ower_layout;
     }
 

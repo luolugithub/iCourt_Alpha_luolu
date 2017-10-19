@@ -59,7 +59,9 @@ import retrofit2.Response;
 public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAdapter.OnItemLongClickListener, BaseQuickAdapter.OnItemChildClickListener, BaseQuickAdapter.OnItemClickListener {
 
     private static final String KEY_PROJECT_ID = "key_project_id";
-
+    private static final String PROJECT_EDIT_TASK_PREMISSION = "MAT:matter.task:edit";
+    private static final String PROJECT_DELETE_TASK_PREMISSION = "MAT:matter.task:delete";
+    private static final String PROJECT_ADD_TASK_PREMISSION = "MAT:matter.timeLog:add";
     Unbinder unbinder;
     @Nullable
     @BindView(R.id.recyclerView)
@@ -67,7 +69,10 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
     @BindView(R.id.refreshLayout)
     SmartRefreshLayout refreshLayout;
 
-    private boolean isFirstTimeIntoPage = true;//用来判断是不是第一次进入该界面，如果是，滚动到一条任务，隐藏搜索栏。
+    /**
+     * 用来判断是不是第一次进入该界面，如果是，滚动到一条任务，隐藏搜索栏。
+     */
+    private boolean isFirstTimeIntoPage = true;
 
     TaskAdapter taskAdapter;
     TaskEntity.TaskItemEntity lastEntity;
@@ -156,13 +161,13 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
                     public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
 
                         if (response.body().result != null) {
-                            if (response.body().result.contains("MAT:matter.task:edit")) {
+                            if (response.body().result.contains(PROJECT_EDIT_TASK_PREMISSION)) {
                                 isEditTask = true;
                             }
-                            if (response.body().result.contains("MAT:matter.task:delete")) {
+                            if (response.body().result.contains(PROJECT_DELETE_TASK_PREMISSION)) {
                                 isDeleteTask = true;
                             }
-                            if (response.body().result.contains("MAT:matter.timeLog:add")) {
+                            if (response.body().result.contains(PROJECT_ADD_TASK_PREMISSION)) {
                                 isAddTime = true;
                             }
                         }
@@ -207,7 +212,9 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
                 Observable.create(new ObservableOnSubscribe<List<TaskEntity.TaskItemEntity>>() {
                     @Override
                     public void subscribe(ObservableEmitter<List<TaskEntity.TaskItemEntity>> e) throws Exception {
-                        if (e.isDisposed()) return;
+                        if (e.isDisposed()) {
+                            return;
+                        }
                         e.onNext(groupingByTasks(taskEntity.items));
                         e.onComplete();
                     }
@@ -237,11 +244,16 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
      * @param taskitems
      */
     private List<TaskEntity.TaskItemEntity> groupingByTasks(List<TaskEntity.TaskItemEntity> taskitems) {
-        List<TaskEntity.TaskItemEntity> allTaskEntities = new ArrayList<>();//展示所要用到的列表集合
-        List<TaskEntity> taskGroup = new ArrayList<>();//用来存放任务组的列表
-        List<TaskEntity.TaskItemEntity> noitems = new ArrayList<>();//没有分配任务组的任务列表
-        List<TaskEntity.TaskItemEntity> taskEntities = new ArrayList<>();//所有分配了任务组的任务列表
-        List<TaskEntity.TaskItemEntity> myStarTaskEntities = new ArrayList<>();//我关注的的任务列表
+        //展示所要用到的列表集合
+        List<TaskEntity.TaskItemEntity> allTaskEntities = new ArrayList<>();
+        //用来存放任务组的列表
+        List<TaskEntity> taskGroup = new ArrayList<>();
+        //没有分配任务组的任务列表
+        List<TaskEntity.TaskItemEntity> noitems = new ArrayList<>();
+        //所有分配了任务组的任务列表
+        List<TaskEntity.TaskItemEntity> taskEntities = new ArrayList<>();
+        //我关注的的任务列表
+        List<TaskEntity.TaskItemEntity> myStarTaskEntities = new ArrayList<>();
 
         TimeEntity.ItemEntity timerEntity = TimerManager.getInstance().getTimer();
         for (TaskEntity.TaskItemEntity taskItemEntity : taskitems) {
@@ -257,23 +269,28 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
                     }
                 }
             }
-            if (taskItemEntity.type == 1) {//1:任务组，将所有任务组单独拿出来，存放到taskGroup列表中。
+            //1:任务组，将所有任务组单独拿出来，存放到taskGroup列表中。
+            if (taskItemEntity.type == 1) {
                 TaskEntity itemEntity = new TaskEntity();
                 itemEntity.groupName = taskItemEntity.name;
                 itemEntity.groupId = taskItemEntity.id;
                 taskGroup.add(itemEntity);
-            } else if (taskItemEntity.type == 0) {//0:任务，对任务进行分组处理。
-                if (TextUtils.isEmpty(taskItemEntity.parentId)) {//如果parentId为空，说明该任务没有分配任务组。
+            } //0:任务，对任务进行分组处理。
+            else if (taskItemEntity.type == 0) {
+                //如果parentId为空，说明该任务没有分配任务组。
+                if (TextUtils.isEmpty(taskItemEntity.parentId)) {
                     noitems.add(taskItemEntity);
                 } else {
                     taskEntities.add(taskItemEntity);
                 }
-                if (taskItemEntity.attentioned == 1) {//我关注的任务
+                //我关注的任务
+                if (taskItemEntity.attentioned == 1) {
                     myStarTaskEntities.add(taskItemEntity);
                 }
             }
         }
-        if (taskGroup.size() > 0) {//遍历所有任务组，将有任务组的item添加到对应任务组的列表里面。
+        //遍历所有任务组，将有任务组的item添加到对应任务组的列表里面。
+        if (taskGroup.size() > 0) {
             for (TaskEntity taskEntity : taskGroup) {
                 List<TaskEntity.TaskItemEntity> items = new ArrayList<>();
                 for (TaskEntity.TaskItemEntity entity : taskEntities) {
@@ -285,7 +302,8 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
                 taskEntity.groupTaskCount = items.size();
             }
         } else {
-            if (!taskEntities.isEmpty()) {//如果任务组列表为空，将所有任务添加到为分组列表里面。
+            //如果任务组列表为空，将所有任务添加到为分组列表里面。
+            if (!taskEntities.isEmpty()) {
                 noitems.addAll(taskEntities);
             }
         }
@@ -307,7 +325,8 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
         //taskGroup为分组完成的列表，将分组完成的列表转换成我们要显示的数据格式。
         for (TaskEntity taskEntity : taskGroup) {
             TaskEntity.TaskItemEntity itemEntity = new TaskEntity.TaskItemEntity();
-            itemEntity.type = 1;//表示是任务组
+            //表示是任务组
+            itemEntity.type = 1;
             itemEntity.groupName = taskEntity.groupName;
             itemEntity.groupTaskCount = taskEntity.groupTaskCount;
             allTaskEntities.add(itemEntity);
@@ -337,7 +356,9 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onUpdateTaskEvent(TaskActionEvent event) {
-        if (event == null) return;
+        if (event == null) {
+            return;
+        }
         if (event.action == TaskActionEvent.TASK_REFRESG_ACTION) {
             getData(true);
         }
@@ -364,7 +385,8 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
 
     @Override
     protected void taskUpdateBack(@ChangeType int actionType, @NonNull TaskEntity.TaskItemEntity itemEntity) {
-        if (actionType == CHANGE_PROJECT) {//因为项目下是以任务组来分组的，所以如果切换任务的项目／任务组，则需要刷新列表
+        //因为项目下是以任务组来分组的，所以如果切换任务的项目／任务组，则需要刷新列表
+        if (actionType == CHANGE_PROJECT) {
             getData(true);
         } else {
             taskAdapter.updateItem(itemEntity);
@@ -373,12 +395,14 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
 
     @Override
     protected void taskTimingUpdateEvent(String taskId) {
-        if (TextUtils.isEmpty(taskId)) {//停止计时的广播
+        //停止计时的广播
+        if (TextUtils.isEmpty(taskId)) {
             if (lastEntity != null) {
                 lastEntity.isTiming = false;
             }
             taskAdapter.notifyDataSetChanged();
-        } else {//开始计时的广播
+        } else {
+            //开始计时的广播
             taskAdapter.notifyDataSetChanged();
         }
 
@@ -387,8 +411,10 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
     @Override
     public boolean onItemLongClick(BaseQuickAdapter baseQuickAdapter, View view, int i) {
         TaskEntity.TaskItemEntity item = taskAdapter.getItem(i);
-        if (item != null && item.type == 0)//说明是任务
+        //说明是任务
+        if (item != null && item.type == 0) {
             showLongMenu(item);
+        }
         return false;
     }
 
@@ -397,8 +423,9 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
         TaskEntity.TaskItemEntity itemEntity = taskAdapter.getItem(i);
         switch (view.getId()) {
             case R.id.task_item_start_timming:
-                if (itemEntity == null)
+                if (itemEntity == null) {
                     return;
+                }
                 if (!itemEntity.isTiming) {
                     MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
                     startTiming(itemEntity);
@@ -409,9 +436,11 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
                 break;
             case R.id.task_item_checkbox:
                 if (isEditTask) {
-                    if (itemEntity == null)
+                    if (itemEntity == null) {
                         return;
-                    if (!itemEntity.state) {//完成任务
+                    }
+                    //完成任务
+                    if (!itemEntity.state) {
                         if (itemEntity.attendeeUsers != null) {
                             if (itemEntity.attendeeUsers.size() > 1) {
                                 showFinishDialog(getActivity(), getString(R.string.task_is_confirm_complete_task), itemEntity, SHOW_FINISH_DIALOG);
@@ -421,12 +450,15 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
                         } else {
                             updateTaskState(itemEntity, true);
                         }
-                    } else {//取消完成任务
+                    } else {
+                        //取消完成任务
                         updateTaskState(itemEntity, false);
                     }
                 } else {
                     showTopSnackBar(R.string.task_not_permission_edit_task);
                 }
+                break;
+            default:
                 break;
         }
     }
@@ -434,8 +466,10 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
     @Override
     public void onItemClick(BaseQuickAdapter baseQuickAdapter, View view, int i) {
         TaskEntity.TaskItemEntity item = taskAdapter.getItem(i);
-        if (item != null && item.type == 0)//说明是任务
+        //说明是任务
+        if (item != null && item.type == 0) {
             TaskDetailActivity.launch(view.getContext(), item.id);
+        }
     }
 
     @Override

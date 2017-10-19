@@ -21,13 +21,15 @@ public class TaskSelectAdapter extends SelectedRecyclerAdapter<TaskEntity.TaskIt
     }
 
     @Override
-    public int bindView(int viewtype) {
+    public int bindView(int viewType) {
         return R.layout.adapter_item_task_simple;
     }
 
     @Override
     public void onBindSelectableHoder(ViewHolder holder, TaskEntity.TaskItemEntity taskItemEntity, int position, boolean selected) {
-        if (taskItemEntity == null) return;
+        if (taskItemEntity == null) {
+            return;
+        }
         TextView work_type_title_tv = holder.obtainView(R.id.task_title_tv);
         work_type_title_tv.setText(taskItemEntity.name);
         ImageView work_type_arrow_iv = holder.obtainView(R.id.task_arrow_iv);

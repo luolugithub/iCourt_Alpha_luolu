@@ -43,8 +43,16 @@ import retrofit2.Response;
 
 public class ProjectTaskGroupActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
     private static final String KEY_PROJECT_ID = "key_project_id";
-    private static final int CREATE_GROUP_REQUEST_CODE = 0;//新建
-    private static final int UPDATE_GROUP_REQUEST_CODE = 1;//编辑
+    private static final String PROJECT_ADD_TASK_PERMISSION = "MAT:matter.task:add";
+    private static final String PROJECT_EDIT_TASK_PERMISSION = "MAT:matter.task:edit";
+    /**
+     * 新建
+     */
+    private static final int CREATE_GROUP_REQUEST_CODE = 0;
+    /**
+     * 编辑
+     */
+    private static final int UPDATE_GROUP_REQUEST_CODE = 1;
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -60,19 +68,31 @@ public class ProjectTaskGroupActivity extends BaseActivity implements BaseRecycl
 
     String projectId;
     ProjectTaskGroupAdapter projectTaskGroupAdapter;
-    boolean isCanAddGroup = false;//是否可以添加任务组
-    boolean isCanEditGroup = false;//是否可以编辑任务组
+    /**
+     * 是否可以添加任务组
+     */
+    boolean isCanAddGroup = false;
+    /**
+     * 是否可以编辑任务组
+     */
+    boolean isCanEditGroup = false;
 
     public static void launch(@NonNull Context context, @NonNull String projectId) {
-        if (context == null) return;
-        if (TextUtils.isEmpty(projectId)) return;
+        if (context == null) {
+            return;
+        }
+        if (TextUtils.isEmpty(projectId)) {
+            return;
+        }
         Intent intent = new Intent(context, ProjectTaskGroupActivity.class);
         intent.putExtra(KEY_PROJECT_ID, projectId);
         context.startActivity(intent);
     }
 
     public static void launchSetResult(@NonNull Activity activity, @NonNull TaskGroupEntity taskGroupEntity) {
-        if (activity == null) return;
+        if (activity == null) {
+            return;
+        }
         Intent intent = new Intent(activity, ProjectTaskGroupActivity.class);
         intent.putExtra(KEY_ACTIVITY_RESULT, taskGroupEntity);
         activity.setResult(RESULT_OK, intent);
@@ -116,7 +136,8 @@ public class ProjectTaskGroupActivity extends BaseActivity implements BaseRecycl
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.titleAction://添加任务组
+            //添加任务组
+            case R.id.titleAction:
                 TaskGroupCreateActivity.launchForResult(this, projectId, TaskGroupCreateActivity.CREAT_TASK_GROUP_TYPE, CREATE_GROUP_REQUEST_CODE);
                 break;
             default:
@@ -136,11 +157,11 @@ public class ProjectTaskGroupActivity extends BaseActivity implements BaseRecycl
                     public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
 
                         if (response.body().result != null) {
-                            if (response.body().result.contains("MAT:matter.task:add")) {
+                            if (response.body().result.contains(PROJECT_ADD_TASK_PERMISSION)) {
                                 isCanAddGroup = true;
                                 titleAction.setVisibility(View.VISIBLE);
                             }
-                            if (response.body().result.contains("MAT:matter.task:edit")) {
+                            if (response.body().result.contains(PROJECT_EDIT_TASK_PERMISSION)) {
                                 isCanEditGroup = true;
                             }
                             if (projectTaskGroupAdapter != null) {

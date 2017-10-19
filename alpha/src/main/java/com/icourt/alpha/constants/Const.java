@@ -121,7 +121,6 @@ public class Const {
     public static final int PROJECT_STATUS_FINISH = 4;//已完结
     public static final int PROJECT_STATUS_END = 7;//已搁置
 
-
     @StringDef({PROJECT_TYPE_DISPUTE, PROJECT_TYPE_NOJUDICIAL, PROJECT_TYPE_COUNSELOR, PROJECT_TYPE_AFFAIR})
     @Retention(RetentionPolicy.SOURCE)
     public @interface PROJECT_TYPE {

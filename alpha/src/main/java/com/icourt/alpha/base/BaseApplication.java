@@ -2,6 +2,7 @@ package com.icourt.alpha.base;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
@@ -438,16 +439,19 @@ public class BaseApplication extends MultiDexApplication {
     private void initGalleryFinal() {
         ThemeConfig themeConfig = new ThemeConfig.Builder()
                 .setCheckSelectedColor(SystemUtils.getColor(this, R.color.alpha_font_color_orange))
+                .setCropControlColor(SystemUtils.getColor(this, R.color.alpha_font_color_orange))
                 .setFabNornalColor(SystemUtils.getColor(this, R.color.alpha_font_color_orange))
                 .setTitleBarTextColor(SystemUtils.getColor(this, R.color.alpha_font_color_black))
                 .setTitleBarBgColor(Color.WHITE)
                 .setTitleBarIconColor(SystemUtils.getColor(this, R.color.alpha_font_color_orange))
+                .setEditPhotoBgTexture(new ColorDrawable(SystemUtils.getColor(this,R.color.black)))
+                .setIconCrop(0)
                 .build();
 
         FunctionConfig.Builder functionConfigBuilder = new FunctionConfig.Builder();
         ImageLoader imageLoader = new GlideImageLoader();
         functionConfigBuilder.setMutiSelectMaxSize(9);
-        functionConfigBuilder.setEnableEdit(true);
+        functionConfigBuilder.setEnableEdit(false);
         functionConfigBuilder.setEnableRotate(true);
         functionConfigBuilder.setRotateReplaceSource(true);
         functionConfigBuilder.setEnableCrop(true);

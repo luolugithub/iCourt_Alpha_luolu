@@ -86,13 +86,27 @@ public interface ApiAlphaService {
     /**
      * 修改律师电话信息
      *
-     * @param phone 手机号码 不包含+86国际代码的字符串
+     * @param phone 手机号码 包含+86国际代码的字符串
      * @return
      */
-    @Deprecated
     @POST("ilaw/api/v1/auth/update")
     @FormUrlEncoded
-    Call<ResEntity<String>> updateUserPhone(@Field("phone") String phone);
+    Call<ResEntity<JsonElement>> updateUserPhone(@Field("id") String id,
+                                                 @Field("phone") String phone);
+
+    /**
+     * 更新用户信息
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/auth-api/updateUsingPOST
+     *
+     * @param id
+     * @param name
+     * @return
+     */
+    @POST("ilaw/api/v1/auth/update")
+    @FormUrlEncoded
+    Call<ResEntity<JsonElement>> updateUserName(@Field("id") String id,
+                                                @Field("name") String name);
 
     /**
      * 修改律师邮箱信息
@@ -100,10 +114,10 @@ public interface ApiAlphaService {
      * @param email
      * @return
      */
-    @Deprecated
     @POST("ilaw/api/v1/auth/update")
     @FormUrlEncoded
-    Call<ResEntity<String>> updateUserEmail(@Field("email") String email);
+    Call<ResEntity<JsonElement>> updateUserEmail(@Field("id") String id,
+                                                 @Field("email") String email);
 
     /**
      * 微信登陆
@@ -409,7 +423,11 @@ public interface ApiAlphaService {
      * @return
      */
     @POST("ilaw/api/v1/auth/update")
-    Call<ResEntity<JsonElement>> updateUserInfo(@Query("id") String id, @Query("phone") String phone, @Query("email") String email);
+    Call<ResEntity<JsonElement>> updateUserInfo(@Query("id") String id,
+                                                @Query("name") String name,
+                                                @Query("phone") String phone,
+                                                @Query("email") String email);
+
 
     /**
      * 项目下计时列表
@@ -738,6 +756,31 @@ public interface ApiAlphaService {
                                                   @Query("pageIndex") int pageIndex,
                                                   @Query("pageSize") int pageSize,
                                                   @Query("type") int type);
+
+    /**
+     * 任务列表
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/queryTaskFlowsUsingGET_1
+     *
+     * @param assignTos     分配给谁的，用户的id序列
+     * @param stateType     全部任务:－1    已完成:1     未完成:0
+     * @param attentionType 全部:0    我关注的:1
+     * @param orderBy       按指定类型排序或分组；matterId表示按项目排序;createTime表示按日期排序(默认);parentId表示按清单;assignTo表示按负责人排序
+     * @param pageIndex
+     * @param pageSize
+     * @param type          任务和任务组：-1;    任务：0;    任务组：1;
+     * @return
+     */
+    @GET("ilaw/api/v2/taskflow")
+    Call<ResEntity<TaskEntity>> taskListItemByTimeQuery(@Query("assignTos") String assignTos,
+                                                        @Query("stateType") int stateType,
+                                                        @Query("attentionType") int attentionType,
+                                                        @Query("orderBy") String orderBy,
+                                                        @Query("pageIndex") int pageIndex,
+                                                        @Query("pageSize") int pageSize,
+                                                        @Query("type") int type,
+                                                        @Query("startTime") String startTime,
+                                                        @Query("endTime") String endTime);
 
     /**
      * 项目下任务列表
@@ -1533,6 +1576,14 @@ public interface ApiAlphaService {
      */
     @GET("ilaw/api/v1/matters/{matterId}/processes")
     Call<ResEntity<List<ProjectProcessesEntity>>> projectProcessesQuery(@Path("matterId") String matterId);
+
+    /**
+     * 逸创云客服单点登录接口(帮助中心)
+     * 文档地址：https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/version-control-api/getLastestUpgradeVersionUsingGET
+     * @return
+     */
+    @GET("ilaw/api/v1/ssologin/help")
+    Call<ResEntity<String>> helperUrlQuery();
 
     /**
      * 获取律所资料库下面的资料库

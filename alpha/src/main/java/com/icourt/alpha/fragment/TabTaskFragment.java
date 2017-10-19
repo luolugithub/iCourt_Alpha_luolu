@@ -57,7 +57,7 @@ import retrofit2.Response;
 /**
  * Description  任务tab页面
  * Company Beijing icourt
- * author  youxuan  E-mail:xuanyouwu@163.com
+ * @author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/4/8
  * version 1.0.0
  */
@@ -79,15 +79,38 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
     Unbinder unbinder;
 
     BaseFragmentAdapter baseFragmentAdapter;
-    TaskAllFragment alltaskFragment; //用来显示未完成、已完成、已删除的任务列表的碎片
-    TaskListFragment attentionTaskFragment; //我关注的任务列表
-    TopMiddlePopup topMiddlePopup;//用来显示顶部未完成、已完成、已删除的弹出窗
-    List<FilterDropEntity> dropEntities = new ArrayList<>();//存储弹出窗所需要的数据的集合
-    ScaleTransitionPagerTitleView firstTabView;//第一个Tab，用来显示未完成、已完成、已删除的tab。
-
-    public int selectPosition = 0;//选择的筛选选项的position：0，未完成；1，已完成；2，已删除。
-    public boolean isAwayScroll = false; //切换时是否滚动，在'已完成和已删除'状态下，点击新任务提醒。
-    public boolean isShowCalendar;//是否显示日历页面
+    /**
+     * 用来显示未完成、已完成、已删除的任务列表的碎片
+     */
+    TaskAllFragment alltaskFragment;
+    /**
+     * 我关注的任务列表
+     */
+    TaskListFragment attentionTaskFragment;
+    /**
+     * 用来显示顶部未完成、已完成、已删除的弹出窗
+     */
+    TopMiddlePopup topMiddlePopup;
+    /**
+     * 存储弹出窗所需要的数据的集合
+     */
+    List<FilterDropEntity> dropEntities = new ArrayList<>();
+    /**
+     * 第一个Tab，用来显示未完成、已完成、已删除的tab。
+     */
+    ScaleTransitionPagerTitleView firstTabView;
+    /**
+     * 选择的筛选选项的position：0，未完成；1，已完成；2，已删除。
+     */
+    public int selectPosition = 0;
+    /**
+     * 切换时是否滚动，在'已完成和已删除'状态下，点击新任务提醒。
+     */
+    public boolean isAwayScroll = false;
+    /**
+     * 是否显示日历页面
+     */
+    public boolean isShowCalendar;
 
     private Handler handler = new Handler();
 
@@ -106,25 +129,23 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
 
     @Override
     protected void initView() {
-
-        setTaskPopCount("0", "0", "0");//初始化任务的pop所要显示的数据
+        //初始化任务的pop所要显示的数据
+        setTaskPopCount("0", "0", "0");
         topMiddlePopup = new TopMiddlePopup(getContext(), DensityUtil.getWidthInDp(getContext()), (int) (DensityUtil.getHeightInPx(getContext()) - DensityUtil.dip2px(getContext(), 75)), this);
         topMiddlePopup.setMyItems(dropEntities);
-        getTasksStateCount();//获取任务的pop所要显示的数据
-        selectPosition = 0;//默认选中未完成的筛选器
-
+        //获取任务的pop所要显示的数据
+        getTasksStateCount();
+        //默认选中未完成的筛选器
+        selectPosition = 0;
         baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager());
-
-
         viewPager.setNoScroll(false);
         viewPager.setAdapter(baseFragmentAdapter);
-//        tabLayout.setupWithViewPager(viewPager);
 
         baseFragmentAdapter.bindData(true,
                 Arrays.asList(
                         alltaskFragment = TaskAllFragment.newInstance(),
                         attentionTaskFragment = TaskListFragment.newInstance(TaskListFragment.TYPE_MY_ATTENTION, 0)));
-        baseFragmentAdapter.bindTitle(true, Arrays.asList("未完成", "我关注的"));
+        baseFragmentAdapter.bindTitle(true, Arrays.asList(getString(R.string.task_unfinished), getString(R.string.task_my_attention)));
 
         CommonNavigator commonNavigator = new CommonNavigator(getContext());
         AlphaTitleNavigatorAdapter indicatorAdapter = new AlphaTitleNavigatorAdapter() {
@@ -160,6 +181,12 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
 
             @Override
             public void onTabClick(View v, int pos) {
+                //说明当前是第0个，并且点击了第0个，需要弹出筛选已完成、未完成、已删除的弹出窗。
+                if (viewPager.getCurrentItem() == 0 && pos == 0) {
+                    postDismissPop();
+                    topMiddlePopup.show(titleView, dropEntities, selectPosition);
+                    setFirstTabImage(true);
+                    if (topMiddlePopup.isShowing()) {
                 if (viewPager.getCurrentItem() == 0 && pos == 0) {//说明当前是第0个，并且点击了第0个，需要弹出筛选已完成、未完成、已删除的弹出窗。
                     if (topMiddlePopup.isShowing()) {
                         postDismissPop();
@@ -188,7 +215,8 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
             @Override
             public void onPageSelected(int position) {
                 titleCalendar.setVisibility(View.GONE);
-                if (position == 0) {//未完成、已完成、已删除
+                //未完成、已完成、已删除
+                if (position == 0) {
                     setFirstTabImage(false);
                     titleCalendar.setVisibility(selectPosition == 0 ? View.VISIBLE : View.GONE);
                     if (topMiddlePopup != null && topMiddlePopup.getAdapter() != null) {
@@ -243,7 +271,9 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
      * @param content
      */
     public void setFirstTabText(String content, int position) {
-        if (tabLayout == null) return;
+        if (tabLayout == null) {
+            return;
+        }
         if (firstTabView != null) {
             firstTabView.setText(content);
             selectPosition = position;
@@ -271,7 +301,8 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         Bundle bundle = new Bundle();
         bundle.putInt(TaskListFragment.STATE_TYPE, stateType);
         int type = TaskAllFragment.TYPE_ALL_TASK;
-        if (stateType == 0) {//说明该任务状态是全部的任务状态
+        //说明该任务状态是全部的任务状态
+        if (stateType == 0) {
             titleCalendar.setVisibility(View.VISIBLE);
             if (isShowCalendar) {
                 type = TaskAllFragment.TYPE_ALL_TASK_CALENDAR;
@@ -362,7 +393,9 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         postDismissPop();
         switch (v.getId()) {
             case R.id.titleCalendar:
-                if (!RAUtils.isLegal(RAUtils.DURATION_DEFAULT)) return;
+                if (!RAUtils.isLegal(RAUtils.DURATION_DEFAULT)) {
+                    return;
+                }
                 Fragment item = baseFragmentAdapter.getItem(viewPager.getCurrentItem());
                 if (item instanceof TaskAllFragment) {
                     TaskAllFragment taskAllFragment = (TaskAllFragment) item;
@@ -387,6 +420,8 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                                 bundle.putInt(TaskListFragment.STATE_TYPE, stateType);
                                 taskAllFragment.notifyFragmentUpdate(taskAllFragment, TaskAllFragment.TYPE_ALL_TASK, bundle);
                             }
+                            break;
+                        default:
                             break;
                     }
                 }
@@ -426,6 +461,8 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                                     case 1:
                                         showTwiceSureDialog();
                                         break;
+                                    default:
+                                        break;
                                 }
                             }
                         }).show();
@@ -452,6 +489,8 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                         switch (position) {
                             case 0:
                                 clearAllDeletedTask();
+                                break;
+                            default:
                                 break;
                         }
                     }
@@ -490,7 +529,8 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
      */
     @Override
     public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
-        if (fragment instanceof TaskMemberSelectDialogFragment && params != null) {//从选择他人界面的回调
+        //从选择他人界面的回调
+        if (fragment instanceof TaskMemberSelectDialogFragment && params != null) {
             Serializable serializable = params.getSerializable(KEY_FRAGMENT_RESULT);
             if (serializable instanceof TaskMemberEntity) {
                 TaskMemberEntity taskMemberEntity = (TaskMemberEntity) serializable;
@@ -505,7 +545,8 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
      * 清空所有已删除的任务
      */
     private void clearAllDeletedTask() {
-        if (selectPosition == 2) {//已删除的任务列表
+        //已删除的任务列表
+        if (selectPosition == 2) {
             if (alltaskFragment != null
                     && alltaskFragment.currFragment != null
                     && alltaskFragment.currFragment instanceof TaskListFragment) {

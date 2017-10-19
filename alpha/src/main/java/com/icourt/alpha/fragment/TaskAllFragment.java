@@ -32,16 +32,23 @@ import butterknife.Unbinder;
 /**
  * Description  所有任务tab页面
  * Company Beijing icourt
- * author  youxuan  E-mail:xuanyouwu@163.com
+ * @author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/7/8
  * version 1.0.0
  */
 public class TaskAllFragment extends BaseFragment implements OnTasksChangeListener {
-
-    private static final String CHILD_FRAGMENT = "childFragment";//用来传递子Fragment的tag。
-
-    public static final int TYPE_ALL_TASK = 1;//任务列表
-    public static final int TYPE_ALL_TASK_CALENDAR = 2;//带日历的任务列表
+    /**
+     * 用来传递子Fragment的tag。
+     */
+    private static final String CHILD_FRAGMENT = "childFragment";
+    /**
+     * 任务列表
+     */
+    public static final int TYPE_ALL_TASK = 1;
+    /**
+     * 带日历的任务列表
+     */
+    public static final int TYPE_ALL_TASK_CALENDAR = 2;
 
     @IntDef({TYPE_ALL_TASK, TYPE_ALL_TASK_CALENDAR})
     @Retention(RetentionPolicy.SOURCE)
@@ -52,15 +59,24 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
 
     @BindView(R.id.main_fl_content)
     FrameLayout mainFlContent;
-
-    ArrayList<TaskEntity.TaskItemEntity> taskItemEntityList = new ArrayList<>();//用来记录当前显示的Fragment的任务列表数据。
-    Fragment currFragment;//当前的Fragment
-    SparseArray<Fragment> fragmentSparseArray = new SparseArray<>();//用来缓存Fragment的集合。
+    /**
+     * 用来记录当前显示的Fragment的任务列表数据。
+     */
+    ArrayList<TaskEntity.TaskItemEntity> taskItemEntityList = new ArrayList<>();
+    /**
+     * 当前的Fragment
+     */
+    Fragment currFragment;
+    /**
+     * 用来缓存Fragment的集合。
+     */
+    SparseArray<Fragment> fragmentSparseArray = new SparseArray<>();
 
     public static TaskAllFragment newInstance() {
         TaskAllFragment taskAllFragment = new TaskAllFragment();
         Bundle args = new Bundle();
-        args.putInt(CHILD_FRAGMENT, TYPE_ALL_TASK);//默认初始化是任务列表
+        //默认初始化是任务列表
+        args.putInt(CHILD_FRAGMENT, TYPE_ALL_TASK);
         taskAllFragment.setArguments(args);
         return taskAllFragment;
     }
@@ -87,7 +103,8 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
      * @return
      */
     private Fragment getFragment(@ChildFragmentType int type, int stateType) {
-        if (type == TYPE_ALL_TASK) {//如果是任务列表的话，每次都刷新。
+        //如果是任务列表的话，每次都刷新。
+        if (type == TYPE_ALL_TASK) {
             return TaskListFragment.newInstance(0, stateType);
         }
         Fragment fragment = fragmentSparseArray.get(type);
@@ -98,6 +115,8 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
                     break;
                 case TYPE_ALL_TASK_CALENDAR:
                     putFragment(type, TaskListCalendarFragment.newInstance(null));
+                    break;
+                default:
                     break;
             }
         }
@@ -128,8 +147,8 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
     }
 
     protected Fragment addOrShowFragmentAnim(@NonNull Fragment targetFragment, Fragment currentFragment, @IdRes int containerViewId, boolean isAnim) {
-        if (targetFragment == null) return currentFragment;
-        if (targetFragment == currentFragment) return currentFragment;
+        if (targetFragment == null) {return currentFragment;}
+        if (targetFragment == currentFragment) {return currentFragment;}
         FragmentManager fm = getChildFragmentManager();
         FragmentTransaction transaction = fm.beginTransaction();
         if (isAnim) {
@@ -167,10 +186,14 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
                 type == TYPE_ALL_TASK_CALENDAR);
 
         switch (type) {
-            case TYPE_ALL_TASK_CALENDAR://说明是更新日历的任务列表
+            //说明是更新日历的任务列表
+            case TYPE_ALL_TASK_CALENDAR:
                 updateCalendarRefresh();
                 break;
-            case TYPE_ALL_TASK://说明是更新未完成／已完成／已取消的任务列表
+            //说明是更新未完成／已完成／已取消的任务列表
+            case TYPE_ALL_TASK:
+                break;
+            default:
                 break;
         }
     }
@@ -182,10 +205,8 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
             if (taskItemEntities.hashCode() != taskItemEntityList.hashCode()) {
                 taskItemEntityList.clear();
                 taskItemEntityList.addAll(taskItemEntities);
-
                 updateCalendarRefresh();
             }
-
         }
     }
 

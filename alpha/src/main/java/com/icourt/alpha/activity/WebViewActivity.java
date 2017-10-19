@@ -66,6 +66,8 @@ public class WebViewActivity extends BaseActivity implements DownloadListener {
     ImageButton bottomRefreshIv;
     @BindView(R.id.bottom_share_iv)
     ImageButton bottomShareIv;
+    private static final String KEY_TITLE = "key_title";
+    private static final String KEY_URL = "key_url";
 
     public static void launch(@NonNull Context context, String url) {
         if (context == null) return;
@@ -83,8 +85,18 @@ public class WebViewActivity extends BaseActivity implements DownloadListener {
     ImageView titleAction;
     @BindView(R.id.titleView)
     AppBarLayout titleView;
+    String title;
+
+    public static void launch(@NonNull Context context, String title, String url) {
+        if (context == null) return;
+        if (TextUtils.isEmpty(url)) return;
+        Intent intent = new Intent(context, WebViewActivity.class);
+        intent.putExtra(KEY_URL, url);
+        intent.putExtra(KEY_TITLE, title);
+        context.startActivity(intent);
+    }
+
     private static final int REQUEST_FILE_PERMISSION = 9999;
-    private static final String KEY_URL = "url";
     @BindView(R.id.webView)
     WebView webView;
     @BindView(R.id.progressLayout)
@@ -135,6 +147,9 @@ public class WebViewActivity extends BaseActivity implements DownloadListener {
             if (progressLayout != null) {
                 progressLayout.setVisibility(View.GONE);
             }
+            if (TextUtils.equals(title, getString(R.string.mine_helper_center))) {
+                hideHelperCenterBtn(webView);
+            }
             setBackForwardBtn();
         }
 
@@ -181,6 +196,7 @@ public class WebViewActivity extends BaseActivity implements DownloadListener {
 
         @Override
         public void onProgressChanged(WebView view, int newProgress) {
+
             super.onProgressChanged(view, newProgress);
             if (progressLayout != null) {
                 progressLayout.setCurrentProgress(newProgress);
@@ -309,17 +325,19 @@ public class WebViewActivity extends BaseActivity implements DownloadListener {
                 .setMaxProgress(100)
                 .setLabel("下载中...");
 
-        setTitle("Alpha");
+        title = getIntent().getStringExtra(KEY_TITLE);
+        setTitle(TextUtils.isEmpty(title) ? "Alpha" : title);
         ImageView titleActionImage = getTitleActionImage();
         if (titleActionImage != null) {
             titleActionImage.setImageResource(R.mipmap.browser_open);
         }
-
+        titleActionImage.setVisibility(TextUtils.isEmpty(title) ? View.VISIBLE : View.INVISIBLE);
         WebSettings webSettings = webView.getSettings();
         webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
         webSettings.setAppCacheEnabled(false);
         webSettings.setJavaScriptEnabled(true);
         webSettings.setUseWideViewPort(true);
+        webSettings.setLoadWithOverviewMode(true);
         webSettings.setAllowFileAccess(true);
         webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
         webSettings.setDatabaseEnabled(true);
@@ -329,6 +347,24 @@ public class WebViewActivity extends BaseActivity implements DownloadListener {
         webView.setDownloadListener(this);
         progressLayout.setMaxProgress(100);
         webView.loadUrl(getIntent().getStringExtra(KEY_URL));
+    }
+
+    /**
+     * 隐藏帮助中心中的按钮（'提交问题'、'查看问题'、'退出'）
+     *
+     * @param view
+     */
+    private void hideHelperCenterBtn(final WebView view) {
+        //编写 javaScript方法
+        final String javascript = "javascript:function hideOther() {" +
+//                        "document.getElementsByClassName(\'flex-box\')[0].style.backgroundColor = \'red\'; " +//头部颜色
+                "document.getElementsByClassName(\'nav-list bottom\')[0].style.visibility = \'hidden\'; " +//退出
+                "document.getElementsByClassName(\'nav-list top\')[0].children[1].style.visibility = \'hidden\'; " +//提交问题
+                "document.getElementsByClassName(\'nav-list top\')[0].children[2].style.visibility = \'hidden\'; " +//查看问题
+                "document.getElementsByClassName(\'slideout-menu\')[0].children[0].style.visibility = \'hidden\'; }";//头像
+        //创建方法
+        view.loadUrl("javascript:" + javascript);
+        view.loadUrl("javascript:hideOther();");
     }
 
     private void pauseDownload() {
@@ -404,7 +440,7 @@ public class WebViewActivity extends BaseActivity implements DownloadListener {
      * 用其它app打开网页
      */
     private void openWithOtherApp() {
-        String url = getIntent().getStringExtra("url");
+        String url = getIntent().getStringExtra(KEY_URL);
         Intent intent = new Intent();
         intent.setAction("android.intent.action.VIEW");
         Uri content_url = Uri.parse(url);

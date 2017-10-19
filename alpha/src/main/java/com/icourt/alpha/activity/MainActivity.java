@@ -150,16 +150,16 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
 
     }
 
-
     private final List<ItemsEntity> tabData = Arrays.asList(
             new ItemsEntity("项目", TYPE_FRAGMENT_PROJECT, R.drawable.tab_project),
             new ItemsEntity("我的", TYPE_FRAGMENT_MINE, R.drawable.tab_mine),
-            new ItemsEntity("计时", TYPE_FRAGMENT_TIMING, R.drawable.tab_timer),
             new ItemsEntity("客户", TYPE_FRAGMENT_CUSTOMER, R.drawable.tab_customer),
             new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search),
             new ItemsEntity("文档", TYPE_FRAGMENT_DOCUMENTS, R.drawable.tab_document));
 
-    //可改变的tab
+    /**
+     * 可改变的tab
+     */
     private final List<ItemsEntity> tabChangeableData = new ArrayList<>();
 
     @BindView(R.id.main_fl_content)
@@ -223,6 +223,8 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                     }
                 }
                 break;
+                default:
+                    break;
             }
             return super.onDoubleTap(v, e);
         }
@@ -292,6 +294,8 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                     String remindContent = (String) msg.obj;
                     showOverTimingRemindDialogFragment(remindContent);
                     break;
+                default:
+                    break;
             }
         }
     }
@@ -344,6 +348,8 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                         if (team != null)
                             ChatActivity.launchTEAM(this, customBody.imMessage.getSessionId(), team.getName(), 0, totalUnReadCount, true);
                         break;
+                    default:
+                        break;
                 }
             }
         }
@@ -374,7 +380,6 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
             tabChangeableData.addAll(Arrays.asList(
                     new ItemsEntity("项目", TYPE_FRAGMENT_PROJECT, R.drawable.tab_project),
                     new ItemsEntity("我的", TYPE_FRAGMENT_MINE, R.drawable.tab_mine),
-                    new ItemsEntity("计时", TYPE_FRAGMENT_TIMING, R.drawable.tab_timer),
                     new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search),
                     new ItemsEntity("文档", TYPE_FRAGMENT_DOCUMENTS, R.drawable.tab_document))
             );
@@ -382,13 +387,11 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
             tabChangeableData.addAll(Arrays.asList(
                     new ItemsEntity("客户", TYPE_FRAGMENT_CUSTOMER, R.drawable.tab_customer),
                     new ItemsEntity("我的", TYPE_FRAGMENT_MINE, R.drawable.tab_mine),
-                    new ItemsEntity("计时", TYPE_FRAGMENT_TIMING, R.drawable.tab_timer),
                     new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search),
                     new ItemsEntity("文档", TYPE_FRAGMENT_DOCUMENTS, R.drawable.tab_document))
             );
         } else {
             tabChangeableData.addAll(Arrays.asList(
-                    new ItemsEntity("计时", TYPE_FRAGMENT_TIMING, R.drawable.tab_timer),
                     new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search),
                     new ItemsEntity("我的", TYPE_FRAGMENT_MINE, R.drawable.tab_mine),
                     new ItemsEntity("文档", TYPE_FRAGMENT_DOCUMENTS, R.drawable.tab_document))
@@ -439,12 +442,6 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                     })
                     .setNegativeButton("取消", null)
                     .show();
-        } else {
-            /*try {
-                IntentWrapper.whiteListMatters(this, "轨迹跟踪服务的持续运行");
-            } catch (Throwable e) {
-                e.printStackTrace();
-            }*/
         }
     }
 
@@ -461,6 +458,8 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                 break;
             case R.id.tab_mine:
                 SpUtils.getInstance().putData(KEY_MINE_FRAGMENT, type);
+                break;
+            default:
                 break;
         }
     }
@@ -490,6 +489,8 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                 return TYPE_FRAGMENT_MINE;
             case TYPE_FRAGMENT_DOCUMENTS:
                 return TYPE_FRAGMENT_DOCUMENTS;
+            default:
+                break;
         }
         return TYPE_FRAGMENT_PROJECT;
     }
@@ -503,9 +504,11 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
     private int getFragmentType(@IdRes int id) {
         switch (id) {
             case R.id.tab_find:
-                return convert2ChildFragmentType(SpUtils.getInstance().getIntData(KEY_FIND_FRAGMENT, TYPE_FRAGMENT_TIMING));
+                return convert2ChildFragmentType(SpUtils.getInstance().getIntData(KEY_FIND_FRAGMENT, TYPE_FRAGMENT_PROJECT));
             case R.id.tab_mine:
                 return convert2ChildFragmentType(SpUtils.getInstance().getIntData(KEY_MINE_FRAGMENT, TYPE_FRAGMENT_MINE));
+            default:
+                break;
         }
         return TYPE_FRAGMENT_PROJECT;
     }
@@ -531,7 +534,9 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                 break;
             }
         }
-        if (itemsEntity == null) return;
+        if (itemsEntity == null) {
+            return;
+        }
         switch (tabId) {
             case R.id.tab_find:
                 tabFindCtv.setText(itemsEntity.getItemTitle());
@@ -540,6 +545,8 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
             case R.id.tab_mine:
                 tabMineCtv.setText(itemsEntity.getItemTitle());
                 tabMineCtv.setCompoundDrawablesWithIntrinsicBounds(0, itemsEntity.getItemIconRes(), 0, 0);
+                break;
+            default:
                 break;
         }
     }
@@ -552,6 +559,8 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
             case R.id.tab_find:
             case R.id.tab_mine:
                 showTabMenu(v);
+                break;
+            default:
                 break;
         }
         return true;
@@ -567,7 +576,9 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
         int findFragmentType = getFragmentType(R.id.tab_find);
         List<ItemsEntity> menus = new ArrayList<>();
         for (ItemsEntity itemsEntity : tabChangeableData) {
-            if (itemsEntity == null) continue;
+            if (itemsEntity == null) {
+                continue;
+            }
             if (itemsEntity.itemType != mineFragmentType
                     && itemsEntity.itemType != findFragmentType) {
                 menus.add(itemsEntity);
@@ -636,6 +647,8 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                 tabTask.setChecked(false);
                 tabFind.setChecked(false);
                 tabMine.setChecked(true);
+                break;
+            default:
                 break;
         }
         checkedFragment(type);
@@ -751,6 +764,8 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                 case TYPE_FRAGMENT_DOCUMENTS:
                     fragment = TabDocumentsFragment.newInstance();
                     break;
+                default:
+                    break;
             }
         }
         putTabFragment(type, fragment);
@@ -805,7 +820,9 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onUnReadEvent(UnReadEvent event) {
-        if (event == null) return;
+        if (event == null) {
+            return;
+        }
         int unReadNum = event.unReadCount;
         updateBadge(getTabNewsBadge(), unReadNum);
     }
@@ -846,9 +863,15 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onServerTimingEvent(final ServerTimingEvent event) {
-        if (event == null) return;
-        if (TextUtils.equals(event.clientId, getlocalUniqueId())) return;
-        if (isInterceptServerTimingEvent()) return;
+        if (event == null) {
+            return;
+        }
+        if (TextUtils.equals(event.clientId, getlocalUniqueId())) {
+            return;
+        }
+        if (isInterceptServerTimingEvent()) {
+            return;
+        }
 
         if (event.isSyncObject()) {
             if (event.isSyncTimingType()) {
@@ -860,13 +883,15 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                     }
                 } else if (TextUtils.equals(event.scene, ServerTimingEvent.TIMING_SYNC_EDIT)) {
                     if (TimerManager.getInstance().isTimer(event.pkId)) {
-                        if (event.state == 1) {//已经完成
+                        //已经完成
+                        if (event.state == 1) {
                             TimerManager.getInstance().clearTimer();
                         } else {
                             TimerManager.getInstance().resumeTimer(event);
                         }
                     } else {
-                        if (event.state == 0) {//计时中...
+                        //计时中...
+                        if (event.state == 0) {
                             TimerManager.getInstance().resumeTimer(event);
                         }
                     }
@@ -874,17 +899,22 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
             } else if (event.isBubbleSync()) {
                 if (event.scene != null) {
                     switch (event.scene) {
-                        case ServerTimingEvent.TIMING_SYNC_TOO_LONG://计时超长的通知（这个通知每2小时通知一次）
+                        //计时超长的通知（这个通知每2小时通知一次）
+                        case ServerTimingEvent.TIMING_SYNC_TOO_LONG:
                             //使用handler来发送超时提醒，为了防止一次性收到多个超时提醒，导致弹出多个提示窗。
                             mHandler.addOverTimingRemind(event.content);
                             break;
-                        case ServerTimingEvent.TIMING_SYNC_CLOSE_BUBBLE://关闭该计时任务超长提醒泡泡的通知
+                        //关闭该计时任务超长提醒泡泡的通知
+                        case ServerTimingEvent.TIMING_SYNC_CLOSE_BUBBLE:
                             dismissOverTimingRemindDialogFragment(true);
                             TimerManager.getInstance().setOverBubbleRemind(false);
                             break;
-                        case ServerTimingEvent.TIMING_SYNC_NO_REMIND://该计时任务不再提醒泡泡的通知
+                        //该计时任务不再提醒泡泡的通知
+                        case ServerTimingEvent.TIMING_SYNC_NO_REMIND:
                             dismissOverTimingRemindDialogFragment(true);
                             TimerManager.getInstance().setOverTimingRemind(false);
+                            break;
+                        default:
                             break;
                     }
                 }
@@ -959,6 +989,8 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
             case OverTimingRemindEvent.ACTION_SYNC_BUBBLE_CLOSE_TO_SERVER:
                 TimerManager.getInstance().setOverTimingRemindClose(TimerManager.OVER_TIME_REMIND_BUBBLE_OFF);
                 break;
+            default:
+                break;
         }
     }
 
@@ -998,8 +1030,11 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                 tabTimingIcon.clearAnimation();
                 timingAnim = null;
                 break;
-            case TimingEvent.TIMING_SYNC_SUCCESS://同步计时，如果计时大于两个小时，弹出提示
+            //同步计时，如果计时大于两个小时，弹出提示
+            case TimingEvent.TIMING_SYNC_SUCCESS:
                 outTwoHourShowRemind();
+                break;
+            default:
                 break;
         }
     }
@@ -1078,7 +1113,6 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         if (response.body().result != null) {
-                            //showToast("客户权限：" + response.body().result.booleanValue());
                             setCustomerPermission(response.body().result.booleanValue());
                             int findFragmentType = getFragmentType(R.id.tab_find);
                             int mineFragmentType = getFragmentType(R.id.tab_mine);
@@ -1134,7 +1168,6 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                     @Override
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         if (response.body().result != null) {
-                            //showToast("项目权限：" + response.body().result.booleanValue());
                             setProjectPermission(response.body().result.booleanValue());
                             int findFragmentType = getFragmentType(R.id.tab_find);
                             int mineFragmentType = getFragmentType(R.id.tab_mine);
@@ -1189,14 +1222,6 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
     @Override
     protected void onDestroy() {
         DaemonService.start(this);
-
-       /* if (isUserLogin()) {
-            Intent intent = getBaseContext().getPackageManager().getLaunchIntentForPackage(getBaseContext().getPackageName());
-            PendingIntent restartIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, PendingIntent.FLAG_ONE_SHOT);
-            AlarmManager mgr = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-            mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 50, restartIntent);
-        }*/
-
         super.onDestroy();
         EventBus.getDefault().unregister(this);
         if (mHandler != null) {

@@ -25,9 +25,10 @@ import butterknife.ButterKnife;
 /**
  * Description 我分配的/查看他人的任务列表
  * Company Beijing icourt
- * author  lu.zhao  E-mail:zhaolu@icourt.cc
- * date createTime：17/5/19
- * version 2.0.0
+ *
+ * @author lu.zhao  E-mail:zhaolu@icourt.cc
+ *         date createTime：17/5/19
+ *         version 2.0.0
  */
 
 public class TaskOtherActivity extends BaseActivity {
@@ -48,7 +49,9 @@ public class TaskOtherActivity extends BaseActivity {
     public static void launch(@NonNull Context context,
                               @TaskOtherListFragment.START_TYPE int startType,
                               @Nullable ArrayList<String> uids) {
-        if (context == null) return;
+        if (context == null) {
+            return;
+        }
         Intent intent = new Intent(context, TaskOtherActivity.class);
         intent.putExtra(TaskOtherListFragment.TAG_START_TYPE, startType);
         intent.putExtra(TaskOtherListFragment.TAG_IDS, uids);

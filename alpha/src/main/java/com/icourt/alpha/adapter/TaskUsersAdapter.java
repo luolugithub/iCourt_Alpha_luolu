@@ -29,14 +29,16 @@ public class TaskUsersAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIt
     }
 
     @Override
-    public int bindView(int viewtype) {
+    public int bindView(int viewType) {
         return R.layout.adapter_item_task_user_layout;
     }
 
     @Override
     public void onBindHoder(ViewHolder holder, TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUserEntity, int position) {
         ImageView imageView = holder.obtainView(R.id.user_image);
-        if (attendeeUserEntity == null) return;
+        if (attendeeUserEntity == null) {
+            return;
+        }
         if (getData().size() > 3) {
             if (getData().size() == 4) {
                 GlideUtils.loadUser(imageView.getContext(), attendeeUserEntity.pic, imageView);

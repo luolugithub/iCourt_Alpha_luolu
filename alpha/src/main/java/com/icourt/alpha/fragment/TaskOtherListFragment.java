@@ -55,20 +55,32 @@ import retrofit2.Response;
 /**
  * Description 我分配的、选择查看对象（未完成｜已完成）
  * Company Beijing icourt
- * author  lu.zhao  E-mail:zhaolu@icourt.cc
+ * @author  lu.zhao  E-mail:zhaolu@icourt.cc
  * date createTime：17/5/19
  * version 2.0.0
  */
 
 public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuickAdapter.OnItemClickListener, BaseQuickAdapter.OnItemChildClickListener {
 
-    //实例化当前Fragment所要传递的参数标识
-    public static final String TAG_START_TYPE = "startType";//我分配的／查看他人，所对应的参数应该是START_TYPE枚举里的两种类型。
-    public static final String TAG_FINISH_TYPE = "finishType";//未完成／已完成，所对应的应该是IS_FINISH_TYPE枚举里的两种类型。
+    /**
+     * 实例化当前Fragment所要传递的参数标识
+     * 我分配的／查看他人，所对应的参数应该是START_TYPE枚举里的两种类型。
+     */
+    public static final String TAG_START_TYPE = "startType";
+    /**
+     * 未完成／已完成，所对应的应该是IS_FINISH_TYPE枚举里的两种类型。
+     */
+    public static final String TAG_FINISH_TYPE = "finishType";
     public static final String TAG_IDS = "ids";
 
-    public static final int MY_ALLOT_TYPE = 1;//我分配的
-    public static final int SELECT_OTHER_TYPE = 2;//查看其他人
+    /**
+     * 我分配的
+     */
+    public static final int MY_ALLOT_TYPE = 1;
+    /**
+     * 查看其他人
+     */
+    public static final int SELECT_OTHER_TYPE = 2;
 
     @IntDef({MY_ALLOT_TYPE,
             SELECT_OTHER_TYPE})
@@ -77,8 +89,14 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
 
     }
 
-    public static final int UNFINISH_TYPE = 1;//未完成
-    public static final int FINISH_TYPE = 2;//已完成
+    /**
+     * 未完成
+     */
+    public static final int UNFINISH_TYPE = 1;
+    /**
+     * 已完成
+     */
+    public static final int FINISH_TYPE = 2;
 
     @IntDef({UNFINISH_TYPE,
             FINISH_TYPE})
@@ -87,13 +105,31 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
 
     }
 
-    public static final int TASK_TYPE_TODAY = 1;//今天任务（暂时保留字段）
-    public static final int TASK_TYPE_BEABOUT = 2;//即将到期任务（暂时保留字段）
-    public static final int TASK_TYPE_FUTURE = 3;//未来任务（暂时保留字段）
-    public static final int TASK_TYPE_NODUE = 4;//未指定到期任务（暂时保留字段）
-    public static final int TASK_TYPE_DATED = 5;//已过期任务（暂时保留字段）
+    /**
+     * 今天任务（暂时保留字段）
+     */
+    public static final int TASK_TYPE_TODAY = 1;
+    /**
+     * 即将到期任务（暂时保留字段）
+     */
+    public static final int TASK_TYPE_BEABOUT = 2;
+    /**
+     * 未来任务（暂时保留字段）
+     */
+    public static final int TASK_TYPE_FUTURE = 3;
+    /**
+     * 未指定到期任务（暂时保留字段）
+     */
+    public static final int TASK_TYPE_NODUE = 4;
+    /**
+     * 已过期任务（暂时保留字段）
+     */
+    public static final int TASK_TYPE_DATED = 5;
 
-    private boolean isFirstTimeIntoPage = true;//用来判断是不是第一次进入该界面，如果是，滚动到一条任务，隐藏搜索栏。
+    /**
+     * 用来判断是不是第一次进入该界面，如果是，滚动到一条任务，隐藏搜索栏。
+     */
+    private boolean isFirstTimeIntoPage = true;
 
     Unbinder unbinder;
     @BindView(R.id.recyclerView)
@@ -102,19 +138,29 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
     SmartRefreshLayout refreshLayout;
 
     private LinearLayoutManager linearLayoutManager;
-
-    int startType;//我分配的任务列表／他人的任务列表（我分配的暂时已经废弃了）
-    int finishType;//未完成／已完成
+    /**
+     * 我分配的任务列表／他人的任务列表（我分配的暂时已经废弃了）
+     */
+    int startType;
+    /**
+     * 未完成／已完成
+     */
+    int finishType;
 
     ArrayList<String> ids;
 
-    private int pageIndex = 1;//分页页码（暂时保留字段）
+    /**
+     * 分页页码（暂时保留字段）
+     */
+    private int pageIndex = 1;
 
     TaskAdapter taskAdapter;
 
     TaskEntity.TaskItemEntity lastEntity;
-
-    private ArrayMap<String, Integer> mArrayMap = new ArrayMap<>();//用来存储每个group有多少个数量（暂时保留，待分页再优化）。
+    /**
+     * 用来存储每个group有多少个数量（暂时保留，待分页再优化）。
+     */
+    private ArrayMap<String, Integer> mArrayMap = new ArrayMap<>();
 
 
     public static TaskOtherListFragment newInstance(@START_TYPE int startType, @IS_FINISH_TYPE int finishType, ArrayList<String> ids) {
@@ -202,6 +248,8 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
             case SELECT_OTHER_TYPE:
                 getMyAllotTask(isRefresh);
                 break;
+            default:
+                break;
         }
     }
 
@@ -275,12 +323,18 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
      * @param taskEntity
      */
     private void getTaskGroupData(final TaskEntity taskEntity) {
-        if (taskEntity == null) return;
-        if (taskEntity.items == null) return;
+        if (taskEntity == null) {
+            return;
+        }
+        if (taskEntity.items == null) {
+            return;
+        }
         Observable.create(new ObservableOnSubscribe<List<TaskEntity.TaskItemEntity>>() {
             @Override
             public void subscribe(ObservableEmitter<List<TaskEntity.TaskItemEntity>> e) throws Exception {
-                if (e.isDisposed()) return;
+                if (e.isDisposed()) {
+                    return;
+                }
                 e.onNext(groupingByTasks(taskEntity.items));
                 e.onComplete();
             }
@@ -303,12 +357,18 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
      * @param taskItemEntities
      */
     private List<TaskEntity.TaskItemEntity> groupingByTasks(List<TaskEntity.TaskItemEntity> taskItemEntities) {
-        List<TaskEntity.TaskItemEntity> allTaskEntities = new ArrayList<>();//展示所要用到的列表集合
-        List<TaskEntity.TaskItemEntity> todayTaskEntities = new ArrayList<>();//今天到期
-        List<TaskEntity.TaskItemEntity> beAboutToTaskEntities = new ArrayList<>();//即将到期
-        List<TaskEntity.TaskItemEntity> futureTaskEntities = new ArrayList<>();//未来
-        List<TaskEntity.TaskItemEntity> noDueTaskEntities = new ArrayList<>();//为指定到期
-        List<TaskEntity.TaskItemEntity> datedTaskEntities = new ArrayList<>();//已过期
+        //展示所要用到的列表集合
+        List<TaskEntity.TaskItemEntity> allTaskEntities = new ArrayList<>();
+        //今天到期
+        List<TaskEntity.TaskItemEntity> todayTaskEntities = new ArrayList<>();
+        //即将到期
+        List<TaskEntity.TaskItemEntity> beAboutToTaskEntities = new ArrayList<>();
+        //未来
+        List<TaskEntity.TaskItemEntity> futureTaskEntities = new ArrayList<>();
+        //为指定到期
+        List<TaskEntity.TaskItemEntity> noDueTaskEntities = new ArrayList<>();
+        //已过期
+        List<TaskEntity.TaskItemEntity> datedTaskEntities = new ArrayList<>();
         for (TaskEntity.TaskItemEntity taskItemEntity : taskItemEntities) {
             if (taskItemEntity.dueTime > 0) {
                 if (TextUtils.equals(DateUtils.getTimeDateFormatYear(taskItemEntity.dueTime), DateUtils.getTimeDateFormatYear(DateUtils.millis())) || DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime) < 0) {
@@ -335,11 +395,16 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
             }
         }
         //将分组信息添加到allTaskEntities集合中，并且在mArrayMap中记录每组的数量
-        addToAllTaskEntities(getString(R.string.task_was_due), datedTaskEntities, allTaskEntities);//已到期
-        addToAllTaskEntities(getString(R.string.task_today_due), todayTaskEntities, allTaskEntities);//今天到期
-        addToAllTaskEntities(getString(R.string.task_due_soon), beAboutToTaskEntities, allTaskEntities);//即将到期
-        addToAllTaskEntities(getString(R.string.task_future), futureTaskEntities, allTaskEntities);//未来
-        addToAllTaskEntities(getString(R.string.task_no_due_time), noDueTaskEntities, allTaskEntities);//未指定到期日
+        //已到期
+        addToAllTaskEntities(getString(R.string.task_was_due), datedTaskEntities, allTaskEntities);
+        //今天到期
+        addToAllTaskEntities(getString(R.string.task_today_due), todayTaskEntities, allTaskEntities);
+        //即将到期
+        addToAllTaskEntities(getString(R.string.task_due_soon), beAboutToTaskEntities, allTaskEntities);
+        //未来
+        addToAllTaskEntities(getString(R.string.task_future), futureTaskEntities, allTaskEntities);
+        //未指定到期日
+        addToAllTaskEntities(getString(R.string.task_no_due_time), noDueTaskEntities, allTaskEntities);
         return allTaskEntities;
     }
 
@@ -349,13 +414,15 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
      * @param list
      */
     private void addToAllTaskEntities(String groupName, List<TaskEntity.TaskItemEntity> list, List<TaskEntity.TaskItemEntity> allTaskEntities) {
-        if (list == null || list.size() == 0)
+        if (list == null || list.size() == 0) {
             return;
+        }
         //创建一个群组标题的item
         TaskEntity.TaskItemEntity itemEntity = new TaskEntity.TaskItemEntity();
         itemEntity.groupName = groupName;
         itemEntity.groupTaskCount = list.size();
-        itemEntity.type = 1;//0：普通；1：任务组。
+        //0：普通；1：任务组。
+        itemEntity.type = 1;
         allTaskEntities.add(itemEntity);
         allTaskEntities.addAll(list);
     }
@@ -365,20 +432,25 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
         final TaskEntity.TaskItemEntity itemEntity = taskAdapter.getItem(i);
         switch (view.getId()) {
             case R.id.task_item_start_timming:
-                if (itemEntity == null)
+                if (itemEntity == null) {
                     return;
-                if (itemEntity.isTiming) {//停止计时
+                }
+                //停止计时
+                if (itemEntity.isTiming) {
                     MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
                     stopTiming(itemEntity);
-                } else {//开始计时
+                } else {
+                    //开始计时
                     MobclickAgent.onEvent(getContext(), UMMobClickAgent.start_timer_click_id);
                     startTiming(itemEntity);
                 }
                 break;
             case R.id.task_item_checkbox:
-                if (itemEntity == null)
+                if (itemEntity == null) {
                     return;
-                if (!itemEntity.state) {//完成任务
+                }
+                //完成任务
+                if (!itemEntity.state) {
                     if (itemEntity.attendeeUsers != null) {
                         if (itemEntity.attendeeUsers.size() > 1) {
                             showFinishDialog(view.getContext(), getString(R.string.task_is_confirm_complete_task), itemEntity, SHOW_FINISH_DIALOG);
@@ -388,9 +460,12 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
                     } else {
                         updateTaskState(itemEntity, true);
                     }
-                } else {//取消完成任务
+                } else {
+                    //取消完成任务
                     updateTaskState(itemEntity, false);
                 }
+                break;
+            default:
                 break;
         }
     }
@@ -398,7 +473,8 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
     @Override
     public void onItemClick(BaseQuickAdapter baseQuickAdapter, View view, int i) {
         TaskEntity.TaskItemEntity taskItemEntity = taskAdapter.getItem(i);
-        if (taskItemEntity != null && taskItemEntity.type == 0) {//item为任务的时候才可以点击
+        //item为任务的时候才可以点击
+        if (taskItemEntity != null && taskItemEntity.type == 0) {
             TaskDetailActivity.launch(view.getContext(), taskItemEntity.id);
         }
     }
@@ -427,7 +503,8 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
     @Override
     protected void startTimingBack(TaskEntity.TaskItemEntity requestEntity, Response<TimeEntity.ItemEntity> response) {
         taskAdapter.updateItem(requestEntity);
-        if (response.body() != null) {//开始计时成功，跳转到计时页。
+        //开始计时成功，跳转到计时页。
+        if (response.body() != null) {
             TimerTimingActivity.launch(getActivity(), response.body());
         }
     }
@@ -454,9 +531,11 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
 
     @Override
     protected void taskTimingUpdateEvent(String taskId) {
-        if (!TextUtils.isEmpty(taskId)) {//添加计时
+        //添加计时
+        if (!TextUtils.isEmpty(taskId)) {
             taskAdapter.notifyDataSetChanged();
-        } else {//结束计时
+        } else {
+            //结束计时
             if (lastEntity != null) {
                 lastEntity.isTiming = false;
             }
@@ -467,23 +546,36 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDeleteTaskEvent(TaskActionEvent event) {
-        if (event == null) return;
+        if (event == null) {
+            return;
+        }
         switch (event.action) {
-            case TaskActionEvent.TASK_REFRESG_ACTION://刷新的广播
+            //刷新的广播
+            case TaskActionEvent.TASK_REFRESG_ACTION:
                 getData(true);
                 break;
-            case TaskActionEvent.TASK_DELETE_ACTION://删除的广播
-                if (event.entity == null) return;
+            //删除的广播
+            case TaskActionEvent.TASK_DELETE_ACTION:
+                if (event.entity == null) {
+                    return;
+                }
                 //因为考虑到本地分组的原因，所以需要刷新全部（等后端添加分页逻辑，再进行修改）
                 getData(true);
                 break;
-            case TaskActionEvent.TASK_ADD_ITEM_ACITON://添加的广播
+            //添加的广播
+            case TaskActionEvent.TASK_ADD_ITEM_ACITON:
                 getData(true);
                 break;
-            case TaskActionEvent.TASK_UPDATE_ITEM://更新计时的广播
-                if (event.entity == null) return;
-                if (recyclerView != null)
+            //更新计时的广播
+            case TaskActionEvent.TASK_UPDATE_ITEM:
+                if (event.entity == null) {
+                    return;
+                }
+                if (recyclerView != null) {
                     updateChildItem(event.entity);
+                }
+                break;
+            default:
                 break;
         }
     }
