@@ -139,8 +139,9 @@ public class TimingListYearFragment extends BaseTimingListFragment {
             public void onPageSelected(int position) {
                 TimingSelectEntity timingSelectEntity = yearData.get(position);
                 getTimingStatistic(TimingConfig.TIMING_QUERY_BY_YEAR, timingSelectEntity.startTimeMillis, timingSelectEntity.endTimeMillis);
-                if (getParentListener() != null)
+                if (getParentListener() != null) {
                     getParentListener().onTimeChanged(TimingConfig.TIMING_QUERY_BY_YEAR, timingSelectEntity.startTimeMillis);
+                }
             }
 
             @Override

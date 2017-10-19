@@ -76,8 +76,9 @@ public class TimingListDayFragment extends BaseTimingListFragment {
     protected void initView() {
         addAppbarHidenListener(appBarLayout);
 
-        if (getArguments() != null)
+        if (getArguments() != null) {
             startTimeMillis = getArguments().getLong(KEY_START_TIME);
+        }
 
         timingChartView.setVisibility(View.GONE);
         timingTextShowTimingLl.setVisibility(View.VISIBLE);

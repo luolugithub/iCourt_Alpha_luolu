@@ -4,7 +4,6 @@ import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -26,8 +25,6 @@ import com.icourt.alpha.widget.manager.TimerDateManager;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -278,25 +275,6 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
                 lastHourPosition = hourPosition;
                 lastMinutePosition = minutePosition;
             }
-//            if (endTimeMillis == 0) {//1.1正在进行时的开始时间不能晚于当前时间，如果用户选了晚于当前时间的时间，则自动滚动到当前时间。
-//                if (instance.getTimeInMillis() > System.currentTimeMillis()) {//如果选中的时间大于当前时间，则不满足
-//                    setTime(DateUtils.getFormatMillis(System.currentTimeMillis()));
-//                } else {//说明满足条件，设置为当前选中时间。
-//                    currentTimeMillis = instance.getTimeInMillis();
-//                    lastDatePosition = datePosition;
-//                    lastHourPosition = hourPosition;
-//                    lastMinutePosition = minutePosition;
-//                }
-//            } else {//1.2已完成的计时或添加计时，开始时间必须早于结束时间，如果晚于结束时间，则自动滚动到结束时间的前一分钟。
-//                if (instance.getTimeInMillis() > endTimeMillis) {//选中的开始时间大于结束时间，不满足，选中为结束时间的前一分钟。
-//                    setTime(endTimeMillis - TimeUnit.MINUTES.toMillis(1));
-//                } else {//说明满足条件，设置为当前选中时间。
-//                    currentTimeMillis = instance.getTimeInMillis();
-//                    lastDatePosition = datePosition;
-//                    lastHourPosition = hourPosition;
-//                    lastMinutePosition = minutePosition;
-//                }
-//            }
         } else { //2.修改结束时间
             //已完成的计时或添加计时，结束时间必须晚于开始时间，不能早于当前时间。
             if (instance.getTimeInMillis() <= startTimeMillis) {//2.1若用户选择了等于或早于开始时间的时间，则自动滚动到开始时间的后一分钟。
@@ -312,7 +290,9 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
         }
     }
 
-    @OnClick({R.id.tv_cancel, R.id.tv_finish})
+    @OnClick({R.id.tv_cancel,
+            R.id.tv_finish})
+    @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.tv_cancel:
@@ -332,6 +312,8 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
                     }
                     dismiss();
                 }
+                break;
+            default:
                 break;
         }
     }
@@ -359,8 +341,9 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
             TimingDateEntity dateEntity = dayList.get(i);
             calendar.setTimeInMillis(dateEntity.timeMillios);
             if (calendar.get(Calendar.YEAR) == year && calendar.get(Calendar.MONTH) == month && calendar.get(Calendar.DAY_OF_MONTH) == day) {
-                if (wheelviewDate != null)
+                if (wheelviewDate != null) {
                     wheelviewDate.setCurrentItem(i);
+                }
                 lastDatePosition = i;
                 break;
             }
@@ -369,8 +352,9 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
         List<String> hourList = hourWheelAdapter.getTimeList();
         for (int i = 0; i < hourList.size(); i++) {
             if (Integer.valueOf(hourList.get(i)) == hour) {
-                if (wheelviewHour != null)
+                if (wheelviewHour != null) {
                     wheelviewHour.setCurrentItem(i);
+                }
                 lastHourPosition = i;
                 break;
             }
@@ -379,8 +363,9 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
         List<String> minuteList = minuteWheelAdapter.getTimeList();
         for (int i = 0; i < minuteList.size(); i++) {
             if (Integer.valueOf(minuteList.get(i)) == minute) {
-                if (wheelviewMinute != null)
+                if (wheelviewMinute != null) {
                     wheelviewMinute.setCurrentItem(i);
+                }
                 lastMinutePosition = i;
                 break;
             }

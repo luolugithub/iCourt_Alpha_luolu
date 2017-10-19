@@ -474,7 +474,7 @@ public class TimerTimingActivity extends BaseTimerActivity
                                 overTimingRemind.setVisibility(View.VISIBLE);
                                 viewMoveAnimation(true);
                             }
-                            if (event.timingSecond % 3600 == 0) {
+                            if (event.timingSecond % TimeUnit.HOURS.toSeconds(1) == 0) {
                                 updateOverTimingRemindText(event.timingSecond);
                             }
                         }

@@ -161,6 +161,8 @@ public class TimingSelectDialogFragment extends BaseDialogFragment implements On
                 viewpager.setCurrentItem(3);
                 selectTabItem(3);
                 break;
+            default:
+                break;
         }
     }
 
@@ -193,6 +195,7 @@ public class TimingSelectDialogFragment extends BaseDialogFragment implements On
             R.id.tv_date_week,
             R.id.tv_date_month,
             R.id.tv_date_year})
+    @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.tv_date_day:
@@ -213,7 +216,9 @@ public class TimingSelectDialogFragment extends BaseDialogFragment implements On
             case R.id.tv_finish:
                 BaseFragment fragment = (BaseFragment) baseFragmentAdapter.getItem(viewpager.getCurrentItem());
                 Bundle fragmentData = fragment.getFragmentData(0, null);
-                if (fragmentData == null) return;
+                if (fragmentData == null) {
+                    return;
+                }
                 TimingSelectEntity timingSelectEntity = (TimingSelectEntity) fragmentData.getSerializable(KEY_FRAGMENT_RESULT);
                 if (timingSelectEntity != null) {
                     int currentItem = viewpager.getCurrentItem();
@@ -227,12 +232,15 @@ public class TimingSelectDialogFragment extends BaseDialogFragment implements On
                     } else if (currentItem == 3) {//年
                         type = TimingConfig.TIMING_QUERY_BY_YEAR;
                     }
-                    if (onFragmentCallBackListener != null)
+                    if (onFragmentCallBackListener != null) {
                         onFragmentCallBackListener.onFragmentCallBack(this, type, fragmentData);
+                    }
                     log("开始时间： －－－－  " + timingSelectEntity.startTimeStr);
                     log("结束时间： －－－－  " + timingSelectEntity.endTimeStr);
                 }
                 dismiss();
+                break;
+            default:
                 break;
         }
     }

@@ -63,11 +63,14 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
     LinearLayout llTodayTime;
 
     Calendar selectedDate = Calendar.getInstance();
+    //当前选中的是日、周、月、年的哪一种状态。
     @TimingConfig.TIMINGQUERYTYPE
-    int selectedType = TimingConfig.TIMING_QUERY_BY_WEEK;//当前选中的是日、周、月、年的哪一种状态。
+    int selectedType = TimingConfig.TIMING_QUERY_BY_WEEK;
 
     public static void launch(@NonNull Context context) {
-        if (context == null) return;
+        if (context == null) {
+            return;
+        }
         Intent intent = new Intent(context, MyTimingActivity.class);
         context.startActivity(intent);
     }
@@ -180,7 +183,9 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
      * @return
      */
     protected Fragment addOrShowFragmentAnim(@TimingConfig.TIMINGQUERYTYPE int type, Fragment targetFragment, @IdRes int containerViewId, boolean isAnim) {
-        if (targetFragment == null) return null;
+        if (targetFragment == null) {
+            return null;
+        }
         selectedType = type;
         FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction transaction = fm.beginTransaction();
@@ -210,16 +215,29 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
     public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
         if (fragment instanceof TimingSelectDialogFragment) {
             TimingSelectEntity timingSelectEntity = (TimingSelectEntity) params.getSerializable(BaseDialogFragment.KEY_FRAGMENT_RESULT);
-            if (timingSelectEntity == null) return;
+            if (timingSelectEntity == null) {
+                return;
+            }
             Fragment selectedFragment = null;
-            if (type == TimingConfig.TIMING_QUERY_BY_DAY) {//日
-                selectedFragment = TimingListDayFragment.newInstance(timingSelectEntity.startTimeMillis);
-            } else if (type == TimingConfig.TIMING_QUERY_BY_WEEK) {//周
-                selectedFragment = TimingListWeekFragment.newInstance(timingSelectEntity.startTimeMillis);
-            } else if (type == TimingConfig.TIMING_QUERY_BY_MONTH) {//月
-                selectedFragment = TimingListMonthFragment.newInstance(timingSelectEntity.startTimeMillis);
-            } else if (type == TimingConfig.TIMING_QUERY_BY_YEAR) {//年
-                selectedFragment = TimingListYearFragment.newInstance(timingSelectEntity.startTimeMillis);
+            switch (type) {
+                //日
+                case TimingConfig.TIMING_QUERY_BY_DAY:
+                    selectedFragment = TimingListDayFragment.newInstance(timingSelectEntity.startTimeMillis);
+                    break;
+                //周
+                case TimingConfig.TIMING_QUERY_BY_WEEK:
+                    selectedFragment = TimingListWeekFragment.newInstance(timingSelectEntity.startTimeMillis);
+                    break;
+                //月
+                case TimingConfig.TIMING_QUERY_BY_MONTH:
+                    selectedFragment = TimingListMonthFragment.newInstance(timingSelectEntity.startTimeMillis);
+                    break;
+                //年
+                case TimingConfig.TIMING_QUERY_BY_YEAR:
+                    selectedFragment = TimingListYearFragment.newInstance(timingSelectEntity.startTimeMillis);
+                    break;
+                default:
+                    break;
             }
             addOrShowFragmentAnim(type, selectedFragment, R.id.fl_container, false);
             selectedDate.clear();
