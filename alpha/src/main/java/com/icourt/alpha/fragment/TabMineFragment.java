@@ -15,6 +15,7 @@ import com.bumptech.glide.Glide;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.ChatMsgClassfyActivity;
+import com.icourt.alpha.activity.MyTimingActivity;
 import com.icourt.alpha.activity.SetingActivity;
 import com.icourt.alpha.activity.TaskMonthFinishActivity;
 import com.icourt.alpha.activity.UserInfoActivity;
@@ -211,7 +212,8 @@ public class TabMineFragment extends BaseFragment {
             R.id.done_task_layout,
             R.id.my_center_collect_layout,
             R.id.my_center_set_layout,
-            R.id.menu_test})
+            R.id.menu_test,
+            R.id.my_center_timer_layout})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -244,6 +246,9 @@ public class TabMineFragment extends BaseFragment {
                 break;
             case R.id.menu_test:
 //                test1();
+                break;
+            case R.id.my_center_timer_layout:
+                MyTimingActivity.launch(getActivity());
                 break;
             default:
                 super.onClick(v);

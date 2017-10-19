@@ -108,10 +108,6 @@ public class Const {
 
     }
 
-    public static final int TASK_STATETYPE_UN_FINISH = 0;//未完成任务
-    public static final int TASK_STATETYPE_FINISH = 1;//已完成任务
-    public static final int TASK_STATETYPE_DELETED = 3;//已删除任务
-
     public static final String PROJECT_TYPE_DISPUTE = "0";//争议解决
     public static final String PROJECT_TYPE_NOJUDICIAL = "1";//非诉专项
     public static final String PROJECT_TYPE_COUNSELOR = "2";//常年顾问

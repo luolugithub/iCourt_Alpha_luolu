@@ -15,7 +15,7 @@ public class FilterDropEntity implements Serializable {
     public FilterDropEntity() {
     }
 
-    public FilterDropEntity(String name, String count,int stateType) {
+    public FilterDropEntity(String name, String count, int stateType) {
         this.name = name;
         this.count = count;
         this.stateType = stateType;
@@ -23,6 +23,6 @@ public class FilterDropEntity implements Serializable {
 
     public String name;//名称
     public String count;//数量
-    public int stateType;//全部任务：－1；已完成：1；未完成：0；已删除：3；
+    public int stateType;//状态；
 
 }

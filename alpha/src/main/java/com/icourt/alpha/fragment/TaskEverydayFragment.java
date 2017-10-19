@@ -92,7 +92,6 @@ public class TaskEverydayFragment extends BaseFragment
                 int taskSecond1 = calendarTask1.get(Calendar.SECOND);
                 boolean isAllDayTask1 = (taskHour1 == 23 && taskMinute1 == 59 && taskSecond1 == 59);
 
-
                 Calendar calendarTask2 = Calendar.getInstance();
                 calendarTask2.setTimeInMillis(o2.dueTime);
                 int taskHour2 = calendarTask2.get(Calendar.HOUR_OF_DAY);

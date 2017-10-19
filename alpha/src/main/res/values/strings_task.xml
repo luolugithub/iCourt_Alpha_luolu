@@ -41,6 +41,7 @@
     <string name="task_month_finish_task">本月已完成任务</string>
     <string name="task_clear_deleted_task">清空所有已删除任务</string>
     <string name="task_can_not_revert">该操作不可恢复，确定清空？</string>
+    <string name="task_empty_nomal">暂无数据</string>
     <string name="task_none_unfinish_task">暂无未完成的任务</string>
     <string name="task_none_finished_task">暂无已完成的任务</string>
     <string name="task_none_deleted_task">暂无已删除的任务</string>
@@ -93,4 +94,7 @@
     <string name="task_attachment_from_document">从文档中选取</string>
     <string name="task_upload_file">上传文件</string>
     <string name="task_attachment_from_photo">从相册选取</string>
+
+    <string name="task_devide" formatted="false">%s/%s</string>
+
 </resources>

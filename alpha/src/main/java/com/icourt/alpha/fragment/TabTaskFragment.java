@@ -23,6 +23,7 @@ import com.icourt.alpha.activity.TaskOtherActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.constants.TaskConfig;
 import com.icourt.alpha.entity.bean.FilterDropEntity;
 import com.icourt.alpha.entity.bean.TaskCountEntity;
 import com.icourt.alpha.entity.bean.TaskMemberEntity;
@@ -57,9 +58,10 @@ import retrofit2.Response;
 /**
  * Description  任务tab页面
  * Company Beijing icourt
- * @author  youxuan  E-mail:xuanyouwu@163.com
- * date createTime：2017/4/8
- * version 1.0.0
+ *
+ * @author youxuan  E-mail:xuanyouwu@163.com
+ *         date createTime：2017/4/8
+ *         version 1.0.0
  */
 public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackListener, TopMiddlePopup.OnItemClickListener {
 
@@ -144,7 +146,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         baseFragmentAdapter.bindData(true,
                 Arrays.asList(
                         alltaskFragment = TaskAllFragment.newInstance(),
-                        attentionTaskFragment = TaskListFragment.newInstance(TaskListFragment.TYPE_MY_ATTENTION, 0)));
+                        attentionTaskFragment = TaskListFragment.newInstance(TaskListFragment.TYPE_MY_ATTENTION, TaskConfig.TASK_STATETYPE_UNFINISH)));
         baseFragmentAdapter.bindTitle(true, Arrays.asList(getString(R.string.task_unfinished), getString(R.string.task_my_attention)));
 
         CommonNavigator commonNavigator = new CommonNavigator(getContext());
@@ -217,7 +219,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                         FilterDropEntity filterDropEntity = topMiddlePopup.getAdapter().getItem(selectPosition);
                         if (filterDropEntity != null) {
                             setFirstTabText(filterDropEntity.name, selectPosition);
-                            updateListData(filterDropEntity.stateType);
+                            updateListData(TaskConfig.convert2TaskStateType(filterDropEntity.stateType));
                         }
                     }
 
@@ -251,9 +253,9 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
      */
     private void setTaskPopCount(@NonNull String doingCount, @NonNull String doneCount, @NonNull String deleteCount) {
         dropEntities.clear();
-        FilterDropEntity doingEntity = new FilterDropEntity(getString(R.string.task_unfinished), doingCount, 0);
-        FilterDropEntity doneEntity = new FilterDropEntity(getString(R.string.task_finished), doneCount, 1);
-        FilterDropEntity deleteEntity = new FilterDropEntity(getString(R.string.task_deleted), deleteCount, 3);
+        FilterDropEntity doingEntity = new FilterDropEntity(getString(R.string.task_unfinished), doingCount, TaskConfig.TASK_STATETYPE_UNFINISH);
+        FilterDropEntity doneEntity = new FilterDropEntity(getString(R.string.task_finished), doneCount, TaskConfig.TASK_STATETYPE_FINISHED);
+        FilterDropEntity deleteEntity = new FilterDropEntity(getString(R.string.task_deleted), deleteCount, TaskConfig.TASK_STATETYPE_DELETED);
         dropEntities.add(doingEntity);
         dropEntities.add(doneEntity);
         dropEntities.add(deleteEntity);
@@ -281,7 +283,7 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
         if (selectPosition != position) {
             FilterDropEntity filterDropEntity = (FilterDropEntity) adapter.getItem(position);
             setFirstTabText(filterDropEntity.name, position);
-            updateListData(filterDropEntity.stateType);
+            updateListData(TaskConfig.convert2TaskStateType(filterDropEntity.stateType));
         }
         titleCalendar.setVisibility(position == 0 ? View.VISIBLE : View.GONE);
     }
@@ -291,12 +293,12 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
      *
      * @param stateType -1，全部任务；0，未完成；1，已完成；3，已删除。
      */
-    public void updateListData(int stateType) {
+    public void updateListData(@TaskConfig.TaskStateType int stateType) {
         Bundle bundle = new Bundle();
         bundle.putInt(TaskListFragment.STATE_TYPE, stateType);
         int type = TaskAllFragment.TYPE_ALL_TASK;
         //说明该任务状态是全部的任务状态
-        if (stateType == 0) {
+        if (stateType == TaskConfig.TASK_STATETYPE_UNFINISH) {
             titleCalendar.setVisibility(View.VISIBLE);
             if (isShowCalendar) {
                 type = TaskAllFragment.TYPE_ALL_TASK_CALENDAR;

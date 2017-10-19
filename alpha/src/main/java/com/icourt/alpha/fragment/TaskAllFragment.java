@@ -16,6 +16,7 @@ import android.widget.FrameLayout;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.constants.TaskConfig;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.interfaces.INotifyFragment;
 import com.icourt.alpha.interfaces.OnTasksChangeListener;
@@ -32,9 +33,10 @@ import butterknife.Unbinder;
 /**
  * Description  所有任务tab页面
  * Company Beijing icourt
- * @author  youxuan  E-mail:xuanyouwu@163.com
- * date createTime：2017/7/8
- * version 1.0.0
+ *
+ * @author youxuan  E-mail:xuanyouwu@163.com
+ *         date createTime：2017/7/8
+ *         version 1.0.0
  */
 public class TaskAllFragment extends BaseFragment implements OnTasksChangeListener {
     /**
@@ -92,7 +94,7 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
 
     @Override
     protected void initView() {
-        currFragment = addOrShowFragment(getFragment(TYPE_ALL_TASK, 0), currFragment, R.id.main_fl_content);
+        currFragment = addOrShowFragment(getFragment(TYPE_ALL_TASK, TaskConfig.TASK_STATETYPE_UNFINISH), currFragment, R.id.main_fl_content);
     }
 
     /**
@@ -102,16 +104,16 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
      * @param stateType 子Fragment的状态 -1，全部任务；0，未完成；1，已完成；3，已删除。
      * @return
      */
-    private Fragment getFragment(@ChildFragmentType int type, int stateType) {
+    private Fragment getFragment(@ChildFragmentType int type, @TaskConfig.TaskStateType int stateType) {
         //如果是任务列表的话，每次都刷新。
         if (type == TYPE_ALL_TASK) {
-            return TaskListFragment.newInstance(0, stateType);
+            return TaskListFragment.newInstance(TaskListFragment.TYPE_ALL, stateType);
         }
         Fragment fragment = fragmentSparseArray.get(type);
         if (fragment == null) {
             switch (type) {
                 case TYPE_ALL_TASK:
-                    putFragment(type, TaskListFragment.newInstance(0, stateType));
+                    putFragment(type, TaskListFragment.newInstance(TaskListFragment.TYPE_ALL, stateType));
                     break;
                 case TYPE_ALL_TASK_CALENDAR:
                     putFragment(type, TaskListCalendarFragment.newInstance(null));
@@ -147,8 +149,12 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
     }
 
     protected Fragment addOrShowFragmentAnim(@NonNull Fragment targetFragment, Fragment currentFragment, @IdRes int containerViewId, boolean isAnim) {
-        if (targetFragment == null) {return currentFragment;}
-        if (targetFragment == currentFragment) {return currentFragment;}
+        if (targetFragment == null) {
+            return currentFragment;
+        }
+        if (targetFragment == currentFragment) {
+            return currentFragment;
+        }
         FragmentManager fm = getChildFragmentManager();
         FragmentTransaction transaction = fm.beginTransaction();
         if (isAnim) {
@@ -175,9 +181,9 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
     public void notifyFragmentUpdate(Fragment targetFrgament, @ChildFragmentType int type, Bundle bundle) {
         super.notifyFragmentUpdate(targetFrgament, type, bundle);
         getArguments().putInt(CHILD_FRAGMENT, type);
-        int stateType = 0;
+        int stateType = TaskConfig.TASK_STATETYPE_UNFINISH;
         if (bundle != null) {
-            stateType = bundle.getInt(TaskListFragment.STATE_TYPE);
+            stateType = TaskConfig.convert2TaskStateType(bundle.getInt(TaskListFragment.STATE_TYPE));
         }
         currFragment = addOrShowFragmentAnim(
                 getFragment(type, stateType),
@@ -221,7 +227,7 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
     private void updateCalendarRefresh() {
         Bundle args = new Bundle();
         args.putSerializable(KEY_FRAGMENT_RESULT, taskItemEntityList);
-        Fragment fragment = getFragment(TYPE_ALL_TASK_CALENDAR, 0);
+        Fragment fragment = getFragment(TYPE_ALL_TASK_CALENDAR, TaskConfig.TASK_STATETYPE_UNFINISH);
         ((INotifyFragment) fragment).notifyFragmentUpdate(fragment, 0, args);
     }
 

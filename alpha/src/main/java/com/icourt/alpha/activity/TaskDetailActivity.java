@@ -97,8 +97,8 @@ public class TaskDetailActivity extends BaseActivity
     private static final String KEY_TASK_ID = "key_task_id";
     private static final String KEY_IS_CHECKITEM = "key_is_checkitem";
     private static final String KEY_IS_CHECK_ITEM = "key_is_check_item";
-    private static final String KEY_ISFINISH = "isFinish";
-    private static final String KEY_VALID = "valid";
+    public static final String KEY_ISFINISH = "isFinish";
+    public static final String KEY_VALID = "valid";
     private static final String KEY_TASKITEMENTITY = "taskItemEntity";
     /**
      * 删除提示对话框
@@ -517,13 +517,6 @@ public class TaskDetailActivity extends BaseActivity
         return itemEntity;
     }
 
-    public String toTime(long times) {
-        long hour = times / 3600;
-        long minute = times % 3600 / 60;
-        long second = times % 60;
-        return String.format(Locale.CHINA, "%02d:%02d:%02d", hour, minute, second);
-    }
-
     public TaskEntity.TaskItemEntity getTaskItemEntity() {
         return taskItemEntity;
     }
@@ -558,7 +551,7 @@ public class TaskDetailActivity extends BaseActivity
                         isStrat = true;
                         taskStartIamge.setImageResource(R.drawable.orange_side_dot_bg);
                         taskTiemingImage.setImageResource(R.mipmap.task_detail_timing);
-                        taskTime.setText(toTime(event.timingSecond));
+                        taskTime.setText(DateUtils.getTimingStr(event.timingSecond));
                     }
                 }
                 break;
@@ -1107,7 +1100,6 @@ public class TaskDetailActivity extends BaseActivity
     /**
      * 添加关注
      */
-
     private void addStar() {
         showLoadingDialog(null);
         JsonObject jsonObject = new JsonObject();

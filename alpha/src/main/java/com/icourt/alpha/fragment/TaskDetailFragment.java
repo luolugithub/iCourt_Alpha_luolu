@@ -228,7 +228,7 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
                         TaskDescChangeActivity.launch(
                                 getContext(),
                                 taskItemEntity);
-                          break;
+                        break;
                     default:
 
                         break;
@@ -245,8 +245,8 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
             if (bundle == null) {
                 return;
             }
-            isFinish = bundle.getBoolean("isFinish");
-            valid = bundle.getBoolean("valid");
+            isFinish = bundle.getBoolean(TaskDetailActivity.KEY_ISFINISH);
+            valid = bundle.getBoolean(TaskDetailActivity.KEY_VALID);
             taskItemEntity = (TaskEntity.TaskItemEntity) bundle.getSerializable("taskItemEntity");
             try {
                 cloneItemEntity = (TaskEntity.TaskItemEntity) BeanUtils.cloneTo(taskItemEntity);

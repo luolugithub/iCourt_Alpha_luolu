@@ -13,9 +13,13 @@ import java.lang.annotation.RetentionPolicy;
  * version 2.1.0
  */
 public class TimingConfig {
+    //日
     public static final int TIMING_QUERY_BY_DAY = 1;
+    //周
     public static final int TIMING_QUERY_BY_WEEK = 2;
+    //月
     public static final int TIMING_QUERY_BY_MONTH = 3;
+    //年
     public static final int TIMING_QUERY_BY_YEAR = 4;
 
     @IntDef({TIMING_QUERY_BY_DAY,

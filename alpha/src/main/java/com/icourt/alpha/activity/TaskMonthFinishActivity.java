@@ -7,23 +7,23 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.andview.refreshview.XRefreshView;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.TaskAdapter;
-import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack2;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DateUtils;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
 
 import java.util.List;
 
@@ -50,15 +50,19 @@ public class TaskMonthFinishActivity extends BaseActivity implements BaseQuickAd
     @BindView(R.id.titleView)
     AppBarLayout titleView;
     @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
+    @Nullable
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
+
     TaskAdapter taskAdapter;
 
     private int pageIndex = 1;
 
     public static void launch(@NonNull Context context) {
-        if (context == null) return;
+        if (context == null) {
+            return;
+        }
         Intent intent = new Intent(context, TaskMonthFinishActivity.class);
         context.startActivity(intent);
     }
@@ -76,30 +80,27 @@ public class TaskMonthFinishActivity extends BaseActivity implements BaseQuickAd
     protected void initView() {
         super.initView();
         setTitle(R.string.task_month_finish_task);
-        refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_list_null_text);
-        refreshLayout.setMoveForHorizontal(true);
+
+        recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_list_null_text);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setHasFixedSize(true);
 
         recyclerView.setAdapter(taskAdapter = new TaskAdapter());
-//        taskAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskAdapter));
         taskAdapter.setOnItemClickListener(this);
         taskAdapter.setOnItemChildClickListener(this);
 
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onLoadmore(RefreshLayout refreshLayout) {
                 getData(true);
             }
 
             @Override
-            public void onLoadMore(boolean isSilence) {
-                super.onLoadMore(isSilence);
+            public void onRefresh(RefreshLayout refreshLayout) {
                 getData(false);
             }
         });
-        refreshLayout.setAutoRefresh(true);
+
+        refreshLayout.autoRefresh();
     }
 
     @Override
@@ -125,49 +126,35 @@ public class TaskMonthFinishActivity extends BaseActivity implements BaseQuickAd
                         stopRefresh();
                         if (isRefresh) {
                             taskAdapter.setNewData(response.body().result.items);
-                            enableEmptyView(response.body().result.items);
+                            recyclerView.enableEmptyView(response.body().result.items);
                         } else {
                             taskAdapter.addData(response.body().result.items);
                         }
-//                        pageIndex += 1;
-//                        enableLoadMore(response.body().result.items);
+                        enableLoadMore(response.body().result.items);
                     }
 
                     @Override
                     public void onFailure(Call<ResEntity<TaskEntity>> call, Throwable t) {
                         super.onFailure(call, t);
                         stopRefresh();
-                        enableEmptyView(null);
+                        if (isRefresh) {
+                            recyclerView.enableEmptyView(null);
+                        }
                     }
                 });
     }
 
     private void enableLoadMore(List result) {
         if (refreshLayout != null) {
-            refreshLayout.setPullLoadEnable(result != null
+            refreshLayout.setEnableLoadmore(result != null
                     && result.size() >= ActionConstants.DEFAULT_PAGE_SIZE);
         }
     }
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
-        }
-    }
-
-    /**
-     * 根据数据是否为空，判断是否显示空页面。
-     *
-     * @param result 用来判断是否要显示空页面的列表
-     */
-    private void enableEmptyView(List result) {
-        if (refreshLayout != null) {
-            if (result != null && result.size() > 0) {
-                refreshLayout.enableEmptyView(false);
-            } else {
-                refreshLayout.enableEmptyView(true);
-            }
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 

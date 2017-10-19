@@ -19,11 +19,11 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.activity.SearchTaskActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseRefreshFragmentAdapter;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.constants.TaskConfig;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
-import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.view.GestureDetectorLayout;
 import com.jeek.calendar.widget.calendar.CalendarUtils;
@@ -39,7 +39,6 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -148,13 +147,11 @@ public class TaskListCalendarFragment extends BaseFragment {
                 return TaskEverydayFragment.newInstance(key, getDayTask(key));
             }
 
-
             @Override
             public int getCount() {
                 return MAXDAILYPAGE;
             }
         });
-
 
         //今天 定位在中间
         viewPager.setCurrentItem(MAXDAILYPAGE / 2, false);
@@ -415,14 +412,12 @@ public class TaskListCalendarFragment extends BaseFragment {
         slSchedule.setOnCalendarClickListener(new OnCalendarClickListener() {
             @Override
             public void onClickDate(int year, int month, int day) {
-                log("----------->onClickDate year:" + year + "  month:" + month + "   day:" + day);
                 updateTitle(year, month + 1, day);
                 scrollToTaskPage(year, month, day);
             }
 
             @Override
             public void onPageChange(int year, int month, int day) {
-                log("----------->onPageChange year:" + year + "  month:" + month + "   day:" + day);
                 updateTitle(year, month + 1, day);
             }
         });
@@ -454,7 +449,6 @@ public class TaskListCalendarFragment extends BaseFragment {
                     .addTaskHints(clendar.get(Calendar.YEAR), clendar.get(Calendar.MONTH), value);
         }
     }
-
 
     private void updateTitle(int year, int month, int day) {
         titleContent.setText(String.format("%s年%s月", year, month));
@@ -560,7 +554,6 @@ public class TaskListCalendarFragment extends BaseFragment {
         return data;
     }
 
-
     @OnClick({R.id.titleBack,
             R.id.titleForward,
             R.id.titleAction,
@@ -608,7 +601,7 @@ public class TaskListCalendarFragment extends BaseFragment {
                             tabTaskFragment.isShowCalendar = false;
                             tabTaskFragment.isAwayScroll = true;
                             tabTaskFragment.setFirstTabText(getString(R.string.task_unfinished), 0);
-                            tabTaskFragment.updateListData(0);
+                            tabTaskFragment.updateListData(TaskConfig.TASK_STATETYPE_UNFINISH);
                         }
                     }
                 }

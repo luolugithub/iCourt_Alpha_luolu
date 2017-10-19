@@ -32,8 +32,9 @@ public class TaskRenameActivity extends EditItemBaseActivity {
     private static final String KEY_TASK = "task";
 
     public static void launch(@NonNull Context context, @NonNull TaskEntity.TaskItemEntity itemEntity) {
-        if (context == null) return;
-        if (itemEntity == null) return;
+        if (context == null || itemEntity == null) {
+            return;
+        }
         Intent intent = new Intent(context, TaskRenameActivity.class);
         intent.putExtra(KEY_TASK, itemEntity);
         context.startActivity(intent);

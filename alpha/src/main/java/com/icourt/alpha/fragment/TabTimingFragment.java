@@ -72,6 +72,7 @@ import retrofit2.Response;
  * date createTime：2017/4/17
  * version 1.0.0
  */
+@Deprecated
 public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
 
     Unbinder unbinder;

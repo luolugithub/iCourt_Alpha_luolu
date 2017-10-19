@@ -68,44 +68,42 @@ import static com.umeng.socialize.utils.DeviceConfig.context;
  */
 
 public abstract class BaseTaskFragment extends BaseFragment implements OnFragmentCallBackListener, ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener {
-    //TODO 默认值就是false
     /**
      * 编辑任务权限
      */
-    protected boolean isEditTask = false;
+    protected boolean isEditTask;
     /**
      * 删除任务权限
      */
-    protected boolean isDeleteTask = false;
+    protected boolean isDeleteTask;
     /**
      * 添加计时权限
      */
-    protected boolean isAddTime = false;
+    protected boolean isAddTime;
 
-    //TODO 静态常量的作用域有问题
     /**
      * 修改任务完成状态
      */
-    public static final int CHANGE_STATUS = 1;
+    protected static final int CHANGE_STATUS = 1;
     /**
      * 修改任务所属项目/任务组
      */
-    public static final int CHANGE_PROJECT = 2;
+    protected static final int CHANGE_PROJECT = 2;
     /**
      * 将任务分配给其他负责人
      */
-    public static final int CHANGE_ALLOT = 3;
+    protected static final int CHANGE_ALLOT = 3;
     /**
      * 修改任务到期时间和提醒时间
      */
-    public static final int CHANGE_DUETIME = 4;
+    protected static final int CHANGE_DUETIME = 4;
 
     /**
      * 以下为对任务的操作状态
      */
     @IntDef({CHANGE_STATUS, CHANGE_PROJECT, CHANGE_ALLOT, CHANGE_DUETIME})
     @Retention(RetentionPolicy.SOURCE)
-    public @interface ChangeType {
+    protected @interface ChangeType {
     }
 
     /**
@@ -216,9 +214,9 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
      * @param state      true：完成状态；false：未完成状态。
      */
     protected void updateTaskState(final TaskEntity.TaskItemEntity itemEntity, final boolean state) {
-
-        //TODO  参数没校验
-
+        if (itemEntity == null) {
+            return;
+        }
         showLoadingDialog(null);
         itemEntity.state = state;
         callEnqueue(
@@ -291,8 +289,9 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
         if (TextUtils.isEmpty(json)) {
             return;
         }
-        if (TextUtils.isEmpty(json)) return;
-        //TODO  不用的onFailure 去掉
+        if (TextUtils.isEmpty(json)) {
+            return;
+        }
         callEnqueue(
                 getApi().taskReminderAdd(taskItemEntity.id, RequestUtils.createJsonBody(json)),
                 new SimpleCallBack<TaskReminderEntity>() {
@@ -300,14 +299,8 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
                     public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
 
                     }
-
-                    @Override
-                    public void onFailure(Call<ResEntity<TaskReminderEntity>> call, Throwable t) {
-                        super.onFailure(call, t);
-                    }
                 });
     }
-
 
     /**
      * 删除任务
@@ -316,8 +309,9 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
      */
     protected void deleteTask(final TaskEntity.TaskItemEntity itemEntity) {
         showLoadingDialog(null);
-        //TODO  context 有问题
-        MobclickAgent.onEvent(context, UMMobClickAgent.delete_task_click_id);
+        if (context != null) {
+            MobclickAgent.onEvent(context, UMMobClickAgent.delete_task_click_id);
+        }
         callEnqueue(
                 getApi().taskDelete(itemEntity.id),
                 new SimpleCallBack<JsonElement>() {
@@ -529,7 +523,6 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
      * @param itemEntity
      */
     protected void showFinishDialog(final Context context, String message, final TaskEntity.TaskItemEntity itemEntity, @DialogType final int type) {
-        //TODO 取消按钮的点击事件垃圾
         //先new出一个监听器，设置好监听
         DialogInterface.OnClickListener dialogOnclicListener = new DialogInterface.OnClickListener() {
 
@@ -546,11 +539,6 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
                             } else {
                                 updateTaskState(itemEntity, true);
                             }
-                        }
-                        break;
-                    //取消
-                    case Dialog.BUTTON_NEGATIVE:
-                        if (type == SHOW_FINISH_DIALOG) {
                         }
                         break;
                     default:

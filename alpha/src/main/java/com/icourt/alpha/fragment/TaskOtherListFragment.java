@@ -543,7 +543,6 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
         }
     }
 
-
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDeleteTaskEvent(TaskActionEvent event) {
         if (event == null) {
