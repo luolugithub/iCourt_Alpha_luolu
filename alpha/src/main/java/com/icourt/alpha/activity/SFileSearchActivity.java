@@ -193,6 +193,9 @@ public class SFileSearchActivity extends BaseActivity
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
         if (isRefresh) {
+            sFileSearchAdapter.clearData();
+            searchPb.setVisibility(View.VISIBLE);
+            contentEmptyText.setVisibility(View.GONE);
             pageIndex = 1;
         }
         if (TextUtils.isEmpty(etSearchName.getText())) {
@@ -201,7 +204,6 @@ public class SFileSearchActivity extends BaseActivity
             searchPb.setVisibility(View.GONE);
             return;
         }
-        searchPb.setVisibility(View.VISIBLE);
         callEnqueue(
                 getSFileApi().fileSearch(
                         pageIndex,
