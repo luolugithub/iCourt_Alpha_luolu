@@ -195,6 +195,7 @@ public class SFileSearchActivity extends BaseActivity
         if (isRefresh) {
             sFileSearchAdapter.clearData();
             searchPb.setVisibility(View.VISIBLE);
+            contentEmptyText.setVisibility(View.GONE);
             pageIndex = 1;
         }
         if (TextUtils.isEmpty(etSearchName.getText())) {
