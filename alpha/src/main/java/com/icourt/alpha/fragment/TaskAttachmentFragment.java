@@ -265,8 +265,9 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
             if (type == 100 && bundle != null) {
                 boolean isFinish = bundle.getBoolean("isFinish");
                 boolean valid = bundle.getBoolean("valid");
-                if (footerAddView != null)
+                if (footerAddView != null) {
                     footerAddView.setVisibility((!isFinish && valid && hasAddAttachmentPermission) ? View.VISIBLE : View.GONE);
+                }
                 if (footerAddView != null) {
                     footerAddView.setVisibility(!isFinish && valid ? View.VISIBLE : View.GONE);
                 }
