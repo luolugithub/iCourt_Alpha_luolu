@@ -195,14 +195,15 @@ public class MessageListFragment extends BaseRecentContactFragment
         }
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+
+    private void updateContacts() {
+        //释放
+        if (contactDbService != null) {
+            contactDbService.releaseService();
+        }
         contactDbService = new ContactDbService(getLoginUserId());
-        RealmResults<ContactDbModel> contactDbModels = contactDbService.queryAll();
+        RealmResults<ContactDbModel> contactDbModels = contactDbService.queryAllAsync();
         if (contactDbModels != null) {
-            localGroupContactBeans.clear();
-            localGroupContactBeans.addAll(ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(contactDbModels)));
             contactDbModels.removeChangeListener(realmResultsRealmChangeListener);
             contactDbModels.addChangeListener(realmResultsRealmChangeListener);
         }
@@ -350,7 +351,7 @@ public class MessageListFragment extends BaseRecentContactFragment
 
     @Override
     protected void onlineClientEvent(List<OnlineClient> onlineClients) {
-        if(isDetached()) return;
+        if (isDetached()) return;
         if (onlineClients == null || onlineClients.size() == 0) {
             updateLoginStateView(false, "");
         } else {
@@ -642,6 +643,7 @@ public class MessageListFragment extends BaseRecentContactFragment
     public void onResume() {
         super.onResume();
         updateTeams();
+        updateContacts();
 
         //主动登陆一次
         StatusCode status = NIMClient.getStatus();
