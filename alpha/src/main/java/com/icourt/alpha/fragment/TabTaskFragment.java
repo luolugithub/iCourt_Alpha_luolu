@@ -181,12 +181,6 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
 
             @Override
             public void onTabClick(View v, int pos) {
-                //说明当前是第0个，并且点击了第0个，需要弹出筛选已完成、未完成、已删除的弹出窗。
-                if (viewPager.getCurrentItem() == 0 && pos == 0) {
-                    postDismissPop();
-                    topMiddlePopup.show(titleView, dropEntities, selectPosition);
-                    setFirstTabImage(true);
-                    if (topMiddlePopup.isShowing()) {
                 if (viewPager.getCurrentItem() == 0 && pos == 0) {//说明当前是第0个，并且点击了第0个，需要弹出筛选已完成、未完成、已删除的弹出窗。
                     if (topMiddlePopup.isShowing()) {
                         postDismissPop();

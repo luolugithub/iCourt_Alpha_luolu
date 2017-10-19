@@ -30,8 +30,50 @@ public class TaskEntity implements Serializable {
     public int groupTaskCount;//分组内任务个数
     public List<TaskItemEntity> items;
 
-    public static class TaskItemEntity implements Serializable, MultiItemEntity {
 
+    public static class TaskItemEntity implements Serializable, MultiItemEntity, Cloneable {
+        public String groupName;//任务所在分组名称
+        public String groupId;//分组id
+        public int groupTaskCount;//分组有多少个任务
+
+        public String id;
+        public String name;//任务名称
+        public String parentId;//任务组id
+        public String parentName;//任务组名称
+        public String matterId;//项目id
+        public String description;//任务描述
+        public boolean state;//是否完成
+        public long dueTime;//到期时间
+        public long updateTime;//更新时间
+        public long timingSum;//总计时
+        public long assignTime;//任务分配时间
+        public long createTime;//任务创建时间
+        public int itemCount;//子任务总数
+        public int doneItemCount;//完成子任务数
+        public int attachmentCount;//附件总数
+        public int commentCount;//评论总数
+        public int attentioned;//关注   0:未关注  1:关注
+        public int type;//类型   0:任务  1:任务组
+        public boolean isTiming;
+        public String readUserIds;//查看过此任务的人的id
+
+        public ParentFlowEntity parentFlow;//详情任务组信息
+        public MatterEntity matter;//项目信息
+        public CreateUserEntity createUser;//任务创建人
+        public boolean valid;//是否有效 如果删除 返回false
+
+        public List<AttendeeUserEntity> attendeeUsers;//任务相关人
+        public List<String> right;//权限
+
+        /**
+         * 返回数据标记是任务还是任务组，给Adapter进行使用
+         *
+         * @return
+         */
+        @Override
+        public int getItemType() {
+            return type;
+        }
 
         /**
          * 构建更新任务标题的json
@@ -89,50 +131,6 @@ public class TaskEntity implements Serializable {
             return jsonObject;
         }
 
-
-    public static class TaskItemEntity implements Serializable, MultiItemEntity, Cloneable {
-        public String groupName;//任务所在分组名称
-        public String groupId;//分组id
-        public int groupTaskCount;//分组有多少个任务
-
-        public String id;
-        public String name;//任务名称
-        public String parentId;//任务组id
-        public String parentName;//任务组名称
-        public String matterId;//项目id
-        public String description;//任务描述
-        public boolean state;//是否完成
-        public long dueTime;//到期时间
-        public long updateTime;//更新时间
-        public long timingSum;//总计时
-        public long assignTime;//任务分配时间
-        public long createTime;//任务创建时间
-        public int itemCount;//子任务总数
-        public int doneItemCount;//完成子任务数
-        public int attachmentCount;//附件总数
-        public int commentCount;//评论总数
-        public int attentioned;//关注   0:未关注  1:关注
-        public int type;//类型   0:任务  1:任务组
-        public boolean isTiming;
-        public String readUserIds;//查看过此任务的人的id
-
-        public ParentFlowEntity parentFlow;//详情任务组信息
-        public MatterEntity matter;//项目信息
-        public CreateUserEntity createUser;//任务创建人
-        public boolean valid;//是否有效 如果删除 返回false
-
-        public List<AttendeeUserEntity> attendeeUsers;//任务相关人
-        public List<String> right;//权限
-
-        /**
-         * 返回数据标记是任务还是任务组，给Adapter进行使用
-         *
-         * @return
-         */
-        @Override
-        public int getItemType() {
-            return type;
-        }
 
         public static class MatterEntity
                 implements Serializable, IConvertModel<ProjectEntity>, Cloneable {
@@ -221,5 +219,7 @@ public class TaskEntity implements Serializable {
         public Object clone() throws CloneNotSupportedException {
             return super.clone();
         }
+
     }
 }
+

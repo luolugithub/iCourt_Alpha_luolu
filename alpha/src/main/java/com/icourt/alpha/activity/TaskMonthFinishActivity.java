@@ -82,7 +82,7 @@ public class TaskMonthFinishActivity extends BaseActivity implements BaseQuickAd
         recyclerView.setHasFixedSize(true);
 
         recyclerView.setAdapter(taskAdapter = new TaskAdapter());
-        taskAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskAdapter));
+//        taskAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, taskAdapter));
         taskAdapter.setOnItemClickListener(this);
         taskAdapter.setOnItemChildClickListener(this);
 

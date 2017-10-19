@@ -935,9 +935,8 @@ public class TaskDetailActivity extends BaseActivity
                 baseFragmentAdapter.bindData(true, Arrays.asList(
                         taskDetailFragment == null ? taskDetailFragment = TaskDetailFragment.newInstance(taskItemEntity) : taskDetailFragment,
                         taskCheckItemFragment == null ? taskCheckItemFragment = TaskCheckItemFragment.newInstance(
-                                taskItemEntity.id,
-                                hasTaskEditPermission(),
-                                taskItemEntity.valid) : taskCheckItemFragment,
+                                taskItemEntity,
+                                hasTaskEditPermission()) : taskCheckItemFragment,
                         taskAttachmentFragment == null ? taskAttachmentFragment = TaskAttachmentFragment.newInstance(
                                 taskItemEntity.id,
                                 taskItemEntity.matterId,
