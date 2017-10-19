@@ -21,7 +21,8 @@
  外部：104421133@qq.com    a*****  
  外部：it@icourt.cc        z****** （包内的更新token和id都引用的是1044账号的token和id）  
  test：394337795@qq.com    3*****  
- 内部日更新：zhouyong@icourt.cc     I******* 
+ 内部日更新：zhouyong@icourt.cc     I*******   
+ 蒲公英正式: xuanyouwu@163.com axuan******
 
 
 #上线打包日志  
