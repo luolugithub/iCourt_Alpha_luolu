@@ -404,7 +404,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
     private boolean handleRevokeFail(@Nullable final FileChangedHistoryEntity item, @NonNull Throwable t) {
         if (t instanceof HttpException
                 && ((HttpException) t).code() == 404
-                && ((HttpException) t).code() == 400) {
+                || ((HttpException) t).code() == 400) {
             showToast(R.string.sfile_revert_fail);
             if (item != null) {
                 bugSync("文件撤销失败",
