@@ -33,6 +33,7 @@ import static com.icourt.alpha.activity.UpdateUserInfoActivity.UPDATE_PHONE_TYPE
  */
 
 public class UserInfoActivity extends BaseActivity {
+    //TODO 这些常量没有引用
     private static final int REQUEST_CODE_CAMERA = 1000;//拍照 request code
     private static final int REQUEST_CODE_GALLERY = 1001;//相册 request code
     private static final int REQUEST_CODE_CROP = 1002;//裁剪 request code
@@ -110,6 +111,7 @@ public class UserInfoActivity extends BaseActivity {
         super.onClick(v);
         switch (v.getId()) {
             case R.id.name_layout:
+                //TODO 空指针危险
                 UpdateUserInfoActivity.launch(this, UPDATE_NAME_TYPE, alphaUserInfo.getName());
                 break;
             case R.id.phone_layout:
