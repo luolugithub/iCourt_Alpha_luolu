@@ -394,7 +394,7 @@ public class TimerTimingActivity extends BaseTimerActivity
                             dismissLoadingDialog();
                             selectedStartDate.clear();
                             selectedStartDate.setTimeInMillis(mItemEntity.startTime);
-                            if (isFinished) {
+                            if (isFinish) {
                                 finish();
                             }
                         }
