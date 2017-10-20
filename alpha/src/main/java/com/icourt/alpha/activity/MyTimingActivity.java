@@ -44,6 +44,9 @@ import butterknife.OnClick;
  */
 public class MyTimingActivity extends BaseActivity implements OnFragmentCallBackListener, OnTimingChangeListener {
 
+    private static final String KEY_TIMING_TYPE = "keyTimingType";
+    private static final String KEY_START_TIME = "keyStartTime";
+
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -71,7 +74,18 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
         if (context == null) {
             return;
         }
+        launch(context, TimingConfig.TIMING_QUERY_BY_WEEK, System.currentTimeMillis());
+    }
+
+    public static void launch(@NonNull Context context, @TimingConfig.TIMINGQUERYTYPE int type, long timeMillis) {
+        if (context == null) {
+            return;
+        }
         Intent intent = new Intent(context, MyTimingActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putInt(KEY_TIMING_TYPE, type);
+        bundle.putLong(KEY_START_TIME, timeMillis);
+        intent.putExtras(bundle);
         context.startActivity(intent);
     }
 
@@ -87,7 +101,17 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
     protected void initView() {
         super.initView();
         titleAction.setImageResource(R.mipmap.header_icon_add);
-        showCurrentWeekFragment();
+        setTitle(R.string.timing_my_timing);
+
+        Bundle extras = getIntent().getExtras();
+        long startTimeMillis = System.currentTimeMillis();
+        if (extras != null) {
+            selectedType = TimingConfig.convert2timingQueryType(extras.getInt(KEY_TIMING_TYPE, TimingConfig.TIMING_QUERY_BY_WEEK));
+            startTimeMillis = extras.getLong(KEY_START_TIME);
+            selectedDate.clear();
+            selectedDate.setTimeInMillis(startTimeMillis);
+        }
+        showTargetFragment(selectedType, startTimeMillis, false);
     }
 
     @OnClick({R.id.ll_all_time, R.id.ll_today_time, R.id.titleAction})
@@ -118,11 +142,7 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
      * 显示本周的计时
      */
     private void showCurrentWeekFragment() {
-        long currentTimeMillis = System.currentTimeMillis();
-        selectedDate.clear();
-        selectedDate.setTimeInMillis(currentTimeMillis);
-        TimingListWeekFragment weekListFragment = TimingListWeekFragment.newInstance(currentTimeMillis);
-        addOrShowFragmentAnim(TimingConfig.TIMING_QUERY_BY_WEEK, weekListFragment, R.id.fl_container, false);
+        showTargetFragment(TimingConfig.TIMING_QUERY_BY_WEEK, System.currentTimeMillis(), false);
     }
 
     /**
@@ -174,30 +194,6 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
     }
 
     /**
-     * 替换所显示的Fragment
-     *
-     * @param type            要替换的类型（日、周、月、年）
-     * @param targetFragment  要替换成哪个Fragment
-     * @param containerViewId
-     * @param isAnim
-     * @return
-     */
-    protected Fragment addOrShowFragmentAnim(@TimingConfig.TIMINGQUERYTYPE int type, Fragment targetFragment, @IdRes int containerViewId, boolean isAnim) {
-        if (targetFragment == null) {
-            return null;
-        }
-        selectedType = type;
-        FragmentManager fm = getSupportFragmentManager();
-        FragmentTransaction transaction = fm.beginTransaction();
-        if (isAnim) {
-            transaction.setCustomAnimations(R.anim.fragment_slide_top_in, R.anim.fragment_slide_top_out);
-        }
-        transaction.replace(containerViewId, targetFragment, String.valueOf(targetFragment.hashCode())).commitAllowingStateLoss();
-        transaction.addToBackStack(null);
-        return targetFragment;
-    }
-
-    /**
      * 展示时间选择对话框
      */
     private void showTimingSelectDialogFragment() {
@@ -211,6 +207,50 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
                 .show(mFragTransaction, tag);
     }
 
+    /**
+     * 根据type和起始时间，替换fragment
+     *
+     * @param type
+     * @param startTimeMillis
+     */
+    private void showTargetFragment(@TimingConfig.TIMINGQUERYTYPE int type, long startTimeMillis, boolean isAnim) {
+        Fragment selectedFragment = null;
+        switch (type) {
+            //日
+            case TimingConfig.TIMING_QUERY_BY_DAY:
+                selectedFragment = TimingListDayFragment.newInstance(startTimeMillis);
+                break;
+            //周
+            case TimingConfig.TIMING_QUERY_BY_WEEK:
+                selectedFragment = TimingListWeekFragment.newInstance(startTimeMillis);
+                break;
+            //月
+            case TimingConfig.TIMING_QUERY_BY_MONTH:
+                selectedFragment = TimingListMonthFragment.newInstance(startTimeMillis);
+                break;
+            //年
+            case TimingConfig.TIMING_QUERY_BY_YEAR:
+                selectedFragment = TimingListYearFragment.newInstance(startTimeMillis);
+                break;
+            default:
+                break;
+        }
+        if (selectedFragment == null) {
+            return;
+        }
+        selectedType = type;
+        selectedDate.clear();
+        selectedDate.setTimeInMillis(startTimeMillis);
+        showSelectedDate(selectedType, startTimeMillis);
+        FragmentManager fm = getSupportFragmentManager();
+        FragmentTransaction transaction = fm.beginTransaction();
+        if (isAnim) {
+            transaction.setCustomAnimations(R.anim.fragment_slide_top_in, R.anim.fragment_slide_top_out);
+        }
+        transaction.replace(R.id.fl_container, selectedFragment, String.valueOf(selectedFragment.hashCode())).commitAllowingStateLoss();
+        transaction.addToBackStack(null);
+    }
+
     @Override
     public void onFragmentCallBack(Fragment fragment, int type, Bundle params) {
         if (fragment instanceof TimingSelectDialogFragment) {
@@ -218,32 +258,8 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
             if (timingSelectEntity == null) {
                 return;
             }
-            Fragment selectedFragment = null;
-            switch (type) {
-                //日
-                case TimingConfig.TIMING_QUERY_BY_DAY:
-                    selectedFragment = TimingListDayFragment.newInstance(timingSelectEntity.startTimeMillis);
-                    break;
-                //周
-                case TimingConfig.TIMING_QUERY_BY_WEEK:
-                    selectedFragment = TimingListWeekFragment.newInstance(timingSelectEntity.startTimeMillis);
-                    break;
-                //月
-                case TimingConfig.TIMING_QUERY_BY_MONTH:
-                    selectedFragment = TimingListMonthFragment.newInstance(timingSelectEntity.startTimeMillis);
-                    break;
-                //年
-                case TimingConfig.TIMING_QUERY_BY_YEAR:
-                    selectedFragment = TimingListYearFragment.newInstance(timingSelectEntity.startTimeMillis);
-                    break;
-                default:
-                    break;
-            }
-            addOrShowFragmentAnim(type, selectedFragment, R.id.fl_container, false);
-            selectedDate.clear();
-            selectedDate.setTimeInMillis(timingSelectEntity.startTimeMillis);
             int convertType = TimingConfig.convert2timingQueryType(type);
-            showSelectedDate(convertType, timingSelectEntity.startTimeMillis);
+            showTargetFragment(convertType, timingSelectEntity.startTimeMillis, false);
         }
     }
 
