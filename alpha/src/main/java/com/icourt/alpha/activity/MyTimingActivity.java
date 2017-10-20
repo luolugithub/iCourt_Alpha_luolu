@@ -152,6 +152,7 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
      * @param selectedTimeMillis
      */
     private void showSelectedDate(@TimingConfig.TIMINGQUERYTYPE int type, long selectedTimeMillis) {
+        //TODO 改成switch方式
         if (type == TimingConfig.TIMING_QUERY_BY_DAY) {//日
             String date = DateUtils.getMMMdd(selectedTimeMillis);
             timingDateTitleTv.setText(date);

@@ -174,6 +174,8 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
     }
 
     private void initData() {
+
+        // TODO  fragment.isVisible() 与变量isVisible有什么区别  是否没必要
         if (isVisible && isAlreadyInit()) {
             getData(true);
         }
