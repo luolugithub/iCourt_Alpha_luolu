@@ -53,7 +53,7 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
     private static final String KEY_QUERY_TYPE = "queryType";
 
     //以下标记为是为了给Fragment在ViewPager中进行缓加载使用的。
-    private boolean isVisible;//是否可见
+    private boolean isVisibleToUser;//是否可见
 
     Unbinder unbinder;
 
@@ -104,10 +104,10 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
         if (getUserVisibleHint()) {
-            isVisible = true;
+            this.isVisibleToUser = true;
             initData();
         } else {
-            isVisible = false;
+            this.isVisibleToUser = false;
         }
     }
 
@@ -174,9 +174,7 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
     }
 
     private void initData() {
-
-        // TODO  fragment.isVisible() 与变量isVisible有什么区别  是否没必要
-        if (isVisible && isAlreadyInit()) {
+        if (isVisibleToUser && isAlreadyInit()) {
             getData(true);
         }
     }

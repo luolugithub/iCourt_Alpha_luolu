@@ -131,13 +131,7 @@ public class TimingListWeekFragment extends BaseTimingListFragment {
             }
         });
 
-        //TODO 这个场景 其他方法都没用  改成 SimpleOnPageChangeListener
-        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
-            }
-
+        viewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageSelected(int position) {
                 TimingSelectEntity timingSelectEntity = weekData.get(position);
@@ -146,18 +140,13 @@ public class TimingListWeekFragment extends BaseTimingListFragment {
                     getParentListener().onTimeChanged(TimingConfig.TIMING_QUERY_BY_WEEK, timingSelectEntity.startTimeMillis);
                 }
             }
-
-            @Override
-            public void onPageScrollStateChanged(int state) {
-
-            }
         });
 
         //记录当前所在的position，根据position获取周的统计数据。
         int position = 0;
         for (int i = 0; i < weekData.size(); i++) {
-            //TODO  空指针危险 重复运算
-            if (startTimeMillis >= weekData.get(i).startTimeMillis && startTimeMillis <= weekData.get(i).endTimeMillis) {
+            TimingSelectEntity item = weekData.get(i);
+            if (item != null && startTimeMillis >= item.startTimeMillis && startTimeMillis <= item.endTimeMillis) {
                 position = i;
                 break;
             }

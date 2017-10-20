@@ -3,7 +3,6 @@ package com.icourt.alpha.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -152,30 +151,40 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
      * @param selectedTimeMillis
      */
     private void showSelectedDate(@TimingConfig.TIMINGQUERYTYPE int type, long selectedTimeMillis) {
-        //TODO 改成switch方式
-        if (type == TimingConfig.TIMING_QUERY_BY_DAY) {//日
-            String date = DateUtils.getMMMdd(selectedTimeMillis);
-            timingDateTitleTv.setText(date);
-        } else if (type == TimingConfig.TIMING_QUERY_BY_WEEK) {//周，周需要考虑又没有跨年
-            long weekStartTime = DateUtils.getWeekStartTime(selectedTimeMillis);
-            long weekEndTime = DateUtils.getWeekEndTime(selectedTimeMillis);
-            String startDate;
-            String endDate;
-            if (DateUtils.getYear(System.currentTimeMillis()) == DateUtils.getYear(weekStartTime)
-                    && DateUtils.getYear(System.currentTimeMillis()) == DateUtils.getYear(weekEndTime)) {//开始和结束时间都是是今年，不需要显示年份
-                startDate = DateUtils.getMMdd(weekStartTime);
-                endDate = DateUtils.getMMdd(weekEndTime);
-            } else {//需要显示年份
-                startDate = DateUtils.getyyyyMMdd(weekStartTime);
-                endDate = DateUtils.getyyyyMMdd(weekEndTime);
-            }
-            timingDateTitleTv.setText(getString(R.string.timing_date_contact, startDate, endDate));
-        } else if (type == TimingConfig.TIMING_QUERY_BY_MONTH) {//月
-            String date = DateUtils.getyyyyMM(selectedTimeMillis);
-            timingDateTitleTv.setText(date);
-        } else if (type == TimingConfig.TIMING_QUERY_BY_YEAR) {//年
-            int year = DateUtils.getYear(selectedTimeMillis);
-            timingDateTitleTv.setText(getString(R.string.timing_year, String.valueOf(year)));
+        switch (type) {
+            //日
+            case TimingConfig.TIMING_QUERY_BY_DAY:
+                String dayDate = DateUtils.getMMMdd(selectedTimeMillis);
+                timingDateTitleTv.setText(dayDate);
+                break;
+            //周，周需要考虑又没有跨年
+            case TimingConfig.TIMING_QUERY_BY_WEEK:
+                long weekStartTime = DateUtils.getWeekStartTime(selectedTimeMillis);
+                long weekEndTime = DateUtils.getWeekEndTime(selectedTimeMillis);
+                String startDate;
+                String endDate;
+                if (DateUtils.getYear(System.currentTimeMillis()) == DateUtils.getYear(weekStartTime)
+                        && DateUtils.getYear(System.currentTimeMillis()) == DateUtils.getYear(weekEndTime)) {//开始和结束时间都是是今年，不需要显示年份
+                    startDate = DateUtils.getMMdd(weekStartTime);
+                    endDate = DateUtils.getMMdd(weekEndTime);
+                } else {//需要显示年份
+                    startDate = DateUtils.getyyyyMMdd(weekStartTime);
+                    endDate = DateUtils.getyyyyMMdd(weekEndTime);
+                }
+                timingDateTitleTv.setText(getString(R.string.timing_date_contact, startDate, endDate));
+                break;
+            //月
+            case TimingConfig.TIMING_QUERY_BY_MONTH:
+                String monthDate = DateUtils.getyyyyMM(selectedTimeMillis);
+                timingDateTitleTv.setText(monthDate);
+                break;
+            //年
+            case TimingConfig.TIMING_QUERY_BY_YEAR:
+                int year = DateUtils.getYear(selectedTimeMillis);
+                timingDateTitleTv.setText(getString(R.string.timing_year, String.valueOf(year)));
+                break;
+            default:
+                break;
         }
     }
 
