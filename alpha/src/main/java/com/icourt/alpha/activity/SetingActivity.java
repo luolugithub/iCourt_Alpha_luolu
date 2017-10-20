@@ -21,6 +21,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.interfaces.callback.AppUpdateCallBack;
+import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.alpha.widget.manager.DataCleanManager;
@@ -234,6 +235,7 @@ public class SetingActivity extends BaseAppUpdateActivity {
                 .map(new Function<String, Boolean>() {
                     @Override
                     public Boolean apply(@NonNull String s) throws Exception {
+                        SpUtils.getTemporaryCache().clear();
                         return DataCleanManager.clearAllCache(s);
                     }
                 })

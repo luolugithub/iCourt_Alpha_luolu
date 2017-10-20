@@ -131,7 +131,6 @@ public class TaskEntity implements Serializable {
             return jsonObject;
         }
 
-
         public static class MatterEntity
                 implements Serializable, IConvertModel<ProjectEntity>, Cloneable {
             public String id;

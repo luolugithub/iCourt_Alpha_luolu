@@ -174,7 +174,7 @@ public class TimerAddActivity extends BaseTimerActivity
             titleActionTextView.setText(R.string.timing_finish);
         }
         int launchType = getIntent().getIntExtra(KEY_LAUNCH_TYPE, LAUNCH_TYPE_NORMAL);
-        String cacheName = null;
+        String cacheName = "";
         //根据启动方式，判断是从缓存取数据，还是取传递过来的数据。
         if (launchType == LAUNCH_TYPE_NORMAL) {//取本地缓存的数据。
             cacheName = SpUtils.getTemporaryCache().getStringData(CACHE_NAME, null);
@@ -192,20 +192,23 @@ public class TimerAddActivity extends BaseTimerActivity
         if (selectedProjectEntity == null) {
             selectedProjectEntity = new ProjectEntity();
         }
+        //设置计时名称
         if (selectedTaskItem != null) {
             if (selectedTaskItem.matter != null) {
                 projectId = selectedTaskItem.matter.id;
                 projectName = selectedTaskItem.matter.name;
             }
             if (!TextUtils.isEmpty(selectedTaskItem.name)) {
-                timeNameTv.setText(selectedTaskItem.name);
-                if (!TextUtils.isEmpty(cacheName)) {//如果缓存的名字不为空，则显示缓存的名字
-                    timeNameTv.setText(cacheName);
-                } else {//如果缓存的名字为空，则显示任务的名字
-                    taskNameTv.setText(selectedTaskItem.name);
+                if (TextUtils.isEmpty(cacheName)) {//如果缓存的名字为空，则显示任务的名字
+                    cacheName = selectedTaskItem.name;
                 }
             }
         }
+        if (!TextUtils.isEmpty(cacheName)) {
+            timeNameTv.setText(cacheName);
+            timeNameTv.setSelection(cacheName.length());
+        }
+        //设置项目名称
         if (!TextUtils.isEmpty(projectName)) {
             selectedProjectEntity.name = projectName;
         }
@@ -213,6 +216,14 @@ public class TimerAddActivity extends BaseTimerActivity
             selectedProjectEntity.pkId = projectId;
         }
         projectNameTv.setText(selectedProjectEntity.name);
+        //设置工作类型
+        if (selectedWorkType != null) {
+            worktypeNameTv.setText(selectedWorkType.name);
+        }
+        //设置所属任务
+        if (selectedTaskItem != null) {
+            taskNameTv.setText(selectedTaskItem.name);
+        }
 
         //默认开始时间 早上9点整开始
         if (selectedStartDate == null) {
