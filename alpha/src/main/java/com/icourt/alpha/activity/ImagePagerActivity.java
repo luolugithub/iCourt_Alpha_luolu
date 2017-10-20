@@ -349,11 +349,13 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
                         menus.add("分享");
                         menus.add(isCollected ? "取消收藏" : "收藏");
                         menus.add(isDinged ? "取消钉" : "钉");
+                        menus.add("保存图片");
                         menus.add("保存到文档");
                         break;
                     default:
                         menus.add("转发给同事");
                         menus.add("分享");
+                        menus.add("保存图片");
                         menus.add("保存到文档");
                         break;
                 }
@@ -377,6 +379,8 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
                                     msgActionDing(!isDinged, finalChatFileInfoEntity.getChatMsgId());
                                 } else if (TextUtils.equals(action, "钉")) {
                                     msgActionDing(!isDinged, finalChatFileInfoEntity.getChatMsgId());
+                                } else if (TextUtils.equals(action, "保存图片")) {
+                                    downloadFile(originalImageUrl, picSavePath);
                                 } else if (TextUtils.equals(action, "保存到文档")) {
                                     shareHttpFile2repo(originalImageUrl, picSavePath);
                                 }
