@@ -1,6 +1,8 @@
 package com.icourt.alpha.adapter;
 
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.util.ArrayMap;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
@@ -17,10 +19,25 @@ import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.SpannableUtils;
 import com.icourt.alpha.utils.SystemUtils;
+import com.netease.nimlib.sdk.NIMClient;
+import com.netease.nimlib.sdk.RequestCallbackWrapper;
+import com.netease.nimlib.sdk.ResponseCode;
+import com.netease.nimlib.sdk.msg.MessageBuilder;
+import com.netease.nimlib.sdk.msg.MsgService;
+import com.netease.nimlib.sdk.msg.constant.MsgStatusEnum;
+import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum;
+import com.netease.nimlib.sdk.msg.model.IMMessage;
+import com.netease.nimlib.sdk.msg.model.RecentContact;
 import com.netease.nimlib.sdk.team.model.Team;
+
+import org.json.JSONObject;
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_P2P;
 import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
+import static com.netease.nimlib.sdk.msg.model.QueryDirectionEnum.QUERY_OLD;
 
 /**
  * Description
@@ -30,11 +47,16 @@ import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
  * version 1.0.0
  */
 public class MyAtedAdapter extends ContactBaseAdapter<IMMessageCustomBody> implements OnItemClickListener {
+    ArrayMap<String, RecentContact> localRecentContacts = new ArrayMap<>();//会话列表
 
+
+    private int READ_TITLE_COLOR = 0xFFa6a6a6;
+    private int READ_CONTENT_COLOR = 0xFFa6a6a6;
 
     public MyAtedAdapter() {
         this.setOnItemClickListener(this);
     }
+
 
     @Override
     public long getItemId(int position) {
@@ -46,20 +68,52 @@ public class MyAtedAdapter extends ContactBaseAdapter<IMMessageCustomBody> imple
     }
 
     @Override
+    public boolean bindData(boolean isRefresh, @NonNull List<IMMessageCustomBody> datas) {
+        if (isRefresh) {
+            getRecentContacts();
+        }
+        return super.bindData(isRefresh, datas);
+    }
+
+    private void getRecentContacts() {
+        //获取会话列表
+        NIMClient.getService(MsgService.class)
+                .queryRecentContacts()
+                .setCallback(new RequestCallbackWrapper<List<RecentContact>>() {
+                    @Override
+                    public void onResult(int code, List<RecentContact> recentContacts, Throwable throwable) {
+                        if (code == ResponseCode.RES_SUCCESS
+                                && recentContacts != null
+                                && !recentContacts.isEmpty()) {
+
+                            for (RecentContact recentContact : recentContacts) {
+                                if (recentContact == null) {
+                                    continue;
+                                }
+                                localRecentContacts.put(recentContact.getContactId(), recentContact);
+                            }
+                        }
+                    }
+                });
+    }
+
+
+    @Override
     public int bindView(int viewtype) {
         return R.layout.adapter_my_ated;
     }
 
     @Override
-    public void onBindHolder(BaseViewHolder holder, @Nullable IMMessageCustomBody imAtEntity, int i) {
+    public void onBindHolder(final BaseViewHolder holder, @Nullable final IMMessageCustomBody imAtEntity, int i) {
         if (imAtEntity == null) {
             return;
         }
-        ImageView at_user_iv = holder.obtainView(R.id.at_user_iv);
-        TextView at_user_tv = holder.obtainView(R.id.at_user_tv);
+        final ImageView at_user_iv = holder.obtainView(R.id.at_user_iv);
+        final TextView at_user_tv = holder.obtainView(R.id.at_user_tv);
         TextView at_time_tv = holder.obtainView(R.id.at_time_tv);
         TextView at_from_group_tv = holder.obtainView(R.id.at_from_group_tv);
-        TextView at_content_tv = holder.obtainView(R.id.at_content_tv);
+        final TextView at_content_tv = holder.obtainView(R.id.at_content_tv);
+
 
         Team team = getTeamById(imAtEntity.to);
         if (team != null) {
@@ -84,13 +138,65 @@ public class MyAtedAdapter extends ContactBaseAdapter<IMMessageCustomBody> imple
 
         at_user_tv.setText(imAtEntity.name);
         at_time_tv.setText(DateUtils.getFormatChatTimeSimple(imAtEntity.send_time));
-        if (!TextUtils.isEmpty(imAtEntity.content)) {
-            String originalText = imAtEntity.content;
-            String targetText = "@[\\w\\u4E00-\\u9FA5\\uF900-\\uFA2D]*";
-            SpannableUtils.setTextForegroundColorSpan(at_content_tv,
-                    originalText,
-                    targetText,
-                    SystemUtils.getColor(at_content_tv.getContext(), R.color.alpha_font_color_orange));
+        at_content_tv.setText(imAtEntity.content);
+        updateReadViewState(imAtEntity, at_user_iv, at_user_tv, at_content_tv);
+
+    }
+
+    private void updateReadViewState(@Nullable final IMMessageCustomBody imAtEntity, final ImageView at_user_iv, final TextView at_user_tv, final TextView at_content_tv) {
+        //处理读取状态
+        RecentContact recentContact = localRecentContacts.get(imAtEntity.to);
+        int sessionUnReadNum = recentContact == null ? 0 : recentContact.getUnreadCount();
+        if (sessionUnReadNum > 0) {
+            IMMessage emptyMessage = MessageBuilder.createEmptyMessage(
+                    imAtEntity.to,
+                    imAtEntity.ope == CHAT_TYPE_P2P ? SessionTypeEnum.P2P : SessionTypeEnum.Team,
+                    System.currentTimeMillis() + TimeUnit.DAYS.toMillis(7));//避免测试人员手机改时间
+            NIMClient.getService(MsgService.class)
+                    .queryMessageListEx(emptyMessage, QUERY_OLD, recentContact.getUnreadCount(), true)
+                    .setCallback(new RequestCallbackWrapper<List<IMMessage>>() {
+                        @Override
+                        public void onResult(int code, List<IMMessage> imMessages, Throwable throwable) {
+                            boolean isReaded = true;
+                            if (imMessages != null && !imMessages.isEmpty()) {
+                                for (IMMessage imMessage : imMessages) {
+                                    if (imMessage == null) {
+                                        continue;
+                                    }
+                                    try {
+                                        JSONObject jsonObject = new JSONObject(imMessage.getContent());
+                                        long id = jsonObject.getLong("id");
+                                        if (id == imAtEntity.id) {
+                                            isReaded = imMessage.getStatus() == MsgStatusEnum.read;
+                                            break;
+                                        }
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                                //更新item
+                                at_user_iv.setAlpha(isReaded ? 1.0f : 0.5f);
+                                at_user_tv.setTextColor(isReaded ? READ_TITLE_COLOR : getContextColor(R.color.alpha_font_color_black));
+                                at_content_tv.setTextColor(isReaded ? READ_CONTENT_COLOR : getContextColor(R.color.alpha_font_color_gray));
+
+
+                                if (!isReaded && !TextUtils.isEmpty(imAtEntity.content)) {
+                                    String originalText = imAtEntity.content;
+                                    String targetText = "@[\\w\\u4E00-\\u9FA5\\uF900-\\uFA2D]*";
+                                    SpannableUtils.setTextForegroundColorSpan(at_content_tv,
+                                            originalText,
+                                            targetText,
+                                            SystemUtils.getColor(at_content_tv.getContext(), R.color.alpha_font_color_orange));
+                                } else {
+                                    at_content_tv.setText(imAtEntity.content);
+                                }
+                            }
+                        }
+                    });
+        } else {
+            at_user_tv.setTextColor(READ_TITLE_COLOR);
+            at_content_tv.setTextColor(READ_CONTENT_COLOR);
+            at_user_iv.setAlpha(0.5f);
         }
     }
 
