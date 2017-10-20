@@ -573,6 +573,14 @@ public class TimerDetailActivity extends BaseTimerActivity
                             selectedEndDate.clear();
                             selectedEndDate.setTimeInMillis(mItemEntity.endTime);
                         }
+
+                        @Override
+                        public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                            super.onFailure(call, t);
+                            if (isFinish) {
+                                finish();
+                            }
+                        }
                     });
         }
     }

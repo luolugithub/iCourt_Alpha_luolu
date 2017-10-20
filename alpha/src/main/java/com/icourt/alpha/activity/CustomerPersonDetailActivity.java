@@ -260,8 +260,7 @@ public class CustomerPersonDetailActivity extends BaseActivity {
 
                 if (!TextUtils.isEmpty(contactDeatilBean.getContact().getCrtUserName()) && contactDeatilBean.getContact().getCrtTime() > 0) {
                     activityPersonContactDetailCreatParentLayout.setVisibility(View.VISIBLE);
-                    activityPersonContactDetailCreatNameView.setText(contactDeatilBean.getContact().getCrtUserName());
-                    activityPersonContactDetailCreatDateView.setText(String.format(" 创建于 %s", DateUtils.getTimeDateFormatYear(contactDeatilBean.getContact().getCrtTime())));
+                    activityPersonContactDetailCreatDateView.setText(String.format("%s 创建于 %s",contactDeatilBean.getContact().getCrtUserName(), DateUtils.getTimeDateFormatYear(contactDeatilBean.getContact().getCrtTime())));
                 } else {
                     activityPersonContactDetailCreatParentLayout.setVisibility(View.GONE);
                 }

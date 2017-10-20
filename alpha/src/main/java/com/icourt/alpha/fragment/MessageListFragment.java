@@ -43,6 +43,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnPageFragmentCallBack;
 import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
+import com.icourt.alpha.service.SyncDataService;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LogUtils;
@@ -83,7 +84,8 @@ import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
-import io.realm.RealmChangeListener;
+import io.realm.OrderedCollectionChangeSet;
+import io.realm.OrderedRealmCollectionChangeListener;
 import io.realm.RealmResults;
 import retrofit2.Call;
 import retrofit2.Response;
@@ -108,13 +110,16 @@ public class MessageListFragment extends BaseRecentContactFragment
     private final List<String> localSetTops = new ArrayList<>();
     private final List<String> localNoDisturbs = new ArrayList<>();
     ContactDbService contactDbService;
-    RealmChangeListener<RealmResults<ContactDbModel>> realmResultsRealmChangeListener = new RealmChangeListener<RealmResults<ContactDbModel>>() {
+    OrderedRealmCollectionChangeListener<RealmResults<ContactDbModel>> realmResultsRealmChangeListener = new OrderedRealmCollectionChangeListener<RealmResults<ContactDbModel>>() {
         @Override
-        public void onChange(RealmResults<ContactDbModel> contactDbModels) {
+        public void onChange(RealmResults<ContactDbModel> contactDbModels, OrderedCollectionChangeSet orderedCollectionChangeSet) {
             if (contactDbModels != null) {
-                log("----------->联系人数据库发生改变");
+                List<GroupContactBean> groupContactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(contactDbModels));
+                if (groupContactBeen == null || groupContactBeen.isEmpty()) {
+                    return;
+                }
                 localGroupContactBeans.clear();
-                localGroupContactBeans.addAll(ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(contactDbModels)));
+                localGroupContactBeans.addAll(groupContactBeen);
                 if (recyclerView != null
                         && imSessionAdapter != null) {
                     imSessionAdapter.notifyDataSetChanged();
@@ -195,14 +200,18 @@ public class MessageListFragment extends BaseRecentContactFragment
         }
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+
+    /**
+     * 监听联系人变化
+     */
+    private void listenContacts() {
+        //释放
+        if (contactDbService != null) {
+            contactDbService.releaseService();
+        }
         contactDbService = new ContactDbService(getLoginUserId());
-        RealmResults<ContactDbModel> contactDbModels = contactDbService.queryAll();
+        RealmResults<ContactDbModel> contactDbModels = contactDbService.queryAllAsync();
         if (contactDbModels != null) {
-            localGroupContactBeans.clear();
-            localGroupContactBeans.addAll(ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(contactDbModels)));
             contactDbModels.removeChangeListener(realmResultsRealmChangeListener);
             contactDbModels.addChangeListener(realmResultsRealmChangeListener);
         }
@@ -350,7 +359,7 @@ public class MessageListFragment extends BaseRecentContactFragment
 
     @Override
     protected void onlineClientEvent(List<OnlineClient> onlineClients) {
-        if(isDetached()) return;
+        if (isDetached()) return;
         if (onlineClients == null || onlineClients.size() == 0) {
             updateLoginStateView(false, "");
         } else {
@@ -638,10 +647,13 @@ public class MessageListFragment extends BaseRecentContactFragment
         }
     }
 
+
     @Override
     public void onResume() {
         super.onResume();
         updateTeams();
+        SyncDataService.startSyncContact(getActivity());
+        SyncDataService.startSysnClient(getActivity());
 
         //主动登陆一次
         StatusCode status = NIMClient.getStatus();
@@ -683,6 +695,21 @@ public class MessageListFragment extends BaseRecentContactFragment
     @Override
     protected void getData(boolean isRefresh) {
         updateTeams();
+
+        //查询
+        queryAllContactFromDbAsync(new Consumer<List<GroupContactBean>>() {
+            @Override
+            public void accept(@io.reactivex.annotations.NonNull List<GroupContactBean> groupContactBeen) throws Exception {
+                if (groupContactBeen == null || groupContactBeen.isEmpty()) return;
+                localGroupContactBeans.clear();
+                localGroupContactBeans.addAll(groupContactBeen);
+                imSessionAdapter.notifyDataSetChanged();
+            }
+        });
+
+        //监听联系人变化
+        listenContacts();
+
         // 查询最近联系人列表数据
         NIMClient.getService(MsgService.class)
                 .queryRecentContacts()

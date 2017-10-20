@@ -874,4 +874,23 @@ public class BaseActivity
     }
 
 
+    /**
+     * 获取字符串 安全
+     *
+     * @param id
+     * @return
+     */
+    protected final CharSequence getContextString(@StringRes int id) {
+        return SystemUtils.getString(getContext(), id);
+    }
+
+    /**
+     * 获取字符串 安全
+     *
+     * @param id
+     * @return
+     */
+    protected final CharSequence getContextString(@StringRes int id, CharSequence defaultStr) {
+        return SystemUtils.getString(getContext(), id, defaultStr);
+    }
 }

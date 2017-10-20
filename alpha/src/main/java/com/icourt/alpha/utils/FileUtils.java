@@ -7,6 +7,7 @@ import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
 import android.os.Environment;
 import android.os.ParcelFileDescriptor;
+import android.os.StatFs;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -499,6 +500,56 @@ public class FileUtils {
                         .toString());
             }
         }
+    }
+
+    /**
+     * 获取内置存储空间大小
+     *
+     * @return MB -1表示未挂载
+     */
+    public static long getAvaiableSpaceMB() {
+        long avaiableSpace = getAvaiableSpace();
+        return avaiableSpace > 0 ? avaiableSpace / (1024 * 1024) : avaiableSpace;
+    }
+
+    /**
+     * 获取内置存储空间 单位b
+     *
+     * @return b -1表示未挂载
+     */
+    public static long getAvaiableSpace() {
+        try {
+            if (android.os.Environment.getExternalStorageState().equals(
+                    android.os.Environment.MEDIA_MOUNTED)) {
+                String sdcard = Environment.getExternalStorageDirectory().getPath();
+                StatFs statFs = new StatFs(sdcard);
+                long blockSize = 0;
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                    blockSize = statFs.getBlockSizeLong();
+                } else {
+                    blockSize = statFs.getBlockSize();
+                }
+                long blocks = 0;
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                    blocks = statFs.getAvailableBlocksLong();
+                } else {
+                    blocks = statFs.getAvailableBlocks();
+                }
+                return (blocks * blockSize);
+            }
+        } catch (Exception e) {
+        }
+        return -1;
+    }
+
+    /**
+     * 判断是否剩余可用的空间[内置存储]
+     *
+     * @param sizeMb
+     * @return
+     */
+    public static boolean isAvaiableSpace(int sizeMb) {
+        return sizeMb >= getAvaiableSpaceMB();
     }
 
 }

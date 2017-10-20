@@ -58,11 +58,13 @@ import com.icourt.alpha.fragment.dialogfragment.TimingNoticeDialogFragment;
 import com.icourt.alpha.http.AlphaClient;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnTabDoubleClickListener;
 import com.icourt.alpha.service.DaemonService;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
+import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SFileTokenUtils;
@@ -102,6 +104,12 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.OnLongClick;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.annotations.NonNull;
+import io.reactivex.schedulers.Schedulers;
 import me.leolin.shortcutbadger.ShortcutBadger;
 import q.rorbin.badgeview.Badge;
 import q.rorbin.badgeview.QBadgeView;
@@ -237,6 +245,7 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
         public static final int TYPE_CHECK_TIMING_UPDATE = 103;//检查计时
         public static final int TYPE_OVER_TIMING_REMIND_AUTO_CLOSE = 104;//持续计时过久时的提醒覆层关闭
         public static final int TYPE_OVER_TIMING_REMIND = 105;//计时超时提醒
+        private static final int TYPE_CHECK_SD_SPACE = 106;//检查内置存储空间
 
         /**
          * 刷新登陆token
@@ -274,6 +283,14 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
             this.sendMessageDelayed(obtain, 100);
         }
 
+        /**
+         * 检查sd卡存储空间
+         */
+        public void addCheckSdSpace() {
+            this.removeMessages(TYPE_CHECK_SD_SPACE);
+            this.sendEmptyMessageDelayed(TYPE_CHECK_SD_SPACE, 1_000);
+        }
+
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
@@ -294,10 +311,51 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                     String remindContent = (String) msg.obj;
                     showOverTimingRemindDialogFragment(remindContent);
                     break;
+                case TYPE_CHECK_SD_SPACE:
+                    checkSdSpace();
+                    break;
                 default:
                     break;
             }
         }
+    }
+
+    /**
+     * 检查sd卡可用空间
+     */
+    private void checkSdSpace() {
+        Observable.create(new ObservableOnSubscribe<Long>() {
+            @Override
+            public void subscribe(@NonNull ObservableEmitter<Long> e) throws Exception {
+                try {
+                    e.onNext(FileUtils.getAvaiableSpaceMB());
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    e.onNext(Long.valueOf(-1));
+                } finally {
+                    e.onComplete();
+                }
+            }
+        }).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new BaseObserver<Long>() {
+                    @Override
+                    public void onNext(@NonNull Long aLong) {
+                        if (aLong > 0 && aLong < 100) {
+                            new AlertDialog.Builder(getContext())
+                                    .setMessage("存储空间小于100M啦,去清理?")
+                                    .setPositiveButton(R.string.str_ok, new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialogInterface, int i) {
+                                            dialogInterface.dismiss();
+                                            SystemUtils.launchInterStorageSettings(getContext());
+                                        }
+                                    })
+                                    .setNegativeButton(R.string.str_cancel, null)
+                                    .show();
+                        }
+                    }
+                });
     }
 
     MyHandler mHandler = new MyHandler();
@@ -365,6 +423,7 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
         new SimpleViewGestureListener(tabNews, onSimpleViewGestureListener);
         initChangedTab();
         checkedTab(R.id.tab_news, TYPE_FRAGMENT_NEWS);
+        mHandler.addCheckSdSpace();
         if (BuildConfig.BUILD_TYPE_INT > 0) {
             mHandler.addCheckAppUpdateTask();
         }
@@ -987,6 +1046,7 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                 dismissOverTimingRemindDialogFragment(true);
                 break;
             case OverTimingRemindEvent.ACTION_SYNC_BUBBLE_CLOSE_TO_SERVER:
+                dismissOverTimingRemindDialogFragment(false);
                 TimerManager.getInstance().setOverTimingRemindClose(TimerManager.OVER_TIME_REMIND_BUBBLE_OFF);
                 break;
             default:
