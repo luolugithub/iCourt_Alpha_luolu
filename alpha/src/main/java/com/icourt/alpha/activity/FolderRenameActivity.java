@@ -135,7 +135,6 @@ public class FolderRenameActivity extends FolderCreateActivity {
                     public void onSuccess(Call<String> call, Response<String> response) {
                         dismissLoadingDialog();
                         if (TextUtils.equals("success", response.body())) {
-                            showToast("更改标题成功");
                             finish();
                         } else {
                             showTopSnackBar("更改标题失败");
