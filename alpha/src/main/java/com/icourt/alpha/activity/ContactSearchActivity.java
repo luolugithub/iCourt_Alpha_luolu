@@ -101,6 +101,7 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
     @Override
     protected void initView() {
         super.initView();
+        contentEmptyText.setText(R.string.empty_list_im_search_contact);
         refreshLayout.setEnableRefresh(false);
         refreshLayout.setEnableLoadmore(false);
         contactDbService = new ContactDbService(getLoginUserId());

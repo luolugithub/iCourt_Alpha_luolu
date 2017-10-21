@@ -116,6 +116,7 @@ public class GroupSearchActivity extends BaseActivity implements BaseRecyclerAda
     @Override
     protected void initView() {
         super.initView();
+        contentEmptyText.setText(R.string.empty_list_im_search_group);
         refreshLayout.setEnableRefresh(false);
         refreshLayout.setEnableLoadmore(false);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));

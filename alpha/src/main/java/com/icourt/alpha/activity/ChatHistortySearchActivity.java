@@ -119,6 +119,7 @@ public class ChatHistortySearchActivity extends BaseActivity implements BaseRecy
     @Override
     protected void initView() {
         super.initView();
+        contentEmptyText.setText(R.string.empty_list_im_search_msg);
         refreshLayout.setEnableRefresh(false);
         refreshLayout.setEnableLoadmore(false);
         AlphaUserInfo loginUserInfo = getLoginUserInfo();

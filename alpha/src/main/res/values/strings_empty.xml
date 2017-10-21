@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- http://wiki.alphalawyer.cn/pages/viewpage.action?pageId=5604542  -->
+    <!--  空布局文案提示 empty_list_开头  -->
+
+
+    <!--  享聊 -->
+    <!--
+    1. 会话列表：null：暂无聊天消息
+    2. @我的列表：null：暂无提及我的消息
+    3. 钉的列表： null：暂无钉的消息
+    4. 文件列表：null：暂无文件
+    5. 我收藏的消息列表：null：暂无收藏的消息
+    6. 联系人/讨论组成员等搜索结果：null：没有找到匹配的结果
+    -->
+    <string name="empty_list_im_chat_msg">暂无聊天消息</string>
+    <string name="empty_list_im_at_me_msg">暂无提及我的消息</string>
+    <string name="empty_list_im_ding_msg">暂无钉的消息</string>
+    <string name="empty_list_im_file_msg">暂无文件</string>
+    <string name="empty_list_im_collected_msg">暂无收藏的消息</string>
+    <string name="empty_list_im_search_contact">没有找到匹配的结果</string>
+    <string name="empty_list_im_search_polymerization">没有找到匹配的结果</string>
+    <string name="empty_list_im_search_group">没有找到匹配的结果</string>
+    <string name="empty_list_im_search_group_member">没有找到匹配的结果</string>
+    <string name="empty_list_im_search_msg">没有找到匹配的结果</string>
+
+
+    <!--  任务 -->
+    <!--
+    1. 日历任务列表：null：没有任务
+    2. 未完成任务列表：null：暂无未完成的任务
+    3. 已完成任务列表：null：暂无已完成的任务
+    4. 已删除任务列表：null：没有已删除的任务
+    5. 我关注的任务列表：null：暂无关注的任务
+    6. 查看他人任务列表：null：TA还没有任务
+    7. 搜索任务列表：null：没有找到匹配的结果
+    8. 任务详情检查项列表：btn：添加检查项
+    9. 任务详情附件列表：btn：添加附件
+    10. 选择任务组列表：null：暂无任务组
+    11. 选择项目列表：null：暂无项目
+    -->
+    <string name="empty_list_task">暂无任务</string>
+    <string name="empty_list_task_calendar_task">没有任务</string>
+    <string name="empty_list_task_unfinished_task">暂无未完成的任务</string>
+    <string name="empty_list_task_finished_task">暂无已完成的任务</string>
+    <string name="empty_list_task_deleted_task">没有已删除的任务</string>
+    <string name="empty_list_task_follow_task">暂无关注的任务</string>
+    <string name="empty_list_task_other_people_task">TA还没有任务</string>
+    <string name="empty_list_task_search_task">没有找到匹配的结果</string>
+    <string name="empty_list_task_task_group">暂无任务组</string>
+    <string name="empty_list_task_project_task">暂无任务</string>
+    <string name="empty_list_task_project_finished_task">暂无已完成的任务</string>
+
+
+    <!-- 项目 -->
+    <!--
+     1. 进行中项目列表：null：暂无进行中的项目
+2. 已完结项目列表：null：暂无已完结的项目
+3. 已搁置项目列表：null：没有已搁置的项目
+4. 我关注的项目列表：null：暂无关注的项目
+5. 搜索项目列表：null：没有找到匹配的结果
+6. 项目下任务列表：null：暂无任务
+7. 项目下已完成任务列表：null：暂无已完成的任务
+8. 管理任务组列表：null：暂无任务组
+9. 项目下计时列表：null：暂无计时
+10. 项目下文档列表：null：暂无文件   -->
+    <string name="empty_list_project">暂无项目</string>
+    <string name="empty_list_project_executing">暂无进行中的项目</string>
+    <string name="empty_list_project_finished">暂无已完结的项目</string>
+    <string name="empty_list_project_shelve">没有已搁置的项目</string>
+    <string name="empty_list_project_search">没有找到匹配的结果</string>
+    <string name="empty_list_project_timing">暂无计时</string>
+    <string name="empty_list_project_file">暂无文件</string>
+
+
+    <!--  计时  -->
+    <!--
+1. 计时列表：null：暂无计时
+2. 选择项目列表：null：暂无项目
+3. 关联任务列表：null：暂无任务 -->
+
+    <string name="empty_list_timing">暂无计时</string>
+    <string name="empty_list_timing_sel_project">暂无项目</string>
+    <string name="empty_list_timing_sel_task">暂无任务</string>
+
+    <!--  客户-->
+    <!--
+1. 客户列表：null：尚未添加客户
+2. 我关注的客户列表：null：暂无关注的客户
+3. 搜索客户列表：null：没有找到匹配的结果
+4. 选择负责团队列表：null：暂无负责团队
+-->
+    <string name="empty_list_customer">尚未添加客户</string>
+    <string name="empty_list_customer_follow">暂无关注的客户</string>
+    <string name="empty_list_customer_search">没有找到匹配的结果</string>
+    <string name="empty_list_customer_team">暂无负责团队</string>
+
+
+    <!--  文档 -->
+    <!--
+    文档
+1. 我的资料库列表：null：暂无资料库
+2. 共享给我的资料库列表：null：没有共享给我的资料库
+3. 律所资料库列表：null：尚未建立资料库
+4. 项目资料库列表：null：暂无资料库
+5. 文件列表：null：本目录下没有文件
+6. 资料库详情修改历史列表：null：尚未有修改纪录
+7. 资料库详情内部共享列表：btn：添加共享成员
+8. 资料库详情回收站列表：null：回收站里没有文件
+9. 文件夹详情内部共享列表：btn：添加共享成员
+10. 文件详情历史版本列表：null：暂无历史版本
+11. 搜索：null：没有找到匹配的结果
+12. 移动：null：点击’移动’，将所选项移动到此目录
+13. 复制：null：点击’复制’，将所选项复制到此目录
+     -->
+    <string name="empty_list_repo_my">暂无资料库</string>
+    <string name="empty_list_repo_shared">没有共享给我的资料库</string>
+    <string name="empty_list_repo_lawyer">尚未建立资料库</string>
+    <string name="empty_list_repo_project">暂无资料库</string>
+    <string name="empty_list_repo_file">本目录下没有文件</string>
+    <string name="empty_list_repo_recycle_bin">回收站里没有文件</string>
+    <string name="empty_list_repo_file_historical_version">暂无历史版本</string>
+    <string name="empty_list_repo_search">没有找到匹配的结果</string>
+
+
+</resources>
