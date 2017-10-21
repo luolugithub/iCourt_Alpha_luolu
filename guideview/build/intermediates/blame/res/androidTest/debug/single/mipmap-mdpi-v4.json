@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "/Users/zhaodanyang/StudioProjects/alpha_android_2.0/guideview/build/intermediates/res/merged/androidTest/debug/mipmap-mdpi-v4/ic_launcher.png",
+        "source": "/Users/zhaodanyang/StudioProjects/alpha_android_2.0/guideview/build/intermediates/bundles/debug/res/mipmap-mdpi-v4/ic_launcher.png"
+    },
+    {
+        "merged": "/Users/zhaodanyang/StudioProjects/GuideView/guideview/build/intermediates/res/merged/androidTest/debug/mipmap-mdpi-v4/ic_launcher.png",
+        "source": "/Users/zhaodanyang/StudioProjects/GuideView/guideview/build/intermediates/bundles/debug/res/mipmap-mdpi-v4/ic_launcher.png"
+    }
+]

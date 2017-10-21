@@ -30,6 +30,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.blog.www.guideview.Guide;
+import com.blog.www.guideview.GuideBuilder;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
@@ -73,6 +75,7 @@ import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.view.CheckableLayout;
+import com.icourt.alpha.view.SimpleComponent;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.alpha.widget.nim.GlobalMessageObserver;
 import com.icourt.alpha.widget.popupwindow.BaseListActionItemPop;
@@ -757,8 +760,9 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                 mobClickAgent();
                 break;
             case R.id.tab_mine:
-                checkedTab(R.id.tab_mine, getFragmentType(R.id.tab_mine));
-                mobClickAgent();
+                showGuideView();
+//                checkedTab(R.id.tab_mine, getFragmentType(R.id.tab_mine));
+//                mobClickAgent();
                 break;
             case R.id.tab_timing:
                 dismissOverTimingRemindDialogFragment(true);
@@ -1395,5 +1399,31 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
             }
         }
         return super.onKeyDown(keyCode, event);
+    }
+
+    private void showGuideView() {
+        GuideBuilder builder = new GuideBuilder();
+        builder.setTargetViewId(R.id.tab_mine)
+                .setAlpha(150)
+                .setFullingColorId(R.color.darkGray)
+                .setOverlayTarget(true)
+                .setOutsideTouchable(false);
+        builder.setOnVisibilityChangedListener(new GuideBuilder.OnVisibilityChangedListener() {
+            @Override
+            public void onShown() {
+
+            }
+
+            @Override
+            public void onDismiss() {
+
+            }
+        });
+        builder.addComponent(new SimpleComponent());
+        Guide guide = builder.createGuide();
+        guide.setShouldCheckLocInWindow(false);
+        guide.show(this);
+
+
     }
 }
