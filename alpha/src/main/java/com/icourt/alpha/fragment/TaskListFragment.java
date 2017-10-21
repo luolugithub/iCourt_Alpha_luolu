@@ -889,11 +889,7 @@ public class TaskListFragment extends BaseTaskFragment implements
                 new SimpleCallBack<JsonElement>() {
                     @Override
                     public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                        dismissLoadingDialog();
-                        if (taskAdapter != null) {
-                            taskAdapter.removeItem(itemEntity);
-                            recyclerView.enableEmptyView(taskAdapter.getData());
-                        }
+
                     }
 
                     @Override
@@ -966,6 +962,18 @@ public class TaskListFragment extends BaseTaskFragment implements
                 lastEntity.isTiming = false;
             }
             taskAdapter.notifyDataSetChanged();
+        }
+    }
+
+    /**
+     * 恢复已删除任务（已删除任务列表会调用此接口）
+     * @param itemEntity
+     */
+    @Override
+    protected void taskRevertBack(TaskEntity.TaskItemEntity itemEntity) {
+        if (taskAdapter != null) {
+            taskAdapter.removeItem(itemEntity);
+            recyclerView.enableEmptyView(taskAdapter.getData());
         }
     }
 
@@ -1115,7 +1123,15 @@ public class TaskListFragment extends BaseTaskFragment implements
                         updateTaskState(itemEntity, false);
                     }
                 } else {//已删除列表
-                    recoverTaskById(itemEntity);
+                    if (itemEntity.attendeeUsers != null) {
+                        if (itemEntity.attendeeUsers.size() > 1) {
+                            showFinishDialog(getContext(), getString(R.string.task_is_confirm_revert_task), itemEntity, SHOW_RENEW_DIALOG);
+                        } else {
+                            showTwiceSureDialog(itemEntity, getString(R.string.task_is_revert), SHOW_RENEW_BUTTOM_SHEET);
+                        }
+                    } else {
+                        showTwiceSureDialog(itemEntity, getString(R.string.task_is_revert_task), SHOW_RENEW_BUTTOM_SHEET);
+                    }
                 }
                 break;
             default:
