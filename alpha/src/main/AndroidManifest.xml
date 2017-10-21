@@ -123,8 +123,8 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".activity.UpdateUserInfoActivity"
-            android:windowSoftInputMode="stateVisible|adjustResize"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateVisible|adjustResize" />
         <activity
             android:name=".activity.ContactSearchActivity"
             android:screenOrientation="portrait" />
@@ -173,10 +173,12 @@
 
         <activity
             android:name=".activity.GroupChangeNameActivity"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateVisible" />
         <activity
             android:name=".activity.GroupChangeDescActivity"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateVisible" />
         <activity
             android:name=".activity.ChatActivity"
             android:alwaysRetainTaskState="true"
