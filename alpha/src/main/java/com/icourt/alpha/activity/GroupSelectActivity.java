@@ -44,6 +44,8 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
+//TODO 改名字 改成TeamSelectActivity  GroupSelectActivity太像关联讨论组
+
 public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
 
     @BindView(R.id.titleBack)
@@ -89,7 +91,7 @@ public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAda
         if (groupList != null) {
             groupBeanList.addAll(groupList);
         }
-        recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_user, "暂无负责团队");
+        recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_user, R.string.empty_list_customer_team);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(this, true));
         recyclerView.setAdapter(selectGroupAdapter = new SelectGroupAdapter());

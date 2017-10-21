@@ -70,7 +70,7 @@ public class MyCollectedCustomersActivity extends BaseActivity implements BaseRe
     protected void initView() {
         super.initView();
         setTitle(R.string.task_my_attention);
-        recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_user, R.string.client_not_collected);
+        recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_user, R.string.empty_list_customer_follow);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(customerAdapter = new CustomerAdapter());
         customerAdapter.setOnItemClickListener(this);

@@ -98,7 +98,7 @@ public class TabCustomerFragment extends BaseFragment implements BaseRecyclerAda
     @Override
     protected void initView() {
         EventBus.getDefault().register(this);
-        recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_user, R.string.client_not_add);
+        recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_user, R.string.empty_list_customer);
         customerDbService = new CustomerDbService(getLoginUserId());
         linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
