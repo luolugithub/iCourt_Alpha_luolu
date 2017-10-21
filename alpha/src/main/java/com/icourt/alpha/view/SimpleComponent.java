@@ -13,6 +13,8 @@ import com.icourt.alpha.R;
  */
 public class SimpleComponent implements Component {
 
+    private OnViewClick onViewClick;
+
     @Override
     public View getView(LayoutInflater inflater) {
 
@@ -20,7 +22,9 @@ public class SimpleComponent implements Component {
         view.findViewById(R.id.kown_tv).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                if (onViewClick != null) {
+                    onViewClick.onClick(v);
+                }
             }
         });
         return view;
@@ -33,7 +37,7 @@ public class SimpleComponent implements Component {
 
     @Override
     public int getFitPosition() {
-        return Component.FIT_CENTER;
+        return Component.FIT_END;
     }
 
     @Override
@@ -43,6 +47,15 @@ public class SimpleComponent implements Component {
 
     @Override
     public int getYOffset() {
-        return 10;
+        return -3;
+    }
+
+
+    public interface OnViewClick {
+        void onClick(View view);
+    }
+
+    public void setOnViewClick(OnViewClick onViewClick) {
+        this.onViewClick = onViewClick;
     }
 }

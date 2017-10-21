@@ -30,6 +30,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.blog.www.guideview.Component;
 import com.blog.www.guideview.Guide;
 import com.blog.www.guideview.GuideBuilder;
 import com.icourt.alpha.BuildConfig;
@@ -1401,12 +1402,16 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
         return super.onKeyDown(keyCode, event);
     }
 
+    private Guide guide;
+
     private void showGuideView() {
-        GuideBuilder builder = new GuideBuilder();
+        final GuideBuilder builder = new GuideBuilder();
         builder.setTargetViewId(R.id.tab_mine)
                 .setAlpha(150)
+                .setHighTargetGraphStyle(Component.CIRCLE)
                 .setFullingColorId(R.color.darkGray)
-                .setOverlayTarget(true)
+                .setOverlayTarget(false)
+                .setHighTargetPadding(-10)
                 .setOutsideTouchable(false);
         builder.setOnVisibilityChangedListener(new GuideBuilder.OnVisibilityChangedListener() {
             @Override
@@ -1419,11 +1424,19 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
 
             }
         });
-        builder.addComponent(new SimpleComponent());
-        Guide guide = builder.createGuide();
+        SimpleComponent component = new SimpleComponent();
+        component.setOnViewClick(new SimpleComponent.OnViewClick() {
+            @Override
+            public void onClick(View view) {
+                if (guide != null) {
+                    guide.dismiss();
+                }
+            }
+        });
+        builder.addComponent(component);
+        guide = builder.createGuide();
         guide.setShouldCheckLocInWindow(false);
         guide.show(this);
-
 
     }
 }

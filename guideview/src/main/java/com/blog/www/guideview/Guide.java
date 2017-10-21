@@ -224,7 +224,13 @@ public class Guide implements View.OnKeyListener, View.OnClickListener {
         for (Component c : mComponents) {
             maskView.addView(Common.componentToView(activity.getLayoutInflater(), c));
         }
-
+        //实现高亮区域的点击事件
+        maskView.setOnTargetViewClick(new MaskView.OnTargetViewClick() {
+            @Override
+            public void onClick(View view) {
+                dismiss();
+            }
+        });
         return maskView;
     }
 
@@ -252,7 +258,7 @@ public class Guide implements View.OnKeyListener, View.OnClickListener {
     @Override
     public void onClick(View v) {
         if (mConfiguration != null && mConfiguration.mAutoDismiss) {
-            dismiss();
+//            dismiss();
         }
     }
 }
