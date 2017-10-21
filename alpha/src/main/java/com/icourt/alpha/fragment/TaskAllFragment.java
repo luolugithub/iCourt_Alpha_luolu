@@ -136,6 +136,15 @@ public class TaskAllFragment extends BaseFragment implements OnTasksChangeListen
     }
 
     /**
+     * 刷新任务列表，如果当前显示的列表是未完成／已完成／已删除的任务，刷新列表
+     */
+    public void upDateTaskList() {
+        if (currFragment != null && currFragment instanceof TaskListFragment) {
+            ((TaskListFragment) currFragment).getData(true);
+        }
+    }
+
+    /**
      * 添加/显示Fragment
      *
      * @param targetFragment  将要添加／显示的fragment
