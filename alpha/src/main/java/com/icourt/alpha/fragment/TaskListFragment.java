@@ -316,18 +316,18 @@ public class TaskListFragment extends BaseTaskFragment implements
         if (type == TYPE_ALL) {
             switch (stateType) {
                 case TaskConfig.TASK_STATETYPE_UNFINISH:
-                    return R.string.task_none_unfinish_task;
+                    return R.string.empty_list_task_unfinished_task;
                 case TaskConfig.TASK_STATETYPE_FINISHED:
-                    return R.string.task_none_finished_task;
+                    return R.string.empty_list_task_finished_task;
                 case TaskConfig.TASK_STATETYPE_DELETED:
-                    return R.string.task_none_deleted_task;
+                    return R.string.empty_list_task_deleted_task;
                 default:
                     break;
             }
         } else if (type == TYPE_MY_ATTENTION) {
-            return R.string.task_none_attention_task;
+            return R.string.empty_list_task_follow_task;
         }
-        return R.string.task_empty_nomal;
+        return R.string.empty_list_task;
     }
 
     @Override
@@ -967,6 +967,7 @@ public class TaskListFragment extends BaseTaskFragment implements
 
     /**
      * 恢复已删除任务（已删除任务列表会调用此接口）
+     *
      * @param itemEntity
      */
     @Override

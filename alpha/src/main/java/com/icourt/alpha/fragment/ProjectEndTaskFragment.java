@@ -98,7 +98,7 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
     @Override
     protected void initView() {
         projectId = getArguments().getString(KEY_PROJECT_ID);
-        recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_none_finished_task);
+        recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, R.string.empty_list_task_finished_task);
         linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
 

@@ -25,6 +25,7 @@
     <string name="empty_list_im_search_group_member">没有找到匹配的结果</string>
     <string name="empty_list_im_search_msg">没有找到匹配的结果</string>
     <string name="empty_list_im_group">暂无讨论组</string>
+    <string name="empty_list_im_group_member">暂无成员</string>
 
     <!--  任务 -->
     <!--

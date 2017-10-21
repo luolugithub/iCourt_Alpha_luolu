@@ -129,6 +129,7 @@ public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAda
 
     @Override
     protected void initView() {
+        contentEmptyText.setText(R.string.empty_list_task_search_task);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         taskAdapter = new TaskAdapter();
         taskAdapter.setOnItemClickListener(this);
@@ -160,6 +161,7 @@ public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAda
             @Override
             public void afterTextChanged(Editable s) {
                 if (TextUtils.isEmpty(s)) {
+                    //TODO 关闭网络请求 否则网络数据回来了 列表还有数据
                     taskAdapter.setNewData(null);
                 } else {
                     getData(true);

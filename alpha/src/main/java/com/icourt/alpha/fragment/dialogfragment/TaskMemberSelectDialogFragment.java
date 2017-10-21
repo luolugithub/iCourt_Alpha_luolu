@@ -80,8 +80,6 @@ public class TaskMemberSelectDialogFragment extends BaseDialogFragment {
     LinearLayout titleSharePermission;
     @BindView(R.id.contentEmptyText)
     TextView contentEmptyText;
-    @BindView(R.id.empty_layout)
-    LinearLayout emptyLayout;
 
     public static TaskMemberSelectDialogFragment newInstance() {
         TaskMemberSelectDialogFragment contactSelectDialogFragment = new TaskMemberSelectDialogFragment();
@@ -114,7 +112,7 @@ public class TaskMemberSelectDialogFragment extends BaseDialogFragment {
     @Override
     protected void initView() {
         contentEmptyText.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.mipmap.icon_placeholder_user, 0, 0);
-        contentEmptyText.setText(R.string.empty_list_im_search_group_member);
+        contentEmptyText.setText(R.string.empty_list_im_group_member);
         Dialog dialog = getDialog();
         if (dialog != null) {
             Window window = dialog.getWindow();

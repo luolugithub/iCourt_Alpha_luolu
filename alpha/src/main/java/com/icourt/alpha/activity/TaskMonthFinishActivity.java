@@ -81,7 +81,7 @@ public class TaskMonthFinishActivity extends BaseActivity implements BaseQuickAd
         super.initView();
         setTitle(R.string.task_month_finish_task);
 
-        recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_list_null_text);
+        recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, R.string.empty_list_task);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         recyclerView.setAdapter(taskAdapter = new TaskAdapter());

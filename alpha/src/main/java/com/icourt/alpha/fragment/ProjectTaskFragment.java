@@ -99,7 +99,7 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
     @Override
     protected void initView() {
         projectId = getArguments().getString(KEY_PROJECT_ID);
-        recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_list_null_text);
+        recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, R.string.empty_list_task_project_task);
         linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
 
