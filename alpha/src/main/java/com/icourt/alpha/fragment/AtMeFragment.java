@@ -71,7 +71,7 @@ public class AtMeFragment extends BaseFragment {
 
     @Override
     protected void initView() {
-        recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, R.string.my_center_null_atme_text);
+        recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, R.string.empty_list_im_at_me_msg);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(myAtedAdapter = new MyAtedAdapter());
         refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {

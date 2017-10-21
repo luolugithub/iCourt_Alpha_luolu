@@ -13,7 +13,6 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
@@ -76,7 +75,6 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 import butterknife.Unbinder;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
@@ -130,17 +128,15 @@ public class MessageListFragment extends BaseRecentContactFragment
 
     @BindView(R.id.login_status_tv)
     TextView loginStatusTv;
-    @BindView(R.id.start_chat_tv)
-    TextView startChatTv;
-    @BindView(R.id.empty_layout_rl)
-    RelativeLayout emptyLayoutRl;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
     private int totalUnReadCount;
     private DataChangeAdapterObserver dataChangeAdapterObserver = new DataChangeAdapterObserver() {
         @Override
         protected void updateUI() {
-            if (imSessionAdapter != null && emptyLayoutRl != null) {
+            if (imSessionAdapter != null && contentEmptyText != null) {
                 List<IMSessionEntity> data = imSessionAdapter.getData();
-                emptyLayoutRl.setVisibility(data.isEmpty() ? View.VISIBLE : View.GONE);
+                contentEmptyText.setVisibility(data.isEmpty() ? View.VISIBLE : View.GONE);
                 int unReadCount = 0;
                 for (IMSessionEntity sessionEntity : data) {
                     if (sessionEntity != null && sessionEntity.recentContact != null) {
@@ -228,8 +224,9 @@ public class MessageListFragment extends BaseRecentContactFragment
 
     @Override
     public void onDestroy() {
-        if (unbinder != null)
+        if (unbinder != null) {
             unbinder.unbind();
+        }
         super.onDestroy();
         if (contactDbService != null) {
             contactDbService.releaseService();
@@ -249,9 +246,13 @@ public class MessageListFragment extends BaseRecentContactFragment
      */
     @Override
     protected void recentContactReceive(@NonNull final List<RecentContact> recentContacts) {
-        if (imSessionAdapter == null) return;
+        if (imSessionAdapter == null) {
+            return;
+        }
         for (RecentContact recentContact : recentContacts) {
-            if (recentContact == null) continue;
+            if (recentContact == null) {
+                continue;
+            }
             addOrUpdateItem(parseSession(recentContact));
         }
     }
@@ -262,7 +263,9 @@ public class MessageListFragment extends BaseRecentContactFragment
      * @param imSessionEntity
      */
     private void addOrUpdateItem(IMSessionEntity imSessionEntity) {
-        if (imSessionEntity == null) return;
+        if (imSessionEntity == null) {
+            return;
+        }
         List<IMSessionEntity> sessionEntities = imSessionAdapter.getData();
         int indexOf = sessionEntities.indexOf(imSessionEntity);
         if (indexOf >= 0) {
@@ -287,7 +290,9 @@ public class MessageListFragment extends BaseRecentContactFragment
     @CheckResult
     @Nullable
     private IMSessionEntity parseSession(RecentContact recentContact) {
-        if (recentContact == null) return null;
+        if (recentContact == null) {
+            return null;
+        }
         if (recentContact.getMsgType() == MsgTypeEnum.custom) {
             IMMessageCustomBody customIMBody = getAlphaHelper(recentContact);
             if (customIMBody != null) {
@@ -325,7 +330,9 @@ public class MessageListFragment extends BaseRecentContactFragment
      */
     @Override
     protected void recentContactDeleted(@NonNull RecentContact recentContact) {
-        if (imSessionAdapter == null) return;
+        if (imSessionAdapter == null) {
+            return;
+        }
         IMUtils.logRecentContact("------------>recentContactDeleted:", recentContact);
         for (int i = 0; i < imSessionAdapter.getData().size(); i++) {
             IMSessionEntity item = imSessionAdapter.getItem(i);
@@ -359,7 +366,9 @@ public class MessageListFragment extends BaseRecentContactFragment
 
     @Override
     protected void onlineClientEvent(List<OnlineClient> onlineClients) {
-        if (isDetached()) return;
+        if (isDetached()) {
+            return;
+        }
         if (onlineClients == null || onlineClients.size() == 0) {
             updateLoginStateView(false, "");
         } else {
@@ -478,7 +487,9 @@ public class MessageListFragment extends BaseRecentContactFragment
      * @param notice
      */
     private void updateLoginStateView(boolean isShow, String notice) {
-        if (loginStatusTv == null) return;
+        if (loginStatusTv == null) {
+            return;
+        }
         loginStatusTv.setVisibility(isShow ? View.VISIBLE : View.GONE);
         loginStatusTv.setText(notice);
     }
@@ -495,7 +506,9 @@ public class MessageListFragment extends BaseRecentContactFragment
 
     @Override
     protected void onUserStatusChanged(StatusCode code) {
-        if (isDetached()) return;
+        if (isDetached()) {
+            return;
+        }
         log("------------>onUserStatusChanged:" + code);
         if (code.wontAutoLogin()) {
             bugSync("用户登陆状态:", "" + code + "  被踢出、账号被禁用、密码错误等情况，自动登录失败，需要返回到登录界面进行重新登录操作");
@@ -519,7 +532,9 @@ public class MessageListFragment extends BaseRecentContactFragment
     @Override
     protected void teamUpdates(@NonNull List<Team> teams) {
         for (Team t : teams) {
-            if (t == null) continue;
+            if (t == null) {
+                continue;
+            }
             IMUtils.logIMTeam("-------->teamUpdate", t);
             boolean isExist = false;
             for (int i = 0; i < localTeams.size(); i++) {
@@ -541,6 +556,7 @@ public class MessageListFragment extends BaseRecentContactFragment
     @Override
     protected void initView() {
         super.initView();
+        contentEmptyText.setText(R.string.empty_list_im_chat_msg);
         EventBus.getDefault().register(this);
         loginUserInfo = getLoginUserInfo();
         linearLayoutManager = new LinearLayoutManager(getContext());
@@ -563,7 +579,9 @@ public class MessageListFragment extends BaseRecentContactFragment
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(SetTopEvent setTopEvent) {
-        if (setTopEvent == null) return;
+        if (setTopEvent == null) {
+            return;
+        }
         if (setTopEvent.isSetTop) {
             if (!localSetTops.contains(setTopEvent.id)) {
                 localSetTops.add(setTopEvent.id);
@@ -577,7 +595,9 @@ public class MessageListFragment extends BaseRecentContactFragment
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMemberEvent(MemberEvent memberEvent) {
-        if (memberEvent == null) return;
+        if (memberEvent == null) {
+            return;
+        }
         switch (memberEvent.notificationType) {
             case KickMember:
                 if (StringUtils.containsIgnoreCase(memberEvent.targets, getLoginUserId())) {
@@ -594,7 +614,9 @@ public class MessageListFragment extends BaseRecentContactFragment
      */
     private void removeSession(String id) {
         List<IMSessionEntity> data = imSessionAdapter.getData();
-        if (data.isEmpty()) return;
+        if (data.isEmpty()) {
+            return;
+        }
         for (int i = data.size() - 1; i >= 0; i--) {
             IMSessionEntity imSessionEntity = data.get(i);
             if (imSessionEntity != null && imSessionEntity.recentContact != null
@@ -610,7 +632,9 @@ public class MessageListFragment extends BaseRecentContactFragment
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(NoDisturbingEvent noDisturbingEvent) {
-        if (noDisturbingEvent == null) return;
+        if (noDisturbingEvent == null) {
+            return;
+        }
         if (noDisturbingEvent.isNoDisturbing) {
             if (!localNoDisturbs.contains(noDisturbingEvent.id)) {
                 localNoDisturbs.add(noDisturbingEvent.id);
@@ -623,7 +647,9 @@ public class MessageListFragment extends BaseRecentContactFragment
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(GroupActionEvent groupActionEvent) {
-        if (groupActionEvent == null) return;
+        if (groupActionEvent == null) {
+            return;
+        }
         //删除已经退出的讨论组的会话
         try {
             for (IMSessionEntity sessionEntity : imSessionAdapter.getData()) {
@@ -700,7 +726,9 @@ public class MessageListFragment extends BaseRecentContactFragment
         queryAllContactFromDbAsync(new Consumer<List<GroupContactBean>>() {
             @Override
             public void accept(@io.reactivex.annotations.NonNull List<GroupContactBean> groupContactBeen) throws Exception {
-                if (groupContactBeen == null || groupContactBeen.isEmpty()) return;
+                if (groupContactBeen == null || groupContactBeen.isEmpty()) {
+                    return;
+                }
                 localGroupContactBeans.clear();
                 localGroupContactBeans.addAll(groupContactBeen);
                 imSessionAdapter.notifyDataSetChanged();
@@ -748,21 +776,29 @@ public class MessageListFragment extends BaseRecentContactFragment
      * @param recentContacts
      */
     private void wrapRecentContact(final List<RecentContact> recentContacts) {
-        if (recentContacts == null) return;
+        if (recentContacts == null) {
+            return;
+        }
         Observable.create(new ObservableOnSubscribe<List<IMSessionEntity>>() {
             @Override
             public void subscribe(ObservableEmitter<List<IMSessionEntity>> e) throws Exception {
-                if (e.isDisposed()) return;
+                if (e.isDisposed()) {
+                    return;
+                }
                 ContactDbService contactDbService = new ContactDbService(loginUserInfo == null ? "" : loginUserInfo.getUserId());
                 List<IMSessionEntity> imSessionEntities = new ArrayList<>();
                 for (int i = 0; i < recentContacts.size(); i++) {
                     RecentContact recentContact = recentContacts.get(i);
-                    if (recentContact == null) continue;
+                    if (recentContact == null) {
+                        continue;
+                    }
                     //解析自定义的消息体
                     IMMessageCustomBody customIMBody = null;
                     if (recentContact.getMsgType() == MsgTypeEnum.custom) {
                         customIMBody = getAlphaHelper(recentContact);
-                        if (customIMBody == null) continue;
+                        if (customIMBody == null) {
+                            continue;
+                        }
                         IMSessionEntity imSessionEntity = new IMSessionEntity(recentContact, customIMBody);
                         //装饰实体
                         imSessionEntities.add(imSessionEntity);
@@ -774,8 +810,12 @@ public class MessageListFragment extends BaseRecentContactFragment
                             bugSync("回话解析异常", StringUtils.throwable2string(ex) + "\n json:" + recentContact.getContent());
                             log("------------->解析异常:" + ex + "\n" + recentContact.getContactId() + " \n" + recentContact.getContent());
                         }
-                        if (customIMBody == null) continue;
-                        if (IMUtils.isFilterChatIMMessage(customIMBody)) continue;
+                        if (customIMBody == null) {
+                            continue;
+                        }
+                        if (IMUtils.isFilterChatIMMessage(customIMBody)) {
+                            continue;
+                        }
                         IMSessionEntity imSessionEntity = new IMSessionEntity(recentContact, customIMBody);
 
                         IMUtils.wrapV1Message(imSessionEntity, recentContact, customIMBody);
@@ -813,7 +853,9 @@ public class MessageListFragment extends BaseRecentContactFragment
         if (recentContacts != null) {
             for (int i = recentContacts.size() - 1; i >= 0; i--) {
                 RecentContact item = recentContacts.get(i);
-                if (item == null) continue;
+                if (item == null) {
+                    continue;
+                }
                 IMUtils.logRecentContact("--------->messageFragment:i:" + i, item);
                 //过滤掉其它消息类型
                 if (item.getMsgType() != MsgTypeEnum.custom
@@ -861,12 +903,13 @@ public class MessageListFragment extends BaseRecentContactFragment
                     break;
                 case CHAT_TYPE_TEAM:
                     TextView tvSessionTitle = holder.obtainView(R.id.tv_session_title);
-                    if (data.recentContact != null)
+                    if (data.recentContact != null) {
                         ChatActivity.launchTEAM(getActivity(),
                                 data.recentContact.getContactId(),
                                 String.valueOf(tvSessionTitle.getText()),
                                 0,
                                 totalUnReadCount);
+                    }
                     break;
             }
         }
@@ -899,7 +942,9 @@ public class MessageListFragment extends BaseRecentContactFragment
 
     @Override
     public void onTabDoubleClick(Fragment targetFragment, View v, Bundle bundle) {
-        if (targetFragment != MessageListFragment.this) return;
+        if (targetFragment != MessageListFragment.this) {
+            return;
+        }
         int nextUnReadItem = findNextUnReadItem(linearLayoutManager.findFirstVisibleItemPosition(), -1);
         if (nextUnReadItem != -1 && ViewCompat.canScrollVertically(recyclerView, 1)) {
             linearLayoutManager.scrollToPositionWithOffset(nextUnReadItem + headerFooterAdapter.getHeaderCount(), 0);
@@ -917,7 +962,9 @@ public class MessageListFragment extends BaseRecentContactFragment
      * @return
      */
     private int findNextUnReadItem(int start, int defaultUnFind) {
-        if (start < 0) return defaultUnFind;
+        if (start < 0) {
+            return defaultUnFind;
+        }
         List<IMSessionEntity> data = imSessionAdapter.getData();
         for (int i = start; i < data.size(); i++) {
             IMSessionEntity imSessionEntity = data.get(i);
@@ -973,7 +1020,6 @@ public class MessageListFragment extends BaseRecentContactFragment
     }
 
 
-    @OnClick({R.id.start_chat_tv})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -981,17 +1027,14 @@ public class MessageListFragment extends BaseRecentContactFragment
                 SearchPolymerizationActivity.launch(getContext(),
                         SearchPolymerizationActivity.SEARCH_PRIORITY_CHAT_HISTORTY);
                 break;
-            case R.id.start_chat_tv:
-                if (getParentFragment() instanceof OnPageFragmentCallBack) {
-                    onPageFragmentCallBack = (OnPageFragmentCallBack) getParentFragment();
-                }
-                if (onPageFragmentCallBack != null) {
-                    onPageFragmentCallBack.onRequest2NextPage(MessageListFragment.this, 0, null);
-                }
-                break;
             default:
                 super.onClick(v);
                 break;
         }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
     }
 }

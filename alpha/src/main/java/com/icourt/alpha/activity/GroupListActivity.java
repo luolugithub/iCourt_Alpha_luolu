@@ -123,6 +123,7 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
     @Override
     protected void initView() {
         super.initView();
+        contentEmptyText.setText(R.string.empty_list_im_group);
         EventBus.getDefault().register(this);
         switch (getGroupQueryType()) {
             case GROUP_TYPE_MY_JOIN:
@@ -140,7 +141,6 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
             @Override
             protected void updateUI() {
                 if (contentEmptyText != null) {
-                    contentEmptyText.setText("暂无讨论组");
                     contentEmptyText.setVisibility(groupAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
                 }
             }

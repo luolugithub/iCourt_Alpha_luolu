@@ -181,19 +181,19 @@ public class ChatMsgClassfyActivity extends BaseActivity implements BaseRecycler
         switch (getMsgClassfyType()) {
             case MSG_CLASSFY_CHAT_DING:
                 setTitle("钉的消息");
-                recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, "暂无钉的消息");
+                recyclerView.setNoticeEmpty(R.mipmap.ic_empty_data, R.string.empty_list_im_ding_msg);
                 break;
             case MSG_CLASSFY_CHAT_FILE:
                 setTitle("文件");
-                recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, "暂无文件");
+                recyclerView.setNoticeEmpty(R.mipmap.ic_empty_data, R.string.empty_list_im_file_msg);
                 break;
             case MSG_CLASSFY_MY_COLLECTEED:
                 setTitle("我收藏的消息");
-                recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, R.string.my_center_null_collect_text);
+                recyclerView.setNoticeEmpty(R.mipmap.ic_empty_data, R.string.empty_list_im_collected_msg);
                 break;
             default:
                 setTitle("我收藏的消息");
-                recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, R.string.my_center_null_collect_text);
+                recyclerView.setNoticeEmpty(R.mipmap.ic_empty_data, R.string.empty_list_im_collected_msg);
                 break;
         }
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -269,7 +269,7 @@ public class ChatMsgClassfyActivity extends BaseActivity implements BaseRecycler
                 }
                 break;
         }
-        callEnqueue(call,new SimpleCallBack<List<IMMessageCustomBody>>() {
+        callEnqueue(call, new SimpleCallBack<List<IMMessageCustomBody>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<IMMessageCustomBody>>> call, Response<ResEntity<List<IMMessageCustomBody>>> response) {
                 imUserMessageAdapter.bindData(isRefresh, response.body().result);
@@ -350,7 +350,9 @@ public class ChatMsgClassfyActivity extends BaseActivity implements BaseRecycler
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(MessageEvent event) {
-        if (event == null) return;
+        if (event == null) {
+            return;
+        }
         switch (event.action) {
             case MessageEvent.ACTION_MSG_CANCEL_COLLECT:
                 List<IMMessageCustomBody> data = imUserMessageAdapter.getData();
@@ -366,7 +368,9 @@ public class ChatMsgClassfyActivity extends BaseActivity implements BaseRecycler
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         IMMessageCustomBody item = imUserMessageAdapter.getItem(adapter.getRealPos(position));
-        if (item == null) return;
+        if (item == null) {
+            return;
+        }
         FileDetailsActivity.launch(getContext(), item, getMsgClassfyType());
     }
 
