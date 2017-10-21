@@ -4,7 +4,8 @@ import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 
-import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
+
 
 /**
  * Description

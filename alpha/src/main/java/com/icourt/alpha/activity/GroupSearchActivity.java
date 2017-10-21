@@ -31,11 +31,11 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.ClearEditText;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
-import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.team.TeamService;
 import com.netease.nimlib.sdk.team.model.Team;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.util.List;
 

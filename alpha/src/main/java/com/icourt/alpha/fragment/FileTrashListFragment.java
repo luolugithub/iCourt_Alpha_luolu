@@ -21,10 +21,10 @@ import com.icourt.alpha.entity.bean.SeaFileTrashPageEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.JsonUtils;
-import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.util.Arrays;
 
