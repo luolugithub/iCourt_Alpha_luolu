@@ -100,17 +100,17 @@ public class MyProjectFragment extends BaseFragment {
         if (projectType == TYPE_ALL_PROJECT) {
             attorneyType = "";
             myStar = "";
-            recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_project, getString(R.string.project_no));
+            recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_project, R.string.empty_list_project);
         } else if (projectType == TYPE_MY_ATTENTION_PROJECT) {
             attorneyType = "";
             myStar = "1";
             status = -1;
             matterType = "";
-            recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_project, getString(R.string.project_no_star));
+            recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_project, R.string.empty_list_project_follow);
         } else if (projectType == TYPE_MY_PARTIC_PROJECT) {
             attorneyType = "O";
             myStar = "";
-            recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_project, getString(R.string.project_no_participation));
+            recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_project, R.string.empty_list_project_joined);
         }
         recyclerView.setLayoutManager(linearLayoutManager = new LinearLayoutManager(getContext()));
 
@@ -154,16 +154,17 @@ public class MyProjectFragment extends BaseFragment {
      * @param stateType
      * @return
      */
+    //TODO 加字符串资源注解
     private int getEmptyContentId(int stateType) {
         switch (stateType) {
             case Const.PROJECT_STATUS_ING:
-                return R.string.project_no_ing;
+                return R.string.empty_list_project_executing;
             case Const.PROJECT_STATUS_FINISH:
-                return R.string.project_no_finished;
+                return R.string.empty_list_project_finished;
             case Const.PROJECT_STATUS_END:
-                return R.string.project_no_ended;
+                return R.string.empty_list_project_shelve;
         }
-        return 0;
+        return R.string.empty_list_project;
     }
 
     @Override
