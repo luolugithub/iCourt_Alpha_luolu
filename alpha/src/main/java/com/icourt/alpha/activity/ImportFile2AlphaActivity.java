@@ -110,6 +110,17 @@ public class ImportFile2AlphaActivity extends BaseActivity
         String extraSubject = getIntent().getStringExtra(Intent.EXTRA_SUBJECT);
         String extraText = getIntent().getStringExtra(Intent.EXTRA_TEXT);
         String extraStream = getIntent().getStringExtra(Intent.EXTRA_STREAM);
+        Object extraStreamp = getIntent().getExtras().get(Intent.EXTRA_STREAM);
+
+        //可能file uri 为null 比如魅族手机 从extraStreamp获取
+        if (fileUir == null
+                && extraStreamp != null) {
+            try {
+                fileUir = Uri.parse(extraStreamp.toString());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         log("-------->share action:" + action);
         log("-------->share type:" + type);
         log("-------->share uri:" + fileUir);
