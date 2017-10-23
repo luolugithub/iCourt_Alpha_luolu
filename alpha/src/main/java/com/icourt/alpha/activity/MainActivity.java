@@ -137,6 +137,8 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
     public static String KEY_PROJECT_PERMISSION = "cache_project_permission";
     public static String KEY_CUSTOMER_PERMISSION = "cache_customer_permission";
 
+    public static String KEY_GUIDE_TIME_HAS_SHOW = "guideTimeHasShow";
+
     public static final String KEY_FROM_LOGIN = "FromLogin";
 
     public static final int TYPE_FRAGMENT_NEWS = 0;
@@ -183,6 +185,11 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
     AlphaUserInfo loginUserInfo;
 
     public Badge tabNewsBadge;
+
+    /**
+     * 引导页
+     */
+    private Guide guide;
 
     @BindView(R.id.main_fl_content)
     FrameLayout mainFlContent;
@@ -1267,12 +1274,24 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
         return super.onKeyDown(keyCode, event);
     }
 
-    private Guide guide;
-
-    private void showGuideView() {
-        if (StringUtils.equalsIgnoreCase(BuildConfig.VERSION_NAME, Const.GUIDE_SHOW_TIME_VERSION_NAME, false)) {
-
+    /**
+     * 是否显示计时的引导蒙层
+     *
+     * @return
+     */
+    private boolean isShowTimeGuide() {
+        //如果是v2.2.1版本，并且没有显示过计时的引导蒙层，就显示
+        if (StringUtils.equalsIgnoreCase(BuildConfig.VERSION_NAME, Const.GUIDE_SHOW_TIME_VERSION_NAME, false)
+                && SpUtils.getInstance().getBooleanData(KEY_GUIDE_TIME_HAS_SHOW, false)) {
+            return true;
         }
+        return false;
+    }
+
+    /**
+     * 显示计时的引导蒙层
+     */
+    private void showGuideView() {
         final GuideBuilder builder = new GuideBuilder();
         builder.setTargetViewId(R.id.tab_mine)
                 .setAlpha(150)
@@ -1289,7 +1308,7 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
 
             @Override
             public void onDismiss() {
-
+                SpUtils.getInstance().putData(KEY_GUIDE_TIME_HAS_SHOW, true);
             }
         });
         SimpleComponent component = new SimpleComponent();
