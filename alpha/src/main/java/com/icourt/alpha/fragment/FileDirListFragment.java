@@ -21,10 +21,10 @@ import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack2;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.ItemDecorationUtils;
-import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.util.Iterator;
 import java.util.List;
@@ -89,7 +89,7 @@ public class FileDirListFragment extends BaseFragment implements BaseRecyclerAda
         seaFileRepoId = getArguments().getString("seaFileRepoId");
         filePath = getArguments().getString("filePath");
         rootName = getArguments().getString("rootName");
-        recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_project, "暂无文件夹");
+        recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_project, R.string.empty_list_repo_dir);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true));
 
@@ -141,29 +141,29 @@ public class FileDirListFragment extends BaseFragment implements BaseRecyclerAda
         callEnqueue(
                 getSFileApi().projectQueryFileBoxByDir(seaFileRepoId, rootName),
                 new SFileCallBack<List<FileBoxBean>>() {
-            @Override
-            public void onSuccess(Call<List<FileBoxBean>> call, Response<List<FileBoxBean>> response) {
-                stopRefresh();
-                if (response.body() != null) {
-                    projectFileBoxAdapter.bindData(isRefresh, getFolders(response.body()));
-                    if (getFolders(response.body()) != null) {
-                        if (getFolders(response.body()).size() <= 0) {
+                    @Override
+                    public void onSuccess(Call<List<FileBoxBean>> call, Response<List<FileBoxBean>> response) {
+                        stopRefresh();
+                        if (response.body() != null) {
+                            projectFileBoxAdapter.bindData(isRefresh, getFolders(response.body()));
+                            if (getFolders(response.body()) != null) {
+                                if (getFolders(response.body()).size() <= 0) {
+                                    recyclerView.enableEmptyView(null);
+                                }
+                            }
+                        } else {
                             recyclerView.enableEmptyView(null);
                         }
                     }
-                } else {
-                    recyclerView.enableEmptyView(null);
-                }
-            }
 
-            @Override
-            public void onFailure(Call<List<FileBoxBean>> call, Throwable t) {
-                super.onFailure(call, t);
-                stopRefresh();
-                recyclerView.enableEmptyView(null);
-                showTopSnackBar("获取文档列表失败");
-            }
-        });
+                    @Override
+                    public void onFailure(Call<List<FileBoxBean>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        stopRefresh();
+                        recyclerView.enableEmptyView(null);
+                        showTopSnackBar("获取文档列表失败");
+                    }
+                });
     }
 
     /**

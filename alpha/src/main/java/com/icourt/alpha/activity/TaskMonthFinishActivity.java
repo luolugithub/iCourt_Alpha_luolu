@@ -20,10 +20,10 @@ import com.icourt.alpha.http.callback.SimpleCallBack2;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DateUtils;
-import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.util.List;
 
@@ -81,7 +81,7 @@ public class TaskMonthFinishActivity extends BaseActivity implements BaseQuickAd
         super.initView();
         setTitle(R.string.task_month_finish_task);
 
-        recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_list_null_text);
+        recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, R.string.empty_list_task);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         recyclerView.setAdapter(taskAdapter = new TaskAdapter());
@@ -107,6 +107,8 @@ public class TaskMonthFinishActivity extends BaseActivity implements BaseQuickAd
     protected void getData(final boolean isRefresh) {
         if (isRefresh) {
             pageIndex = 1;
+        } else {
+            pageIndex++;
         }
         callEnqueue(
                 getApi().taskListItemByTimeQuery(

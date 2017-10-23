@@ -94,12 +94,30 @@ public class TaskDetailActivity extends BaseActivity
         BaseRecyclerAdapter.OnItemClickListener,
         OnUpdateTaskListener {
 
+    /**
+     * 初始化，传递进来的任务id的key
+     */
     private static final String KEY_TASK_ID = "key_task_id";
-    private static final String KEY_IS_CHECKITEM = "key_is_checkitem";
-    private static final String KEY_IS_CHECK_ITEM = "key_is_check_item";
+    /**
+     * 用来判断是否要默认切换到检查项，并且弹出键盘的key
+     */
+    public static final String KEY_IS_CHECK_ITEM = "key_is_check_item";
+    /**
+     * 用来判断任务是否完成的key
+     */
     public static final String KEY_ISFINISH = "isFinish";
     public static final String KEY_VALID = "valid";
-    private static final String KEY_TASKITEMENTITY = "taskItemEntity";
+    public static final String KEY_TASKITEMENTITY = "taskItemEntity";
+
+    /**
+     * 更新每个子Fragment的type标签
+     */
+    public static final int TYPE_UPDATE_CHILD_FRAGMENT = 100;
+    /**
+     * 切换到检查项，并且弹出键盘的type标签
+     */
+    public static final int TYPE_CHECK_ITEM_SHOW_KEYBOARD = 101;
+
     /**
      * 删除提示对话框
      */
@@ -112,6 +130,7 @@ public class TaskDetailActivity extends BaseActivity
      * 恢复任务提示对话框
      */
     private static final int SHOW_RENEW_DIALOG = 2;
+
     /**
      * 跳转评论code
      */
@@ -240,7 +259,7 @@ public class TaskDetailActivity extends BaseActivity
         }
         Intent intent = new Intent(context, TaskDetailActivity.class);
         intent.putExtra(KEY_TASK_ID, taskId);
-        intent.putExtra(KEY_IS_CHECKITEM, isSelectedCheckItem);
+        intent.putExtra(KEY_IS_CHECK_ITEM, isSelectedCheckItem);
         context.startActivity(intent);
     }
 
@@ -251,7 +270,7 @@ public class TaskDetailActivity extends BaseActivity
         EventBus.getDefault().register(this);
         MobclickAgent.onEvent(this, UMMobClickAgent.look_task_click_id);
         taskId = getIntent().getStringExtra(KEY_TASK_ID);
-        isSelectedCheckItem = getIntent().getBooleanExtra(KEY_IS_CHECKITEM, false);
+        isSelectedCheckItem = getIntent().getBooleanExtra(KEY_IS_CHECK_ITEM, false);
         baseFragmentAdapter = new BaseFragmentAdapter(getSupportFragmentManager());
         viewpager.setAdapter(baseFragmentAdapter);
         taskTablayout.setupWithViewPager(viewpager);
@@ -397,7 +416,7 @@ public class TaskDetailActivity extends BaseActivity
                             if (taskItemEntity.attendeeUsers.size() > 1) {
                                 showDeleteDialog(getString(R.string.task_is_confirm_revert_task), SHOW_RENEW_DIALOG);
                             } else {
-                                showTwiceSureDialog(getString(R.string.task_is_revert_task), SHOW_RENEW_BUTTOM_SHEET);
+                                showTwiceSureDialog(getString(R.string.task_is_revert), SHOW_RENEW_BUTTOM_SHEET);
                             }
                         } else {
                             showTwiceSureDialog(getString(R.string.task_is_revert_task), SHOW_RENEW_BUTTOM_SHEET);
@@ -627,7 +646,7 @@ public class TaskDetailActivity extends BaseActivity
                                         if (taskItemEntity.attendeeUsers.size() > 1) {
                                             showDeleteDialog(getString(R.string.task_is_confirm_revert_task), SHOW_RENEW_DIALOG);
                                         } else {
-                                            showTwiceSureDialog(getString(R.string.task_is_revert_task), SHOW_RENEW_BUTTOM_SHEET);
+                                            showTwiceSureDialog(getString(R.string.task_is_revert), SHOW_RENEW_BUTTOM_SHEET);
                                         }
                                     } else {
                                         showTwiceSureDialog(getString(R.string.task_is_revert_task), SHOW_RENEW_BUTTOM_SHEET);
@@ -997,13 +1016,13 @@ public class TaskDetailActivity extends BaseActivity
         bundle.putBoolean(KEY_VALID, taskItemEntity.valid);
         bundle.putSerializable(KEY_TASKITEMENTITY, taskItemEntity);
         if (taskDetailFragment != null) {
-            taskDetailFragment.notifyFragmentUpdate(taskDetailFragment, 100, bundle);
+            taskDetailFragment.notifyFragmentUpdate(taskDetailFragment, TYPE_UPDATE_CHILD_FRAGMENT, bundle);
         }
         if (taskCheckItemFragment != null) {
-            taskCheckItemFragment.notifyFragmentUpdate(taskCheckItemFragment, 100, bundle);
+            taskCheckItemFragment.notifyFragmentUpdate(taskCheckItemFragment, TYPE_UPDATE_CHILD_FRAGMENT, bundle);
         }
         if (taskAttachmentFragment != null) {
-            taskAttachmentFragment.notifyFragmentUpdate(taskAttachmentFragment, 100, bundle);
+            taskAttachmentFragment.notifyFragmentUpdate(taskAttachmentFragment, TYPE_UPDATE_CHILD_FRAGMENT, bundle);
         }
     }
 
@@ -1016,7 +1035,7 @@ public class TaskDetailActivity extends BaseActivity
         }
         Bundle bundle = new Bundle();
         bundle.putBoolean(KEY_IS_CHECK_ITEM, isSelectedCheckItem);
-        taskCheckItemFragment.notifyFragmentUpdate(taskCheckItemFragment, 101, bundle);
+        taskCheckItemFragment.notifyFragmentUpdate(taskCheckItemFragment, TYPE_CHECK_ITEM_SHOW_KEYBOARD, bundle);
     }
 
     /**

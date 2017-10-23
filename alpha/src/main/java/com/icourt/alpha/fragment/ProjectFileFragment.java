@@ -35,13 +35,13 @@ import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UriUtils;
 import com.icourt.alpha.utils.UrlUtils;
-import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
 import com.icourt.alpha.widget.comparators.FileSortComparator;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.alpha.widget.dialog.SortTypeSelectDialog;
 import com.icourt.alpha.widget.filter.SFileNameFilter;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -141,7 +141,7 @@ public class ProjectFileFragment extends SeaFileBaseFragment
         headerFooterAdapter.addFooter(footerView);
         footerView.setText("");
 
-        recyclerView.getRecyclerView().setAdapter(headerFooterAdapter);
+        recyclerView.setAdapter(headerFooterAdapter);
         folderAdapter.setOnItemClickListener(this);
         folderAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override
@@ -160,7 +160,7 @@ public class ProjectFileFragment extends SeaFileBaseFragment
                         }
                     }
                     if (dirNum == 0 && fileNum == 0) {
-                        footerView.setText(R.string.sfile_folder_empty);
+                        footerView.setText(R.string.empty_list_repo_file);
                     } else {
                         footerView.setText(getString(R.string.sfile_folder_statistics, String.valueOf(dirNum), String.valueOf(fileNum)));
                     }

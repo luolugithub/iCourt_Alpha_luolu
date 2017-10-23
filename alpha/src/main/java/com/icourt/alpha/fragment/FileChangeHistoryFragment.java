@@ -35,11 +35,11 @@ import com.icourt.alpha.interfaces.OnFragmentDataChangeListener;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.JsonUtils;
-import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -136,7 +136,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
     protected void initView() {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         TextView footerView = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_folder_document_num, recyclerView.getRecyclerView());
-        footerView.setText(R.string.sfile_change_history_empty);
+        footerView.setText(R.string.empty_list_repo_change_history);
         recyclerView.setEmptyView(footerView);
 
 

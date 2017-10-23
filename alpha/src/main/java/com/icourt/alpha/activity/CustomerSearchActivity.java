@@ -125,6 +125,7 @@ public class CustomerSearchActivity extends BaseActivity implements BaseRecycler
     @Override
     protected void initView() {
         super.initView();
+        contentEmptyText.setText(R.string.empty_list_customer_search);
         type = getIntent().getIntExtra("type", -1);
         customer_type = getIntent().getIntExtra("customer_type", -1);
         customerDbService = new CustomerDbService(getLoginUserId());

@@ -18,6 +18,7 @@
     <string name="task_is_confirm_delete_task">该任务由多人负责,确定删除?</string>
     <string name="task_is_confirm_delete">是非成败转头空，确定要删除吗?</string>
     <string name="task_is_delete">确定删除?</string>
+    <string name="task_is_revert">确定恢复?</string>
     <string name="task_remind">提示</string>
     <string name="task_confirm">确认</string>
     <string name="task_cancel">取消</string>
@@ -41,12 +42,6 @@
     <string name="task_month_finish_task">本月已完成任务</string>
     <string name="task_clear_deleted_task">清空所有已删除任务</string>
     <string name="task_can_not_revert">该操作不可恢复，确定清空？</string>
-    <string name="task_empty_nomal">暂无数据</string>
-    <string name="task_none_unfinish_task">暂无未完成的任务</string>
-    <string name="task_none_finished_task">暂无已完成的任务</string>
-    <string name="task_none_deleted_task">暂无已删除的任务</string>
-    <string name="task_none_attention_task">暂无关注的任务</string>
-    <string name="task_none_other_task">TA还没有任务</string>
 
     <string name="task_my_allot_task">我分配的任务</string>
     <string name="task_no_check_item">暂无检查项</string>

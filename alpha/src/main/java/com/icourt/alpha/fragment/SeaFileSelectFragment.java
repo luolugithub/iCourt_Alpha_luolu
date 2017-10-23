@@ -22,9 +22,9 @@ import com.icourt.alpha.entity.bean.SeaFileSelectParam;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnSeaFileSelectListener;
-import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -120,7 +120,7 @@ public class SeaFileSelectFragment extends BaseFragment
         folderDocumentAdapter.setOnItemClickListener(this);
 
         final TextView emptyView = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_folder_document_num, recyclerView.getRecyclerView());
-        emptyView.setText(R.string.sfile_folder_empty);
+        emptyView.setText(R.string.empty_list_repo_file);
         recyclerView.setEmptyView(emptyView);
         folderDocumentAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override

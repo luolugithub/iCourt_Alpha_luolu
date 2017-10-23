@@ -25,10 +25,10 @@ import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.StringUtils;
-import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
 import com.icourt.alpha.widget.filter.ListFilter;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -130,16 +130,16 @@ public class RepoSelectListFragment extends RepoBaseFragment implements OnItemCl
         repoAdapter.setOnItemClickListener(this);
         switch (repoType) {
             case REPO_MINE:
-                recyclerView.setEmptyContent(R.string.repo_empty);
+                recyclerView.setEmptyContent(R.string.empty_list_repo_my);
                 break;
             case REPO_SHARED_ME:
-                recyclerView.setEmptyContent(R.string.repo_share_empty);
+                recyclerView.setEmptyContent(R.string.empty_list_repo_shared);
                 break;
             case REPO_LAWFIRM:
-                recyclerView.setEmptyContent(R.string.repo_lawfirm_empty);
+                recyclerView.setEmptyContent(R.string.empty_list_repo_lawyer);
                 break;
             case REPO_PROJECT:
-                recyclerView.setEmptyContent(R.string.repo_empty);
+                recyclerView.setEmptyContent(R.string.empty_list_repo_project);
                 break;
         }
         if (filterOnlyReadRepo) {

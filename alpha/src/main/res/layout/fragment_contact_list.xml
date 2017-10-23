@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         app:isHeightMatchParent="false">
 
-        <com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView
+        <com.zhaol.refreshlayout.EmptyRecyclerView
             android:id="@id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />

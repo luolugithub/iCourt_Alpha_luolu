@@ -28,8 +28,6 @@ import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SFileTokenUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UserPreferences;
-import com.icourt.alpha.view.smartrefreshlayout.AlphaLoadFooter;
-import com.icourt.alpha.view.smartrefreshlayout.AlphaRefreshHeader;
 import com.icourt.alpha.widget.nim.AlphaMessageNotifierCustomization;
 import com.icourt.alpha.widget.nim.NimAttachParser;
 import com.icourt.lib.daemon.DaemonEnv;
@@ -63,6 +61,8 @@ import com.umeng.socialize.Config;
 import com.umeng.socialize.PlatformConfig;
 import com.umeng.socialize.UMShareAPI;
 import com.umeng.socialize.utils.Log;
+import com.zhaol.refreshlayout.AlphaLoadFooter;
+import com.zhaol.refreshlayout.AlphaRefreshHeader;
 
 import java.io.IOException;
 import java.net.Proxy;

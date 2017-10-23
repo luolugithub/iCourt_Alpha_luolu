@@ -20,6 +20,7 @@ import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.FileDownloadActivity;
 import com.icourt.alpha.activity.ImageViewerActivity;
+import com.icourt.alpha.activity.TaskDetailActivity;
 import com.icourt.alpha.adapter.TaskAttachmentAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
@@ -262,9 +263,9 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
     @Override
     public void notifyFragmentUpdate(Fragment targetFrgament, int type, Bundle bundle) {
         if (targetFrgament instanceof TaskAttachmentFragment) {
-            if (type == 100 && bundle != null) {
-                boolean isFinish = bundle.getBoolean("isFinish");
-                boolean valid = bundle.getBoolean("valid");
+            if (type == TaskDetailActivity.TYPE_UPDATE_CHILD_FRAGMENT && bundle != null) {
+                boolean isFinish = bundle.getBoolean(TaskDetailActivity.KEY_ISFINISH);
+                boolean valid = bundle.getBoolean(TaskDetailActivity.KEY_VALID);
                 if (footerAddView != null) {
                     footerAddView.setVisibility((!isFinish && valid && hasAddAttachmentPermission) ? View.VISIBLE : View.GONE);
                 }

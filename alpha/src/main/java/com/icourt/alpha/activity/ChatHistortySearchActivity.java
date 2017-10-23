@@ -23,7 +23,6 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.SearchItemAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
@@ -38,7 +37,6 @@ import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.ClearEditText;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
-import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
 import com.icourt.alpha.widget.nim.GlobalMessageObserver;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.msg.MsgService;
@@ -46,6 +44,7 @@ import com.netease.nimlib.sdk.search.model.MsgIndexRecord;
 import com.netease.nimlib.sdk.team.TeamService;
 import com.netease.nimlib.sdk.team.model.Team;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -86,8 +85,6 @@ public class ChatHistortySearchActivity extends BaseActivity implements BaseRecy
     EmptyRecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
     SmartRefreshLayout refreshLayout;
-    @BindView(R.id.contentEmptyText)
-    TextView contentEmptyText;
     @BindView(R.id.softKeyboardSizeWatchLayout)
     SoftKeyboardSizeWatchLayout softKeyboardSizeWatchLayout;
 
@@ -124,6 +121,7 @@ public class ChatHistortySearchActivity extends BaseActivity implements BaseRecy
         AlphaUserInfo loginUserInfo = getLoginUserInfo();
         contactDbService = new ContactDbService(loginUserInfo == null ? "" : loginUserInfo.getUserId());
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setEmptyContent(R.string.empty_list_im_search_msg);
         recyclerView.setAdapter(searchItemAdapter = new SearchItemAdapter(Integer.MAX_VALUE));
         searchItemAdapter.setOnItemClickListener(this);
         recyclerView.getRecyclerView().addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -161,6 +159,7 @@ public class ChatHistortySearchActivity extends BaseActivity implements BaseRecy
             public void afterTextChanged(Editable s) {
                 if (TextUtils.isEmpty(s)) {
                     searchItemAdapter.clearData();
+                    setViewVisible(recyclerView.getEmptyView(), false);
                 } else {
                     getData(true);
                 }
@@ -184,13 +183,6 @@ public class ChatHistortySearchActivity extends BaseActivity implements BaseRecy
         });
         etSearchName.setText(getIntent().getStringExtra(KEY_KEYWORD));
         etSearchName.setSelection(etSearchName.getText().length());
-
-        searchItemAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
-            @Override
-            protected void updateUI() {
-                contentEmptyText.setVisibility(searchItemAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
-            }
-        });
     }
 
     @Override
@@ -218,6 +210,7 @@ public class ChatHistortySearchActivity extends BaseActivity implements BaseRecy
                     @Override
                     public void accept(List<SearchItemEntity> searchPolymerizationEntities) throws Exception {
                         searchItemAdapter.bindData(true, searchPolymerizationEntities);
+                        recyclerView.enableEmptyView(searchItemAdapter.getData());
                     }
                 });
     }

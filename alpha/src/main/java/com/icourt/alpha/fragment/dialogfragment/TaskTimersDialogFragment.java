@@ -30,11 +30,11 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.recyclerviewDivider.TimerItemDecoration;
-import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -105,7 +105,7 @@ public class TaskTimersDialogFragment extends BaseDialogFragment implements Base
         if (taskItemEntity != null) {
             titleAction.setVisibility(taskItemEntity.valid ? View.VISIBLE : View.GONE);
         }
-        recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_timing, "暂无计时");
+        recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_timing, R.string.empty_list_timing);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setItemAnimator(null);
 

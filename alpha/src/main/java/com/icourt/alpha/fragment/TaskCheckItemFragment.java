@@ -23,6 +23,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.TaskDetailActivity;
 import com.icourt.alpha.adapter.TaskCheckItemAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
@@ -240,7 +241,7 @@ public class TaskCheckItemFragment extends BaseFragment
      */
     @Override
     public void notifyFragmentUpdate(Fragment targetFrgament, int type, Bundle bundle) {
-        if (type == 100 && bundle != null) {
+        if (type == TaskDetailActivity.TYPE_UPDATE_CHILD_FRAGMENT && bundle != null) {
             if (targetFrgament instanceof TaskCheckItemFragment) {
                 boolean isFinish = bundle.getBoolean("isFinish");
                 boolean valid = bundle.getBoolean("valid");
@@ -255,6 +256,11 @@ public class TaskCheckItemFragment extends BaseFragment
                 if (addItemLayout != null) {
                     addItemLayout.setVisibility(valid && !isFinish ? View.VISIBLE : View.GONE);
                 }
+            }
+        } else if (type == TaskDetailActivity.TYPE_CHECK_ITEM_SHOW_KEYBOARD && bundle != null) {
+            boolean isShowKeyboard = bundle.getBoolean(TaskDetailActivity.KEY_IS_CHECK_ITEM, false);
+            if (isShowKeyboard) {
+                SystemUtils.showSoftKeyBoard(getActivity(), checkItemEdit);
             }
         }
     }

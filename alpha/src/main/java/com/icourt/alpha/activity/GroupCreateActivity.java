@@ -113,7 +113,9 @@ public class GroupCreateActivity extends ListenBackActivity implements OnFragmen
     }
 
     public static void launch(Context context) {
-        if (context == null) return;
+        if (context == null) {
+            return;
+        }
         Intent intent = new Intent(context, GroupCreateActivity.class);
         context.startActivity(intent);
     }
