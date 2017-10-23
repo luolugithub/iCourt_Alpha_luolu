@@ -145,7 +145,7 @@ public class LogUtils {
             d("--------->bundle=null");
         } else {
             for (String key : bundle.keySet()) {
-                d("--------->key=" + key + ", content=" + bundle.getString(key));
+                d("--------->bundle key=" + key + ", content=" + bundle.get(key));
             }
         }
     }
