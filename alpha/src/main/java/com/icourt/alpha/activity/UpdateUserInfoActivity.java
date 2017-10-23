@@ -50,7 +50,6 @@ import retrofit2.Response;
 //TODO 这个类用多态与继承实现 三种功能
 public class UpdateUserInfoActivity extends BaseActivity {
 
-    //
     public static final int UPDATE_PHONE_TYPE = 1;//修改电话
     public static final int UPDATE_EMAIL_TYPE = 2;//修改邮箱
     public static final int UPDATE_NAME_TYPE = 3;//修改姓名
@@ -172,6 +171,8 @@ public class UpdateUserInfoActivity extends BaseActivity {
                 myCenterUpdateEdittext.setSingleLine(false);
                 myCenterUpdateEdittext.setHorizontallyScrolling(false);
                 break;
+            default:
+                break;
         }
         String value = getValue();
         myCenterUpdateEdittext.setText(value);
@@ -240,6 +241,8 @@ public class UpdateUserInfoActivity extends BaseActivity {
                 case UPDATE_NAME_TYPE:
                     updateStateLayout.setVisibility(View.GONE);
                     setSaveViewState(true);
+                    break;
+                default:
                     break;
             }
         } else {
@@ -317,6 +320,8 @@ public class UpdateUserInfoActivity extends BaseActivity {
                 break;
             case UPDATE_NAME_TYPE:
                 upDateName(userId, value);
+                break;
+            default:
                 break;
         }
     }

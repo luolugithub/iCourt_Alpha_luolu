@@ -23,7 +23,6 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.GroupAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.GroupEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
@@ -69,8 +68,6 @@ public class GroupSearchActivity extends BaseActivity implements BaseRecyclerAda
     EmptyRecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
     SmartRefreshLayout refreshLayout;
-    @BindView(R.id.contentEmptyText)
-    TextView contentEmptyText;
     @BindView(R.id.softKeyboardSizeWatchLayout)
     SoftKeyboardSizeWatchLayout softKeyboardSizeWatchLayout;
 
@@ -116,7 +113,7 @@ public class GroupSearchActivity extends BaseActivity implements BaseRecyclerAda
     @Override
     protected void initView() {
         super.initView();
-        contentEmptyText.setText(R.string.empty_list_im_search_group);
+        recyclerView.setEmptyContent(R.string.empty_list_im_search_group);
         refreshLayout.setEnableRefresh(false);
         refreshLayout.setEnableLoadmore(false);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -158,6 +155,7 @@ public class GroupSearchActivity extends BaseActivity implements BaseRecyclerAda
                 if (TextUtils.isEmpty(s)) {
                     groupAdapter.setKeyWord(null);
                     groupAdapter.clearData();
+                    setViewVisible(recyclerView.getEmptyView(), false);
                 } else {
                     groupAdapter.setKeyWord(s.toString());
                     getData(true);
@@ -182,14 +180,6 @@ public class GroupSearchActivity extends BaseActivity implements BaseRecyclerAda
         });
         etSearchName.setText(getIntent().getStringExtra(KEY_KEYWORD));
         etSearchName.setSelection(etSearchName.getText().length());
-
-
-        groupAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
-            @Override
-            protected void updateUI() {
-                contentEmptyText.setVisibility(groupAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
-            }
-        });
     }
 
     @Override
@@ -202,6 +192,7 @@ public class GroupSearchActivity extends BaseActivity implements BaseRecyclerAda
                     @Override
                     public void onSuccess(Call<ResEntity<List<GroupEntity>>> call, Response<ResEntity<List<GroupEntity>>> response) {
                         groupAdapter.bindData(true, response.body().result);
+                        recyclerView.enableEmptyView(groupAdapter.getData());
                     }
                 });
     }

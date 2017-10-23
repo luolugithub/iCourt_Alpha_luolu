@@ -811,6 +811,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         });
         linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
+        refreshLayout.setEnableLoadmore(false);
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(chatAdapter = new ChatAdapter(localContactList));
         chatAdapter.setOnItemClickListener(this);

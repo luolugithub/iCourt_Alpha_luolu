@@ -19,10 +19,7 @@
 
 
             <include layout="@layout/layout_refresh_recyclerview" />
-
-            <include
-                layout="@layout/layout_empty_tv"
-                android:visibility="gone" />
+            
 
             <ProgressBar
                 android:id="@+id/search_pb"

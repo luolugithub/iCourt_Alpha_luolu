@@ -112,6 +112,7 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
             @Override
             public void afterTextChanged(Editable s) {
                 if (TextUtils.isEmpty(s)) {
+                    cancelAllCall();
                     projectListAdapter.clearData();
                 } else {
                     getData(true);
