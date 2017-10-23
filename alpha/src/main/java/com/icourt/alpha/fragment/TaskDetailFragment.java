@@ -242,18 +242,17 @@ public class TaskDetailFragment extends BaseFragment implements ProjectSelectDia
     @Override
     public void notifyFragmentUpdate(Fragment targetFrgament, int type, Bundle bundle) {
         if (targetFrgament instanceof TaskDetailFragment) {
-            if (bundle == null) {
-                return;
+            if (type == TaskDetailActivity.TYPE_UPDATE_CHILD_FRAGMENT && bundle == null) {
+                isFinish = bundle.getBoolean(TaskDetailActivity.KEY_ISFINISH);
+                valid = bundle.getBoolean(TaskDetailActivity.KEY_VALID);
+                taskItemEntity = (TaskEntity.TaskItemEntity) bundle.getSerializable(TaskDetailActivity.KEY_TASKITEMENTITY);
+                try {
+                    cloneItemEntity = (TaskEntity.TaskItemEntity) BeanUtils.cloneTo(taskItemEntity);
+                } catch (RuntimeException e) {
+                    e.printStackTrace();
+                }
+                setDataToView(taskItemEntity);
             }
-            isFinish = bundle.getBoolean(TaskDetailActivity.KEY_ISFINISH);
-            valid = bundle.getBoolean(TaskDetailActivity.KEY_VALID);
-            taskItemEntity = (TaskEntity.TaskItemEntity) bundle.getSerializable("taskItemEntity");
-            try {
-                cloneItemEntity = (TaskEntity.TaskItemEntity) BeanUtils.cloneTo(taskItemEntity);
-            } catch (RuntimeException e) {
-                e.printStackTrace();
-            }
-            setDataToView(taskItemEntity);
         }
     }
 
