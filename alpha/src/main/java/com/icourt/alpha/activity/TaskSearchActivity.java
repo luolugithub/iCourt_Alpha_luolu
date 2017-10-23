@@ -24,9 +24,7 @@ import butterknife.ButterKnife;
  * @Company Beijing icourt
  * @date createTime：2017/9/7
  */
-
-//TODO  改类名 名次在线 动词在后
-public class SearchTaskActivity extends BaseActivity {
+public class TaskSearchActivity extends BaseActivity {
     /**
      * 搜索任务type
      */
@@ -55,7 +53,7 @@ public class SearchTaskActivity extends BaseActivity {
         if (context == null) {
             return;
         }
-        Intent intent = new Intent(context, SearchTaskActivity.class);
+        Intent intent = new Intent(context, TaskSearchActivity.class);
         intent.putExtra(SearchTaskFragment.KEY_SEARCH_TASK_TYPE, searchTaskType);
         intent.putExtra(SearchTaskFragment.KEY_ASSIGN_TOS, assignTos);
         context.startActivity(intent);
@@ -73,7 +71,7 @@ public class SearchTaskActivity extends BaseActivity {
         if (context == null) {
             return;
         }
-        Intent intent = new Intent(context, SearchTaskActivity.class);
+        Intent intent = new Intent(context, TaskSearchActivity.class);
         intent.putExtra(SearchTaskFragment.KEY_SEARCH_TASK_TYPE, searchTaskType);
         intent.putExtra(SearchTaskFragment.KEY_SEARCH_TASK_STATUS_TYPE, taskStatuType);
         intent.putExtra(SearchTaskFragment.KEY_PROJECT_ID, projectId);

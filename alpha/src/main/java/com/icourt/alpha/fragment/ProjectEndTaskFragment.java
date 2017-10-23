@@ -12,7 +12,7 @@ import android.view.ViewGroup;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.SearchTaskActivity;
+import com.icourt.alpha.activity.TaskSearchActivity;
 import com.icourt.alpha.activity.TaskDetailActivity;
 import com.icourt.alpha.activity.TimerDetailActivity;
 import com.icourt.alpha.activity.TimerTimingActivity;
@@ -170,7 +170,7 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.rl_comm_search:
-                SearchTaskActivity.launchFinishTask(getContext(), "", 0, 1, projectId);
+                TaskSearchActivity.launchFinishTask(getContext(), "", 0, 1, projectId);
                 break;
             default:
                 super.onClick(v);
