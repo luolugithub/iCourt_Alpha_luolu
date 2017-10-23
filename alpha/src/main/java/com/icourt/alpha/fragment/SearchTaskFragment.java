@@ -161,8 +161,8 @@ public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAda
             @Override
             public void afterTextChanged(Editable s) {
                 if (TextUtils.isEmpty(s)) {
-                    //TODO 关闭网络请求 否则网络数据回来了 列表还有数据
-                    taskAdapter.setNewData(null);
+                    cancelAllCall();
+                    taskAdapter.clearData();
                 } else {
                     getData(true);
                 }
