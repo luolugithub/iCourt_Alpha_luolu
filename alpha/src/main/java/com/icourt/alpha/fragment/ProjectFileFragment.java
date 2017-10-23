@@ -160,7 +160,7 @@ public class ProjectFileFragment extends SeaFileBaseFragment
                         }
                     }
                     if (dirNum == 0 && fileNum == 0) {
-                        footerView.setText(R.string.sfile_folder_empty);
+                        footerView.setText(R.string.empty_list_repo_file);
                     } else {
                         footerView.setText(getString(R.string.sfile_folder_statistics, String.valueOf(dirNum), String.valueOf(fileNum)));
                     }

@@ -130,16 +130,16 @@ public class RepoSelectListFragment extends RepoBaseFragment implements OnItemCl
         repoAdapter.setOnItemClickListener(this);
         switch (repoType) {
             case REPO_MINE:
-                recyclerView.setEmptyContent(R.string.repo_empty);
+                recyclerView.setEmptyContent(R.string.empty_list_repo_my);
                 break;
             case REPO_SHARED_ME:
-                recyclerView.setEmptyContent(R.string.repo_share_empty);
+                recyclerView.setEmptyContent(R.string.empty_list_repo_shared);
                 break;
             case REPO_LAWFIRM:
-                recyclerView.setEmptyContent(R.string.repo_lawfirm_empty);
+                recyclerView.setEmptyContent(R.string.empty_list_repo_lawyer);
                 break;
             case REPO_PROJECT:
-                recyclerView.setEmptyContent(R.string.repo_empty);
+                recyclerView.setEmptyContent(R.string.empty_list_repo_project);
                 break;
         }
         if (filterOnlyReadRepo) {

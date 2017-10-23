@@ -135,7 +135,7 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
             protected void updateUI() {
                 if (refreshLayout != null) {
                     recyclerView.enableEmptyView(fileVersionAdapter.getData());
-                    emptyView.setText(R.string.sfile_version_list_empty);
+                    emptyView.setText(R.string.empty_list_repo_file_historical_version);
                 }
             }
         });
