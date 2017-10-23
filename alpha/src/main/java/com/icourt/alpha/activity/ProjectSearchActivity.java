@@ -42,7 +42,7 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class SearchProjectActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
+public class ProjectSearchActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
 
     private static final String KEY_SEARCH_PROJECT_TYPE = "search_search_project_type";
 
@@ -65,7 +65,7 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
 
     public static void launchProject(@NonNull Context context, int searchProjectType) {
         if (context == null) return;
-        Intent intent = new Intent(context, SearchProjectActivity.class);
+        Intent intent = new Intent(context, ProjectSearchActivity.class);
         intent.putExtra(KEY_SEARCH_PROJECT_TYPE, searchProjectType);
         context.startActivity(intent);
     }
@@ -123,7 +123,7 @@ public class SearchProjectActivity extends BaseActivity implements BaseRecyclerA
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
-                SystemUtils.hideSoftKeyBoard(SearchProjectActivity.this);
+                SystemUtils.hideSoftKeyBoard(ProjectSearchActivity.this);
             }
 
             @Override

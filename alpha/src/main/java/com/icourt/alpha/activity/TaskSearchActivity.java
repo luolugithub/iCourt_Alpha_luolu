@@ -12,7 +12,7 @@ import android.support.v4.app.FragmentTransaction;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseActivity;
-import com.icourt.alpha.fragment.SearchTaskFragment;
+import com.icourt.alpha.fragment.TaskSearchFragment;
 import com.icourt.alpha.fragment.TaskListCalendarFragment;
 
 import butterknife.ButterKnife;
@@ -54,8 +54,8 @@ public class TaskSearchActivity extends BaseActivity {
             return;
         }
         Intent intent = new Intent(context, TaskSearchActivity.class);
-        intent.putExtra(SearchTaskFragment.KEY_SEARCH_TASK_TYPE, searchTaskType);
-        intent.putExtra(SearchTaskFragment.KEY_ASSIGN_TOS, assignTos);
+        intent.putExtra(TaskSearchFragment.KEY_SEARCH_TASK_TYPE, searchTaskType);
+        intent.putExtra(TaskSearchFragment.KEY_ASSIGN_TOS, assignTos);
         context.startActivity(intent);
     }
 
@@ -72,10 +72,10 @@ public class TaskSearchActivity extends BaseActivity {
             return;
         }
         Intent intent = new Intent(context, TaskSearchActivity.class);
-        intent.putExtra(SearchTaskFragment.KEY_SEARCH_TASK_TYPE, searchTaskType);
-        intent.putExtra(SearchTaskFragment.KEY_SEARCH_TASK_STATUS_TYPE, taskStatuType);
-        intent.putExtra(SearchTaskFragment.KEY_PROJECT_ID, projectId);
-        intent.putExtra(SearchTaskFragment.KEY_ASSIGN_TOS, assignTos);
+        intent.putExtra(TaskSearchFragment.KEY_SEARCH_TASK_TYPE, searchTaskType);
+        intent.putExtra(TaskSearchFragment.KEY_SEARCH_TASK_STATUS_TYPE, taskStatuType);
+        intent.putExtra(TaskSearchFragment.KEY_PROJECT_ID, projectId);
+        intent.putExtra(TaskSearchFragment.KEY_ASSIGN_TOS, assignTos);
         context.startActivity(intent);
     }
 
@@ -90,13 +90,13 @@ public class TaskSearchActivity extends BaseActivity {
     @Override
     protected void initView() {
         super.initView();
-        searchTaskType = getIntent().getIntExtra(SearchTaskFragment.KEY_SEARCH_TASK_TYPE, -1);
-        taskStatuType = getIntent().getIntExtra(SearchTaskFragment.KEY_SEARCH_TASK_STATUS_TYPE, -1);
-        projectId = getIntent().getStringExtra(SearchTaskFragment.KEY_PROJECT_ID);
-        assignTos = getIntent().getStringExtra(SearchTaskFragment.KEY_ASSIGN_TOS);
+        searchTaskType = getIntent().getIntExtra(TaskSearchFragment.KEY_SEARCH_TASK_TYPE, -1);
+        taskStatuType = getIntent().getIntExtra(TaskSearchFragment.KEY_SEARCH_TASK_STATUS_TYPE, -1);
+        projectId = getIntent().getStringExtra(TaskSearchFragment.KEY_PROJECT_ID);
+        assignTos = getIntent().getStringExtra(TaskSearchFragment.KEY_ASSIGN_TOS);
 
-        SearchTaskFragment searchTaskFragment = SearchTaskFragment.newInstance(getActivity(), assignTos, searchTaskType, taskStatuType, projectId);
-        addOrShowFragmentAnim(searchTaskFragment, R.id.container, true);
+        TaskSearchFragment taskSearchFragment = TaskSearchFragment.newInstance(getActivity(), assignTos, searchTaskType, taskStatuType, projectId);
+        addOrShowFragmentAnim(taskSearchFragment, R.id.container, true);
     }
 
     private void addOrShowFragmentAnim(@NonNull Fragment targetFragment, @IdRes int containerViewId, boolean isAnim) {

@@ -10,7 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.SearchProjectActivity;
+import com.icourt.alpha.activity.ProjectSearchActivity;
 import com.icourt.alpha.adapter.ProjectListAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.base.BaseFragment;
@@ -140,7 +140,7 @@ public class MyProjectFragment extends BaseFragment {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.rl_comm_search:
-                SearchProjectActivity.launchProject(getContext(), projectType);
+                ProjectSearchActivity.launchProject(getContext(), projectType);
                 break;
             default:
                 super.onClick(v);

@@ -53,7 +53,7 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAdapter.OnItemClickListener, BaseQuickAdapter.OnItemChildClickListener {
+public class TaskSearchFragment extends BaseTaskFragment implements BaseQuickAdapter.OnItemClickListener, BaseQuickAdapter.OnItemChildClickListener {
 
     public static final String KEY_SEARCH_TASK_TYPE = "search_task_type";
     public static final String KEY_SEARCH_TASK_STATUS_TYPE = "search_task_status_type";
@@ -102,15 +102,15 @@ public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAda
      * @param searchTaskType 0:全部；1：新任务；2：我关注的；3我部门的
      * @param projectId      项目id
      */
-    public static SearchTaskFragment newInstance(@NonNull Context context, String assignTos, int searchTaskType, int taskStatuType, String projectId) {
-        SearchTaskFragment searchTaskFragment = new SearchTaskFragment();
+    public static TaskSearchFragment newInstance(@NonNull Context context, String assignTos, int searchTaskType, int taskStatuType, String projectId) {
+        TaskSearchFragment taskSearchFragment = new TaskSearchFragment();
         Bundle bundle = new Bundle();
         bundle.putInt(KEY_SEARCH_TASK_TYPE, searchTaskType);
         bundle.putInt(KEY_SEARCH_TASK_STATUS_TYPE, taskStatuType);
         bundle.putString(KEY_PROJECT_ID, projectId);
         bundle.putString(KEY_ASSIGN_TOS, assignTos);
-        searchTaskFragment.setArguments(bundle);
-        return searchTaskFragment;
+        taskSearchFragment.setArguments(bundle);
+        return taskSearchFragment;
     }
 
     @Nullable

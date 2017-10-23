@@ -286,7 +286,7 @@
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".activity.SearchProjectActivity"
+            android:name=".activity.ProjectSearchActivity"
             android:screenOrientation="portrait" />
         <activity
             android:name=".activity.TaskSearchActivity"
