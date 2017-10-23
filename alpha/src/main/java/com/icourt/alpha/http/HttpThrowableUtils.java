@@ -55,7 +55,6 @@ public class HttpThrowableUtils {
                 retrofit2.HttpException httpException = (retrofit2.HttpException) t;
 
                 String combHttpExceptionStr = String.format("%s:%s", httpException.code(), httpException.message());
-                sendHttpLog(t, "http状态异常:" + combHttpExceptionStr);
                 if (httpException.code() == 401) {
                     //强制登陆  token过期
                     try {
@@ -68,6 +67,7 @@ public class HttpThrowableUtils {
                     }
                     return;
                 }
+                sendHttpLog(t, "http状态异常:" + combHttpExceptionStr);
                 defNotify(iDefNotify, combHttpExceptionStr);
             } else if (t instanceof JsonParseException) {
                 defNotify(iDefNotify, "服务器Json格式错误");
