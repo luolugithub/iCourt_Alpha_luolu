@@ -68,8 +68,6 @@ public class SFileSearchActivity extends BaseActivity
     LinearLayout searchLayout;
     @BindView(R.id.recyclerView)
     EmptyRecyclerView recyclerView;
-    @BindView(R.id.contentEmptyText)
-    TextView contentEmptyText;
     @BindView(R.id.softKeyboardSizeWatchLayout)
     SoftKeyboardSizeWatchLayout softKeyboardSizeWatchLayout;
     @BindView(R.id.search_pb)
@@ -104,14 +102,13 @@ public class SFileSearchActivity extends BaseActivity
             etSearchName.setTransitionName(transitionName);
         }
         etSearchName.setHint(R.string.sfile_search_range);
-        contentEmptyText.setText(R.string.empty_list_repo_search);
+        recyclerView.setEmptyContent(R.string.empty_list_repo_search);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(sFileSearchAdapter = new SFileSearchAdapter());
         sFileSearchAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override
             protected void updateUI() {
                 refreshLayout.setEnableRefresh(sFileSearchAdapter.getItemCount() > 0);
-                contentEmptyText.setVisibility(sFileSearchAdapter.getItemCount() <= 0 ? View.VISIBLE : View.GONE);
             }
         });
         sFileSearchAdapter.setOnItemClickListener(this);
@@ -194,7 +191,6 @@ public class SFileSearchActivity extends BaseActivity
         if (isRefresh) {
             sFileSearchAdapter.clearData();
             searchPb.setVisibility(View.VISIBLE);
-            contentEmptyText.setVisibility(View.GONE);
             pageIndex = 1;
         }
         if (TextUtils.isEmpty(etSearchName.getText())) {
