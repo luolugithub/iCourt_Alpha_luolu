@@ -105,7 +105,7 @@ public class TaskTimersDialogFragment extends BaseDialogFragment implements Base
         if (taskItemEntity != null) {
             titleAction.setVisibility(taskItemEntity.valid ? View.VISIBLE : View.GONE);
         }
-        recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_timing, "暂无计时");
+        recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_timing, R.string.empty_list_timing);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setItemAnimator(null);
 
