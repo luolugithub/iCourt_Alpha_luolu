@@ -204,9 +204,9 @@ public class TaskDetailActivity extends BaseActivity
     String timmingTaskId;
     BaseFragmentAdapter baseFragmentAdapter;
     int myStar = -1;
-    boolean isStrat = false;
+    boolean isStart = false;
     /**
-     * 是否默认选中检查项tab
+     * 是否默认选中检查项tab（创建完任务成功后，跳转到任务详情，会默认选中检查项，选中之后置为false）。
      */
     boolean isSelectedCheckItem = false;
     TaskEntity.TaskItemEntity taskItemEntity, cloneItemEntity;
@@ -214,22 +214,12 @@ public class TaskDetailActivity extends BaseActivity
     TaskDetailFragment taskDetailFragment;
     TaskCheckItemFragment taskCheckItemFragment;
     TaskAttachmentFragment taskAttachmentFragment;
+    TabLayout.OnTabSelectedListener onTabSelectedListener;
+
+    ViewPager.SimpleOnPageChangeListener onPageChangeListener;
+
 
     final SparseArray<CharSequence> tabTitles = new SparseArray<>();
-
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_task_detail_layout);
-        ButterKnife.bind(this);
-        initView();
-    }
-
-    @Override
-    protected void onDestroy() {
-        EventBus.getDefault().unregister(this);
-        super.onDestroy();
-    }
 
     public static void launch(@NonNull Context context, @NonNull String taskId) {
         if (context == null) {
@@ -264,6 +254,20 @@ public class TaskDetailActivity extends BaseActivity
     }
 
     @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_task_detail_layout);
+        ButterKnife.bind(this);
+        initView();
+    }
+
+    @Override
+    protected void onDestroy() {
+        EventBus.getDefault().unregister(this);
+        super.onDestroy();
+    }
+
+    @Override
     protected void initView() {
         super.initView();
         setTitle("");
@@ -275,14 +279,11 @@ public class TaskDetailActivity extends BaseActivity
         viewpager.setAdapter(baseFragmentAdapter);
         taskTablayout.setupWithViewPager(viewpager);
 
-        taskTablayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+        viewpager.addOnPageChangeListener(onPageChangeListener = new ViewPager.SimpleOnPageChangeListener() {
             @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                if (tab == null) {
-                    return;
-                }
-                tab.setText(tabTitles.get(tab.getPosition(), ""));
-                if (isSelectedCheckItem && tab.getPosition() == 1) {
+            public void onPageSelected(int position) {
+                super.onPageSelected(position);
+                if (isSelectedCheckItem && position == 1) {
                     return;
                 }
                 SystemUtils.hideSoftKeyBoard(TaskDetailActivity.this);
@@ -291,6 +292,16 @@ public class TaskDetailActivity extends BaseActivity
                 taskTablayout.requestFocus();
                 taskTablayout.findFocus();
                 updateTabItemFragment();
+            }
+        });
+
+        taskTablayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                if (tab == null) {
+                    return;
+                }
+                tab.setText(tabTitles.get(tab.getPosition(), ""));
             }
 
             @Override
@@ -381,7 +392,7 @@ public class TaskDetailActivity extends BaseActivity
                 if (taskItemEntity == null) {
                     return;
                 }
-                if (isStrat) {
+                if (isStart) {
                     startTimeMethod();
                 } else {
                     stopTimeMethod();
@@ -556,7 +567,7 @@ public class TaskDetailActivity extends BaseActivity
                 TimeEntity.ItemEntity itemEntity = TimerManager.getInstance().getTimer();
                 if (taskItemEntity != null && itemEntity != null) {
                     if (TextUtils.equals(itemEntity.taskPkId, taskItemEntity.id)) {
-                        isStrat = true;
+                        isStart = true;
                         taskStartIamge.setImageResource(R.drawable.orange_side_dot_bg);
                         taskTiemingImage.setImageResource(R.mipmap.task_detail_timing);
                     }
@@ -567,7 +578,7 @@ public class TaskDetailActivity extends BaseActivity
                 if (taskItemEntity != null && updateEntity != null) {
                     timmingTaskId = updateEntity.taskPkId;
                     if (TextUtils.equals(updateEntity.taskPkId, taskItemEntity.id)) {
-                        isStrat = true;
+                        isStart = true;
                         taskStartIamge.setImageResource(R.drawable.orange_side_dot_bg);
                         taskTiemingImage.setImageResource(R.mipmap.task_detail_timing);
                         taskTime.setText(DateUtils.getTimingStr(event.timingSecond));
@@ -577,7 +588,7 @@ public class TaskDetailActivity extends BaseActivity
             case TimingEvent.TIMING_STOP:
                 if (taskItemEntity != null) {
                     if (TextUtils.equals(timmingTaskId, taskItemEntity.id)) {
-                        isStrat = false;
+                        isStart = false;
                         taskStartIamge.setImageResource(R.mipmap.time_start_orange);
                         taskTiemingImage.setImageResource(R.mipmap.ic_task_time);
                         long mis = event.timingSecond * 1000;
@@ -998,11 +1009,11 @@ public class TaskDetailActivity extends BaseActivity
             taskStartIamge.setVisibility(taskItemEntity.valid ? View.VISIBLE : View.GONE);
             commentEditTv.setVisibility(taskItemEntity.valid ? View.VISIBLE : View.GONE);
             if (isSelectedCheckItem) {
-                if (taskTablayout.getTabAt(1) != null) {
-                    taskTablayout.getTabAt(1).select();
-                }
+                viewpager.removeOnPageChangeListener(onPageChangeListener);
                 viewpager.setCurrentItem(1);
                 updateCheckItemFragment();
+                isSelectedCheckItem = false;
+                viewpager.addOnPageChangeListener(onPageChangeListener);
             }
         }
     }
