@@ -434,6 +434,8 @@ public class TabTaskFragment extends BaseFragment implements OnFragmentCallBackL
                     } else {
                         TaskCreateActivity.launch(getContext(), null, 0);
                     }
+                } else {
+                    TaskCreateActivity.launch(getContext(), null, 0);
                 }
                 break;
             case R.id.titleAction2:
