@@ -171,7 +171,6 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
         customerXRefreshViewHeader.setHeaderRefreshTitle("加载后一周");
         refreshLayout.setCustomHeaderView(customerXRefreshViewHeader);
 
-        //refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_timing, "暂无计时");
         timeAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override
             protected void updateUI() {
