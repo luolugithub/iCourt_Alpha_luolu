@@ -212,7 +212,11 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
                             SFileConfig.FILE_FROM_REPO,
                             true);
                 } else {
-
+                    FileDownloadActivity.launch(
+                            getContext(),
+                            iSeaFile,
+                            SFileConfig.FILE_FROM_REPO,
+                            true);
                 }
                 break;
             default:
