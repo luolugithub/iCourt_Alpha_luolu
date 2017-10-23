@@ -242,4 +242,9 @@ public class Const {
     public @interface PROJECT_INFO_LIST_TYPE {//查看具体事物内容（成员、法官、书记员...）
 
     }
+
+    /**
+     * 显示计时蒙层引导的版本（注意：上线前需确认）
+     */
+    public static final String GUIDE_SHOW_TIME_VERSION_NAME = "v2.2.1";
 }

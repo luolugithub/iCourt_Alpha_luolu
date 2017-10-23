@@ -73,6 +73,7 @@ import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SFileTokenUtils;
 import com.icourt.alpha.utils.SimpleViewGestureListener;
 import com.icourt.alpha.utils.SpUtils;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.view.CheckableLayout;
@@ -1405,6 +1406,9 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
     private Guide guide;
 
     private void showGuideView() {
+        if (StringUtils.equalsIgnoreCase(BuildConfig.VERSION_NAME, Const.GUIDE_SHOW_TIME_VERSION_NAME, false)) {
+
+        }
         final GuideBuilder builder = new GuideBuilder();
         builder.setTargetViewId(R.id.tab_mine)
                 .setAlpha(150)
