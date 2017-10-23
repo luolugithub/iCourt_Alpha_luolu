@@ -181,19 +181,19 @@ public class FinishedTaskFragment extends BaseFragment implements BaseRecyclerAd
                     -1,
                     0),
                     new SimpleCallBack<TaskEntity>() {
-                @Override
-                public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
-                    if (response.body().result != null) {
-                        taskSelectAdapter.bindData(isRefresh, response.body().result.items);
-                        setSelectedTask();
-                    }
-                }
+                        @Override
+                        public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
+                            if (response.body().result != null) {
+                                taskSelectAdapter.bindData(isRefresh, response.body().result.items);
+                                setSelectedTask();
+                            }
+                        }
 
-                @Override
-                public void onFailure(Call<ResEntity<TaskEntity>> call, Throwable t) {
-                    super.onFailure(call, t);
-                }
-            });
+                        @Override
+                        public void onFailure(Call<ResEntity<TaskEntity>> call, Throwable t) {
+                            super.onFailure(call, t);
+                        }
+                    });
         }
     }
 
@@ -299,6 +299,9 @@ public class FinishedTaskFragment extends BaseFragment implements BaseRecyclerAd
     }
 
     public void clearSelected() {
+        if (taskSelectAdapter == null) {
+            return;
+        }
         taskSelectAdapter.clearSelected();
     }
 }
