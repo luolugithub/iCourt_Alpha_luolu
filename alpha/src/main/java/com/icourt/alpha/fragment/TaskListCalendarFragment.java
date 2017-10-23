@@ -16,7 +16,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.SearchTaskActivity;
+import com.icourt.alpha.activity.TaskSearchActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseRefreshFragmentAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.constants.TaskConfig;
@@ -588,7 +588,7 @@ public class TaskListCalendarFragment extends BaseFragment {
                 mcvCalendar.setTodayToView();
                 break;
             case R.id.header_comm_search_ll:
-                SearchTaskActivity.launchTask(getContext(),
+                TaskSearchActivity.launchTask(getContext(),
                         getLoginUserId(),
                         0);
                 break;

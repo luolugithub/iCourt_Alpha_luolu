@@ -289,7 +289,7 @@
             android:name=".activity.SearchProjectActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".activity.SearchTaskActivity"
+            android:name=".activity.TaskSearchActivity"
             android:screenOrientation="portrait" />
         <activity
             android:name=".activity.AlphaSpeciaSetActivity"

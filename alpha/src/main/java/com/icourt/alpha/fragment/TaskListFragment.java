@@ -27,7 +27,7 @@ import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.MainActivity;
-import com.icourt.alpha.activity.SearchTaskActivity;
+import com.icourt.alpha.activity.TaskSearchActivity;
 import com.icourt.alpha.activity.TaskDetailActivity;
 import com.icourt.alpha.activity.TimerDetailActivity;
 import com.icourt.alpha.activity.TimerTimingActivity;
@@ -419,7 +419,7 @@ public class TaskListFragment extends BaseTaskFragment implements
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.rl_comm_search:
-                SearchTaskActivity.launchTask(getContext(), getLoginUserId(), type);
+                TaskSearchActivity.launchTask(getContext(), getLoginUserId(), type);
                 break;
             case R.id.new_task_cardview:
                 if (tabTaskFragment != null) {

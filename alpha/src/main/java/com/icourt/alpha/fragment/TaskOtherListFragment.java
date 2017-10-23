@@ -13,7 +13,7 @@ import android.view.ViewGroup;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.SearchTaskActivity;
+import com.icourt.alpha.activity.TaskSearchActivity;
 import com.icourt.alpha.activity.TaskDetailActivity;
 import com.icourt.alpha.activity.TimerDetailActivity;
 import com.icourt.alpha.activity.TimerTimingActivity;
@@ -235,7 +235,7 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.rl_comm_search:
-                SearchTaskActivity.launchTask(getContext(), getAssignTos(), 0);
+                TaskSearchActivity.launchTask(getContext(), getAssignTos(), 0);
                 break;
             default:
                 super.onClick(v);
