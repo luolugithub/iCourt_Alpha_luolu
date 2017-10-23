@@ -13,6 +13,7 @@ public class ItemsEntity implements ItemsEntityImp {
     public int itemType;
     public int itemIconRes;
     public String itemIcon;
+    public boolean isChecked;
 
     public ItemsEntity(CharSequence itemTitle, int itemIconRes) {
         this.itemTitle = itemTitle;
@@ -43,5 +44,10 @@ public class ItemsEntity implements ItemsEntityImp {
     @Override
     public String getItemIcon() {
         return itemIcon;
+    }
+
+    @Override
+    public boolean isChecked() {
+        return isChecked;
     }
 }

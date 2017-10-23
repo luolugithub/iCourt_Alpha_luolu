@@ -93,11 +93,11 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:clickable="false"
-            android:drawableTop="@drawable/tab_find"
+            android:drawableTop="@drawable/tab_more"
             android:enabled="false"
             android:focusableInTouchMode="false"
             android:gravity="center"
-            android:text="探索"
+            android:text="更多"
             android:textAlignment="center" />
 
         <ImageView
@@ -109,7 +109,8 @@
             android:clickable="false"
             android:enabled="false"
             android:focusableInTouchMode="false"
-            android:src="@mipmap/ic_tab_menu_arrow" />
+            android:src="@mipmap/ic_tab_menu_arrow"
+            android:visibility="gone" />
     </com.icourt.alpha.view.CheckableLayout>
 
     <com.icourt.alpha.view.CheckableLayout
@@ -141,7 +142,8 @@
             android:clickable="false"
             android:enabled="false"
             android:focusableInTouchMode="false"
-            android:src="@mipmap/ic_tab_menu_arrow" />
+            android:src="@mipmap/ic_tab_menu_arrow"
+            android:visibility="gone" />
 
     </com.icourt.alpha.view.CheckableLayout>
 
