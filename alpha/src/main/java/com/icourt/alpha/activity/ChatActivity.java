@@ -28,7 +28,6 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.andview.refreshview.XRefreshView;
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
@@ -41,8 +40,8 @@ import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.db.convertor.ListConvertor;
 import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
-import com.icourt.alpha.entity.bean.ConstantMobileEntity;
 import com.icourt.alpha.entity.bean.ChatFileInfoEntity;
+import com.icourt.alpha.entity.bean.ConstantMobileEntity;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.event.GroupActionEvent;
