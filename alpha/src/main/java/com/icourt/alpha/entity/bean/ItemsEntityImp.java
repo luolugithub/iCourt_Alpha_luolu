@@ -39,4 +39,11 @@ public interface ItemsEntityImp {
      * @return
      */
     String getItemIcon();
+
+    /**
+     * 是否被选中
+     *
+     * @return
+     */
+    boolean isChecked();
 }

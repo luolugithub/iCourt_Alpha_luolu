@@ -103,7 +103,6 @@ import java.util.concurrent.TimeUnit;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import butterknife.OnLongClick;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
@@ -160,15 +159,25 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
 
     private final List<ItemsEntity> tabData = Arrays.asList(
             new ItemsEntity("项目", TYPE_FRAGMENT_PROJECT, R.drawable.tab_project),
-            new ItemsEntity("我的", TYPE_FRAGMENT_MINE, R.drawable.tab_mine),
+            new ItemsEntity("文档", TYPE_FRAGMENT_DOCUMENTS, R.drawable.tab_document),
             new ItemsEntity("客户", TYPE_FRAGMENT_CUSTOMER, R.drawable.tab_customer),
-            new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search),
-            new ItemsEntity("文档", TYPE_FRAGMENT_DOCUMENTS, R.drawable.tab_document));
+            new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search));
 
     /**
      * 可改变的tab
      */
     private final List<ItemsEntity> tabChangeableData = new ArrayList<>();
+
+    /**
+     * 更多按钮选中的type，默认没选中
+     */
+    private int moreSelectedType = -1;
+
+    MyHandler mHandler = new MyHandler();
+    ContactDbService contactDbService;
+    AlphaUserInfo loginUserInfo;
+
+    public Badge tabNewsBadge;
 
     @BindView(R.id.main_fl_content)
     FrameLayout mainFlContent;
@@ -195,14 +204,18 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
     RotateAnimation timingAnim;
 
     public static void launch(Context context) {
-        if (context == null) return;
+        if (context == null) {
+            return;
+        }
         Intent intent = new Intent(context, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         context.startActivity(intent);
     }
 
     public static void launchFromLogin(Context context) {
-        if (context == null) return;
+        if (context == null) {
+            return;
+        }
         Intent intent = new Intent(context, MainActivity.class);
         intent.putExtra(KEY_FROM_LOGIN, true);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -210,7 +223,9 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
     }
 
     public static void launchByNotifaction(Context context, IMMessage imMessage) {
-        if (context == null) return;
+        if (context == null) {
+            return;
+        }
         Intent intent = new Intent(context, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.putExtra(NimIntent.EXTRA_NOTIFY_CONTENT, imMessage);
@@ -358,10 +373,6 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                 });
     }
 
-    MyHandler mHandler = new MyHandler();
-    ContactDbService contactDbService;
-    AlphaUserInfo loginUserInfo;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -395,7 +406,9 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                 }
             } else {
                 IMMessageCustomBody customBody = GlobalMessageObserver.getIMBody(imMessage);
-                if (customBody == null) return;
+                if (customBody == null) {
+                    return;
+                }
                 switch (customBody.ope) {
                     case Const.CHAT_TYPE_P2P:
                         ChatActivity.launchP2P(this, customBody.from, customBody.name, 0, totalUnReadCount, true);
@@ -403,8 +416,9 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                     case Const.CHAT_TYPE_TEAM:
                         Team team = NIMClient.getService(TeamService.class)
                                 .queryTeamBlock(customBody.imMessage.getSessionId());
-                        if (team != null)
+                        if (team != null) {
                             ChatActivity.launchTEAM(this, customBody.imMessage.getSessionId(), team.getName(), 0, totalUnReadCount, true);
+                        }
                         break;
                     default:
                         break;
@@ -416,12 +430,10 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
     @Override
     protected void initView() {
         super.initView();
-        initChangedTab();
         EventBus.getDefault().register(this);
         loginUserInfo = getLoginUserInfo();
         contactDbService = new ContactDbService(loginUserInfo == null ? "" : loginUserInfo.getUserId());
         new SimpleViewGestureListener(tabNews, onSimpleViewGestureListener);
-        initChangedTab();
         checkedTab(R.id.tab_news, TYPE_FRAGMENT_NEWS);
         mHandler.addCheckSdSpace();
         if (BuildConfig.BUILD_TYPE_INT > 0) {
@@ -438,26 +450,23 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
         } else if (hasProjectPermission()) {
             tabChangeableData.addAll(Arrays.asList(
                     new ItemsEntity("项目", TYPE_FRAGMENT_PROJECT, R.drawable.tab_project),
-                    new ItemsEntity("我的", TYPE_FRAGMENT_MINE, R.drawable.tab_mine),
-                    new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search),
-                    new ItemsEntity("文档", TYPE_FRAGMENT_DOCUMENTS, R.drawable.tab_document))
+                    new ItemsEntity("文档", TYPE_FRAGMENT_DOCUMENTS, R.drawable.tab_document),
+                    new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search))
             );
         } else if (hasCustomerPermission()) {
             tabChangeableData.addAll(Arrays.asList(
+                    new ItemsEntity("文档", TYPE_FRAGMENT_DOCUMENTS, R.drawable.tab_document),
                     new ItemsEntity("客户", TYPE_FRAGMENT_CUSTOMER, R.drawable.tab_customer),
-                    new ItemsEntity("我的", TYPE_FRAGMENT_MINE, R.drawable.tab_mine),
-                    new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search),
-                    new ItemsEntity("文档", TYPE_FRAGMENT_DOCUMENTS, R.drawable.tab_document))
+                    new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search))
             );
         } else {
             tabChangeableData.addAll(Arrays.asList(
-                    new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search),
-                    new ItemsEntity("我的", TYPE_FRAGMENT_MINE, R.drawable.tab_mine),
-                    new ItemsEntity("文档", TYPE_FRAGMENT_DOCUMENTS, R.drawable.tab_document))
+                    new ItemsEntity("文档", TYPE_FRAGMENT_DOCUMENTS, R.drawable.tab_document),
+                    new ItemsEntity("搜索", TYPE_FRAGMENT_SEARCH, R.drawable.tab_search)
+                    )
             );
         }
     }
-
 
     private boolean hasProjectPermission() {
         return SpUtils.getInstance().getBooleanData(KEY_PROJECT_PERMISSION, false);
@@ -505,25 +514,6 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
     }
 
     /**
-     * 保存切换的tab
-     *
-     * @param id
-     * @param type
-     */
-    private void saveChangedTab(@IdRes int id, @ChildFragmentType int type) {
-        switch (id) {
-            case R.id.tab_find:
-                SpUtils.getInstance().putData(KEY_FIND_FRAGMENT, type);
-                break;
-            case R.id.tab_mine:
-                SpUtils.getInstance().putData(KEY_MINE_FRAGMENT, type);
-                break;
-            default:
-                break;
-        }
-    }
-
-    /**
      * 类型转化
      *
      * @param type
@@ -554,94 +544,23 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
         return TYPE_FRAGMENT_PROJECT;
     }
 
-
-    /**
-     * 获取页面对应的tab
-     *
-     * @return
-     */
-    private int getFragmentType(@IdRes int id) {
-        switch (id) {
-            case R.id.tab_find:
-                return convert2ChildFragmentType(SpUtils.getInstance().getIntData(KEY_FIND_FRAGMENT, TYPE_FRAGMENT_PROJECT));
-            case R.id.tab_mine:
-                return convert2ChildFragmentType(SpUtils.getInstance().getIntData(KEY_MINE_FRAGMENT, TYPE_FRAGMENT_MINE));
-            default:
-                break;
-        }
-        return TYPE_FRAGMENT_PROJECT;
-    }
-
-    /**
-     * 初始化可改变的tab
-     */
-    private void initChangedTab() {
-        setTabInfo(R.id.tab_find, getFragmentType(R.id.tab_find));
-        setTabInfo(R.id.tab_mine, getFragmentType(R.id.tab_mine));
-    }
-
-    /**
-     * 设置tab对应的图标
-     *
-     * @param type
-     */
-    private void setTabInfo(@IdRes int tabId, @ChildFragmentType int type) {
-        ItemsEntity itemsEntity = null;
-        for (ItemsEntity item : tabData) {
-            if (item != null & item.itemType == type) {
-                itemsEntity = item;
-                break;
-            }
-        }
-        if (itemsEntity == null) {
-            return;
-        }
-        switch (tabId) {
-            case R.id.tab_find:
-                tabFindCtv.setText(itemsEntity.getItemTitle());
-                tabFindCtv.setCompoundDrawablesWithIntrinsicBounds(0, itemsEntity.getItemIconRes(), 0, 0);
-                break;
-            case R.id.tab_mine:
-                tabMineCtv.setText(itemsEntity.getItemTitle());
-                tabMineCtv.setCompoundDrawablesWithIntrinsicBounds(0, itemsEntity.getItemIconRes(), 0, 0);
-                break;
-            default:
-                break;
-        }
-    }
-
-    @OnLongClick({
-            R.id.tab_find,
-            R.id.tab_mine})
-    public boolean onLongClick(View v) {
-        switch (v.getId()) {
-            case R.id.tab_find:
-            case R.id.tab_mine:
-                showTabMenu(v);
-                break;
-            default:
-                break;
-        }
-        return true;
-    }
-
     /**
      * 获取展示的动态菜单数据
      *
      * @return
      */
     private List<ItemsEntity> getShowTabMenuData() {
-        int mineFragmentType = getFragmentType(R.id.tab_mine);
-        int findFragmentType = getFragmentType(R.id.tab_find);
         List<ItemsEntity> menus = new ArrayList<>();
         for (ItemsEntity itemsEntity : tabChangeableData) {
             if (itemsEntity == null) {
                 continue;
             }
-            if (itemsEntity.itemType != mineFragmentType
-                    && itemsEntity.itemType != findFragmentType) {
-                menus.add(itemsEntity);
+            if (itemsEntity.itemType == moreSelectedType) {
+                itemsEntity.isChecked = true;
+            } else {
+                itemsEntity.isChecked = false;
             }
+            menus.add(itemsEntity);
         }
         return menus;
     }
@@ -652,9 +571,13 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
      * @param target
      */
     private void showTabMenu(final View target) {
-        if (target == null) return;
+        if (target == null) {
+            return;
+        }
         List<ItemsEntity> showTabMenuData = getShowTabMenuData();
-        if (showTabMenuData.isEmpty()) return;
+        if (showTabMenuData.isEmpty()) {
+            return;
+        }
         new ListActionItemPop(getContext(), showTabMenuData)
                 .withOnItemClick(new BaseListActionItemPop.OnItemClickListener() {
                     @Override
@@ -664,15 +587,13 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                         if (item instanceof ItemsEntityImp) {
                             ItemsEntityImp itemsEntityImp = (ItemsEntityImp) item;
                             int type = convert2ChildFragmentType(itemsEntityImp.getItemType());
-                            //保存
-                            saveChangedTab(target.getId(), type);
-                            //设置tab信息
-                            setTabInfo(target.getId(), type);
                             //选中该tab
                             checkedTab(target.getId(), type);
+                            //更多按钮选中的tab
+                            moreSelectedType = itemsEntityImp.getItemType();
                         }
                     }
-                }).showUpCenter(target, DensityUtil.dip2px(getContext(), 5));
+                }).showUpCenter(target, DensityUtil.dip2px(getContext(), 3));
     }
 
     /**
@@ -713,7 +634,11 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
         checkedFragment(type);
     }
 
-
+    /**
+     * 切换fragment
+     *
+     * @param type
+     */
     public void checkedFragment(@ChildFragmentType int type) {
         currentFragment = addOrShowFragment(getTabFragment(type), currentFragment, R.id.main_fl_content);
         currentFragment.setUserVisibleHint(true);
@@ -745,19 +670,25 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.tab_news:
+                moreSelectedType = -1;
                 MobclickAgent.onEvent(this, UMMobClickAgent.main_chat_tab_click_id);
                 checkedTab(R.id.tab_news, TYPE_FRAGMENT_NEWS);
                 break;
             case R.id.tab_task:
+                moreSelectedType = -1;
                 MobclickAgent.onEvent(this, UMMobClickAgent.main_task_tab_click_id);
                 checkedTab(R.id.tab_task, TYPE_FRAGMENT_TASK);
                 break;
             case R.id.tab_find:
-                checkedTab(R.id.tab_find, getFragmentType(R.id.tab_find));
+                if (!tabFind.isChecked()) {
+                    moreSelectedType = -1;
+                }
                 mobClickAgent();
+                showTabMenu(v);
                 break;
             case R.id.tab_mine:
-                checkedTab(R.id.tab_mine, getFragmentType(R.id.tab_mine));
+                moreSelectedType = -1;
+                checkedTab(R.id.tab_mine, TYPE_FRAGMENT_MINE);
                 mobClickAgent();
                 break;
             case R.id.tab_timing:
@@ -787,7 +718,6 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                 break;
         }
     }
-
 
     /**
      * 获取对应fragment
@@ -846,7 +776,9 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
      */
     protected final void refreshToken() {
         final AlphaUserInfo loginUserInfo = getLoginUserInfo();
-        if (loginUserInfo == null) return;
+        if (loginUserInfo == null) {
+            return;
+        }
         callEnqueue(
                 getApi().refreshToken(loginUserInfo.getRefreshToken()),
                 new SimpleCallBack<AlphaUserInfo>() {
@@ -870,7 +802,6 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                     }
                 });
     }
-
 
     /**
      * 享聊未读消息
@@ -981,9 +912,6 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
         }
     }
 
-
-    public Badge tabNewsBadge;
-
     private Badge getTabNewsBadge() {
         if (tabNewsBadge == null) {
             tabNewsBadge = new QBadgeView(getContext())
@@ -1039,8 +967,9 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onOverTimingRemindEvent(OverTimingRemindEvent event) {
-        if (event == null) return;
-
+        if (event == null) {
+            return;
+        }
         switch (event.action) {
             case OverTimingRemindEvent.ACTION_TIMING_REMIND_NO_REMIND:
                 dismissOverTimingRemindDialogFragment(true);
@@ -1061,7 +990,9 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onTimerEvent(TimingEvent event) {
-        if (event == null) return;
+        if (event == null) {
+            return;
+        }
         switch (event.action) {
             case TimingEvent.TIMING_ADD:
                 tabTimingIcon.setImageResource(R.mipmap.ic_tab_timing);
@@ -1145,24 +1076,6 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
     }
 
     /**
-     * 判断>=2的奇数小时整点
-     *
-     * @param times 单位Second
-     * @return
-     */
-    private boolean judgeEvenTime(long times) {
-        long hour = TimeUnit.SECONDS.toHours(times);
-        if ((hour >= 2) && (times % 3600 == 0) && (hour % 2 == 1)) {
-            //如果可以弹出泡泡，并且没有点击不再提醒。
-            if (TimerManager.getInstance().isOverTimingRemind() && TimerManager.getInstance().isBubbleRemind()) {
-                return true;
-            }
-            return false;
-        }
-        return false;
-    }
-
-    /**
      * 获取权限
      */
     private void getPermission() {
@@ -1174,40 +1087,15 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         if (response.body().result != null) {
                             setCustomerPermission(response.body().result.booleanValue());
-                            int findFragmentType = getFragmentType(R.id.tab_find);
-                            int mineFragmentType = getFragmentType(R.id.tab_mine);
-                            if (findFragmentType == TYPE_FRAGMENT_CUSTOMER
+                            //1.当前tab是更多
+                            //2.判断有没有客户权限
+                            //3.没有权限，就将当前tab定位到文档
+                            if (moreSelectedType == TYPE_FRAGMENT_CUSTOMER
                                     && !response.body().result.booleanValue()) {
                                 //没有权限
                                 //设置tab信息
-                                if (mineFragmentType != TYPE_FRAGMENT_TIMING) {
-                                    saveChangedTab(R.id.tab_find, TYPE_FRAGMENT_TIMING);
-                                    setTabInfo(R.id.tab_find, TYPE_FRAGMENT_TIMING);
-                                } else if (mineFragmentType != TYPE_FRAGMENT_SEARCH) {
-                                    saveChangedTab(R.id.tab_find, TYPE_FRAGMENT_SEARCH);
-                                    setTabInfo(R.id.tab_find, TYPE_FRAGMENT_SEARCH);
-                                } else {
-                                    saveChangedTab(R.id.tab_find, TYPE_FRAGMENT_MINE);
-                                    setTabInfo(R.id.tab_find, TYPE_FRAGMENT_MINE);
-                                }
-                                onClick(tabFind);
-                            }
-
-                            if (mineFragmentType == TYPE_FRAGMENT_CUSTOMER
-                                    && !response.body().result.booleanValue()) {
-                                //没有权限
-                                //设置tab信息
-                                if (findFragmentType != TYPE_FRAGMENT_MINE) {
-                                    saveChangedTab(R.id.tab_mine, TYPE_FRAGMENT_MINE);
-                                    setTabInfo(R.id.tab_mine, TYPE_FRAGMENT_MINE);
-                                } else if (findFragmentType != TYPE_FRAGMENT_TIMING) {
-                                    saveChangedTab(R.id.tab_mine, TYPE_FRAGMENT_TIMING);
-                                    setTabInfo(R.id.tab_mine, TYPE_FRAGMENT_TIMING);
-                                } else {
-                                    saveChangedTab(R.id.tab_mine, TYPE_FRAGMENT_SEARCH);
-                                    setTabInfo(R.id.tab_mine, TYPE_FRAGMENT_SEARCH);
-                                }
-                                onClick(tabMine);
+                                moreSelectedType = TYPE_FRAGMENT_DOCUMENTS;
+                                checkedFragment(TYPE_FRAGMENT_DOCUMENTS);
                             }
                             initTabChangeableData();
                         }
@@ -1229,42 +1117,15 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                     public void onSuccess(Call<ResEntity<Boolean>> call, Response<ResEntity<Boolean>> response) {
                         if (response.body().result != null) {
                             setProjectPermission(response.body().result.booleanValue());
-                            int findFragmentType = getFragmentType(R.id.tab_find);
-                            int mineFragmentType = getFragmentType(R.id.tab_mine);
-                            if (findFragmentType == TYPE_FRAGMENT_PROJECT
+                            //1.当前tab是更多
+                            //2.判断有没有项目权限
+                            //3.没有权限，就将当前tab定位到文档
+                            if (moreSelectedType == TYPE_FRAGMENT_PROJECT
                                     && !response.body().result.booleanValue()) {
                                 //没有权限
                                 //设置tab信息
-                                if (mineFragmentType != TYPE_FRAGMENT_TIMING) {
-                                    saveChangedTab(R.id.tab_find, TYPE_FRAGMENT_TIMING);
-                                    setTabInfo(R.id.tab_find, TYPE_FRAGMENT_TIMING);
-                                } else if (mineFragmentType != TYPE_FRAGMENT_SEARCH) {
-                                    saveChangedTab(R.id.tab_find, TYPE_FRAGMENT_SEARCH);
-                                    setTabInfo(R.id.tab_find, TYPE_FRAGMENT_SEARCH);
-                                } else {
-                                    saveChangedTab(R.id.tab_find, TYPE_FRAGMENT_MINE);
-                                    setTabInfo(R.id.tab_find, TYPE_FRAGMENT_MINE);
-                                }
-
-                                onClick(tabFind);
-                            }
-
-                            if (mineFragmentType == TYPE_FRAGMENT_PROJECT
-                                    && !response.body().result.booleanValue()) {
-                                //没有权限
-                                //设置tab信息
-                                if (findFragmentType != TYPE_FRAGMENT_MINE) {
-                                    saveChangedTab(R.id.tab_mine, TYPE_FRAGMENT_MINE);
-                                    setTabInfo(R.id.tab_mine, TYPE_FRAGMENT_MINE);
-                                } else if (findFragmentType != TYPE_FRAGMENT_TIMING) {
-                                    saveChangedTab(R.id.tab_mine, TYPE_FRAGMENT_TIMING);
-                                    setTabInfo(R.id.tab_mine, TYPE_FRAGMENT_TIMING);
-                                } else {
-                                    saveChangedTab(R.id.tab_mine, TYPE_FRAGMENT_SEARCH);
-                                    setTabInfo(R.id.tab_mine, TYPE_FRAGMENT_SEARCH);
-                                }
-
-                                onClick(tabMine);
+                                moreSelectedType = TYPE_FRAGMENT_DOCUMENTS;
+                                checkedFragment(TYPE_FRAGMENT_DOCUMENTS);
                             }
                             initTabChangeableData();
                         }
@@ -1296,9 +1157,13 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
      * 显示 计时的覆层
      */
     private void showTimingDialogFragment() {
-        if (isDestroyOrFinishing()) return;
+        if (isDestroyOrFinishing()) {
+            return;
+        }
         TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
-        if (timer == null) return;
+        if (timer == null) {
+            return;
+        }
         String tag = TimingNoticeDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
