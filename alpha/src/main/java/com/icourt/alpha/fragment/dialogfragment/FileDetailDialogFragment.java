@@ -236,6 +236,7 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
             } catch (Exception e) {
             }
             if (fileCreateInfoTv == null) return;
+            fileVersionTv.setVisibility(fileVersionEntities.isEmpty() ? View.GONE : View.VISIBLE);
             fileCreateInfoTv.setText("");
             fileUpdateInfoTv.setText("");
             if (fileVersionEntities.isEmpty()) return;
