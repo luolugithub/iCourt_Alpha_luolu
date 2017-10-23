@@ -123,8 +123,8 @@ public class CustomerPersonDetailActivity extends BaseActivity {
         contact_id = getIntent().getStringExtra("contact_id");
         contact_name = getIntent().getStringExtra("contact_name");
         isShowRightView = getIntent().getBooleanExtra("isShowRightView", false);
-        titleAction.setVisibility(isShowRightView ? View.VISIBLE : View.INVISIBLE);
-        titleAction2.setVisibility(isShowRightView ? View.VISIBLE : View.INVISIBLE);
+        titleAction.setVisibility(isShowRightView ? View.VISIBLE : View.GONE);
+        titleAction2.setVisibility(isShowRightView ? View.VISIBLE : View.GONE);
         if (!TextUtils.isEmpty(contact_name)) {
             setTitle(contact_name);
         }

@@ -141,7 +141,7 @@ public class ProjectFileFragment extends SeaFileBaseFragment
         headerFooterAdapter.addFooter(footerView);
         footerView.setText("");
 
-        recyclerView.getRecyclerView().setAdapter(headerFooterAdapter);
+        recyclerView.setAdapter(headerFooterAdapter);
         folderAdapter.setOnItemClickListener(this);
         folderAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override

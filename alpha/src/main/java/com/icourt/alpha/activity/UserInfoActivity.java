@@ -108,10 +108,11 @@ public class UserInfoActivity extends BaseActivity {
             R.id.email_layout})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
+        if (alphaUserInfo == null) {
+            return;
+        }
         switch (v.getId()) {
             case R.id.name_layout:
-                //TODO 空指针危险
                 UpdateUserInfoActivity.launch(this, UPDATE_NAME_TYPE, alphaUserInfo.getName());
                 break;
             case R.id.phone_layout:
@@ -119,6 +120,9 @@ public class UserInfoActivity extends BaseActivity {
                 break;
             case R.id.email_layout:
                 UpdateUserInfoActivity.launch(this, UPDATE_EMAIL_TYPE, alphaUserInfo.getMail());
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }
