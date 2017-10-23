@@ -59,6 +59,8 @@ import java.util.Set;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import cn.finalteam.galleryfinal.widget.zoonview.PhotoView;
+import cn.finalteam.galleryfinal.widget.zoonview.PhotoViewAttacher;
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -568,11 +570,11 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
 
         @Override
         public void bindDataToItem(final ChatFileInfoEntity chatFileInfoEntity, ViewGroup container, View itemView, final int pos) {
-            final ImageView touchImageView = itemView.findViewById(R.id.imageView);
+            final PhotoView touchImageView = itemView.findViewById(R.id.imageView);
             setTransitionView(touchImageView, chatFileInfoEntity.getChatMiddlePic());
-            touchImageView.setOnClickListener(new View.OnClickListener() {
+            touchImageView.setOnViewTapListener(new PhotoViewAttacher.OnViewTapListener() {
                 @Override
-                public void onClick(View v) {
+                public void onViewTap(View view, float v, float v1) {
                     onBackPressed();
                 }
             });
