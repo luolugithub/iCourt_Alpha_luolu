@@ -182,10 +182,15 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
                     @Override
                     public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                         stopRefresh();
-                        if (response.body().result != null && recyclerView != null) {
-                            taskAdapter.setNewData(response.body().result.items);
+                        TaskEntity taskEntity = response.body().result;
+                        if (taskEntity != null) {
                             if (isRefresh) {//如果是下拉刷新情况，才判断要不要显示空页面
+                                taskAdapter.setNewData(taskEntity.items);
                                 enableEmptyView(taskAdapter.getData());
+                            } else {
+                                if (taskEntity.items != null) {
+                                    taskAdapter.addData(taskEntity.items);
+                                }
                             }
                             //第一次进入 隐藏搜索框
                             if (isFirstTimeIntoPage && taskAdapter.getData().size() > 0) {
@@ -193,7 +198,7 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
                                 isFirstTimeIntoPage = false;
                             }
                             pageIndex += 1;
-                            enableLoadMore(response.body().result.items);
+                            enableLoadMore(taskEntity.items);
                         }
                     }
 
