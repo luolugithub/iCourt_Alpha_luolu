@@ -7,13 +7,11 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.andview.refreshview.XRefreshView;
 import com.gjiazhe.wavesidebar.WaveSideBar;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.CustomerAdapter;
@@ -30,9 +28,12 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.IndexUtils;
-import com.icourt.alpha.widget.comparators.PinyinComparator;
 import com.icourt.alpha.view.recyclerviewDivider.SuspensionDecoration;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.widget.comparators.PinyinComparator;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -64,9 +65,9 @@ public class SelectLiaisonActivity extends BaseActivity implements BaseRecyclerA
     @BindView(R.id.titleView)
     AppBarLayout titleView;
     @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
     @BindView(R.id.recyclerIndexBar)
     WaveSideBar recyclerIndexBar;
     CustomerAdapter customerAdapter;
@@ -122,7 +123,7 @@ public class SelectLiaisonActivity extends BaseActivity implements BaseRecyclerA
         recyclerView.setLayoutManager(linearLayoutManager);
 
         headerFooterAdapter = new HeaderFooterAdapter<>(customerAdapter = new CustomerAdapter());
-        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
+        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView.getRecyclerView());
         View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
         registerClick(rl_comm_search);
         headerFooterAdapter.addHeader(headerView);
@@ -152,31 +153,29 @@ public class SelectLiaisonActivity extends BaseActivity implements BaseRecyclerA
             }
         });
 
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setOnRefreshListener(new OnRefreshListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(RefreshLayout refreshlayout) {
                 getData(true);
             }
         });
         customerAdapter.setOnItemClickListener(this);
-        refreshLayout.setPullRefreshEnable(true);
-        refreshLayout.setAutoRefresh(true);
-
+        refreshLayout.autoRefresh();
         getLocalCustomers();
 
-//        refreshLayout.startRefresh();
     }
 
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.rl_comm_search:
                 if (TextUtils.equals(action, Const.SELECT_LIAISONS_TAG_ACTION))
                     CustomerSearchActivity.launchResult(this, v, CustomerSearchActivity.SEARCH_LIAISON_TYPE, CustomerSearchActivity.CUSTOMER_PERSON_TYPE, SEARCH_LIAISON_REQUEST_CODE);
                 else if (TextUtils.equals(action, Const.SELECT_ENTERPRISE_LIAISONS_TAG_ACTION))
                     CustomerSearchActivity.launchResult(this, v, CustomerSearchActivity.SEARCH_LIAISON_TYPE, CustomerSearchActivity.CUSTOMER_COMPANY_TYPE, SEARCH_LIAISON_REQUEST_CODE);
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }
@@ -268,8 +267,8 @@ public class SelectLiaisonActivity extends BaseActivity implements BaseRecyclerA
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 

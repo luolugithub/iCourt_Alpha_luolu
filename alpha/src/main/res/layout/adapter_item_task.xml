@@ -2,7 +2,7 @@
 <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="130dp"
+    android:layout_height="wrap_content"
     android:layout_marginLeft="@dimen/dp10"
     android:layout_marginRight="@dimen/dp10"
     android:background="?attr/selectableItemBackground"
@@ -16,13 +16,16 @@
         android:layout_height="match_parent"
         android:background="?attr/selectableItemBackground"
         android:orientation="horizontal"
-        android:padding="@dimen/dp10">
+        android:paddingBottom="8dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:paddingTop="10dp">
 
         <CheckedTextView
             android:id="@+id/task_item_checkbox"
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:layout_marginTop="5dp"
+            android:layout_marginTop="3dp"
             android:background="@drawable/sl_checkbox"
             android:button="@null" />
 
@@ -44,15 +47,15 @@
                     android:layout_weight="1"
                     android:ellipsize="end"
                     android:maxLines="1"
-                    android:paddingTop="@dimen/dp5"
+                    android:paddingTop="3dp"
                     android:textColor="@color/alpha_font_color_black"
-                    android:textSize="@dimen/alpha_font_size_title" />
+                    android:textSize="17sp" />
 
                 <ImageView
                     android:id="@+id/task_item_start_timming"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:padding="@dimen/dp5"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:padding="3dp"
                     android:src="@mipmap/icon_start_20" />
             </LinearLayout>
 
@@ -60,7 +63,7 @@
                 android:id="@+id/task_project_belong_tv"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
+                android:layout_marginTop="3dp"
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:textColor="@color/alpha_font_color_gray"
@@ -73,15 +76,16 @@
                 android:background="@color/alpha_divider_color" />
 
             <LinearLayout
+                android:id="@+id/item_bottom_parent_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="6dp"
                 android:clipChildren="false"
                 android:gravity="center_vertical"
-                android:minHeight="30dp"
                 android:orientation="horizontal">
 
                 <LinearLayout
+                    android:id="@+id/item_bottom_other_layout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content">
 

@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/white"
     android:orientation="vertical">
 
-    <com.icourt.alpha.view.xrefreshlayout.RefreshLayout
+    <com.scwang.smartrefresh.layout.SmartRefreshLayout
         android:id="@id/refreshLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        app:isHeightMatchParent="false">
 
-        <android.support.v7.widget.RecyclerView
+        <com.zhaol.refreshlayout.EmptyRecyclerView
             android:id="@id/recyclerView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@android:color/white" />
-    </com.icourt.alpha.view.xrefreshlayout.RefreshLayout>
+            android:layout_height="wrap_content" />
+
+    </com.scwang.smartrefresh.layout.SmartRefreshLayout>
 </LinearLayout>

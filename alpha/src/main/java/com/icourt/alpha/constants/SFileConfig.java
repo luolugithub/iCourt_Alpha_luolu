@@ -24,10 +24,17 @@ import static com.icourt.alpha.constants.Const.VIEW_TYPE_ITEM;
  */
 public class SFileConfig {
 
+    /**
+     * 0： "我的资料库",
+     * 1： "共享给我的",
+     * 2： "律所资料库",
+     * 3： "项目资料库"
+     */
     public static final int REPO_MINE = 0;
     public static final int REPO_SHARED_ME = 1;
     public static final int REPO_LAWFIRM = 2;
     public static final int REPO_PROJECT = 3;
+    public static final int REPO_UNKNOW = -1;//不明确类型的
     public static Map<String, Integer> resourcesDocumentIcon = new HashMap<String, Integer>() {
         {
             put("doc", R.mipmap.filetype_doc);
@@ -72,16 +79,11 @@ public class SFileConfig {
         }
     };
 
-    /**
-     * 0： "我的资料库",
-     * 1： "共享给我的",
-     * 2： "律所资料库",
-     * 3： "项目资料库"
-     */
     @IntDef({REPO_MINE,
             REPO_SHARED_ME,
             REPO_LAWFIRM,
-            REPO_PROJECT})
+            REPO_PROJECT,
+            REPO_UNKNOW})
     @Retention(RetentionPolicy.SOURCE)
     public @interface REPO_TYPE {
 
@@ -104,8 +106,10 @@ public class SFileConfig {
                 return REPO_LAWFIRM;
             case REPO_PROJECT:
                 return REPO_PROJECT;
+            case REPO_UNKNOW:
+                return REPO_UNKNOW;
             default:
-                return REPO_MINE;
+                return REPO_UNKNOW;
         }
     }
 
@@ -174,4 +178,39 @@ public class SFileConfig {
     public static Integer putSFileLayoutType(String repoId, @Const.AdapterViewType int layoutType) {
         return SFileLayoutTypeMap.put(repoId, layoutType);
     }
+
+    public static final int FILE_FROM_TASK = 1;         //任务下附件
+    public static final int FILE_FROM_PROJECT = 2;      //项目下载附件
+    public static final int FILE_FROM_REPO = 4;         //资料库下载附件
+    public static final int FILE_FROM_IM = 3;           //享聊下载附件
+
+
+    @IntDef({SFileConfig.FILE_FROM_TASK,
+            SFileConfig.FILE_FROM_PROJECT,
+            SFileConfig.FILE_FROM_IM,
+            SFileConfig.FILE_FROM_REPO})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface FILE_FROM {
+    }
+
+    @FILE_FROM
+    public static final int convert2FileFrom(int fileFrom) {
+        switch (fileFrom) {
+            case FILE_FROM_TASK:
+                return FILE_FROM_TASK;
+            case FILE_FROM_PROJECT:
+                return FILE_FROM_PROJECT;
+            case FILE_FROM_IM:
+                return FILE_FROM_IM;
+            case FILE_FROM_REPO:
+                return FILE_FROM_REPO;
+            default:
+                return FILE_FROM_REPO;
+        }
+    }
+
+    /**
+     * seafile 最大长度
+     */
+    public static final int SFILE_FILE_NAME_MAX_LENGTH = 80;
 }

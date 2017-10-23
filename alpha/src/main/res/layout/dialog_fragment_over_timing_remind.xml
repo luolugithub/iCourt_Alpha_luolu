@@ -2,7 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/over_timing_layout"
-    android:layout_width="260dp"
+    android:layout_width="280dp"
     android:layout_height="70dp"
     android:background="@drawable/timing_tips">
 
@@ -10,21 +10,23 @@
         android:id="@+id/over_timing_title_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="13dp"
         android:ellipsize="end"
         android:maxLines="1"
+        android:paddingBottom="5dp"
+        android:paddingTop="5dp"
+        android:text="@string/timer_over_timing_remind_text"
         android:textSize="12sp"
-        android:layout_gravity="center_vertical"
-        android:layout_marginBottom="7dp"
-        android:layout_marginLeft="19dp"
-        app:minTextSize="8sp"
-        android:text="@string/timer_over_timing_remind_text" />
+        app:minTextSize="8sp" />
 
     <ImageView
         android:id="@+id/over_timing_close_iv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="right|center_vertical"
-        android:layout_marginBottom="7dp"
-        android:layout_marginRight="18dp"
-        android:background="@mipmap/icon_close_14"/>
+        android:layout_gravity="right"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="14.5dp"
+        android:padding="5dp"
+        android:src="@mipmap/icon_close_14" />
 </FrameLayout>

@@ -12,6 +12,7 @@ import android.widget.EditText;
 import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.widget.filter.SFileNameFilter;
 
 import org.greenrobot.eventbus.EventBus;
@@ -62,7 +63,7 @@ public class RepoRenameActivity extends RepoCreateActivity {
 
     @Override
     protected boolean onCancelSubmitInput(final EditText et) {
-        if (TextUtils.isEmpty(et.getText())) {
+        if (StringUtils.isEmpty(et.getText())) {
             finish();
             return false;
         }

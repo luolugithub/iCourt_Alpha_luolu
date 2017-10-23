@@ -17,6 +17,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
@@ -115,6 +116,33 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
 
     AlphaUserInfo alphaUserInfo;
     private List<GroupContactBean> contactBeanList;//本地联系人
+    DataChangeAdapterObserver dataChangeAdapterObserver = new DataChangeAdapterObserver() {
+        @Override
+        protected void updateUI() {
+            //处理分割线的问题
+            timeShowArray.clear();
+            for (int i = 0; i < getItemCount(); i++) {
+                IMMessageCustomBody imMessageCustomBody = getItem(i);
+                if (imMessageCustomBody == null) continue;
+                if (timeShowArray.isEmpty()) {
+                    timeShowArray.add(imMessageCustomBody.send_time);
+                } else {
+                    if (!timeShowArray.contains(imMessageCustomBody.send_time)) {
+                        long maxTime = Collections.max(timeShowArray, longComparator).longValue();
+                        long targetTime = imMessageCustomBody.send_time;
+                        if (targetTime - maxTime >= TIME_DIVIDER) {
+                            timeShowArray.add(targetTime);
+                        } else {
+                            long minTime = Collections.min(timeShowArray, longComparator).longValue();
+                            if (minTime - targetTime >= TIME_DIVIDER) {
+                                timeShowArray.add(targetTime);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    };
 
     private Map<String, String> mobileEntityMap;//asset里phone.json所缓存的号码，key是号码，value是手机号。
 
@@ -172,6 +200,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
     public ChatAdapter(List<GroupContactBean> contactBeanList) {
         this.contactBeanList = contactBeanList;
         alphaUserInfo = LoginInfoUtils.getLoginUserInfo();
+        this.registerAdapterDataObserver(dataChangeAdapterObserver);
     }
 
     private String getLoginUid() {
@@ -310,9 +339,6 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
     @Override
     public void onBindHoder(ViewHolder holder, IMMessageCustomBody imMessageCustomBody, int position) {
         if (imMessageCustomBody == null) return;
-
-        //分割时间段
-        addTimeDividerArray(imMessageCustomBody, position);
 
         //加载头像
         setCommonUserIcon(holder, imMessageCustomBody, position);
@@ -484,31 +510,6 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
             chat_sys_tv.setText(imMessageCustomBody.ext.content);
         } else {
             chat_sys_tv.setText("系统消息ext null");
-        }
-    }
-
-
-    /**
-     * 处理时间分割线
-     *
-     * @param imMessageCustomBody
-     * @param position
-     */
-    private void addTimeDividerArray(IMMessageCustomBody imMessageCustomBody, int position) {
-        if (imMessageCustomBody == null) return;
-
-        //消息时间本身已经有序
-
-        if (timeShowArray.isEmpty()) {
-            timeShowArray.add(imMessageCustomBody.send_time);
-        } else {
-            if (!timeShowArray.contains(imMessageCustomBody.send_time)) {
-                if (imMessageCustomBody.send_time - Collections.max(timeShowArray, longComparator).longValue() >= TIME_DIVIDER) {
-                    timeShowArray.add(imMessageCustomBody.send_time);
-                } else if (Collections.min(timeShowArray, longComparator).longValue() - imMessageCustomBody.send_time >= TIME_DIVIDER) {
-                    timeShowArray.add(imMessageCustomBody.send_time);
-                }
-            }
         }
     }
 

@@ -225,9 +225,22 @@ public class StringUtils {
      * @return
      */
     public static boolean isMobileNO(String mobiles) {
-        String telRegex = "(010\\d{8})|(0[2-9]\\d{9})|(13\\d{9})|(14[57]\\d{8})|(15\\d{9})|(17\\d{9})|(18\\d{9})";
         if (TextUtils.isEmpty(mobiles)) return false;
-        else return mobiles.matches(telRegex);
+        String telRegex = "(010\\d{8})|(0[2-9]\\d{9})|(13\\d{9})|(14[57]\\d{8})|(15\\d{9})|(17\\d{9})|(18\\d{9})";
+        return mobiles.matches(telRegex);
+    }
+
+    /**
+     * 判断手机号
+     *
+     * @param mobiles
+     * @return
+     */
+    public static boolean isMobileNO86(String mobiles) {
+        if (TextUtils.isEmpty(mobiles)) return false;
+//        String telRegex = "((\\+86)+[ ]+((13\\d{9})|(14[57]\\d{8})|(15\\d{9})|(17\\d{9})|(18\\d{9})))|(13\\d{9})|(14[57]\\d{8})|(15\\d{9})|(17\\d{9})|(18\\d{9})";
+        String telRegex = "(((\\+86)+[ ])|(0086)|())+((13\\d{9})|(14[57]\\d{8})|(15\\d{9})|(17\\d{9})|(18\\d{9}))";
+        return mobiles.matches(telRegex);
     }
 
     /**
@@ -237,7 +250,8 @@ public class StringUtils {
      * @return
      */
     public static boolean isMailNO(String mail) {
-        String telRegex = "^([a-z0-9A-Z]+[-|\\.]?)+[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}$";
+//        String telRegex = "^([a-z0-9A-Z]+[-|\\.]?)+[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}$";
+        String telRegex = "^[A-Za-z0-9\\u4e00-\\u9fa5]+@[a-zA-Z0-9_-]+(\\\\.[a-zA-Z0-9_-]+)+$";
         if (TextUtils.isEmpty(mail)) return false;
         else return mail.matches(telRegex);
     }

@@ -4,7 +4,8 @@ import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
+
 
 /**
  * Description
@@ -15,21 +16,21 @@ import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
  */
 public class RefreshViewEmptyObserver extends DataChangeAdapterObserver {
 
-    private RefreshLayout refreshLayout;
+    private EmptyRecyclerView recyclerView;
     private RecyclerView.Adapter adapter;
 
     public RefreshViewEmptyObserver(
-            @NonNull RefreshLayout refreshLayout,
+            @NonNull EmptyRecyclerView recyclerView,
             @NonNull RecyclerView.Adapter adapter) {
-        this.refreshLayout = refreshLayout;
+        this.recyclerView = recyclerView;
         this.adapter = adapter;
     }
 
     @CallSuper
     @Override
-    protected void updateUI() {
-        if (refreshLayout != null) {
-            refreshLayout.enableEmptyViewWithAdapter(adapter);
+        protected void updateUI() {
+        if (recyclerView != null) {
+            recyclerView.checkIfEmpty();
         }
     }
 }

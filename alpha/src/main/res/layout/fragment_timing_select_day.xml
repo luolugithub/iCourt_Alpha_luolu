@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/alpha_height_title"
+        android:background="@color/alpha_background_title"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            android:layout_marginTop="5dp"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/titleBack"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:src="@mipmap/arrow_left" />
+
+            <TextView
+                android:id="@id/titleContent"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_centerInParent="true"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:gravity="center"
+                android:maxLines="1"
+                android:minEms="5"
+                android:text="2017年5月"
+                android:textColor="@color/alpha_font_color_title"
+                android:textSize="@dimen/alpha_font_size_comm" />
+
+            <ImageView
+                android:id="@+id/titleForward"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:src="@mipmap/arrow_right_14" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@id/titleAction"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="@dimen/dp10"
+            android:layout_marginRight="10dp"
+            android:background="@drawable/bg_round_rect_white_gray_line"
+            android:paddingBottom="2dp"
+            android:paddingLeft="7dp"
+            android:paddingRight="7dp"
+            android:paddingTop="2dp"
+            android:text="今天"
+            android:textSize="@dimen/alpha_font_size_comm" />
+
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/alpha_height_divider"
+        android:background="@color/alpha_divider_color" />
+
+    <com.jeek.calendar.widget.calendar.WeekBarView
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/week_bar_height"
+        android:background="@color/calendar_bg_color"
+        app:week_text_color="#FF8c8f92"
+        app:week_text_size="@integer/calendar_text_size" />
+
+    <com.jeek.calendar.widget.calendar.month.MonthCalendarView
+        android:id="@+id/mcvCalendar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/month_calendar_height"
+        android:background="@color/calendar_bg_color"
+        android:overScrollMode="never"
+        app:month_count="120"
+        app:month_day_text_size="@integer/calendar_text_size"
+        app:month_hint_circle_color="#f6d9c0"
+        app:month_holiday_color="@color/holiday_text_color"
+        app:month_normal_text_color="@color/comm_color_black"
+        app:month_selected_circle_color="@color/select_circle_color"
+        app:month_selected_circle_today_color="@color/select_circle_color"
+        app:month_show_holiday_hint="true"
+        app:month_show_lunar="false"
+        app:month_show_task_hint="true"
+        app:month_today_text_color="@color/select_circle_color" />
+
+    <!--<com.github.sundeepk.compactcalendarview.CompactCalendarView
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/compactcalendar_view"
+        android:layout_width="fill_parent"
+        android:layout_height="200dp"
+        android:layout_marginTop="17dp"
+        app:compactCalendarBackgroundColor="@android:color/white"
+        app:compactCalendarCurrentDayBackgroundColor="@android:color/transparent"
+        app:compactCalendarCurrentDayIndicatorStyle="fill_large_indicator"
+        app:compactCalendarCurrentDayTextColor="@color/alpha_font_color_orange"
+        app:compactCalendarCurrentSelectedDayBackgroundColor="#FFDE732C"
+        app:compactCalendarCurrentSelectedDayIndicatorStyle="fill_large_indicator"
+        app:compactCalendarCurrentSelectedDayTextColor="@android:color/white"
+        app:compactCalendarDisplayOtherMonthDays="true"
+        app:compactCalendarOtherMonthDaysTextColor="#D9D9D9"
+        app:compactCalendarShouldSelectFirstDayOfMonthOnScroll="true"
+        app:compactCalendarTargetHeight="200dp"
+        app:compactCalendarTextColor="@color/alpha_font_color_black"
+        app:compactCalendarTextSize="@dimen/alpha_font_size_comm" />-->
+</LinearLayout>

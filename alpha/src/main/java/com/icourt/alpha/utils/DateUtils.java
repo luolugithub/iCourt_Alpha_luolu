@@ -12,6 +12,7 @@ import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 import static cn.finalteam.toolsfinal.DateUtils.date;
+import static cn.finalteam.toolsfinal.DateUtils.reformatTime;
 
 public class DateUtils {
 
@@ -93,6 +94,7 @@ public class DateUtils {
 
     /**
      * 格式1
+     * http://wiki.alphalawyer.cn/pages/viewpage.action?pageId=1773098
      * 注意:别轻易修改
      * 文档地址:http://wiki.alphalawyer.cn/pages/viewpage.action?pageId=1773098
      * 获取标准的时间格式化:
@@ -109,13 +111,16 @@ public class DateUtils {
     public static final String getStandardSimpleFormatTime(long milliseconds) {
         SimpleDateFormat sdf = new SimpleDateFormat();
         if (isOverToday(milliseconds)) {//1.未来
-            sdf.applyPattern("yyyy-MM-dd hh:mm");
+            sdf.applyPattern("yyyy-MM-dd HH:mm");
             return sdf.format(milliseconds);
         } else if (isToday(milliseconds)) {//2.今天
             long distanceMilliseconds = System.currentTimeMillis() - milliseconds;
             if (distanceMilliseconds < TimeUnit.HOURS.toMillis(1)) {//3.x分钟前
                 long distanceSeconds = TimeUnit.MILLISECONDS.toMinutes(distanceMilliseconds);
-                if (distanceSeconds == 0) {
+                if (distanceMilliseconds < 0) {
+                    sdf.applyPattern("yyyy-MM-dd HH:mm");
+                    return sdf.format(milliseconds);
+                } else if (distanceSeconds == 0) {
                     return "刚刚";
                 } else {
                     return String.format("%s分钟前", TimeUnit.MILLISECONDS.toMinutes(distanceMilliseconds));
@@ -126,10 +131,18 @@ public class DateUtils {
         } else if (isYesterday(milliseconds)) {
             return "昨天";//5.昨天
         } else {
+            int todayOfYear = Calendar.getInstance().get(Calendar.DAY_OF_YEAR);
+            Calendar targetCalendar = Calendar.getInstance();
+            targetCalendar.setTimeInMillis(milliseconds);
+
+            int targetDayOfYear = targetCalendar.get(Calendar.DAY_OF_YEAR);
+            long distanceDayInt = todayOfYear - targetDayOfYear;
+
             long distanceMilliseconds = System.currentTimeMillis() - milliseconds;
             long distanceDay = TimeUnit.MILLISECONDS.toDays(distanceMilliseconds);
-            if (distanceDay <= 5) {//x天前（x = 2～5）
-                return String.format("%s天前", distanceDay);
+            //避免相差年份的问题
+            if (distanceDay < 10 && distanceDayInt <= 5) {//x天前（x = 2～5）
+                return String.format("%s天前", distanceDayInt);
             } else {//yyyy-mm-dd
                 sdf.applyPattern("yyyy-MM-dd");
                 return sdf.format(milliseconds);
@@ -139,6 +152,7 @@ public class DateUtils {
 
     /**
      * 格式2
+     * http://wiki.alphalawyer.cn/pages/viewpage.action?pageId=1773098
      * 注意:别轻易修改
      * 文档地址:http://wiki.alphalawyer.cn/pages/viewpage.action?pageId=1773098
      * 获取标准的时间格式化:
@@ -157,13 +171,16 @@ public class DateUtils {
     public static final String getStandardFormatTime(long milliseconds) {
         SimpleDateFormat sdf = new SimpleDateFormat();
         if (isOverToday(milliseconds)) {//1.未来
-            sdf.applyPattern("yyyy-MM-dd hh:mm");
+            sdf.applyPattern("yyyy-MM-dd HH:mm");
             return sdf.format(milliseconds);
         } else if (isToday(milliseconds)) {//2.今天
             long distanceMilliseconds = System.currentTimeMillis() - milliseconds;
             if (distanceMilliseconds < TimeUnit.HOURS.toMillis(1)) {//3.x分钟前
                 long distanceSeconds = TimeUnit.MILLISECONDS.toMinutes(distanceMilliseconds);
-                if (distanceSeconds == 0) {
+                if (distanceMilliseconds < 0) {
+                    sdf.applyPattern("yyyy-MM-dd HH:mm");
+                    return sdf.format(milliseconds);
+                } else if (distanceSeconds == 0) {
                     return "刚刚";
                 } else {
                     return String.format("%s分钟前", TimeUnit.MILLISECONDS.toMinutes(distanceMilliseconds));
@@ -172,11 +189,25 @@ public class DateUtils {
                 return String.format("%s小时前", TimeUnit.MILLISECONDS.toHours(distanceMilliseconds));
             }
         } else if (isYesterday(milliseconds)) {
-            sdf.applyPattern("昨天 hh:mm");
+            sdf.applyPattern("昨天 HH:mm");
             return sdf.format(milliseconds);
         } else {
-            sdf.applyPattern("yyyy-MM-dd hh:mm");
-            return sdf.format(milliseconds);
+            int todayOfYear = Calendar.getInstance().get(Calendar.DAY_OF_YEAR);
+            Calendar targetCalendar = Calendar.getInstance();
+            targetCalendar.setTimeInMillis(milliseconds);
+
+            int targetDayOfYear = targetCalendar.get(Calendar.DAY_OF_YEAR);
+            long distanceDayInt = todayOfYear - targetDayOfYear;//相差的天 不是间隔的时间/每天的毫秒
+
+            long distanceMilliseconds = System.currentTimeMillis() - milliseconds;
+            long distanceDay = TimeUnit.MILLISECONDS.toDays(distanceMilliseconds);
+            //避免相差年份的问题
+            if (distanceDay < 10 && distanceDayInt <= 5) {//x天前（x = 2～5）
+                return String.format("%s天前", distanceDayInt);
+            } else {//yyyy-mm-dd
+                sdf.applyPattern("yyyy-MM-dd HH:mm");
+                return sdf.format(milliseconds);
+            }
         }
     }
 
@@ -205,6 +236,21 @@ public class DateUtils {
                 return true;
         }
         return false;
+    }
+
+    /**
+     * 判断两个时间戳是否在同一年
+     *
+     * @param timeMillis1
+     * @param timeMillis2
+     * @return
+     */
+    public static boolean isSameYear(long timeMillis1, long timeMillis2) {
+        Calendar calendar1 = Calendar.getInstance();
+        Calendar calendar2 = Calendar.getInstance();
+        calendar1.setTimeInMillis(timeMillis1);
+        calendar2.setTimeInMillis(timeMillis2);
+        return calendar1.get(Calendar.YEAR) == calendar2.get(Calendar.YEAR);
     }
 
     /**
@@ -380,6 +426,28 @@ public class DateUtils {
     }
 
     /**
+     * 返回2017年10月这种格式
+     *
+     * @param milliseconds
+     * @return
+     */
+    public static String getyyyyMM(long milliseconds) {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy年MM月");
+        return formatter.format(milliseconds);
+    }
+
+    /**
+     * 返回格式化成xx月xx日的格式
+     *
+     * @param milliseconds
+     * @return
+     */
+    public static String getMMdd(long milliseconds) {
+        SimpleDateFormat formatter = new SimpleDateFormat("MM月dd日");
+        return formatter.format(milliseconds);
+    }
+
+    /**
      * yyyy-MM-dd 格式
      *
      * @param milliseconds
@@ -387,6 +455,17 @@ public class DateUtils {
      */
     public static String getyyyy_MM_dd(long milliseconds) {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+        return formatter.format(milliseconds);
+    }
+
+    /**
+     * MM-dd HH:mm 格式
+     *
+     * @param milliseconds
+     * @return
+     */
+    public static String getMM_dd_HH_mm(long milliseconds) {
+        SimpleDateFormat formatter = new SimpleDateFormat("MM-dd HH:mm");
         return formatter.format(milliseconds);
     }
 
@@ -503,11 +582,7 @@ public class DateUtils {
      * @return
      */
     public static long getTodayStartTime() {
-        Calendar currentDate = new GregorianCalendar();
-        currentDate.set(Calendar.HOUR_OF_DAY, 0);
-        currentDate.set(Calendar.MINUTE, 0);
-        currentDate.set(Calendar.SECOND, 0);
-        return currentDate.getTime().getTime();
+        return getDayStartTime(System.currentTimeMillis());
     }
 
     /**
@@ -516,11 +591,38 @@ public class DateUtils {
      * @return
      */
     public static long getTodayEndTime() {
+        return getDayEndTime(System.currentTimeMillis());
+    }
+
+    /**
+     * 获取时间戳所在天的开始时间
+     *
+     * @param timeMillis
+     * @return
+     */
+    public static long getDayStartTime(long timeMillis) {
         Calendar currentDate = new GregorianCalendar();
+        currentDate.setTimeInMillis(timeMillis);
+        currentDate.set(Calendar.HOUR_OF_DAY, 0);
+        currentDate.set(Calendar.MINUTE, 0);
+        currentDate.set(Calendar.SECOND, 0);
+        currentDate.set(Calendar.MILLISECOND, 0);
+        return currentDate.getTimeInMillis();
+    }
+
+    /**
+     * 获取时间戳所在天的结束时间
+     *
+     * @param timeMillis
+     * @return
+     */
+    public static long getDayEndTime(long timeMillis) {
+        Calendar currentDate = new GregorianCalendar();
+        currentDate.setTimeInMillis(timeMillis);
         currentDate.set(Calendar.HOUR_OF_DAY, 23);
         currentDate.set(Calendar.MINUTE, 59);
         currentDate.set(Calendar.SECOND, 59);
-        return currentDate.getTime().getTime();
+        return currentDate.getTimeInMillis();
     }
 
     /**
@@ -529,28 +631,51 @@ public class DateUtils {
      * @return
      */
     public static long getCurrWeekStartTime() {
-        Calendar currentDate = Calendar.getInstance(TimeZone.getTimeZone("GMT+:08:00"));
-        currentDate.setFirstDayOfWeek(Calendar.MONDAY);
-        currentDate.set(Calendar.HOUR_OF_DAY, 0);
-        currentDate.set(Calendar.MINUTE, 0);
-        currentDate.set(Calendar.SECOND, 0);
-        currentDate.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
-        return currentDate.getTimeInMillis();
+        return getWeekStartTime(System.currentTimeMillis());
     }
 
 
-    /* 获取本周的开始时间 毫秒
+    /**
+     * 获取本周的开始时间 毫秒
+     *
      * @return
      */
     public static long getCurrWeekEndTime() {
-        Calendar currentDate = Calendar.getInstance(TimeZone.getTimeZone("GMT+:08:00"));
-        // currentDate.setFirstDayOfWeek(Calendar.SUNDAY);
-        currentDate.setFirstDayOfWeek(Calendar.MONDAY);
-        currentDate.set(Calendar.HOUR_OF_DAY, 23);
-        currentDate.set(Calendar.MINUTE, 59);
-        currentDate.set(Calendar.SECOND, 59);
-        currentDate.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY);
-        return currentDate.getTime().getTime();
+        return getWeekEndTime(System.currentTimeMillis());
+    }
+
+    /**
+     * 获取周的开始时间
+     *
+     * @param timeMillis
+     * @return
+     */
+    public static long getWeekStartTime(long timeMillis) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(timeMillis);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        int d = 0;
+        if (calendar.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {//如果是周日，则在当前日期上减去6天，就是周一了
+            d = -6;
+        } else {//如果不是周日，周一的起始值是减去今天所对应周几，得出这周的第一天。
+            d = Calendar.MONDAY - calendar.get(Calendar.DAY_OF_WEEK);
+        }
+        //所在周开始日期
+        calendar.add(Calendar.DAY_OF_WEEK, d);
+        return calendar.getTimeInMillis();
+    }
+
+    /**
+     * 获取周的结束时间
+     *
+     * @param timeMillis
+     * @return
+     */
+    public static long getWeekEndTime(long timeMillis) {
+        return getWeekStartTime(timeMillis) + TimeUnit.DAYS.toMillis(7) - 1;
     }
 
 
@@ -592,6 +717,8 @@ public class DateUtils {
 
 
     /**
+     * 判断是否是昨天
+     *
      * @param millis 毫秒
      * @return
      */
@@ -677,5 +804,290 @@ public class DateUtils {
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
         return calendar.getTimeInMillis();
+    }
+
+    /**
+     * 获取日期和星期的组合
+     *
+     * @param millis
+     * @return
+     */
+    public static String getMMddWeek(long millis) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(millis);
+        SimpleDateFormat formatter = new SimpleDateFormat("MM月dd日");
+        String format = formatter.format(calendar.getTime());
+        int day = calendar.get(Calendar.DAY_OF_WEEK);
+        StringBuilder builder = new StringBuilder(format);
+        builder.append(" ");
+        switch (day) {
+            case Calendar.SUNDAY:
+                builder.append("周日");
+                break;
+            case Calendar.MONDAY:
+                builder.append("周一");
+                break;
+            case Calendar.TUESDAY:
+                builder.append("周二");
+                break;
+            case Calendar.WEDNESDAY:
+                builder.append("周三");
+                break;
+            case Calendar.THURSDAY:
+                builder.append("周四");
+                break;
+            case Calendar.FRIDAY:
+                builder.append("周五");
+                break;
+            case Calendar.SATURDAY:
+                builder.append("周六");
+                break;
+
+        }
+        return builder.toString();
+    }
+
+    /**
+     * 根据提供的年月日获取该月份的第一天
+     *
+     * @param year
+     * @param monthOfYear
+     * @return
+     */
+    public static Date getSupportBeginDayofMonth(int year, int monthOfYear) {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.YEAR, year);
+        cal.set(Calendar.MONTH, monthOfYear - 1);
+        cal.set(Calendar.DAY_OF_MONTH, 1);
+        return cal.getTime();
+    }
+
+    /**
+     * 根据提供的年月获取该月份的最后一天
+     *
+     * @param year
+     * @param monthOfYear
+     * @return
+     */
+    public static Date getSupportEndDayofMonth(int year, int monthOfYear) {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.YEAR, year);
+        cal.set(Calendar.MONTH, monthOfYear - 1);
+        cal.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH));
+
+        return cal.getTime();
+    }
+
+    /**
+     * 根据提供的年月日获取该月份的第一天
+     *
+     * @param year
+     * @return
+     */
+    public static Date getSupportBeginDayofYear(int year) {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.YEAR, year);
+        cal.set(Calendar.DAY_OF_YEAR, 1);
+        return cal.getTime();
+    }
+
+    /**
+     * 根据提供的年月获取该月份的最后一天
+     *
+     * @param year
+     * @return
+     */
+    public static Date getSupportEndDayofYear(int year) {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.YEAR, year);
+        cal.set(Calendar.DAY_OF_YEAR, cal.getActualMaximum(Calendar.DAY_OF_YEAR));
+        return cal.getTime();
+    }
+
+    /**
+     * 获取当前时间的时间戳（秒数为0）
+     * 比如：当前时间为12:10:30，返回的是12:10:00的时间戳
+     *
+     * @param timeMillis
+     * @return
+     */
+    public static long getFormatMillis(long timeMillis) {
+        Calendar instance = Calendar.getInstance();
+        instance.setTimeInMillis(timeMillis);
+        int currentYear = instance.get(Calendar.YEAR);
+        int currentMonth = instance.get(Calendar.MONTH);
+        int currentDay = instance.get(Calendar.DAY_OF_MONTH);
+        int currentHour = instance.get(Calendar.HOUR_OF_DAY);
+        int currentMinute = instance.get(Calendar.MINUTE);
+        //记录当前时间，精确到分钟，秒数置为0。
+        instance.set(currentYear, currentMonth, currentDay, currentHour, currentMinute, 0);
+        return instance.getTimeInMillis();
+    }
+
+    /**
+     * date2比date1多的天数
+     *
+     * @param startMillis
+     * @param endMillis
+     * @return
+     */
+    public static int differentDays(long startMillis, long endMillis) {
+        Calendar cal1 = Calendar.getInstance();
+        cal1.setTimeInMillis(startMillis);
+
+        Calendar cal2 = Calendar.getInstance();
+        cal2.setTimeInMillis(endMillis);
+        int day1 = cal1.get(Calendar.DAY_OF_YEAR);
+        int day2 = cal2.get(Calendar.DAY_OF_YEAR);
+
+        int year1 = cal1.get(Calendar.YEAR);
+        int year2 = cal2.get(Calendar.YEAR);
+        if (year1 != year2) {//不同年
+            int timeDistance = 0;
+            for (int i = year1; i < year2; i++) {
+                if (i % 4 == 0 && i % 100 != 0 || i % 400 == 0) {//闰年
+                    timeDistance += 366;
+                } else {//不是闰年
+                    timeDistance += 365;
+                }
+            }
+            return timeDistance + (day2 - day1);
+        } else {//同一年
+            return day2 - day1;
+        }
+    }
+
+    /**
+     * 获取时间戳所在月份的第一天的起始时间
+     *
+     * @param millis
+     * @return
+     */
+    public static long getMonthStartTime(long millis) {
+        Calendar instance = Calendar.getInstance();
+        instance.setTimeInMillis(millis);
+        instance.set(Calendar.DAY_OF_MONTH, 1);
+        instance.set(Calendar.HOUR_OF_DAY, 0);
+        instance.set(Calendar.MINUTE, 0);
+        instance.set(Calendar.SECOND, 0);
+        instance.set(Calendar.MILLISECOND, 0);
+        return instance.getTimeInMillis();
+    }
+
+    /**
+     * 获取时间戳所在月份的最后一天的最后一秒
+     *
+     * @param millis
+     * @return
+     */
+    public static long getMonthEndTime(long millis) {
+        Calendar instance = Calendar.getInstance();
+        instance.setTimeInMillis(millis);
+        instance.set(Calendar.DAY_OF_MONTH, instance.getActualMaximum(Calendar.DAY_OF_MONTH));
+        instance.set(Calendar.HOUR_OF_DAY, 23);
+        instance.set(Calendar.MINUTE, 59);
+        instance.set(Calendar.SECOND, 59);
+        return instance.getTimeInMillis();
+    }
+
+    /**
+     * 获取时间戳所在年的第一天的起始时间
+     *
+     * @param millis
+     * @return
+     */
+    public static long getYearStartTime(long millis) {
+        Calendar instance = Calendar.getInstance();
+        instance.setTimeInMillis(millis);
+        instance.set(Calendar.MONTH, Calendar.JANUARY);
+        instance.set(Calendar.DAY_OF_MONTH, 1);
+        instance.set(Calendar.HOUR_OF_DAY, 0);
+        instance.set(Calendar.MINUTE, 0);
+        instance.set(Calendar.SECOND, 0);
+        instance.set(Calendar.MILLISECOND, 0);
+        return instance.getTimeInMillis();
+    }
+
+    /**
+     * 获取时间戳所在年份的最后一天最后一秒
+     *
+     * @param millis
+     * @return
+     */
+    public static long getYearEndTime(long millis) {
+        Calendar instance = Calendar.getInstance();
+        instance.setTimeInMillis(millis);
+        instance.set(Calendar.MONTH, Calendar.DECEMBER);
+        instance.set(Calendar.DAY_OF_MONTH, 31);
+        instance.set(Calendar.HOUR_OF_DAY, 23);
+        instance.set(Calendar.MINUTE, 59);
+        instance.set(Calendar.SECOND, 59);
+        return instance.getTimeInMillis();
+    }
+
+    /**
+     * 将计时时间毫秒数转换为时：分的样式
+     *
+     * @param timesMillis 毫秒
+     * @return
+     */
+    public static String getHm(long timesMillis) {
+        timesMillis /= 1000;
+        long hour = timesMillis / 3600;
+        long minute = timesMillis % 3600 / 60;
+        if (minute < 0) {
+            minute = 0;
+        }
+        return String.format(Locale.CHINA, "%d:%02d", hour, minute);
+    }
+
+    /**
+     * 获取计时的样式（比如：20:12:08）
+     *
+     * @param timeSeconds 秒
+     * @return
+     */
+    public static String getTimingStr(long timeSeconds) {
+        long hour = timeSeconds / 3600;
+        long minute = timeSeconds % 3600 / 60;
+        long second = timeSeconds % 60;
+        return String.format(Locale.CHINA, "%02d:%02d:%02d", hour, minute, second);
+    }
+
+    /**
+     * 获取时间戳所在的年份
+     *
+     * @param timeMillis
+     * @return
+     */
+    public static int getYear(long timeMillis) {
+        Calendar instance = Calendar.getInstance();
+        instance.setTimeInMillis(timeMillis);
+        return instance.get(Calendar.YEAR);
+    }
+
+    /**
+     * 获取当月的第一天
+     *
+     * @return
+     */
+    public static String getCurrentMonthFirstDay() {
+        SimpleDateFormat dateFormater = new SimpleDateFormat("yyyy-MM-dd");
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.DAY_OF_MONTH, 1);
+        cal.getTime();
+        return dateFormater.format(cal.getTime());
+    }
+
+    /**
+     * 获取当月的最后一天
+     * @return
+     */
+    public static String getCurrentMonthLastDay() {
+        SimpleDateFormat dateFormater = new SimpleDateFormat("yyyy-MM-dd");
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.DAY_OF_MONTH,
+                cal.getActualMaximum(Calendar.DAY_OF_MONTH));
+        return dateFormater.format(cal.getTime());
     }
 }

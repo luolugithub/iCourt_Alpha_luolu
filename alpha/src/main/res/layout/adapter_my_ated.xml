@@ -40,8 +40,9 @@
                     android:maxEms="8"
                     android:maxLines="1"
                     android:text="小吴"
+                    android:textStyle="bold"
                     android:textColor="@color/alpha_font_color_black"
-                    android:textSize="@dimen/alpha_font_size_mini" />
+                    android:textSize="@dimen/alpha_font_size_comm" />
 
                 <TextView
                     android:id="@+id/at_time_tv"
@@ -82,7 +83,7 @@
                 android:maxLines="1"
                 android:text="\@小名 你好"
                 android:textColor="@color/alpha_font_color_gray"
-                android:textSize="@dimen/alpha_font_size_mini" />
+                android:textSize="@dimen/alpha_font_size_mini_medium" />
 
         </LinearLayout>
 

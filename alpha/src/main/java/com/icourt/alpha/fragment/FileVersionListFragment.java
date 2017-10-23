@@ -4,14 +4,12 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.FileDownloadActivity;
@@ -25,10 +23,13 @@ import com.icourt.alpha.entity.bean.FileVersionEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.interfaces.OnFragmentDataChangeListener;
 import com.icourt.alpha.utils.IMUtils;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.widget.comparators.LongFieldEntityComparator;
 import com.icourt.alpha.widget.comparators.ORDER;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,9 +59,9 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
     protected static final String KEY_SEA_FILE_REPO_PERMISSION = "seaFileRepoPermission";//repo的权限
 
     @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
     Unbinder unbinder;
     String fromRepoId, fromRepoFilePath;
     FileVersionAdapter fileVersionAdapter;
@@ -123,9 +124,9 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
         fromRepoFilePath = getArguments().getString(KEY_SEA_FILE_FROM_FILE_PATH, "");
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        final TextView emptyView = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_folder_document_num, recyclerView);
+        final TextView emptyView = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_folder_document_num, recyclerView.getRecyclerView());
         emptyView.setText("");
-        refreshLayout.setEmptyView(emptyView);
+        recyclerView.setEmptyView(emptyView);
 
 
         recyclerView.setAdapter(fileVersionAdapter = new FileVersionAdapter(TextUtils.equals(getRepoPermission(), PERMISSION_RW)));
@@ -133,22 +134,21 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
             @Override
             protected void updateUI() {
                 if (refreshLayout != null) {
-                    refreshLayout.enableEmptyView(fileVersionAdapter.getItemCount() <= 0);
-                    emptyView.setText(R.string.sfile_version_list_empty);
+                    recyclerView.enableEmptyView(fileVersionAdapter.getData());
+                    emptyView.setText(R.string.empty_list_repo_file_historical_version);
                 }
             }
         });
         fileVersionAdapter.setOnItemClickListener(this);
         fileVersionAdapter.setOnItemChildClickListener(this);
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setOnRefreshListener(new OnRefreshListener() {
 
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(com.scwang.smartrefresh.layout.api.RefreshLayout refreshlayout) {
                 getData(true);
             }
         });
-        refreshLayout.startRefresh();
+        refreshLayout.autoRefresh();
     }
 
     @Override
@@ -205,8 +205,8 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 
@@ -217,29 +217,16 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
         unbinder.unbind();
     }
 
-    private String getFileName() {
-        String string = fromRepoFilePath;
-        if (!TextUtils.isEmpty(string)) {
-            String[] split = string.split("/");
-            if (split != null && split.length > 0) {
-                return split[split.length - 1];
-            }
-        }
-        return string;
-    }
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         FileVersionEntity item = fileVersionAdapter.getItem(position);
         if (item == null) return;
+        item.seaFileFullPath = fromRepoFilePath;
         FileDownloadActivity.launch(
                 getContext(),
-                item.repo_id,
-                getFileName(),
-                item.rev_file_size,
-                fromRepoFilePath,
-                item.id,
-                FileDownloadActivity.FILE_FROM_REPO);
+                item,
+                SFileConfig.FILE_FROM_REPO);
     }
 
     @Override
@@ -278,9 +265,9 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
      *
      * @param item
      */
-    private void restoreFile(FileVersionEntity item) {
+    private void restoreFile(final FileVersionEntity item) {
         if (item == null) return;
-        showLoadingDialog(R.string.sfile_backspacing);
+        showLoadingDialog(R.string.str_executing);
         callEnqueue(getSFileApi().fileRetroversion(
                 getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID),
                 getArguments().getString(KEY_SEA_FILE_FROM_FILE_PATH),
@@ -290,8 +277,7 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
                     @Override
                     public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
                         dismissLoadingDialog();
-                        if (response.body().has("success")
-                                && response.body().get("success").getAsBoolean()) {
+                        if (JsonUtils.getBoolValue(response.body(),"success")) {
                             showToast(R.string.sfile_backspace_success);
                             getData(true);
                         } else {
@@ -302,10 +288,12 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
                     @Override
                     public void onFailure(Call<JsonObject> call, Throwable t) {
                         dismissLoadingDialog();
-                        super.onFailure(call, t);
                         if (t instanceof HttpException
                                 && ((HttpException) t).code() == 500) {
-                            showToast("文件可能被移除或者重命名无法回退!");
+                            bugSync("文件回滚失败", item != null ? item.toString() : "");
+                            showToast(R.string.sfile_backspace_fail);
+                        } else {
+                            super.onFailure(call, t);
                         }
                     }
 

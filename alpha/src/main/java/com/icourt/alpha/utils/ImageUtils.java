@@ -34,7 +34,7 @@ public class ImageUtils {
 
     private static int[] groupPhotos = {R.mipmap.color_1,
             R.mipmap.color_2, R.mipmap.color_3, R.mipmap.color_4, R.mipmap.color_5, R.mipmap.color_6, R.mipmap.color_7};
-//    public static String dirFilePath = FileUtils.getSDPath() + ActionConstants.FILE_DOWNLOAD_PATH;
+//    public static String dirFilePath = FileUtils.getSDPath() + ActionConstants.FILE_DOWNLOAD_ROOT_DIR;
 
     public static String encodeImageByPath(String path) {
         try {

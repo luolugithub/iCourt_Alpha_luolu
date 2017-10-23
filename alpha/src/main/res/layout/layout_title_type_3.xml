@@ -55,7 +55,7 @@
             android:gravity="center"
             android:paddingLeft="10dp"
             android:paddingRight="10dp"
-            android:text="@string/str_save"
+            android:text="@string/str_finish"
             android:textColor="@color/sl_enable_orange_2_gray"
             android:textSize="@dimen/alpha_font_size_comm" />
     </RelativeLayout>

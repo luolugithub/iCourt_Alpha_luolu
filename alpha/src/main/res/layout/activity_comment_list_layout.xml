@@ -94,20 +94,18 @@
                 android:orientation="vertical">
 
 
-                <com.icourt.alpha.view.xrefreshlayout.RefreshLayout
+                <com.scwang.smartrefresh.layout.SmartRefreshLayout
                     android:id="@+id/refreshLayout"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="vertical">
 
-                    <android.support.v7.widget.RecyclerView
+                    <com.zhaol.refreshlayout.EmptyRecyclerView
                         android:id="@+id/recyclerview"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent">
+                        android:layout_height="match_parent"/>
 
-                    </android.support.v7.widget.RecyclerView>
-
-                </com.icourt.alpha.view.xrefreshlayout.RefreshLayout>
+                </com.scwang.smartrefresh.layout.SmartRefreshLayout>
             </LinearLayout>
 
         </RelativeLayout>

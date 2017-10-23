@@ -5,11 +5,11 @@ import android.os.Bundle;
 import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,17 +24,24 @@ import com.icourt.alpha.adapter.baseadapter.BaseFragmentAdapter;
 import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.FileChangedHistoryEntity;
+import com.icourt.alpha.entity.bean.RepoAdmin;
 import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.fragment.FileChangeHistoryFragment;
 import com.icourt.alpha.fragment.FileInnerShareFragment;
 import com.icourt.alpha.fragment.FileTrashListFragment;
 import com.icourt.alpha.http.callback.SFileCallBack;
+import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentDataChangeListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.StringUtils;
+import com.icourt.alpha.view.tab.AlphaTabLayout;
+import com.icourt.alpha.view.tab.AlphaTitleNavigatorAdapter;
 import com.icourt.alpha.widget.comparators.LongFieldEntityComparator;
 import com.icourt.alpha.widget.comparators.ORDER;
+
+import net.lucode.hackware.magicindicator.buildins.commonnavigator.CommonNavigator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,6 +55,7 @@ import butterknife.Unbinder;
 import retrofit2.Call;
 import retrofit2.Response;
 
+import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
 import static com.icourt.alpha.constants.SFileConfig.REPO_LAWFIRM;
 import static com.icourt.alpha.constants.SFileConfig.REPO_MINE;
 import static com.icourt.alpha.constants.SFileConfig.REPO_PROJECT;
@@ -79,7 +87,7 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
     @BindView(R.id.file_update_info_tv)
     TextView fileUpdateInfoTv;
     @BindView(R.id.tabLayout)
-    TabLayout tabLayout;
+    AlphaTabLayout tabLayout;
     @BindView(R.id.viewPager)
     ViewPager viewPager;
     Unbinder unbinder;
@@ -147,7 +155,7 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
         fromRepoId = getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID, "");
         repoType = SFileConfig.convert2RepoType(getArguments().getInt(KEY_SEA_FILE_REPO_TYPE));
         repoPermission = getRepoPermission();
-        Dialog dialog = getDialog();
+        final Dialog dialog = getDialog();
         if (dialog != null) {
             Window window = dialog.getWindow();
             if (window != null) {
@@ -158,13 +166,33 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
         }
         titleContent.setText(R.string.repo_details);
         fileVersionTv.setVisibility(View.GONE);
-        fileCreateInfoTv.setVisibility(View.GONE);
+        fileCreateInfoTv.setText("");
         fileTypeIv.setImageResource(R.mipmap.ic_document);
         fileUpdateInfoTv.setText("");
 
         viewPager.setOffscreenPageLimit(3);
         viewPager.setAdapter(baseFragmentAdapter = new BaseFragmentAdapter(getChildFragmentManager()));
-        tabLayout.setupWithViewPager(viewPager);
+        CommonNavigator commonNavigator = new CommonNavigator(getContext());
+        commonNavigator.setAdapter(new AlphaTitleNavigatorAdapter(1.0f) {
+            @Nullable
+            @Override
+            public CharSequence getTitle(int index) {
+                return baseFragmentAdapter.getPageTitle(index);
+            }
+
+            @Override
+            public int getCount() {
+                return baseFragmentAdapter.getCount();
+            }
+
+            @Override
+            public void onTabClick(View v, int pos) {
+                viewPager.setCurrentItem(pos, true);
+            }
+        });
+        tabLayout.setNavigator2(commonNavigator)
+                .setupWithViewPager(viewPager);
+
         switch (repoType) {
             case REPO_MINE:
                 baseFragmentAdapter.bindTitle(true, Arrays.asList(
@@ -191,9 +219,37 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
                                 FileTrashListFragment.newInstance(fromRepoId, "/", repoPermission)));
                 break;
             case REPO_LAWFIRM:
-                baseFragmentAdapter.bindTitle(true, Arrays.asList(getString(R.string.repo_recycle_bin)));
-                baseFragmentAdapter.bindData(true,
-                        Arrays.asList(FileTrashListFragment.newInstance(fromRepoId, "/", repoPermission)));
+                //需要获取到是否真正有权限
+                showLoadingDialog(null);
+                callEnqueue(
+                        getApi().getOfficeAdmins(fromRepoId),
+                        new SimpleCallBack<List<RepoAdmin>>() {
+                            @Override
+                            public void onSuccess(Call<ResEntity<List<RepoAdmin>>> call, Response<ResEntity<List<RepoAdmin>>> response) {
+                                dismissLoadingDialog();
+                                boolean isRepoAdmin = false;
+                                String loginUserId = getLoginUserId();
+                                for (RepoAdmin repoAdmin : response.body().result) {
+                                    if (repoAdmin == null) continue;
+                                    if (TextUtils.equals(repoAdmin.userId, loginUserId)) {
+                                        isRepoAdmin = true;
+                                        break;
+                                    }
+                                }
+                                if (isRepoAdmin) {
+                                    repoPermission = PERMISSION_RW;
+                                }
+                                baseFragmentAdapter.bindTitle(true, Arrays.asList(getString(R.string.repo_recycle_bin)));
+                                baseFragmentAdapter.bindData(true,
+                                        Arrays.asList(FileTrashListFragment.newInstance(fromRepoId, "/", repoPermission)));
+                            }
+
+                            @Override
+                            public void onFailure(Call<ResEntity<List<RepoAdmin>>> call, Throwable t) {
+                                super.onFailure(call, t);
+                                dismissLoadingDialog();
+                            }
+                        });
                 break;
             case REPO_PROJECT:
                 baseFragmentAdapter.bindTitle(true, Arrays.asList(
@@ -211,6 +267,8 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
         int tabIndex = getArguments().getInt(KEY_LOCATION_TAB_INDEX);
         if (tabIndex < baseFragmentAdapter.getCount()) {
             viewPager.setCurrentItem(tabIndex);
+        } else {
+            viewPager.setCurrentItem(baseFragmentAdapter.getCount() - 1);
         }
         getData(true);
     }
@@ -255,19 +313,41 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
             List<FileChangedHistoryEntity> fileVersionEntities = new ArrayList<>();
             try {
                 fileVersionEntities.addAll((List<FileChangedHistoryEntity>) o);
-                Collections.sort(fileVersionEntities, new LongFieldEntityComparator<FileChangedHistoryEntity>(ORDER.DESC));
+                Collections.sort(fileVersionEntities, new LongFieldEntityComparator<FileChangedHistoryEntity>(ORDER.ASC));
             } catch (Exception e) {
             }
-            if (fileUpdateInfoTv != null
-                    && !fileVersionEntities.isEmpty()
-                    && fileVersionEntities.get(0) != null) {
-                FileChangedHistoryEntity fileVersionEntity = fileVersionEntities.get(0);
-                fileUpdateInfoTv.setText(String.format("%s 更新于 %s",
-                        StringUtils.getEllipsizeText(fileVersionEntity.operator_name, 8),
-                        DateUtils.getyyyyMMddHHmm(fileVersionEntity.date)));
-            } else {
-                if (fileUpdateInfoTv != null) {
-                    fileUpdateInfoTv.setText("");
+            if (fileCreateInfoTv == null) return;
+            fileCreateInfoTv.setText("");
+            fileUpdateInfoTv.setText("");
+            FileChangedHistoryEntity fileChangedHistoryEntityFirst = null;
+            if (!fileVersionEntities.isEmpty()) {
+                switch (fileVersionEntities.size()) {
+                    case 1:
+                        fileChangedHistoryEntityFirst = fileVersionEntities.get(0);
+                        if (fileChangedHistoryEntityFirst != null) {
+                            fileCreateInfoTv.setText(String.format("%s 更新于 %s",
+                                    StringUtils.getEllipsizeText(fileChangedHistoryEntityFirst.operator_name, 8),
+                                    DateUtils.getyyyyMMddHHmm(fileChangedHistoryEntityFirst.date)));
+                        }
+                        break;
+                    default: {
+                        fileChangedHistoryEntityFirst = fileVersionEntities.get(fileVersionEntities.size() - 2);
+                        if (fileChangedHistoryEntityFirst != null) {
+                            fileCreateInfoTv.setText(String.format("%s 更新于 %s",
+                                    StringUtils.getEllipsizeText(fileChangedHistoryEntityFirst.operator_name, 8),
+                                    DateUtils.getyyyyMMddHHmm(fileChangedHistoryEntityFirst.date)));
+                        }
+
+                        if (fileVersionEntities.size() > 1) {
+                            FileChangedHistoryEntity fileChangedHistoryEntitySecond = fileVersionEntities.get(fileVersionEntities.size() - 1);
+                            if (fileChangedHistoryEntitySecond != null) {
+                                fileUpdateInfoTv.setText(String.format("%s 更新于 %s",
+                                        StringUtils.getEllipsizeText(fileChangedHistoryEntitySecond.operator_name, 8),
+                                        DateUtils.getyyyyMMddHHmm(fileChangedHistoryEntitySecond.date)));
+                            }
+                        }
+                    }
+                    break;
                 }
             }
         }

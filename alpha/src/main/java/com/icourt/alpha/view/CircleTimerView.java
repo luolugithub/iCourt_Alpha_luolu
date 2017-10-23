@@ -402,7 +402,7 @@ public class CircleTimerView extends View {
                 if (mInCircleButton && isEnabled()) {
                     mInCircleButton = false;
                     if (mCircleTimerListener != null)
-                        mCircleTimerListener.onTimerSetValueChanged(getCurrentTime());
+                        mCircleTimerListener.onTimerTouchValueChanged(getCurrentTime());
                 }
                 break;
         }
@@ -591,14 +591,14 @@ public class CircleTimerView extends View {
         /**
          * launch timer start event
          *
-         * @param time
+         * @param time 秒
          */
         void onTimerStart(long time);
 
         /**
          * launch timer pause event
          *
-         * @param time
+         * @param time 秒
          */
         void onTimerPause(long time);
 
@@ -606,14 +606,22 @@ public class CircleTimerView extends View {
         /**
          * launch timer timing value changed event
          *
-         * @param time
+         * @param time 秒
          */
         void onTimerTimingValueChanged(long time);
 
         /**
-         * launch timer set value changed event
+         * launch timer touch value changed event
          *
-         * @param time
+         * @param time 秒
+         */
+        void onTimerTouchValueChanged(long time);
+
+        /**
+         * launch timer set value changed event
+         * 注意，在这个方法里不要调用setCurrentTime()方法，否则会导致死循环，切记切记。
+         *
+         * @param time 秒
          */
         void onTimerSetValueChanged(long time);
 
@@ -621,7 +629,7 @@ public class CircleTimerView extends View {
         /**
          * launch timer set value chang event
          *
-         * @param time
+         * @param time 秒
          */
         void onTimerSetValueChange(long time);
     }

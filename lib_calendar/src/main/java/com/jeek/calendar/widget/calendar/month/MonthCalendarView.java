@@ -116,12 +116,16 @@ public class MonthCalendarView extends ViewPager implements OnMonthClickListener
                     Calendar calendar = Calendar.getInstance();
                     int currYear = calendar.get(Calendar.YEAR);
                     int currMonth = calendar.get(Calendar.MONTH);
+
+                    //非选中日期所在月份，默认选中第一天
+
                     if (currYear == monthView.getSelectYear() &&
                             currMonth == monthView.getSelectMonth()) {
                         monthView.clickThisMonth(monthView.getSelectYear(), monthView.getSelectMonth(), calendar.get(Calendar.DAY_OF_MONTH));
                     } else {
                         monthView.clickThisMonth(monthView.getSelectYear(), monthView.getSelectMonth(), 1);
                     }
+
                 } else {
                     monthView.clickThisMonth(monthView.getSelectYear(), monthView.getSelectMonth(), monthView.getSelectDay());
                 }
@@ -154,6 +158,35 @@ public class MonthCalendarView extends ViewPager implements OnMonthClickListener
             Calendar calendar = Calendar.getInstance();
             monthView.clickThisMonth(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE));
         }
+    }
+
+    /**
+     * 跳转到指定的日期
+     *
+     * @param timeMillis
+     */
+    public void setDateToView(long timeMillis) {
+        final Calendar selectedCalendar = Calendar.getInstance();
+        selectedCalendar.setTimeInMillis(timeMillis);
+        Calendar currentCalendar = Calendar.getInstance();
+        int diffMonth = selectedCalendar.get(Calendar.MONTH) - currentCalendar.get(Calendar.MONTH);//两个日期的月份相差
+        int diffYearMonth = (selectedCalendar.get(Calendar.YEAR) - currentCalendar.get(Calendar.YEAR)) * 12;//两个日期的年份相差多少个月
+        int result = diffMonth + diffYearMonth;
+        final int position = mMonthAdapter.getMonthCount() / 2 + result;
+        removeOnPageChangeListener(mOnPageChangeListener);//先移除监听，否则会导致选中的日期被监听覆盖。
+        setCurrentItem(position, true);
+        post(new Runnable() {
+            @Override
+            public void run() {
+                removeOnPageChangeListener(mOnPageChangeListener);
+                MonthView monthView = mMonthAdapter.getViews().get(position);
+                if (monthView != null) {
+                    monthView.clickThisMonth(selectedCalendar.get(Calendar.YEAR), selectedCalendar.get(Calendar.MONTH), selectedCalendar.get(Calendar.DAY_OF_MONTH));
+                    removeOnPageChangeListener(mOnPageChangeListener);
+                    addOnPageChangeListener(mOnPageChangeListener);
+                }
+            }
+        });
     }
 
     /**

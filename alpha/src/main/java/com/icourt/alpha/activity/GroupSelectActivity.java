@@ -7,24 +7,24 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.CheckedTextView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.SelectGroupAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.SelectGroupBean;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ItemDecorationUtils;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -44,6 +44,8 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
+//TODO 改名字 改成TeamSelectActivity  GroupSelectActivity太像关联讨论组
+
 public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
 
     @BindView(R.id.titleBack)
@@ -55,9 +57,9 @@ public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAda
     @BindView(R.id.titleView)
     AppBarLayout titleView;
     @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
 
     SelectGroupAdapter selectGroupAdapter;
     final List<SelectGroupBean> groupBeanList = new ArrayList<>();
@@ -89,40 +91,36 @@ public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAda
         if (groupList != null) {
             groupBeanList.addAll(groupList);
         }
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_user, "暂无负责团队");
-        refreshLayout.setMoveForHorizontal(true);
+        recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_user, R.string.empty_list_customer_team);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setHasFixedSize(true);
         recyclerView.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(this, true));
         recyclerView.setAdapter(selectGroupAdapter = new SelectGroupAdapter());
-        selectGroupAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, selectGroupAdapter));
         selectGroupAdapter.setOnItemClickListener(this);
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(RefreshLayout refreshlayout) {
                 getData(true);
             }
 
             @Override
-            public void onLoadMore(boolean isSilence) {
-                super.onLoadMore(isSilence);
+            public void onLoadmore(RefreshLayout refreshlayout) {
                 getData(false);
             }
         });
 
-        refreshLayout.setAutoRefresh(true);
-        refreshLayout.startRefresh();
+        refreshLayout.autoRefresh();
     }
 
     @OnClick({R.id.titleAction})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.titleAction:
                 CustomerPersonCreateActivity.launchSetResultFromGroup(GroupSelectActivity.this, selectGroupAdapter.getSelectedData());
                 finish();
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }
@@ -141,7 +139,6 @@ public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAda
                             response.body().result.addAll(groupBeanList);
                         }
                         selectGroupAdapter.bindData(true, response.body().result);
-
                         if (response.body().result != null && groupBeanList != null) {
                             for (int i = 0; i < response.body().result.size(); i++) {
                                 for (int j = 0; j < groupBeanList.size(); j++) {
@@ -164,8 +161,8 @@ public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAda
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 

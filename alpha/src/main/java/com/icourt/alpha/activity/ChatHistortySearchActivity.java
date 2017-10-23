@@ -23,7 +23,6 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.SearchItemAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
@@ -38,13 +37,14 @@ import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.ClearEditText;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.nim.GlobalMessageObserver;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.msg.MsgService;
 import com.netease.nimlib.sdk.search.model.MsgIndexRecord;
 import com.netease.nimlib.sdk.team.TeamService;
 import com.netease.nimlib.sdk.team.model.Team;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -82,11 +82,9 @@ public class ChatHistortySearchActivity extends BaseActivity implements BaseRecy
     @BindView(R.id.searchLayout)
     LinearLayout searchLayout;
     @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
-    @BindView(R.id.contentEmptyText)
-    TextView contentEmptyText;
+    SmartRefreshLayout refreshLayout;
     @BindView(R.id.softKeyboardSizeWatchLayout)
     SoftKeyboardSizeWatchLayout softKeyboardSizeWatchLayout;
 
@@ -118,13 +116,15 @@ public class ChatHistortySearchActivity extends BaseActivity implements BaseRecy
     @Override
     protected void initView() {
         super.initView();
-        refreshLayout.setPullRefreshEnable(false);
+        refreshLayout.setEnableRefresh(false);
+        refreshLayout.setEnableLoadmore(false);
         AlphaUserInfo loginUserInfo = getLoginUserInfo();
         contactDbService = new ContactDbService(loginUserInfo == null ? "" : loginUserInfo.getUserId());
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setEmptyContent(R.string.empty_list_im_search_msg);
         recyclerView.setAdapter(searchItemAdapter = new SearchItemAdapter(Integer.MAX_VALUE));
         searchItemAdapter.setOnItemClickListener(this);
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+        recyclerView.getRecyclerView().addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
@@ -159,6 +159,7 @@ public class ChatHistortySearchActivity extends BaseActivity implements BaseRecy
             public void afterTextChanged(Editable s) {
                 if (TextUtils.isEmpty(s)) {
                     searchItemAdapter.clearData();
+                    setViewVisible(recyclerView.getEmptyView(), false);
                 } else {
                     getData(true);
                 }
@@ -182,13 +183,6 @@ public class ChatHistortySearchActivity extends BaseActivity implements BaseRecy
         });
         etSearchName.setText(getIntent().getStringExtra(KEY_KEYWORD));
         etSearchName.setSelection(etSearchName.getText().length());
-
-        searchItemAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
-            @Override
-            protected void updateUI() {
-                contentEmptyText.setVisibility(searchItemAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
-            }
-        });
     }
 
     @Override
@@ -216,6 +210,7 @@ public class ChatHistortySearchActivity extends BaseActivity implements BaseRecy
                     @Override
                     public void accept(List<SearchItemEntity> searchPolymerizationEntities) throws Exception {
                         searchItemAdapter.bindData(true, searchPolymerizationEntities);
+                        recyclerView.enableEmptyView(searchItemAdapter.getData());
                     }
                 });
     }
@@ -281,11 +276,13 @@ public class ChatHistortySearchActivity extends BaseActivity implements BaseRecy
     @OnClick({R.id.tv_search_cancel})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.tv_search_cancel:
                 SystemUtils.hideSoftKeyBoard(getActivity(), etSearchName, true);
                 finish();
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }

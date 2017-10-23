@@ -75,11 +75,22 @@ public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAda
     @BindView(R.id.contentEmptyText)
     TextView contentEmptyText;
 
-
-    int searchTaskType;//搜索任务type
-    int taskStatuType;//搜索任务状态type
-    String projectId;//项目的id
-    String assignTos;//负责人的id的集合
+    /**
+     * 搜索任务type
+     */
+    int searchTaskType;
+    /**
+     * 搜索任务状态type
+     */
+    int taskStatuType;
+    /**
+     * 项目的id
+     */
+    String projectId;
+    /**
+     * 负责人的id的集合
+     */
+    String assignTos;
 
     private TaskAdapter taskAdapter;
 
@@ -118,6 +129,7 @@ public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAda
 
     @Override
     protected void initView() {
+        contentEmptyText.setText(R.string.empty_list_task_search_task);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         taskAdapter = new TaskAdapter();
         taskAdapter.setOnItemClickListener(this);
@@ -126,7 +138,11 @@ public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAda
             @Override
             protected void updateUI() {
                 if (contentEmptyText != null) {
-                    contentEmptyText.setVisibility(taskAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+                    if (!TextUtils.isEmpty(etSearchName.getText())) {
+                        contentEmptyText.setVisibility(taskAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+                    } else {
+                        contentEmptyText.setVisibility(View.GONE);
+                    }
                 }
             }
         });
@@ -145,7 +161,8 @@ public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAda
             @Override
             public void afterTextChanged(Editable s) {
                 if (TextUtils.isEmpty(s)) {
-                    taskAdapter.setNewData(null);
+                    cancelAllCall();
+                    taskAdapter.clearData();
                 } else {
                     getData(true);
                 }
@@ -174,20 +191,28 @@ public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAda
                 getData(true);
                 break;
             case TaskActionEvent.TASK_DELETE_ACTION:
-                if (event.entity == null) return;
+                if (event.entity == null) {
+                    return;
+                }
                 if (taskAdapter != null) {
                     taskAdapter.removeItem(event.entity);
                 }
                 break;
             case TaskActionEvent.TASK_ADD_ITEM_ACITON:
-                if (event.entity == null) return;
+                if (event.entity == null) {
+                    return;
+                }
                 if (taskAdapter != null) {
                     taskAdapter.addData(event.entity);
                 }
                 break;
             case TaskActionEvent.TASK_UPDATE_ITEM:
-                if (event.entity == null) return;
+                if (event.entity == null) {
+                    return;
+                }
                 getData(true);
+                break;
+            default:
                 break;
         }
     }
@@ -209,8 +234,9 @@ public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAda
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-        if (etSearchName == null)
+        if (etSearchName == null) {
             return;
+        }
         String keyword = etSearchName.getText().toString();
         searchTask(keyword);
     }
@@ -219,8 +245,10 @@ public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAda
      * 搜索任务
      */
     private void searchTask(String keyword) {
-        int statusType = -1;//搜索全部状态的任务
-        searchTaskType = 0;//我关注的，新任务，都搜索全部
+        //搜索全部状态的任务
+        int statusType = -1;
+        //我关注的，新任务，都搜索全部
+        searchTaskType = 0;
         if (!TextUtils.isEmpty(assignTos)) {
             callEnqueue(getApi().taskQueryByName(
                     assignTos,
@@ -229,13 +257,13 @@ public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAda
                     searchTaskType,
                     projectId),
                     new SimpleCallBack<TaskEntity>() {
-                @Override
-                public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
-                    if (response.body().result != null && recyclerView != null) {
-                        taskAdapter.setNewData(response.body().result.items);
-                    }
-                }
-            });
+                        @Override
+                        public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
+                            if (response.body().result != null && recyclerView != null) {
+                                taskAdapter.setNewData(response.body().result.items);
+                            }
+                        }
+                    });
         } else {
             callEnqueue(getApi().taskQueryByNameFromMatter(
                     keyword,
@@ -243,13 +271,13 @@ public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAda
                     searchTaskType,
                     projectId),
                     new SimpleCallBack<TaskEntity>() {
-                @Override
-                public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
-                    if (response.body().result != null && recyclerView != null) {
-                        taskAdapter.setNewData(response.body().result.items);
-                    }
-                }
-            });
+                        @Override
+                        public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
+                            if (response.body().result != null && recyclerView != null) {
+                                taskAdapter.setNewData(response.body().result.items);
+                            }
+                        }
+                    });
         }
     }
 
@@ -259,22 +287,24 @@ public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAda
      * @param itemEntity
      */
     private void recoverTaskById(final TaskEntity.TaskItemEntity itemEntity) {
-        if (itemEntity == null) return;
+        if (itemEntity == null) {
+            return;
+        }
         showLoadingDialog(null);
         callEnqueue(getApi().taskRecoverById(itemEntity.id),
                 new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                getData(true);
-            }
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        dismissLoadingDialog();
+                        getData(true);
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
     }
 
     @Override
@@ -288,8 +318,9 @@ public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAda
         final TaskEntity.TaskItemEntity itemEntity = taskAdapter.getItem(i);
         switch (view.getId()) {
             case R.id.task_item_start_timming:
-                if (itemEntity == null)
+                if (itemEntity == null) {
                     return;
+                }
                 if (!itemEntity.isTiming) {
                     MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
                     startTiming(itemEntity);
@@ -299,12 +330,15 @@ public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAda
                 }
                 break;
             case R.id.task_item_checkbox:
-                if (itemEntity == null)
+                if (itemEntity == null) {
                     return;
-                if (!itemEntity.valid) {//说明是已删除的任务，要恢复任务
+                }
+                //说明是已删除的任务，要恢复任务
+                if (!itemEntity.valid) {
                     recoverTaskById(itemEntity);
                 } else {
-                    if (!itemEntity.state) {//完成任务
+                    //完成任务
+                    if (!itemEntity.state) {
                         if (itemEntity.attendeeUsers != null) {
                             if (itemEntity.attendeeUsers.size() > 1) {
                                 showFinishDialog(getActivity(), getString(R.string.task_is_confirm_complete_task), itemEntity, SHOW_FINISH_DIALOG);
@@ -314,10 +348,13 @@ public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAda
                         } else {
                             updateTaskState(itemEntity, true);
                         }
-                    } else {//取消完成任务
+                    } else {
+                        //取消完成任务
                         updateTaskState(itemEntity, false);
                     }
                 }
+                break;
+            default:
                 break;
         }
     }
@@ -325,16 +362,18 @@ public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAda
     @Override
     protected void startTimingBack(TaskEntity.TaskItemEntity requestEntity, Response<TimeEntity.ItemEntity> response) {
         taskAdapter.updateItem(requestEntity);
-        if (response.body() != null)
+        if (response.body() != null) {
             TimerTimingActivity.launch(getActivity(), response.body());
+        }
     }
 
     @Override
     protected void stopTimingBack(TaskEntity.TaskItemEntity requestEntity) {
         taskAdapter.updateItem(requestEntity);
         TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
-        if (timer != null)
+        if (timer != null) {
             TimerDetailActivity.launch(getActivity(), timer);
+        }
     }
 
     @Override
@@ -357,6 +396,4 @@ public class SearchTaskFragment extends BaseTaskFragment implements BaseQuickAda
         super.onDestroyView();
         unbinder.unbind();
     }
-
-
 }

@@ -29,26 +29,32 @@ public class TaskUsersAdapter extends BaseArrayRecyclerAdapter<TaskEntity.TaskIt
     }
 
     @Override
-    public int bindView(int viewtype) {
+    public int bindView(int viewType) {
         return R.layout.adapter_item_task_user_layout;
     }
 
     @Override
     public void onBindHoder(ViewHolder holder, TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUserEntity, int position) {
         ImageView imageView = holder.obtainView(R.id.user_image);
-        if (attendeeUserEntity == null) return;
-        if (getItemCount() > 2) {
-            if (position == 0) {
-                TextDrawable textDrawable = TextDrawable.builder()
-                        .beginConfig()
-                        .textColor(0xFFcacaca)
-                        .fontSize(dp13)
-                        .endConfig()
-                        .buildRound(String.valueOf(getData().size()), 0xFFf8f8f9);
-                imageView.setImageDrawable(textDrawable);
-                setChildViewParams(holder, dp8);
-            } else {
+        if (attendeeUserEntity == null) {
+            return;
+        }
+        if (getData().size() > 3) {
+            if (getData().size() == 4) {
                 GlideUtils.loadUser(imageView.getContext(), attendeeUserEntity.pic, imageView);
+            } else {
+                if (position == 0) {
+                    TextDrawable textDrawable = TextDrawable.builder()
+                            .beginConfig()
+                            .textColor(0xFFed6c00)
+                            .fontSize(dp13)
+                            .endConfig()
+                            .buildRound(String.valueOf(getData().size()), 0xFFf4f4f4);
+                    imageView.setImageDrawable(textDrawable);
+                    setChildViewParams(holder, dp8);
+                } else {
+                    GlideUtils.loadUser(imageView.getContext(), attendeeUserEntity.pic, imageView);
+                }
             }
         } else {
             GlideUtils.loadUser(imageView.getContext(), attendeeUserEntity.pic, imageView);

@@ -18,7 +18,7 @@ import com.icourt.alpha.utils.IMUtils;
 
 public class TaskAttachmentAdapter extends SeaFileImageBaseAdapter<TaskAttachmentEntity> {
     @Override
-    public int bindView(int viewtype) {
+    public int bindView(int viewType) {
         return R.layout.adapter_item_task_attachment_layout;
     }
 
@@ -28,12 +28,12 @@ public class TaskAttachmentAdapter extends SeaFileImageBaseAdapter<TaskAttachmen
         TextView nameView = holder.obtainView(R.id.task_file_name_tv);
         TextView userView = holder.obtainView(R.id.task_file_user_tv);
         TextView sizeView = holder.obtainView(R.id.task_file_size_tv);
-        if (IMUtils.isPIC(taskAttachmentEntity.getSeaFileImageFullPath())) {
+        if (IMUtils.isPIC(taskAttachmentEntity.getSeaFileFullPath())) {
             loadSFileImage(taskAttachmentEntity, iconView);
         } else {
-            iconView.setImageResource(getSFileTypeIcon(taskAttachmentEntity.getSeaFileImageFullPath()));
+            iconView.setImageResource(getSFileTypeIcon(taskAttachmentEntity.getSeaFileFullPath()));
         }
-        nameView.setText(FileUtils.getFileName(taskAttachmentEntity.getSeaFileImageFullPath()));
+        nameView.setText(FileUtils.getFileName(taskAttachmentEntity.getSeaFileFullPath()));
         sizeView.setText(FileUtils.bFormat(taskAttachmentEntity.fileSize));
     }
 }

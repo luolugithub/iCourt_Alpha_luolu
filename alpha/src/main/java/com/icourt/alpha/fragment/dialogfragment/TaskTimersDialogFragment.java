@@ -6,7 +6,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -17,7 +16,6 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.TimerAddActivity;
 import com.icourt.alpha.activity.TimerDetailActivity;
@@ -32,8 +30,11 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.recyclerviewDivider.TimerItemDecoration;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -63,9 +64,9 @@ public class TaskTimersDialogFragment extends BaseDialogFragment implements Base
     @BindView(R.id.titleView)
     AppBarLayout titleView;
     @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
     TimeAdapter timeAdapter;
 
     public static TaskTimersDialogFragment newInstance(@NonNull TaskEntity.TaskItemEntity taskItemEntity) {
@@ -104,27 +105,23 @@ public class TaskTimersDialogFragment extends BaseDialogFragment implements Base
         if (taskItemEntity != null) {
             titleAction.setVisibility(taskItemEntity.valid ? View.VISIBLE : View.GONE);
         }
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_timing, "暂无计时");
-        refreshLayout.setMoveForHorizontal(true);
+        recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_timing, R.string.empty_list_timing);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setItemAnimator(null);
 
         recyclerView.setAdapter(timeAdapter = new TimeAdapter());
         recyclerView.addItemDecoration(new TimerItemDecoration(getActivity(), timeAdapter));
-        recyclerView.setHasFixedSize(true);
         timeAdapter.setOnItemClickListener(this);
-        timeAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, timeAdapter));
+        timeAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(recyclerView, timeAdapter));
 
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(RefreshLayout refreshlayout) {
                 getData(true);
             }
 
             @Override
-            public void onLoadMore(boolean isSilence) {
-                super.onLoadMore(isSilence);
+            public void onLoadmore(RefreshLayout refreshlayout) {
                 getData(false);
             }
         });
@@ -181,8 +178,8 @@ public class TaskTimersDialogFragment extends BaseDialogFragment implements Base
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 

@@ -37,6 +37,7 @@ import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
+import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.alpha.widget.dialog.CenterMenuDialog;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
@@ -68,38 +69,75 @@ import static com.umeng.socialize.utils.DeviceConfig.context;
  */
 
 public abstract class BaseTaskFragment extends BaseFragment implements OnFragmentCallBackListener, ProjectSelectDialogFragment.OnProjectTaskGroupSelectListener {
+    /**
+     * 编辑任务权限
+     */
+    protected boolean isEditTask;
+    /**
+     * 删除任务权限
+     */
+    protected boolean isDeleteTask;
+    /**
+     * 添加计时权限
+     */
+    protected boolean isAddTime;
 
-    protected boolean isEditTask = false;//编辑任务权限
-    protected boolean isDeleteTask = false;//删除任务权限
-    protected boolean isAddTime = false;//添加计时权限
-
-    public static final int CHANGE_STATUS = 1;//修改任务完成状态
-    public static final int CHANGE_PROJECT = 2;//修改任务所属项目/任务组
-    public static final int CHANGE_ALLOT = 3;//将任务分配给其他负责人
-    public static final int CHANGE_DUETIME = 4;//修改任务到期时间和提醒时间
+    /**
+     * 修改任务完成状态
+     */
+    protected static final int CHANGE_STATUS = 1;
+    /**
+     * 修改任务所属项目/任务组
+     */
+    protected static final int CHANGE_PROJECT = 2;
+    /**
+     * 将任务分配给其他负责人
+     */
+    protected static final int CHANGE_ALLOT = 3;
+    /**
+     * 修改任务到期时间和提醒时间
+     */
+    protected static final int CHANGE_DUETIME = 4;
 
     /**
      * 以下为对任务的操作状态
      */
     @IntDef({CHANGE_STATUS, CHANGE_PROJECT, CHANGE_ALLOT, CHANGE_DUETIME})
     @Retention(RetentionPolicy.SOURCE)
-    public @interface ChangeType {
+    protected @interface ChangeType {
     }
 
+    /**
+     * 删除提示对话框
+     */
+    protected static final int SHOW_DELETE_DIALOG = 0;
+    /**
+     * 完成任务提示对话框
+     */
+    protected static final int SHOW_FINISH_DIALOG = 1;
 
-    protected static final int SHOW_DELETE_DIALOG = 0;//删除提示对话框
-    protected static final int SHOW_FINISH_DIALOG = 1;//完成任务提示对话框
+    /**
+     * 恢复任务提示对话框
+     */
+    protected static final int SHOW_RENEW_DIALOG = 2;
+
+    /**
+     * 恢复二次确认
+     */
+    protected static final int SHOW_RENEW_BUTTOM_SHEET = 2;
 
     /**
      * 以下为弹出对话框的分类
      */
-    @IntDef({SHOW_DELETE_DIALOG, SHOW_FINISH_DIALOG})
+    @IntDef({SHOW_DELETE_DIALOG, SHOW_FINISH_DIALOG, SHOW_RENEW_DIALOG})
     @Retention(RetentionPolicy.SOURCE)
     public @interface DialogType {
     }
 
-
-    private TaskEntity.TaskItemEntity updateTaskItemEntity;//当前修改任务到期事件、负责人、所属项目的任务
+    /**
+     * 当前修改任务到期事件、负责人、所属项目的任务
+     */
+    private TaskEntity.TaskItemEntity updateTaskItemEntity;
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
@@ -115,18 +153,24 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onTimerEvent(TimingEvent event) {
-        if (event == null) return;
+        if (event == null) {
+            return;
+        }
         switch (event.action) {
             case TimingEvent.TIMING_ADD:
                 TimeEntity.ItemEntity timer = TimerManager.getInstance().getTimer();
-                if (timer != null && !TextUtils.isEmpty(timer.taskPkId))
+                if (timer != null && !TextUtils.isEmpty(timer.taskPkId)) {
                     taskTimingUpdateEvent(timer.taskPkId);
+                }
                 break;
             case TimingEvent.TIMING_UPDATE_PROGRESS:
 
                 break;
             case TimingEvent.TIMING_STOP:
                 taskTimingUpdateEvent(null);
+                break;
+            default:
+
                 break;
         }
     }
@@ -181,6 +225,9 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
      * @param state      true：完成状态；false：未完成状态。
      */
     protected void updateTaskState(final TaskEntity.TaskItemEntity itemEntity, final boolean state) {
+        if (itemEntity == null) {
+            return;
+        }
         showLoadingDialog(null);
         itemEntity.state = state;
         callEnqueue(
@@ -189,8 +236,9 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
                     @Override
                     public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
                         dismissLoadingDialog();
-                        if (response.body().result != null)
+                        if (response.body().result != null) {
                             taskUpdateBack(CHANGE_STATUS, response.body().result);
+                        }
                     }
 
                     @Override
@@ -242,10 +290,19 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
      * @param taskReminderEntity
      */
     private void addReminders(TaskEntity.TaskItemEntity taskItemEntity, final TaskReminderEntity taskReminderEntity) {
-        if (taskReminderEntity == null) return;
-        if (taskItemEntity == null) return;
+        if (taskReminderEntity == null) {
+            return;
+        }
+        if (taskItemEntity == null) {
+            return;
+        }
         String json = getReminderJson(taskReminderEntity);
-        if (TextUtils.isEmpty(json)) return;
+        if (TextUtils.isEmpty(json)) {
+            return;
+        }
+        if (TextUtils.isEmpty(json)) {
+            return;
+        }
         callEnqueue(
                 getApi().taskReminderAdd(taskItemEntity.id, RequestUtils.createJsonBody(json)),
                 new SimpleCallBack<TaskReminderEntity>() {
@@ -253,14 +310,8 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
                     public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
 
                     }
-
-                    @Override
-                    public void onFailure(Call<ResEntity<TaskReminderEntity>> call, Throwable t) {
-                        super.onFailure(call, t);
-                    }
                 });
     }
-
 
     /**
      * 删除任务
@@ -269,7 +320,9 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
      */
     protected void deleteTask(final TaskEntity.TaskItemEntity itemEntity) {
         showLoadingDialog(null);
-        MobclickAgent.onEvent(context, UMMobClickAgent.delete_task_click_id);
+        if (context != null) {
+            MobclickAgent.onEvent(context, UMMobClickAgent.delete_task_click_id);
+        }
         callEnqueue(
                 getApi().taskDelete(itemEntity.id),
                 new SimpleCallBack<JsonElement>() {
@@ -288,6 +341,33 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
         );
     }
 
+    /**
+     * 恢复已删除任务（已删除任务列表会调用此接口）
+     *
+     * @param itemEntity
+     */
+    private void recoverTaskById(final TaskEntity.TaskItemEntity itemEntity) {
+        if (itemEntity == null) {
+            return;
+        }
+        showLoadingDialog(null);
+        callEnqueue(
+                getApi().taskRecoverById(itemEntity.id),
+                new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        dismissLoadingDialog();
+                        taskRevertBack(itemEntity);
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                }
+        );
+    }
 
     /**
      * 展示选择负责人对话框
@@ -353,7 +433,8 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
      * @param taskItemEntity
      */
     protected void showLongMenu(TaskEntity.TaskItemEntity taskItemEntity) {
-        if (taskItemEntity.state) {//已完成的任务不能进行长按操作
+        //已完成的任务不能进行长按操作
+        if (taskItemEntity.state) {
             return;
         }
         ItemsEntity timeEntity = new ItemsEntity(getString(R.string.task_start_timing), R.mipmap.time_start_orange_task);
@@ -409,14 +490,15 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
 
         @Override
         public void onItemClick(final BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, final View view, int position) {
-            if (centerMenuDialog != null)
+            if (centerMenuDialog != null) {
                 centerMenuDialog.dismiss();
+            }
             if (adapter instanceof CenterMenuDialog.MenuAdapter) {
                 final ItemsEntity entity = (ItemsEntity) adapter.getItem(position);
-                final CenterMenuDialog.MenuAdapter menuAdapter = (CenterMenuDialog.MenuAdapter) adapter;
                 if (taskItemEntity != null) {
                     switch (entity.getItemIconRes()) {
-                        case R.mipmap.assign_orange://分配给
+                        //分配给
+                        case R.mipmap.assign_orange:
                             if (taskItemEntity.matter != null) {
                                 updateTaskItemEntity = taskItemEntity;
                                 showTaskAllotSelectDialogFragment(taskItemEntity.matter.id, taskItemEntity.attendeeUsers);
@@ -424,29 +506,35 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
                                 showToast(R.string.task_please_check_project);
                             }
                             break;
-                        case R.mipmap.date_orange://到期日
+                        //到期日
+                        case R.mipmap.date_orange:
                             updateTaskItemEntity = taskItemEntity;
                             showDateSelectDialogFragment(taskItemEntity.dueTime, taskItemEntity.id);
                             break;
-                        case R.mipmap.info_orange://查看详情
+                        //查看详情
+                        case R.mipmap.info_orange:
                             TaskDetailActivity.launch(view.getContext(), taskItemEntity.id);
                             break;
-                        case R.mipmap.project_orange://项目/任务组
+                        //项目/任务组
+                        case R.mipmap.project_orange:
                             updateTaskItemEntity = taskItemEntity;
                             showProjectSelectDialogFragment();
                             break;
-                        case R.mipmap.time_start_orange_task://开始计时
+                        //开始计时
+                        case R.mipmap.time_start_orange_task:
                             if (!taskItemEntity.isTiming) {
                                 MobclickAgent.onEvent(getContext(), UMMobClickAgent.start_timer_click_id);
                                 startTiming(taskItemEntity);
                             }
                             break;
-                        case R.mipmap.time_stop_orange_task://停止计时
+                        //停止计时
+                        case R.mipmap.time_stop_orange_task:
                             if (taskItemEntity.isTiming) {
                                 stopTiming(taskItemEntity);
                             }
                             break;
-                        case R.mipmap.trash_orange://删除
+                        //删除
+                        case R.mipmap.trash_orange:
                             if (taskItemEntity.attendeeUsers != null) {
                                 if (taskItemEntity.attendeeUsers.size() > 1) {
                                     showFinishDialog(view.getContext(), getString(R.string.task_is_confirm_delete_task), taskItemEntity, SHOW_DELETE_DIALOG);
@@ -456,6 +544,8 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
                             } else {
                                 showFinishDialog(view.getContext(), getString(R.string.task_is_confirm_delete), taskItemEntity, SHOW_DELETE_DIALOG);
                             }
+                            break;
+                        default:
                             break;
                     }
                 }
@@ -477,7 +567,8 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
-                    case Dialog.BUTTON_POSITIVE://确定
+                    //确定
+                    case Dialog.BUTTON_POSITIVE:
                         if (type == SHOW_DELETE_DIALOG) {
                             deleteTask(itemEntity);
                         } else if (type == SHOW_FINISH_DIALOG) {
@@ -486,22 +577,48 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
                             } else {
                                 updateTaskState(itemEntity, true);
                             }
+                        } else if (type == SHOW_RENEW_DIALOG) {
+                            recoverTaskById(itemEntity);
                         }
                         break;
-                    case Dialog.BUTTON_NEGATIVE://取消
-                        if (type == SHOW_FINISH_DIALOG) {
-                        }
+                    default:
                         break;
                 }
             }
         };
         //dialog参数设置
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);  //先得到构造器
-        builder.setTitle(R.string.task_remind); //设置标题
-        builder.setMessage(message); //设置内容
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle(R.string.task_remind);
+        builder.setMessage(message);
         builder.setPositiveButton(R.string.task_confirm, dialogOnclicListener);
         builder.setNegativeButton(R.string.task_cancel, dialogOnclicListener);
         builder.create().show();
+    }
+
+    /**
+     * 显示二次确认对话框
+     */
+    protected void showTwiceSureDialog(final TaskEntity.TaskItemEntity itemEntity, String title, final int type) {
+        new BottomActionDialog(getContext(),
+                title,
+                Arrays.asList(getString(R.string.str_ok)),
+                0,
+                0xFFFF0000,
+                new BottomActionDialog.OnActionItemClickListener() {
+                    @Override
+                    public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                        dialog.dismiss();
+                        switch (position) {
+                            case 0:
+                                 if (type == SHOW_RENEW_BUTTOM_SHEET) {
+                                    recoverTaskById(itemEntity);
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }).show();
     }
 
     /**
@@ -603,7 +720,9 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
      * @return
      */
     private String getTaskProjectOrGroupJson(TaskEntity.TaskItemEntity itemEntity, ProjectEntity projectEntity, TaskGroupEntity taskGroupEntity) {
-        if (itemEntity == null) return null;
+        if (itemEntity == null) {
+            return null;
+        }
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("id", itemEntity.id);
         jsonObject.addProperty("state", itemEntity.state);
@@ -636,7 +755,9 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
      */
     private String getReminderJson(TaskReminderEntity taskReminderEntity) {
         try {
-            if (taskReminderEntity == null) return null;
+            if (taskReminderEntity == null) {
+                return null;
+            }
             return JsonUtils.getGson().toJson(taskReminderEntity);
         } catch (Exception e) {
             e.printStackTrace();
@@ -648,6 +769,7 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
      * 任务开始计时成功的回调
      *
      * @param requestEntity 调用该方法传递的参数
+     * @param response
      */
     protected abstract void startTimingBack(TaskEntity.TaskItemEntity requestEntity, Response<TimeEntity.ItemEntity> response);
 
@@ -680,11 +802,18 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
      */
     protected abstract void taskTimingUpdateEvent(String taskId);
 
+    /**
+     * 恢复已删除任务（已删除任务列表会调用此接口）
+     * @param itemEntity
+     */
+    protected void taskRevertBack(TaskEntity.TaskItemEntity itemEntity){
+
+    }
+
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         EventBus.getDefault().unregister(this);
     }
-
 }

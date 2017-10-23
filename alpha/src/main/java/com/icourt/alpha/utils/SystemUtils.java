@@ -33,6 +33,7 @@ import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -643,6 +644,36 @@ public class SystemUtils {
             Intent intent = new Intent(Settings.ACTION_INTERNAL_STORAGE_SETTINGS);
             context.startActivity(intent);
         }
+    }
+
+    /**
+     * 安全地获取字符串
+     *
+     * @param context
+     * @param id
+     * @return
+     */
+    public static CharSequence getString(Context context, @StringRes int id) {
+        return getString(context, id, "");
+    }
+
+    /**
+     * 安全地获取字符串
+     *
+     * @param context
+     * @param id
+     * @param defaultStr
+     * @return
+     */
+    public static CharSequence getString(Context context, @StringRes int id, CharSequence defaultStr) {
+        if (context != null) {
+            try {
+                return context.getResources().getString(id);
+            } catch (Resources.NotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+        return defaultStr;
     }
 
     /**

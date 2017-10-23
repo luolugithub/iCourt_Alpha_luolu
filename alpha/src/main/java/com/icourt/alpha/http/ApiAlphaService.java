@@ -17,12 +17,14 @@ import com.icourt.alpha.entity.bean.MsgConvert2Task;
 import com.icourt.alpha.entity.bean.PageEntity;
 import com.icourt.alpha.entity.bean.ProjectDetailEntity;
 import com.icourt.alpha.entity.bean.ProjectEntity;
+import com.icourt.alpha.entity.bean.ProjectProcessesEntity;
+import com.icourt.alpha.entity.bean.RepoAdmin;
+import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.entity.bean.RepoIdResEntity;
 import com.icourt.alpha.entity.bean.RepoMatterEntity;
 import com.icourt.alpha.entity.bean.SFileLinkInfoEntity;
 import com.icourt.alpha.entity.bean.SFileShareUserInfo;
 import com.icourt.alpha.entity.bean.SFileTokenEntity;
-import com.icourt.alpha.entity.bean.ProjectProcessesEntity;
 import com.icourt.alpha.entity.bean.SearchEngineEntity;
 import com.icourt.alpha.entity.bean.SelectGroupBean;
 import com.icourt.alpha.entity.bean.TaskAttachmentEntity;
@@ -34,6 +36,7 @@ import com.icourt.alpha.entity.bean.TaskMemberWrapEntity;
 import com.icourt.alpha.entity.bean.TaskReminderEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.bean.TimingCountEntity;
+import com.icourt.alpha.entity.bean.TimingStatisticEntity;
 import com.icourt.alpha.entity.bean.UserDataEntity;
 import com.icourt.alpha.entity.bean.WorkType;
 import com.icourt.alpha.http.httpmodel.ResEntity;
@@ -83,13 +86,27 @@ public interface ApiAlphaService {
     /**
      * 修改律师电话信息
      *
-     * @param phone 手机号码 不包含+86国际代码的字符串
+     * @param phone 手机号码 包含+86国际代码的字符串
      * @return
      */
-    @Deprecated
     @POST("ilaw/api/v1/auth/update")
     @FormUrlEncoded
-    Call<ResEntity<String>> updateUserPhone(@Field("phone") String phone);
+    Call<ResEntity<JsonElement>> updateUserPhone(@Field("id") String id,
+                                                 @Field("phone") String phone);
+
+    /**
+     * 更新用户信息
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/auth-api/updateUsingPOST
+     *
+     * @param id
+     * @param name
+     * @return
+     */
+    @POST("ilaw/api/v1/auth/update")
+    @FormUrlEncoded
+    Call<ResEntity<JsonElement>> updateUserName(@Field("id") String id,
+                                                @Field("name") String name);
 
     /**
      * 修改律师邮箱信息
@@ -97,10 +114,10 @@ public interface ApiAlphaService {
      * @param email
      * @return
      */
-    @Deprecated
     @POST("ilaw/api/v1/auth/update")
     @FormUrlEncoded
-    Call<ResEntity<String>> updateUserEmail(@Field("email") String email);
+    Call<ResEntity<JsonElement>> updateUserEmail(@Field("id") String id,
+                                                 @Field("email") String email);
 
     /**
      * 微信登陆
@@ -406,7 +423,11 @@ public interface ApiAlphaService {
      * @return
      */
     @POST("ilaw/api/v1/auth/update")
-    Call<ResEntity<JsonElement>> updateUserInfo(@Query("id") String id, @Query("phone") String phone, @Query("email") String email);
+    Call<ResEntity<JsonElement>> updateUserInfo(@Query("id") String id,
+                                                @Query("name") String name,
+                                                @Query("phone") String phone,
+                                                @Query("email") String email);
+
 
     /**
      * 项目下计时列表
@@ -737,6 +758,31 @@ public interface ApiAlphaService {
                                                   @Query("type") int type);
 
     /**
+     * 任务列表
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/queryTaskFlowsUsingGET_1
+     *
+     * @param assignTos     分配给谁的，用户的id序列
+     * @param stateType     全部任务:－1    已完成:1     未完成:0
+     * @param attentionType 全部:0    我关注的:1
+     * @param orderBy       按指定类型排序或分组；matterId表示按项目排序;createTime表示按日期排序(默认);parentId表示按清单;assignTo表示按负责人排序
+     * @param pageIndex
+     * @param pageSize
+     * @param type          任务和任务组：-1;    任务：0;    任务组：1;
+     * @return
+     */
+    @GET("ilaw/api/v2/taskflow")
+    Call<ResEntity<TaskEntity>> taskListItemByTimeQuery(@Query("assignTos") String assignTos,
+                                                        @Query("stateType") int stateType,
+                                                        @Query("attentionType") int attentionType,
+                                                        @Query("orderBy") String orderBy,
+                                                        @Query("pageIndex") int pageIndex,
+                                                        @Query("pageSize") int pageSize,
+                                                        @Query("type") int type,
+                                                        @Query("startTime") String startTime,
+                                                        @Query("endTime") String endTime);
+
+    /**
      * 项目下任务列表
      * <p>
      * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/taskflow-api/queryTaskFlowsUsingGET_1
@@ -790,7 +836,7 @@ public interface ApiAlphaService {
      */
     @Multipart
     @POST("ilaw/api/v2/task/{taskId}/attachment/addFromFile")
-    Observable<JsonElement> taskAttachmentUploadObservable(@Path("taskId") String taskId, @PartMap Map<String, RequestBody> params);
+    Observable<ResEntity<JsonElement>> taskAttachmentUploadObservable(@Path("taskId") String taskId, @PartMap Map<String, RequestBody> params);
 
     /**
      * 获取指定时间段的计时
@@ -920,6 +966,17 @@ public interface ApiAlphaService {
     Call<ResEntity<List<ContactDeatilBean>>> customerDetailQuery(@Path("id") String id);
 
     /**
+     * 获取联系人详情
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/contact-api-v2/getContactDetailUsingGET
+     *
+     * @param id
+     * @return
+     */
+    @GET("ilaw/api/v2/contact/detail/{id}")
+    Observable<ResEntity<List<ContactDeatilBean>>> customerDetailQueryObservable(@Path("id") String id);
+
+    /**
      * 获取企业联络人
      * <p>
      * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/contact-api-v2/getRelatedPersonUsingGET
@@ -929,6 +986,17 @@ public interface ApiAlphaService {
      */
     @GET("ilaw/api/v2/contact/relatedperson/{id}")
     Call<ResEntity<List<ContactDeatilBean>>> customerLiaisonsQuery(@Path("id") String id);
+
+    /**
+     * 获取企业联络人
+     * <p>
+     * 文档地址：http://testpms.alphalawyer.cn/ilaw/swagger/index.html#!/contact-api-v2/getRelatedPersonUsingGET
+     *
+     * @param id
+     * @return
+     */
+    @GET("ilaw/api/v2/contact/relatedperson/{id}")
+    Observable<ResEntity<List<ContactDeatilBean>>> customerLiaisonsQueryObservable(@Path("id") String id);
 
     /**
      * 联系人添加关注
@@ -1312,6 +1380,15 @@ public interface ApiAlphaService {
     @GET("ilaw/api/v2/documents/getOfficeAdmin")
     Call<String> getOfficeAdmin(@Query("userId") String userId);
 
+    /**
+     * 返回某个律所资料库对应的管理员uids
+     *
+     * @param repoId
+     * @return
+     */
+    @GET("ilaw/api/v2/documents/officeLibs/{repoId}/admins")
+    Call<ResEntity<List<RepoAdmin>>> getOfficeAdmins(@Path("repoId") String repoId);
+
 
     /**
      * 获取sfile分享链接
@@ -1499,6 +1576,52 @@ public interface ApiAlphaService {
      */
     @GET("ilaw/api/v1/matters/{matterId}/processes")
     Call<ResEntity<List<ProjectProcessesEntity>>> projectProcessesQuery(@Path("matterId") String matterId);
+
+    /**
+     * 逸创云客服单点登录接口(帮助中心)
+     * 文档地址：https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/version-control-api/getLastestUpgradeVersionUsingGET
+     * @return
+     */
+    @GET("ilaw/api/v1/ssologin/help")
+    Call<ResEntity<String>> helperUrlQuery();
+
+    /**
+     * 获取律所资料库下面的资料库
+     *
+     * @return
+     */
+    @GET("ilaw/api/v2/documents/my/officeLibs")
+    Call<ResEntity<List<RepoEntity>>> getOfficeLibs(@Query("permissionType") String permissionType);
+
+    /**
+     * 获取计时模块，日、周、月、年的统计时间
+     * 接口地址：https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/timing-api/getPersonalStatisticsChartUsingGET
+     *
+     * @param type      查询的时间区间类型：day，天；week，周；month，月；year，年；
+     * @param startTime 起始时间，yyyy-MM-dd
+     * @param endTime   结束时间，yyyy-MM-dd
+     * @return
+     */
+    @GET("ilaw/api/v2/timing/statistics/personal/linechart")
+    Call<ResEntity<TimingStatisticEntity>> getTimingStatistic(@Query("type") String type, @Query("startTime") String startTime, @Query("endTime") String endTime);
+
+    /**
+     * 获取指定时间段的计时
+     * <p>
+     * 文档地址：https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/timing-api/getPersonalStatisticsListUsingGET
+     *
+     * @param startTime 017-05-09
+     * @param endTime   017-05-15
+     * @param pageIndex
+     * @param pageSize
+     * @return
+     */
+    @GET("ilaw/api/v2/timing/statistics/personal/list")
+    Call<ResEntity<TimeEntity>> timingListStatistic(@Query("startTime") String startTime,
+                                                    @Query("endTime") String endTime,
+                                                    @Query("pageIndex") int pageIndex,
+                                                    @Query("pageSize") int pageSize);
+
 }
 
 

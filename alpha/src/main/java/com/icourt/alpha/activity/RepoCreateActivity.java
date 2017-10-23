@@ -6,6 +6,8 @@ import android.support.annotation.NonNull;
 import android.text.InputFilter;
 import android.widget.EditText;
 
+import com.icourt.alpha.R;
+import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.utils.SpUtils;
@@ -60,21 +62,29 @@ public class RepoCreateActivity extends SFileEditBaseActivity {
 
     @Override
     protected int getMaxInputLimitNum() {
-        return 80;
+        return SFileConfig.SFILE_FILE_NAME_MAX_LENGTH;
     }
 
     @Override
     protected void onSubmitInput(EditText et) {
         if (checkInput(et)) {
-            showLoadingDialog("创建中...");
+            showLoadingDialog(R.string.str_executing);
             callEnqueue(getSFileApi().documentRootCreate(et.getText().toString().trim()),
                     new SFileCallBack<RepoEntity>() {
                         @Override
                         public void onSuccess(Call<RepoEntity> call, Response<RepoEntity> response) {
                             dismissLoadingDialog();
-                            showToast("创建资料库成功");
                             SpUtils.getInstance().remove(KEY_CACHE_REPO);
                             EventBus.getDefault().post(response.body());
+
+                            //需求:跳转到创建的资料库的根目录
+                            FolderListActivity.launch(getContext(),
+                                    SFileConfig.REPO_MINE,
+                                    SFileConfig.PERMISSION_RW,
+                                    response.body().repo_id,
+                                    response.body().repo_name,
+                                    "/",
+                                    response.body().encrypted);
                             finish();
                         }
 

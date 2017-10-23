@@ -17,6 +17,7 @@ public class TimingEvent {
     public static final int TIMING_ADD = 2;
     public static final int TIMING_STOP = 3;
     public static final int TIMING_UPDATE_DATA = 4;
+    public static final int TIMING_SYNC_SUCCESS = 5;
 
     public static final TimingEvent timingSingle = new TimingEvent("", TIMING_ADD);
 
@@ -24,7 +25,8 @@ public class TimingEvent {
     @IntDef({TIMING_UPDATE_PROGRESS,
             TIMING_ADD,
             TIMING_STOP,
-            TIMING_UPDATE_DATA})
+            TIMING_UPDATE_DATA,
+            TIMING_SYNC_SUCCESS})
     @Retention(RetentionPolicy.SOURCE)
     public @interface TIMING_ACTION {
 

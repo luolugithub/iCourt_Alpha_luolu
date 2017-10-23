@@ -1,5 +1,7 @@
 package com.icourt.alpha.entity.bean;
 
+import android.support.annotation.Nullable;
+
 import java.io.Serializable;
 import java.util.List;
 
@@ -19,7 +21,10 @@ public class CommentEntity implements Serializable {
         public String id;
         public String content;
         public long createTime;
+        @Nullable
+        public String createTimeFormat;
         public CreateUser createUser;
+
 
         public static class CreateUser implements Serializable {
             public String userId;

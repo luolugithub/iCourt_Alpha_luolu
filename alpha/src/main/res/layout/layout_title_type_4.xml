@@ -29,36 +29,41 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_centerInParent="true"
-            android:layout_marginLeft="42dp"
-            android:layout_toLeftOf="@id/titleAction"
-            android:layout_toRightOf="@id/titleBack"
+            android:layout_marginLeft="80dp"
+            android:layout_marginRight="80dp"
             android:ellipsize="end"
-            android:gravity="center"
+            android:gravity="center|start"
             android:maxLines="1"
             android:text="@string/str_title"
             android:textColor="@color/alpha_font_color_title"
             android:textSize="@dimen/alpha_font_size_title"
             android:textStyle="bold" />
 
-        <ImageView
-            android:id="@id/titleAction"
-            android:layout_width="42dp"
+        <LinearLayout
+            android:id="@+id/title_right_menu_layout"
+            android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_toLeftOf="@id/titleAction2"
-            android:background="?attr/selectableItemBackground"
-            android:padding="10dp"
-            android:scaleType="fitCenter"
-            android:src="@mipmap/header_icon_star_solid" />
+            android:layout_alignParentRight="true">
 
-        <ImageView
-            android:id="@id/titleAction2"
-            android:layout_width="42dp"
-            android:layout_height="match_parent"
-            android:layout_alignParentRight="true"
-            android:background="?attr/selectableItemBackground"
-            android:padding="10dp"
-            android:scaleType="fitCenter"
-            android:src="@mipmap/header_icon_add" />
+            <ImageView
+                android:id="@id/titleAction"
+                android:layout_width="42dp"
+                android:layout_height="match_parent"
+                android:background="?attr/selectableItemBackground"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                android:src="@mipmap/header_icon_star_solid" />
+
+            <ImageView
+                android:id="@id/titleAction2"
+                android:layout_width="42dp"
+                android:layout_height="match_parent"
+                android:background="?attr/selectableItemBackground"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                android:src="@mipmap/header_icon_add" />
+
+        </LinearLayout>
     </RelativeLayout>
 
 </android.support.design.widget.AppBarLayout>

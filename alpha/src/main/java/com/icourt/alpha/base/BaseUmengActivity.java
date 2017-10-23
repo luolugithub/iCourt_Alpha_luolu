@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.CallSuper;
 import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
@@ -201,6 +202,11 @@ public class BaseUmengActivity extends BaseActivity implements UMAuthListener {
             showTopSnackBar(R.string.sfile_not_exist);
             return;
         }
+        try {
+            MediaStore.Images.Media.insertImage(getContentResolver(), filePath, FileUtils.getFileName(filePath), "share img");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         shareFileWithAndroid(new File(filePath));
     }
 
@@ -223,7 +229,11 @@ public class BaseUmengActivity extends BaseActivity implements UMAuthListener {
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
                     | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             intent.putExtra(Intent.EXTRA_STREAM, uri);
-            intent.setType("*/*");
+            if (IMUtils.isPIC(file.getAbsolutePath())) {
+                intent.setType("image/*");
+            } else {
+                intent.setType("*/*");
+            }
             startActivity(Intent.createChooser(intent, "Alpha Share"));
         } catch (Exception e) {
             e.printStackTrace();

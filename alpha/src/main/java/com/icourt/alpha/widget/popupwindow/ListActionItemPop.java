@@ -2,6 +2,7 @@ package com.icourt.alpha.widget.popupwindow;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.widget.CheckedTextView;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
@@ -39,9 +40,10 @@ public class ListActionItemPop<T extends ItemsEntityImp> extends BaseListActionI
         @Override
         public void onBindHoder(ViewHolder holder, T t, int position) {
             if (t == null) return;
-            TextView item_title = holder.obtainView(R.id.item_title);
+            CheckedTextView item_title = holder.obtainView(R.id.item_title);
             item_title.setCompoundDrawablesWithIntrinsicBounds(0, t.getItemIconRes(), 0, 0);
             item_title.setText(t.getItemTitle());
+            item_title.setChecked(t.isChecked());
         }
     }
 }

@@ -1,6 +1,8 @@
 package com.icourt.alpha.base;
 
+import android.content.Context;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
@@ -47,11 +49,20 @@ import com.orhanobut.logger.AndroidLogAdapter;
 import com.orhanobut.logger.FormatStrategy;
 import com.orhanobut.logger.Logger;
 import com.orhanobut.logger.PrettyFormatStrategy;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.DefaultRefreshFooterCreater;
+import com.scwang.smartrefresh.layout.api.DefaultRefreshHeaderCreater;
+import com.scwang.smartrefresh.layout.api.RefreshFooter;
+import com.scwang.smartrefresh.layout.api.RefreshHeader;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.constant.SpinnerStyle;
 import com.umeng.analytics.MobclickAgent;
 import com.umeng.socialize.Config;
 import com.umeng.socialize.PlatformConfig;
 import com.umeng.socialize.UMShareAPI;
 import com.umeng.socialize.utils.Log;
+import com.zhaol.refreshlayout.AlphaLoadFooter;
+import com.zhaol.refreshlayout.AlphaRefreshHeader;
 
 import java.io.IOException;
 import java.net.Proxy;
@@ -90,6 +101,24 @@ public class BaseApplication extends MultiDexApplication {
         Log.LOG = BuildConfig.IS_DEBUG;//umeng sdk日志跟踪
         MobclickAgent.setDebugMode(BuildConfig.IS_DEBUG);
         System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
+
+        //设置全局的Header构建器
+        SmartRefreshLayout.setDefaultRefreshHeaderCreater(new DefaultRefreshHeaderCreater() {
+            @Override
+            public RefreshHeader createRefreshHeader(Context context, RefreshLayout layout) {
+                layout.setPrimaryColorsId(R.color.white, R.color.white);//全局设置主题颜色
+                layout.setHeaderHeight(100);
+                return new AlphaRefreshHeader(context).setSpinnerStyle(SpinnerStyle.Translate);
+            }
+        });
+        //设置全局的Footer构建器
+        SmartRefreshLayout.setDefaultRefreshFooterCreater(new DefaultRefreshFooterCreater() {
+            @Override
+            public RefreshFooter createRefreshFooter(Context context, RefreshLayout layout) {
+                layout.setFooterHeight(100);
+                return new AlphaLoadFooter(context).setSpinnerStyle(SpinnerStyle.Translate);
+            }
+        });
     }
 
     private static BaseApplication baseApplication;
@@ -410,16 +439,19 @@ public class BaseApplication extends MultiDexApplication {
     private void initGalleryFinal() {
         ThemeConfig themeConfig = new ThemeConfig.Builder()
                 .setCheckSelectedColor(SystemUtils.getColor(this, R.color.alpha_font_color_orange))
+                .setCropControlColor(SystemUtils.getColor(this, R.color.alpha_font_color_orange))
                 .setFabNornalColor(SystemUtils.getColor(this, R.color.alpha_font_color_orange))
                 .setTitleBarTextColor(SystemUtils.getColor(this, R.color.alpha_font_color_black))
                 .setTitleBarBgColor(Color.WHITE)
                 .setTitleBarIconColor(SystemUtils.getColor(this, R.color.alpha_font_color_orange))
+                .setEditPhotoBgTexture(new ColorDrawable(SystemUtils.getColor(this,R.color.black)))
+                .setIconCrop(0)
                 .build();
 
         FunctionConfig.Builder functionConfigBuilder = new FunctionConfig.Builder();
         ImageLoader imageLoader = new GlideImageLoader();
         functionConfigBuilder.setMutiSelectMaxSize(9);
-        functionConfigBuilder.setEnableEdit(true);
+        functionConfigBuilder.setEnableEdit(false);
         functionConfigBuilder.setEnableRotate(true);
         functionConfigBuilder.setRotateReplaceSource(true);
         functionConfigBuilder.setEnableCrop(true);

@@ -1,4 +1,6 @@
 #alpha android客户端  
+#入职流程
+http://wiki.alphalawyer.cn/pages/viewpage.action?pageId=5603882
 #接入流程  
  1. 申请企业邮箱(eg. youxuan@icourt.cc),负责人(HR 韩时雨);用企业邮箱注册gitlab,并让管理员(吴佑炫)邀请  
  2. 下载最新的Android Studio,并安装git AS与git链接成功;  
@@ -13,8 +15,9 @@
 #merge requests  
    分支名称规则： br_dev_版本号(2.1.0)_模块名称(chat)_个人名字简写(xyw)  eg.  br_dev_2.1.0_chat_xyw   
    默认情况:都从dev分支开;不能独立操作test,master分支  
-   插件:GitLab Projects
- 4
+   插件:GitLab Projects  
+   【注意】:开分支必须申请与讨论(版本与影响范围)  
+   版本备注:(补充)  
 #fir账号
  内部：wangchu@icourt.cc   q****  
  外部：104421133@qq.com    a*****  
@@ -65,7 +68,13 @@
   地址: https://shenceadmin.alphalawyer.cn  
   测试: 用户名:admin 密码:ud***** 
   正式: 用户名:admin 密码:v*****  
-  集成文档:https://github.com/sensorsdata/sa-sdk-android  
+  集成文档:https://github.com/sensorsdata/sa-sdk-android   
+  
+#代码规范
+ 以阿里巴巴为准,不做过多文案描述  
+ 插件: Alibaba Java Coding Guidelines  
+ 插件使用相关博客:http://www.cnblogs.com/plokmju/p/7670481.html  
+ 
    
 #日志跟踪tag
 1. 自定义LogUtils

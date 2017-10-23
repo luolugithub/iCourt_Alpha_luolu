@@ -23,7 +23,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.CommentListAdapter;
@@ -43,8 +42,11 @@ import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -72,9 +74,9 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
     @BindView(R.id.titleView)
     AppBarLayout titleView;
     @BindView(R.id.recyclerview)
-    RecyclerView recyclerview;
+    EmptyRecyclerView recyclerview;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
     @BindView(R.id.comment_edit)
     EditText commentEdit;
     @BindView(R.id.comment_tv)
@@ -145,20 +147,20 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
         taskItemEntity = (TaskEntity.TaskItemEntity) getIntent().getSerializableExtra(KEY_TASK_ID);
         recyclerview.setLayoutManager(new LinearLayoutManager(this));
         headerFooterAdapter = new HeaderFooterAdapter<>(commentListAdapter = new CommentListAdapter());
-        View footerview = HeaderFooterAdapter.inflaterView(this, R.layout.footer_comment_list_layout, recyclerview);
+        View footerview = HeaderFooterAdapter.inflaterView(this, R.layout.footer_comment_list_layout, recyclerview.getRecyclerView());
         TextView contentTv = (TextView) footerview.findViewById(R.id.content_tv);
         if (taskItemEntity != null) {
             if (taskItemEntity.createUser != null)
                 contentTv.setText(String.format("%s 创建了任务 %s", taskItemEntity.createUser.userName, DateUtils.getTimeDateFormatMm(taskItemEntity.createTime)));
             bottomLayout.setVisibility(taskItemEntity.valid ? View.VISIBLE : View.GONE);
+            commentCount = taskItemEntity.commentCount;
+            commentTv.setText(String.format("%s条动态", commentCount));
         }
         headerFooterAdapter.addFooter(footerview);
 
-        refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_no_comment_text);
-        refreshLayout.setMoveForHorizontal(true);
+        recyclerview.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_no_comment_text);
 
         recyclerview.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(this, true));
-        recyclerview.setHasFixedSize(true);
         commentListAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override
             protected void updateUI() {
@@ -174,16 +176,15 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
         commentListAdapter.setOnItemChildClickListener(this);
         commentListAdapter.setOnItemLongClickListener(this);
         recyclerview.setAdapter(headerFooterAdapter);
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(RefreshLayout refreshlayout) {
                 getData(true);
             }
 
             @Override
-            public void onLoadMore(boolean isSilence) {
-                super.onLoadMore(isSilence);
+            public void onLoadmore(RefreshLayout refreshlayout) {
+                getData(false);
             }
         });
         commentEdit.addTextChangedListener(new TextWatcher() {
@@ -210,9 +211,9 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
                 }
             }
         });
-        refreshLayout.startRefresh();
+        refreshLayout.autoRefresh();
         commentEdit.setMaxEms(1500);
-        recyclerview.addOnScrollListener(new RecyclerView.OnScrollListener() {
+        recyclerview.getRecyclerView().addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
@@ -239,21 +240,20 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
                 pageIndex,
                 ActionConstants.DEFAULT_PAGE_SIZE),
                 new SimpleCallBack<CommentEntity>() {
-            @Override
-            public void onSuccess(Call<ResEntity<CommentEntity>> call, Response<ResEntity<CommentEntity>> response) {
-                stopRefresh();
-                commentListAdapter.bindData(isRefresh, response.body().result.items);
-                pageIndex += 1;
-                commentCount = commentListAdapter.getItemCount();
-                commentTv.setText(String.format("%s条动态", commentCount));
-            }
+                    @Override
+                    public void onSuccess(Call<ResEntity<CommentEntity>> call, Response<ResEntity<CommentEntity>> response) {
+                        stopRefresh();
+                        commentListAdapter.bindData(isRefresh, response.body().result.items);
+                        pageIndex += 1;
+                        enableLoadMore(response.body().result.items);
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<CommentEntity>> call, Throwable t) {
-                super.onFailure(call, t);
-                stopRefresh();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<CommentEntity>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        stopRefresh();
+                    }
+                });
     }
 
     @OnClick({R.id.send_tv})
@@ -263,21 +263,23 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
             case R.id.send_tv:
                 sendComment();
                 break;
+            default:
+                super.onClick(v);
+                break;
         }
-        super.onClick(v);
     }
 
     private void enableLoadMore(List result) {
         if (refreshLayout != null) {
-            refreshLayout.setPullLoadEnable(result != null
+            refreshLayout.setEnableLoadmore(result != null
                     && result.size() >= ActionConstants.DEFAULT_PAGE_SIZE);
         }
     }
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 
@@ -300,28 +302,29 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
         showLoadingDialog(null);
         callEnqueue(getApi().commentCreate(100, taskItemEntity.id, content),
                 new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                dismissLoadingDialog();
-                CommentEntity.CommentItemEntity commentItemEntity = getNewComment();
-                commentItemEntity.id = response.body().result.getAsString();
-                commentListAdapter.addItem(0, commentItemEntity);
-                commentEdit.setText("");
-                commentEdit.clearFocus();
-                recyclerview.scrollToPosition(0);
-                commentTv.setVisibility(View.VISIBLE);
-                sendTv.setVisibility(View.GONE);
-                commentTv.setText(String.format("%s条动态", commentListAdapter.getItemCount()));
-                EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
-            }
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        dismissLoadingDialog();
+                        CommentEntity.CommentItemEntity commentItemEntity = getNewComment();
+                        commentItemEntity.id = response.body().result.getAsString();
+                        commentListAdapter.addItem(0, commentItemEntity);
+                        commentEdit.setText("");
+                        commentEdit.clearFocus();
+                        recyclerview.getRecyclerView().scrollToPosition(0);
+                        commentTv.setVisibility(View.VISIBLE);
+                        sendTv.setVisibility(View.GONE);
+                        commentCount += 1;
+                        commentTv.setText(String.format("%s条动态", commentCount));
+                        EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-                showTopSnackBar("添加评论失败");
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                        showTopSnackBar("添加评论失败");
+                    }
+                });
     }
 
     /**
@@ -482,13 +485,14 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
     private void deleteComment(final CommentEntity.CommentItemEntity commentItemEntity) {
         if (commentItemEntity == null) return;
         showLoadingDialog(null);
-        callEnqueue(getApi().taskDeleteComment(commentItemEntity.id),new SimpleCallBack<JsonElement>() {
+        callEnqueue(getApi().taskDeleteComment(commentItemEntity.id), new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                 dismissLoadingDialog();
                 if (commentListAdapter != null) {
                     commentListAdapter.removeItem(commentItemEntity);
-                    commentTv.setText(String.format("%s条动态", commentListAdapter.getItemCount()));
+                    commentCount -= 1;
+                    commentTv.setText(String.format("%s条动态", commentCount));
                     EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
                 }
             }

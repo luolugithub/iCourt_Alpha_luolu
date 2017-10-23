@@ -7,7 +7,9 @@ import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
 import android.os.Environment;
 import android.os.ParcelFileDescriptor;
+import android.os.StatFs;
 import android.support.annotation.DrawableRes;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.icourt.alpha.R;
@@ -31,7 +33,6 @@ import static com.icourt.alpha.utils.ImageUtils.addPictureToGallery;
  * version 1.0.0
  */
 public class FileUtils {
-    public static final String dirFilePath = FileUtils.getSDPath() + ActionConstants.FILE_DOWNLOAD_PATH;
 
     public static final String ALPHA_PAGENAME_FILE = "com.icourt.alpha";
     public static final String THUMB_IMAGE_ROOT_PATH = getSDPath() + "/" + ALPHA_PAGENAME_FILE + "/image";
@@ -170,8 +171,13 @@ public class FileUtils {
      */
     public static final boolean isFileExists(String path) {
         if (TextUtils.isEmpty(path)) return false;
-        File file = new File(path);
-        return file != null && file.exists();
+        try {
+            File file = new File(path);
+            return file != null && file.exists();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     /**
@@ -265,18 +271,6 @@ public class FileUtils {
         return new File(filePath);
     }
 
-    //判断文件是否存在
-    public static boolean fileIsExists(String strFile) {
-        try {
-            File f = new File(strFile);
-            if (!f.exists()) {
-                return false;
-            }
-        } catch (Exception e) {
-            return false;
-        }
-        return true;
-    }
 
     /**
      * 根据文件后缀名获得对应的MIME类型。
@@ -327,11 +321,22 @@ public class FileUtils {
      * @return
      */
     public static final String getFileParentDir(String filePath) {
-        if (!TextUtils.isEmpty(filePath)) {
-            int separatorIndex = filePath.lastIndexOf(File.separator);
-            if (separatorIndex > 0) {
-                return filePath.substring(0, separatorIndex);
+        try {
+            if (!TextUtils.isEmpty(filePath)) {
+                int separatorIndex = filePath.lastIndexOf(File.separator);
+                if (separatorIndex > 0) {
+                    if (separatorIndex == filePath.length() - 1) {
+                        String temp = filePath.substring(0, filePath.length() - 2);
+                        separatorIndex = temp.lastIndexOf(File.separator);
+                        if (separatorIndex > 0) {
+                            return filePath.substring(0, separatorIndex + 1);
+                        }
+                    }
+                    return filePath.substring(0, separatorIndex + 1);
+                }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return File.separator;
     }
@@ -344,7 +349,7 @@ public class FileUtils {
     public static String getFileName(String path) {
         if (!TextUtils.isEmpty(path)) {
             int separatorIndex = path.lastIndexOf(File.separator);
-            if (separatorIndex > 0
+            if (separatorIndex >= 0
                     && separatorIndex < path.length() - 1) {
                 return path.substring(separatorIndex + 1, path.length());
             }
@@ -439,12 +444,6 @@ public class FileUtils {
         return buffer;
     }
 
-    /**
-     * 保存方法
-     */
-    public static boolean saveBitmap(Context context, String picName, Bitmap bitmap) {
-        return saveBitmap(context, dirFilePath, picName, bitmap);
-    }
 
     /**
      * 保存drawable 到sd卡中...
@@ -478,6 +477,79 @@ public class FileUtils {
             return false;
         }
 
+    }
+
+    /**
+     * 删除文件
+     *
+     * @param filePath
+     */
+    public static void deleteFile(@Nullable String filePath) {
+        if (TextUtils.isEmpty(filePath)) {
+            try {
+                File file = new File(filePath);
+                if (file.exists() && file.isFile()) {
+                    file.delete();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                BugUtils.bugSync("删除文件异常", new StringBuilder("path\n")
+                        .append(filePath)
+                        .append("exception\n")
+                        .append(StringUtils.throwable2string(e))
+                        .toString());
+            }
+        }
+    }
+
+    /**
+     * 获取内置存储空间大小
+     *
+     * @return MB -1表示未挂载
+     */
+    public static long getAvaiableSpaceMB() {
+        long avaiableSpace = getAvaiableSpace();
+        return avaiableSpace > 0 ? avaiableSpace / (1024 * 1024) : avaiableSpace;
+    }
+
+    /**
+     * 获取内置存储空间 单位b
+     *
+     * @return b -1表示未挂载
+     */
+    public static long getAvaiableSpace() {
+        try {
+            if (android.os.Environment.getExternalStorageState().equals(
+                    android.os.Environment.MEDIA_MOUNTED)) {
+                String sdcard = Environment.getExternalStorageDirectory().getPath();
+                StatFs statFs = new StatFs(sdcard);
+                long blockSize = 0;
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                    blockSize = statFs.getBlockSizeLong();
+                } else {
+                    blockSize = statFs.getBlockSize();
+                }
+                long blocks = 0;
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                    blocks = statFs.getAvailableBlocksLong();
+                } else {
+                    blocks = statFs.getAvailableBlocks();
+                }
+                return (blocks * blockSize);
+            }
+        } catch (Exception e) {
+        }
+        return -1;
+    }
+
+    /**
+     * 判断是否剩余可用的空间[内置存储]
+     *
+     * @param sizeMb
+     * @return
+     */
+    public static boolean isAvaiableSpace(int sizeMb) {
+        return sizeMb >= getAvaiableSpaceMB();
     }
 
 }

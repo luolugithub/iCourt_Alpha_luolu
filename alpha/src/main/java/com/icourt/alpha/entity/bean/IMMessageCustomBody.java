@@ -1,5 +1,6 @@
 package com.icourt.alpha.entity.bean;
 
+import com.asange.recyclerviewadapter.SelectableEntity;
 import com.google.gson.annotations.Expose;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.utils.StringUtils;
@@ -22,7 +23,7 @@ import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
  * date createTime：2017/4/28
  * version 1.0.0
  */
-public class IMMessageCustomBody implements ILongFieldEntity, Serializable {
+public class IMMessageCustomBody implements ILongFieldEntity, Serializable,SelectableEntity {
     public static final String PLATFORM_ANDROID = "ANDROID";
 
     @Expose(serialize = false, deserialize = false)
@@ -288,5 +289,20 @@ public class IMMessageCustomBody implements ILongFieldEntity, Serializable {
             return false;
         final IMMessageCustomBody other = (IMMessageCustomBody) o;
         return other.id == this.id || StringUtils.equalsIgnoreCase(other.magic_id, this.magic_id, false);
+    }
+
+    @Override
+    public boolean isItemSelected() {
+        return false;
+    }
+
+    @Override
+    public void setItemSelect(boolean b) {
+
+    }
+
+    @Override
+    public void toggleItemSelect() {
+
     }
 }

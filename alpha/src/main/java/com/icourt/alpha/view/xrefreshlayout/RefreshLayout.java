@@ -35,7 +35,7 @@ public class RefreshLayout extends XRefreshView {
 
     public RefreshLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
-        defalutContentEmptyView = View.inflate(context, R.layout.refresh_empty_view, null);
+        defalutContentEmptyView = View.inflate(context, R.layout.defalut_refresh_empty_view, null);
         setEmptyView(defalutContentEmptyView);
         contentEmptyText = (TextView) defalutContentEmptyView.findViewById(R.id.contentEmptyText);
         contentEmptyImage = (ImageView) defalutContentEmptyView.findViewById(R.id.contentEmptyImage);

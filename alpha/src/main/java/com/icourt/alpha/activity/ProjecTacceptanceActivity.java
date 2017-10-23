@@ -18,14 +18,23 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ProjectJudgeAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseActivity;
+import com.icourt.alpha.db.dbmodel.CustomerDbModel;
+import com.icourt.alpha.db.dbservice.CustomerDbService;
+import com.icourt.alpha.entity.bean.CustomerEntity;
 import com.icourt.alpha.entity.bean.ProjectProcessesEntity;
 import com.icourt.alpha.utils.ItemDecorationUtils;
+import com.icourt.alpha.utils.LoginInfoUtils;
+import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.utils.UMMobClickAgent;
+import com.umeng.analytics.MobclickAgent;
 
 import java.io.Serializable;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+
+import static com.icourt.alpha.activity.MainActivity.KEY_CUSTOMER_PERMISSION;
 
 /**
  * Description  项目程序信息二级列表
@@ -34,7 +43,7 @@ import butterknife.ButterKnife;
  * date createTime：2017/3/31
  * version 1.0.0
  */
-public class ProjecTacceptanceActivity extends BaseActivity {
+public class ProjecTacceptanceActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemChildClickListener {
 
     @BindView(R.id.titleBack)
     ImageView titleBack;
@@ -46,6 +55,7 @@ public class ProjecTacceptanceActivity extends BaseActivity {
     RecyclerView recyclerView;
     private ProjectProcessesEntity.ExtraBean extraBean;
     ProjectJudgeAdapter projectJudgeAdapter;
+    private CustomerDbService customerDbService = null;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -66,6 +76,7 @@ public class ProjecTacceptanceActivity extends BaseActivity {
     @Override
     protected void initView() {
         super.initView();
+        customerDbService = new CustomerDbService(LoginInfoUtils.getLoginUserId());
         extraBean = (ProjectProcessesEntity.ExtraBean) getIntent().getSerializableExtra("extraBean");
         if (extraBean != null) {
             setTitle(extraBean.name);
@@ -75,15 +86,9 @@ public class ProjecTacceptanceActivity extends BaseActivity {
         recyclerView.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true));
         recyclerView.setAdapter(projectJudgeAdapter = new ProjectJudgeAdapter());
 
-        projectJudgeAdapter.setOnItemClickListener(new BaseRecyclerAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-                if (adapter instanceof ProjectJudgeAdapter) {
-                    TextView phoneview = holder.obtainView(R.id.judge_phone_tv);
-                    callPhone(phoneview.getText());
-                }
-            }
-        });
+        projectJudgeAdapter.setOnItemClickListener(this);
+        projectJudgeAdapter.setOnItemChildClickListener(this);
+
         bindData();
     }
 
@@ -104,6 +109,67 @@ public class ProjecTacceptanceActivity extends BaseActivity {
                 SystemUtils.reqPermission(getActivity(), new String[]{Manifest.permission.CALL_PHONE,}, 12345);
             } else {
                 SystemUtils.callPhone(getContext(), phone.toString());
+            }
+        }
+    }
+
+    @Override
+    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        if (adapter instanceof ProjectJudgeAdapter) {
+            ProjectProcessesEntity.ExtraBean.ValuesBean valuesBean = (ProjectProcessesEntity.ExtraBean.ValuesBean) adapter.getItem(position);
+            if (valuesBean == null) return;
+            if (TextUtils.isEmpty(valuesBean.id)) return;
+            //type ＝ L0 ：自定义当事人
+            if (!TextUtils.isEmpty(valuesBean.type) && !TextUtils.isEmpty(valuesBean.id) && !TextUtils.equals("L0", valuesBean.type)) {
+                gotoCustiomer(valuesBean);
+            }
+
+        }
+    }
+
+    @Override
+    public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+        if (adapter instanceof ProjectJudgeAdapter) {
+            ProjectProcessesEntity.ExtraBean.ValuesBean valuesBean = (ProjectProcessesEntity.ExtraBean.ValuesBean) adapter.getItem(position);
+            if (valuesBean == null) return;
+            callPhone(valuesBean.phone);
+        }
+    }
+
+    /**
+     * 是否有查看联系人权限
+     *
+     * @return true:有权限 false：无权限
+     */
+    private boolean hasCustomerPermission() {
+        return SpUtils.getInstance().getBooleanData(KEY_CUSTOMER_PERMISSION, false);
+    }
+
+    /**
+     * 跳转到客户详情
+     *
+     * @param valuesBean
+     */
+    private void gotoCustiomer(ProjectProcessesEntity.ExtraBean.ValuesBean valuesBean) {
+        if (!hasCustomerPermission()) return;
+        if (customerDbService == null) return;
+        CustomerDbModel customerDbModel = customerDbService.queryFirst("pkid", valuesBean.id);
+        if (customerDbModel == null) {
+            showTopSnackBar(R.string.project_not_look_info_premission);
+            return;
+        }
+        CustomerEntity customerEntity = customerDbModel.convert2Model();
+        if (customerEntity == null) {
+            showTopSnackBar(R.string.project_not_look_info_premission);
+            return;
+        }
+        if (!TextUtils.isEmpty(customerEntity.contactType)) {
+            MobclickAgent.onEvent(getContext(), UMMobClickAgent.look_client_click_id);
+            //公司
+            if (TextUtils.equals(customerEntity.contactType.toUpperCase(), "C")) {
+                CustomerCompanyDetailActivity.launch(getContext(), customerEntity.pkid, customerEntity.name, false);
+            } else if (TextUtils.equals(customerEntity.contactType.toUpperCase(), "P")) {
+                CustomerPersonDetailActivity.launch(getContext(), customerEntity.pkid, customerEntity.name, false);
             }
         }
     }

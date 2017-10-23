@@ -16,6 +16,8 @@ import java.lang.annotation.RetentionPolicy;
 
 public class Const {
     public static final String SHARE_PREFERENCES_FILE_NAME = "icourt_cache_data";//SharedPreferences 文件名称
+    public static final String SHARE_PREFERENCES_TEMPORARY_CACHE_FILE_NAME = "icourt_temporary_cache_data";//SharedPreferences 临时缓存 会清空
+
     //下载文件
     public static final String HTTP_DOWNLOAD_FILE = "ilaw/api/v2/file/download";
     public static final String MSC_XUN_APPID = "581bee35";//讯飞语音识别appid
@@ -111,6 +113,10 @@ public class Const {
     public static final String PROJECT_TYPE_COUNSELOR = "2";//常年顾问
     public static final String PROJECT_TYPE_AFFAIR = "3";//内部事务
 
+    public static final int PROJECT_STATUS_ING = 2;//进行中
+    public static final int PROJECT_STATUS_FINISH = 4;//已完结
+    public static final int PROJECT_STATUS_END = 7;//已搁置
+
     @StringDef({PROJECT_TYPE_DISPUTE, PROJECT_TYPE_NOJUDICIAL, PROJECT_TYPE_COUNSELOR, PROJECT_TYPE_AFFAIR})
     @Retention(RetentionPolicy.SOURCE)
     public @interface PROJECT_TYPE {
@@ -201,6 +207,7 @@ public class Const {
     public static final int PROJECT_PRICE_TYPE = 20;//标的
     public static final int PROJECT_CASENO_TYPE = 21;//案由号码
     public static final int PROJECT_ACCEPTANCE_TYPE = 22;//acceptance  type
+    public static final int PROJECT_SERVER_CONTENT_TYPE = 23;//非诉专项 服务内容  type
 
     //项目类型 0争议解决，1非诉专项,2常年顾问，3所内事务
     public static final int PROJECT_DISPUTE_TYPE = 0;//争议解决
@@ -218,7 +225,8 @@ public class Const {
             PROJECT_NUMBER_TYPE,
             PROJECT_REMARK_TYPE,
             PROJECT_CASE_TYPE,
-            PROJECT_CASENUMBER_TYPE})
+            PROJECT_CASENUMBER_TYPE,
+            PROJECT_CLIENT_TYPE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface PROJECT_INFO_TEXT_TYPE { //查看text内容（名称、类型、编号、案由...）
 
@@ -234,4 +242,9 @@ public class Const {
     public @interface PROJECT_INFO_LIST_TYPE {//查看具体事物内容（成员、法官、书记员...）
 
     }
+
+    /**
+     * 显示计时蒙层引导的版本（注意：上线前需确认）
+     */
+    public static final String GUIDE_SHOW_TIME_VERSION_NAME = "v2.2.1";
 }

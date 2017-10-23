@@ -6,29 +6,31 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import com.andview.refreshview.XRefreshView;
+import com.asange.recyclerviewadapter.BaseViewHolder;
+import com.asange.recyclerviewadapter.OnItemClickListener;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.RepoAdapter;
-import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack2;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.StringUtils;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.filter.ListFilter;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -45,6 +47,7 @@ import retrofit2.HttpException;
 import retrofit2.Response;
 
 import static com.icourt.alpha.constants.SFileConfig.PERMISSION_R;
+import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
 import static com.icourt.alpha.constants.SFileConfig.REPO_LAWFIRM;
 import static com.icourt.alpha.constants.SFileConfig.REPO_MINE;
 import static com.icourt.alpha.constants.SFileConfig.REPO_PROJECT;
@@ -57,15 +60,14 @@ import static com.icourt.alpha.constants.SFileConfig.REPO_SHARED_ME;
  * date createTime：2017/8/19
  * version 2.1.0
  */
-public class RepoSelectListFragment extends RepoBaseFragment
-        implements BaseRecyclerAdapter.OnItemClickListener {
+public class RepoSelectListFragment extends RepoBaseFragment implements OnItemClickListener {
     public static final String KEY_REPO_TYPE = "repoType";
     public static final String KEY_REPO_FILTER_ONLY_READ = "filter_only_read";
 
     @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
     Unbinder unbinder;
     RepoAdapter repoAdapter;
     OnFragmentCallBackListener onFragmentCallBackListener;
@@ -111,9 +113,10 @@ public class RepoSelectListFragment extends RepoBaseFragment
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(repoAdapter = new RepoAdapter(REPO_MINE) {
+
             @Override
-            public void onBindHoder(ViewHolder holder, RepoEntity repoEntity, int position) {
-                super.onBindHoder(holder, repoEntity, position);
+            public void onBindHolder(BaseViewHolder holder, @Nullable RepoEntity repoEntity, int i) {
+                super.onBindHolder(holder, repoEntity, i);
                 ImageView document_expand_iv = holder.obtainView(R.id.document_expand_iv);
                 ImageView document_detail_iv = holder.obtainView(R.id.document_detail_iv);
                 if (document_detail_iv != null) {
@@ -127,30 +130,28 @@ public class RepoSelectListFragment extends RepoBaseFragment
         repoAdapter.setOnItemClickListener(this);
         switch (repoType) {
             case REPO_MINE:
-                refreshLayout.setNoticeEmptyText(R.string.repo_empty);
+                recyclerView.setEmptyContent(R.string.empty_list_repo_my);
                 break;
             case REPO_SHARED_ME:
-                refreshLayout.setNoticeEmptyText(R.string.repo_share_empty);
+                recyclerView.setEmptyContent(R.string.empty_list_repo_shared);
                 break;
             case REPO_LAWFIRM:
-                refreshLayout.setNoticeEmptyText(R.string.repo_lawfirm_empty);
+                recyclerView.setEmptyContent(R.string.empty_list_repo_lawyer);
                 break;
             case REPO_PROJECT:
-                refreshLayout.setNoticeEmptyText(R.string.repo_empty);
+                recyclerView.setEmptyContent(R.string.empty_list_repo_project);
                 break;
         }
         if (filterOnlyReadRepo) {
-            refreshLayout.setNoticeEmptyText(R.string.repo_type_no_writable_repo);
+            recyclerView.setEmptyContent(R.string.repo_type_no_writable_repo);
         }
-        repoAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, repoAdapter));
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setOnRefreshListener(new OnRefreshListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(com.scwang.smartrefresh.layout.api.RefreshLayout refreshlayout) {
                 getData(true);
             }
         });
-        refreshLayout.startRefresh();
+        refreshLayout.autoRefresh();
     }
 
 
@@ -184,7 +185,7 @@ public class RepoSelectListFragment extends RepoBaseFragment
             }
             break;
             case REPO_LAWFIRM: {
-                getDocumentRoot(null, filterOnlyReadRepo);
+                getLawyerRepo();
             }
             break;
             case REPO_PROJECT: {
@@ -205,6 +206,32 @@ public class RepoSelectListFragment extends RepoBaseFragment
             }
             break;
         }
+    }
+
+
+    /**
+     * 带读写权限的资料库
+     */
+    private void getLawyerRepo() {
+        getApi().getOfficeLibs(filterOnlyReadRepo ? PERMISSION_RW : PERMISSION_R)
+                .enqueue(new SFileCallBack<ResEntity<List<RepoEntity>>>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<List<RepoEntity>>> call, Response<ResEntity<List<RepoEntity>>> response) {
+                        stopRefresh();
+                        if (response.body().result == null) {
+                            response.body().result = new ArrayList<RepoEntity>();
+                        }
+                        repoAdapter.bindData(true, response.body().result);
+                        recyclerView.enableEmptyView(response.body().result);
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<List<RepoEntity>>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        stopRefresh();
+                        recyclerView.enableEmptyView(null);
+                    }
+                });
     }
 
     /**
@@ -244,6 +271,9 @@ public class RepoSelectListFragment extends RepoBaseFragment
                     @Override
                     public void onNext(@NonNull List<RepoEntity> repoEntities) {
                         stopRefresh();
+                        if (repoEntities == null) {
+                            repoEntities = new ArrayList<RepoEntity>();
+                        }
                         if (filterOnlyReadRepo) {
                             filterOnlyReadPermissionRepo(repoEntities);
                         }
@@ -260,6 +290,7 @@ public class RepoSelectListFragment extends RepoBaseFragment
                     public void onComplete() {
                         super.onComplete();
                         stopRefresh();
+                        repoAdapter.notifyDataSetChanged();
                     }
                 });
     }
@@ -281,8 +312,8 @@ public class RepoSelectListFragment extends RepoBaseFragment
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 
@@ -293,21 +324,6 @@ public class RepoSelectListFragment extends RepoBaseFragment
         unbinder.unbind();
     }
 
-    @Override
-    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        RepoEntity item = repoAdapter.getItem(position);
-        if (item == null) return;
-        if (item.isNeedDecrypt()) {
-            showDecryptDialog(item);
-            return;
-        }
-        if (onFragmentCallBackListener != null) {
-            Bundle bundle = new Bundle();
-            bundle.putSerializable(KEY_FRAGMENT_RESULT, item);
-            bundle.putInt(KEY_REPO_TYPE, repoType);
-            onFragmentCallBackListener.onFragmentCallBack(this, 1, bundle);
-        }
-    }
 
     /**
      * 展示资料库解锁的对话框
@@ -318,7 +334,7 @@ public class RepoSelectListFragment extends RepoBaseFragment
         new AlertDialog.Builder(getContext())
                 .setTitle(R.string.repo_encrypted)
                 .setMessage(R.string.repo_encrypted_unsupport)
-                .setPositiveButton(R.string.str_ok, new DialogInterface.OnClickListener() {
+                .setPositiveButton(R.string.str_good, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         dialogInterface.dismiss();
@@ -400,4 +416,21 @@ public class RepoSelectListFragment extends RepoBaseFragment
                 });
     }
 
+    @Override
+    public void onItemClick(com.asange.recyclerviewadapter.BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
+        RepoEntity item = repoAdapter.getItem(i);
+        if (item == null) {
+            return;
+        }
+        if (item.isNeedDecrypt()) {
+            showDecryptDialog(item);
+            return;
+        }
+        if (onFragmentCallBackListener != null) {
+            Bundle bundle = new Bundle();
+            bundle.putSerializable(KEY_FRAGMENT_RESULT, item);
+            bundle.putInt(KEY_REPO_TYPE, repoType);
+            onFragmentCallBackListener.onFragmentCallBack(this, 1, bundle);
+        }
+    }
 }

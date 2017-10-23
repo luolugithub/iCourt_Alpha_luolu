@@ -2,6 +2,7 @@ package com.icourt.alpha.adapter;
 
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -12,8 +13,8 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.GlideUtils;
-import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
+import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.view.recyclerviewDivider.ITimeDividerInterface;
 import com.icourt.alpha.widget.manager.TimerManager;
@@ -21,7 +22,7 @@ import com.umeng.analytics.MobclickAgent;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import static com.umeng.socialize.utils.ContextUtil.getContext;
 
@@ -40,7 +41,6 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
     private static final int TIME_SIMPLE_TITLE = 2;
     private HashMap<Integer, Long> timeShowArray = new HashMap<>();//时间分割线
     private long sumTime;
-
 
     private boolean useSimpleTitle;
 
@@ -93,6 +93,8 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
                 return R.layout.adapter_item_time;
             case TIME_SIMPLE_TITLE:
                 return R.layout.adapter_item_timing_simple;
+            default:
+                break;
         }
         return R.layout.adapter_item_time;
     }
@@ -109,6 +111,8 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
             case TIME_SIMPLE_TITLE:
                 setTypeSimpleTitle(holder, timeEntity, position);
                 break;
+            default:
+                break;
         }
     }
 
@@ -121,8 +125,9 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
      * @param position
      */
     private void setTypeSimpleTitle(ViewHolder holder, TimeEntity.ItemEntity timeEntity, int position) {
-        if (holder == null) return;
-        if (timeEntity == null) return;
+        if (holder == null || timeEntity == null) {
+            return;
+        }
         ImageView timer_icon = holder.obtainView(R.id.timer_icon);
         TextView timer_count_tv = holder.obtainView(R.id.timer_count_tv);
         TextView timer_title_tv = holder.obtainView(R.id.timer_title_tv);
@@ -131,22 +136,25 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
         TextView divider_time_count = holder.obtainView(R.id.divider_time_count);
         timer_title_tv.setText(TextUtils.isEmpty(timeEntity.name) ? "未录入工作描述" : timeEntity.name);
         if (timeEntity.state == TimeEntity.ItemEntity.TIMER_STATE_START) {
-            long useTime = timeEntity.useTime;
-            if (useTime <= 0 && timeEntity.startTime > 0) {
-                useTime = DateUtils.millis() - timeEntity.startTime;
-            }
+            //说明是正在计时
+            long useTime = TimerManager.getInstance().getTimingSeconds();
             if (useTime < 0) {
                 useTime = 0;
             }
-            timer_count_tv.setText(toTime(useTime));
+            timer_count_tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
+            timer_count_tv.setTextColor(SystemUtils.getColor(timer_count_tv.getContext(), R.color.colorPrimary));
+            timer_count_tv.setText(DateUtils.getTimingStr(useTime));
             timer_icon.setImageResource(R.drawable.orange_side_dot_bg);
         } else {
-            timer_icon.setImageResource(R.mipmap.icon_start_20);
+            //说明没有在计时
+            timer_count_tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+            timer_count_tv.setTextColor(SystemUtils.getColor(timer_count_tv.getContext(), R.color.textColorPrimary));
             try {
-                timer_count_tv.setText(getHm(timeEntity.useTime));
+                timer_count_tv.setText(DateUtils.getHm(timeEntity.useTime));
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            timer_icon.setImageResource(R.mipmap.icon_start_20);
         }
         holder.bindChildClick(timer_icon);
         addTimeDividerArray(timeEntity, position);
@@ -159,46 +167,20 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
             } else {
                 divider_time.setText(DateUtils.getMMMdd(timeEntity.workDate));
             }
-            long dayTimingLength = 0;//某天的计时时长
-            for (int i = position; i < getData().size(); i++) {
-                TimeEntity.ItemEntity item = getItem(i);
-                if (item != null && item.workDate == timeEntity.workDate) {
-                    dayTimingLength += item.useTime;
-                }
-            }
-            divider_time_count.setText(getHm(dayTimingLength));
+            long dayTimingLength = timeEntity.todayTimingSum;
+            divider_time_count.setText(DateUtils.getHm(dayTimingLength));
         } else {
             divider_ll.setVisibility(View.GONE);
         }
     }
-
-    public String toTime(long times) {
-        times /= 1000;
-        long hour = times / 3600;
-        long minute = times % 3600 / 60;
-        long second = times % 60;
-        return String.format(Locale.CHINA, "%02d:%02d:%02d", hour, minute, second);
-    }
-
-    public String getHm(long times) {
-        times /= 1000;
-        long hour = times / 3600;
-        long minute = times % 3600 / 60;
-        if (minute < 0) {
-            minute = 0;
-        }
-        return String.format(Locale.CHINA, "%d:%02d", hour, minute);
-    }
-
 
     /**
      * 设置顶部数据
      */
     private void setTypeTopData(ViewHolder holder, TimeEntity.ItemEntity timeEntity) {
         TextView totalView = holder.obtainView(R.id.time_top_total_tv);
-        ImageView addView = holder.obtainView(R.id.time_top_add_img);
         if (sumTime > 0) {
-            totalView.setText(getHm(sumTime) + "'");
+            totalView.setText(DateUtils.getHm(sumTime) + "'");
         }
     }
 
@@ -228,11 +210,11 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
             if (useTime < 0) {
                 useTime = 0;
             }
-            durationView.setText(toTime(useTime));
+            durationView.setText(DateUtils.getTimingStr(useTime / TimeUnit.SECONDS.toMillis(1)));
             quantumView.setText(DateUtils.getTimeDurationDate(timeEntity.startTime) + " - 现在");
         } else {
             try {
-                durationView.setText(getHm(timeEntity.useTime));
+                durationView.setText(DateUtils.getHm(timeEntity.useTime));
                 quantumView.setText(DateUtils.getTimeDurationDate(timeEntity.startTime) + " - " + DateUtils.getTimeDurationDate(timeEntity.endTime));
             } catch (Exception e) {
                 e.printStackTrace();
@@ -251,8 +233,9 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
      * @param timeEntity
      */
     private void addTimeDividerArray(TimeEntity.ItemEntity timeEntity, int position) {
-        if (timeEntity == null) return;
-
+        if (timeEntity == null) {
+            return;
+        }
         if (!timeShowArray.containsValue(timeEntity.workDate)) {
             timeShowArray.put(position, timeEntity.workDate);
         }
@@ -306,7 +289,9 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
     @Override
     public void onItemChildClick(BaseRecyclerAdapter adapter, ViewHolder holder, View view, int position) {
         TimeEntity.ItemEntity item = getItem(getRealPos(position));
-        if (item == null) return;
+        if (item == null) {
+            return;
+        }
         switch (view.getId()) {
             case R.id.timer_icon:
                 if (item.state == TimeEntity.TIMER_STATE_END_TYPE) {
@@ -318,6 +303,9 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
                     MobclickAgent.onEvent(getContext(), UMMobClickAgent.stop_timer_click_id);
                     TimerManager.getInstance().stopTimer();
                 }
+                notifyDataSetChanged();
+                break;
+            default:
                 break;
         }
     }

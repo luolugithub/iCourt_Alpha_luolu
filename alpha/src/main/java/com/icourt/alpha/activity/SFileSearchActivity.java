@@ -16,26 +16,26 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.andview.refreshview.XRefreshView;
-import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.SFileSearchAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
+import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.SFileSearchEntity;
 import com.icourt.alpha.entity.bean.SFileSearchPage;
 import com.icourt.alpha.fragment.dialogfragment.FileDetailDialogFragment;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.utils.IMUtils;
-import com.icourt.alpha.utils.SFileTokenUtils;
 import com.icourt.alpha.utils.SystemUtils;
-import com.icourt.alpha.utils.UrlUtils;
 import com.icourt.alpha.view.ClearEditText;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.util.ArrayList;
 
@@ -44,8 +44,6 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import retrofit2.Call;
 import retrofit2.Response;
-
-import static com.icourt.alpha.constants.SFileConfig.PERMISSION_R;
 
 /**
  * Description
@@ -61,7 +59,7 @@ public class SFileSearchActivity extends BaseActivity
     SFileSearchAdapter sFileSearchAdapter;
     int pageIndex = 1;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
     @BindView(R.id.et_search_name)
     ClearEditText etSearchName;
     @BindView(R.id.tv_search_cancel)
@@ -69,11 +67,11 @@ public class SFileSearchActivity extends BaseActivity
     @BindView(R.id.searchLayout)
     LinearLayout searchLayout;
     @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
-    @BindView(R.id.contentEmptyText)
-    TextView contentEmptyText;
+    EmptyRecyclerView recyclerView;
     @BindView(R.id.softKeyboardSizeWatchLayout)
     SoftKeyboardSizeWatchLayout softKeyboardSizeWatchLayout;
+    @BindView(R.id.search_pb)
+    ProgressBar searchPb;
 
     public static void launch(Activity context,
                               @Nullable View transitionView) {
@@ -104,19 +102,18 @@ public class SFileSearchActivity extends BaseActivity
             etSearchName.setTransitionName(transitionName);
         }
         etSearchName.setHint(R.string.sfile_search_range);
-        contentEmptyText.setText(R.string.sfile_searched_no_results);
+        recyclerView.setEmptyContent(R.string.empty_list_repo_search);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(sFileSearchAdapter = new SFileSearchAdapter());
         sFileSearchAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override
             protected void updateUI() {
-                refreshLayout.setPullRefreshEnable(sFileSearchAdapter.getItemCount() > 0);
-                contentEmptyText.setVisibility(sFileSearchAdapter.getItemCount() <= 0 ? View.VISIBLE : View.GONE);
+                refreshLayout.setEnableRefresh(sFileSearchAdapter.getItemCount() > 0);
             }
         });
         sFileSearchAdapter.setOnItemClickListener(this);
         sFileSearchAdapter.setOnItemChildClickListener(this);
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+        recyclerView.getRecyclerView().addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
@@ -150,7 +147,9 @@ public class SFileSearchActivity extends BaseActivity
             @Override
             public void afterTextChanged(Editable s) {
                 if (TextUtils.isEmpty(s)) {
+                    searchPb.setVisibility(View.GONE);
                     sFileSearchAdapter.clearData();
+                    cancelAllCall();
                 } else {
                     getData(true);
                 }
@@ -172,16 +171,14 @@ public class SFileSearchActivity extends BaseActivity
                 }
             }
         });
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(com.scwang.smartrefresh.layout.api.RefreshLayout refreshlayout) {
                 getData(true);
             }
 
             @Override
-            public void onLoadMore(boolean isSilence) {
-                super.onLoadMore(isSilence);
+            public void onLoadmore(com.scwang.smartrefresh.layout.api.RefreshLayout refreshlayout) {
                 getData(false);
             }
         });
@@ -192,11 +189,14 @@ public class SFileSearchActivity extends BaseActivity
     protected void getData(final boolean isRefresh) {
         super.getData(isRefresh);
         if (isRefresh) {
+            sFileSearchAdapter.clearData();
+            searchPb.setVisibility(View.VISIBLE);
             pageIndex = 1;
         }
         if (TextUtils.isEmpty(etSearchName.getText())) {
             sFileSearchAdapter.clearData();
             stopRefresh();
+            searchPb.setVisibility(View.GONE);
             return;
         }
         callEnqueue(
@@ -212,26 +212,28 @@ public class SFileSearchActivity extends BaseActivity
                         pageIndex += 1;
                         stopRefresh();
                         enableLoadMore(response.body().has_more);
+                        searchPb.setVisibility(View.GONE);
                     }
 
                     @Override
                     public void onFailure(Call<SFileSearchPage> call, Throwable t) {
                         super.onFailure(call, t);
                         stopRefresh();
+                        searchPb.setVisibility(View.GONE);
                     }
                 });
     }
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 
     private void enableLoadMore(boolean hasMore) {
         if (refreshLayout != null) {
-            refreshLayout.setPullLoadEnable(hasMore);
+            refreshLayout.setEnableLoadmore(hasMore);
         }
     }
 
@@ -262,43 +264,29 @@ public class SFileSearchActivity extends BaseActivity
                 return;
             }
             if (IMUtils.isPIC(item.name)) {
-                ArrayList<String> bigImageUrls = new ArrayList<>();
-                ArrayList<String> smallImageUrls = new ArrayList<>();
+                ArrayList<SFileSearchEntity> imageDatas = new ArrayList<>();
                 for (int i = 0; i < sFileSearchAdapter.getItemCount(); i++) {
-                    SFileSearchEntity folderDocumentEntity = sFileSearchAdapter.getData(position);
+                    SFileSearchEntity folderDocumentEntity = sFileSearchAdapter.getItem(i);
                     if (folderDocumentEntity == null) continue;
                     if (IMUtils.isPIC(folderDocumentEntity.name)) {
-                        bigImageUrls.add(getSFileImageUrl(folderDocumentEntity.repo_id, folderDocumentEntity.fullpath, Integer.MAX_VALUE));
-                        smallImageUrls.add(getSFileImageUrl(folderDocumentEntity.repo_id, folderDocumentEntity.fullpath, 800));
+                        imageDatas.add(folderDocumentEntity);
                     }
                 }
-                int indexOf = bigImageUrls.indexOf(getSFileImageUrl(item.repo_id, item.name, Integer.MAX_VALUE));
+                int indexOf = imageDatas.indexOf(item);
                 ImageViewerActivity.launch(
                         getContext(),
-                        smallImageUrls,
-                        bigImageUrls,
+                        SFileConfig.FILE_FROM_REPO,
+                        imageDatas,
                         indexOf);
             } else {
                 FileDownloadActivity.launch(
                         getContext(),
-                        item.repo_id,
-                        item.name,
-                        item.size,
-                        item.fullpath,
-                        null,
-                        FileDownloadActivity.FILE_FROM_REPO);
+                        item,
+                        SFileConfig.FILE_FROM_REPO);
             }
         }
     }
 
-    protected String getSFileImageUrl(String repoName, String fullPath, int size) {
-        return String.format("%silaw/api/v2/documents/thumbnailImage?repoId=%s&seafileToken=%s&size=%s&p=%s",
-                BuildConfig.API_URL,
-                repoName,
-                SFileTokenUtils.getSFileToken(),
-                size,
-                UrlUtils.encodeUrl(fullPath));
-    }
 
     private String getDirPath(String fullPath) {
         if (!TextUtils.isEmpty(fullPath)) {
@@ -321,12 +309,9 @@ public class SFileSearchActivity extends BaseActivity
             showTopSnackBar(R.string.sfile_searched_folder_un_click);
         } else {
             FileDetailDialogFragment.show(
-                    item.repo_id,
-                    getDirPath(item.fullpath),
-                    item.name,
-                    item.size,
+                    SFileConfig.REPO_UNKNOW,
+                    item,
                     0,
-                    PERMISSION_R,
                     getSupportFragmentManager());
         }
     }

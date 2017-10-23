@@ -2,10 +2,10 @@ package com.icourt.alpha.http;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.entity.bean.FileBoxBean;
 import com.icourt.alpha.entity.bean.FileVersionCommits;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
+import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.entity.bean.SFileSearchPage;
 import com.icourt.alpha.entity.bean.SFileShareUserInfo;
 import com.icourt.alpha.entity.bean.SeaFileTrashPageEntity;
@@ -267,7 +267,7 @@ public interface ApiSFileService {
      * @return https://testbox.alphalawyer.cn/api/v2.1/repos/d4f82446-a37f-478c-b6b5-ed0e779e1768/dir/?p=%2F22222
      */
     @POST("api/v2.1/repos/{seaFileRepoId}/dir/")
-    Call<RepoEntity> folderCreate(@Path("seaFileRepoId") String seaFileRepoId,
+    Call<FolderDocumentEntity> folderCreate(@Path("seaFileRepoId") String seaFileRepoId,
                                   @Query("p") String p,
                                   @Body RequestBody body);
 
@@ -558,5 +558,17 @@ public interface ApiSFileService {
             @Path("seaFileRepoId") String seaFileRepoId,
             @Field("password") String password);
 
+
+    /**
+     * 获取文件详情
+     *
+     * @param seaFileRepoId
+     * @param fullPath
+     * @return
+     */
+    @GET("api2/repos/{seaFileRepoId}/file/detail/")
+    Call<FolderDocumentEntity> seaFileDetails(
+            @Path("seaFileRepoId") String seaFileRepoId,
+            @Query("p") String fullPath);
 
 }

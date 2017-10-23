@@ -132,4 +132,17 @@ public class ContactDbService extends BaseRealmService<ContactDao> {
         }
         return null;
     }
+
+    /**
+     * 查询所有 异步
+     *
+     * @return
+     */
+    @CheckResult
+    public RealmResults<ContactDbModel> queryAllAsync() {
+        if (isServiceAvailable()) {
+            return dao.queryAllAsync(ContactDbModel.class);
+        }
+        return null;
+    }
 }

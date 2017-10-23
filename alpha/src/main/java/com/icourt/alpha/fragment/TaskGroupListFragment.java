@@ -32,11 +32,12 @@ import retrofit2.Response;
 /**
  * Description 任务组列表
  * Company Beijing icourt
- * author  youxuan  E-mail:xuanyouwu@163.com
+ * @author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/5/11
  * version 1.0.0
  */
 public class TaskGroupListFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
+    private static final String KEY_PROJECTID = "projectId";
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
     Unbinder unbinder;
@@ -46,7 +47,7 @@ public class TaskGroupListFragment extends BaseFragment implements BaseRecyclerA
     public static TaskGroupListFragment newInstance(String projectId) {
         TaskGroupListFragment taskGroupListFragment = new TaskGroupListFragment();
         Bundle args = new Bundle();
-        args.putString("projectId", projectId);
+        args.putString(KEY_PROJECTID, projectId);
         taskGroupListFragment.setArguments(args);
         return taskGroupListFragment;
     }
@@ -55,7 +56,7 @@ public class TaskGroupListFragment extends BaseFragment implements BaseRecyclerA
 
     private String getProjectId() {
         if (getArguments() != null) {
-            return getArguments().getString("projectId");
+            return getArguments().getString(KEY_PROJECTID);
         }
         return null;
     }
@@ -66,7 +67,7 @@ public class TaskGroupListFragment extends BaseFragment implements BaseRecyclerA
             arguments = new Bundle();
             setArguments(arguments);
         }
-        arguments.putString("projectId", projectId);
+        arguments.putString(KEY_PROJECTID, projectId);
     }
 
     @Nullable
@@ -86,7 +87,7 @@ public class TaskGroupListFragment extends BaseFragment implements BaseRecyclerA
         projectTaskGroupAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override
             protected void updateUI() {
-                if (emptyLayout == null) return;
+                if (emptyLayout == null) {return;}
                 emptyLayout.setVisibility(projectTaskGroupAdapter.getItemCount() <= 0 ? View.VISIBLE : View.GONE);
             }
         });
@@ -97,9 +98,9 @@ public class TaskGroupListFragment extends BaseFragment implements BaseRecyclerA
     @Override
     public void notifyFragmentUpdate(Fragment targetFrgament, int type, Bundle bundle) {
         super.notifyFragmentUpdate(targetFrgament, type, bundle);
-        if (targetFrgament != this) return;
+        if (targetFrgament != this) {return;}
         if (bundle != null) {
-            setProjectId(bundle.getString("projectId"));
+            setProjectId(bundle.getString(KEY_PROJECTID));
         }
         getData(true);
     }
@@ -115,7 +116,7 @@ public class TaskGroupListFragment extends BaseFragment implements BaseRecyclerA
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
         String projectId = getProjectId();
-        if (TextUtils.isEmpty(projectId)) return;
+        if (TextUtils.isEmpty(projectId)) {return;}
         projectTaskGroupAdapter.clearSelected();
         callEnqueue(
                 getApi().projectQueryTaskGroupList(projectId),
@@ -140,8 +141,6 @@ public class TaskGroupListFragment extends BaseFragment implements BaseRecyclerA
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         if (projectTaskGroupAdapter.isSelectable()) {
             projectTaskGroupAdapter.setSelectedPos(position);
-        } else {
-
         }
     }
 }

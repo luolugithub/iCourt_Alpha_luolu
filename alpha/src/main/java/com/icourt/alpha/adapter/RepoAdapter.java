@@ -1,16 +1,20 @@
 package com.icourt.alpha.adapter;
 
+import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.asange.recyclerviewadapter.BaseViewHolder;
 import com.icourt.alpha.R;
-import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseAdapter;
 import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.FileUtils;
 
+import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
 import static com.icourt.alpha.constants.SFileConfig.REPO_MINE;
 
 /**
@@ -20,7 +24,7 @@ import static com.icourt.alpha.constants.SFileConfig.REPO_MINE;
  * date createTime：2017/8/9
  * version 2.1.0
  */
-public class RepoAdapter extends BaseArrayRecyclerAdapter<RepoEntity> {
+public class RepoAdapter extends BaseAdapter<RepoEntity> {
 
     int type;
 
@@ -43,8 +47,10 @@ public class RepoAdapter extends BaseArrayRecyclerAdapter<RepoEntity> {
     }
 
     @Override
-    public void onBindHoder(ViewHolder holder, RepoEntity repoEntity, int position) {
-        if (repoEntity == null) return;
+    public void onBindHolder(BaseViewHolder holder, @Nullable RepoEntity repoEntity, int i) {
+        if (repoEntity == null) {
+            return;
+        }
         ImageView document_type_iv = holder.obtainView(R.id.document_type_iv);
         TextView document_title_tv = holder.obtainView(R.id.document_title_tv);
         TextView document_desc_tv = holder.obtainView(R.id.document_desc_tv);
@@ -53,7 +59,8 @@ public class RepoAdapter extends BaseArrayRecyclerAdapter<RepoEntity> {
         holder.bindChildClick(document_expand_iv);
         holder.bindChildClick(document_detail_iv);
         switch (type) {
-            case REPO_MINE:
+            case REPO_MINE://我的资料库 默认有读写权限
+                repoEntity.permission = PERMISSION_RW;
                 document_expand_iv.setVisibility(View.VISIBLE);
                 document_detail_iv.setVisibility(View.GONE);
                 break;
@@ -68,7 +75,7 @@ public class RepoAdapter extends BaseArrayRecyclerAdapter<RepoEntity> {
         document_desc_tv.setText(String.format("%s, %s", FileUtils.bFormat(repoEntity.size), DateUtils.getStandardSimpleFormatTime(repoEntity.getUpdateTime())));
 
         if (!repoEntity.encrypted) {//非加密的
-            document_type_iv.setImageResource(R.mipmap.ic_document);
+            document_type_iv.setImageResource(TextUtils.equals(repoEntity.permission, PERMISSION_RW) ? R.mipmap.ic_document : R.mipmap.vault_readonly);
         } else {
             if (repoEntity.isNeedDecrypt()) {//解密时间超时
                 document_type_iv.setImageResource(R.mipmap.vault_locked);

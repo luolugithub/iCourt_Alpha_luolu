@@ -25,8 +25,6 @@ import com.icourt.alpha.widget.manager.TimerManager;
 
 import org.greenrobot.eventbus.EventBus;
 
-import java.util.concurrent.TimeUnit;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -72,10 +70,6 @@ public class OverTimingRemindDialogFragment extends BaseDialogFragment implement
         if (overTimingTitleTv != null && !TextUtils.isEmpty(content)) {
             overTimingTitleTv.setText(content);
         }
-//        if (overTimingTitleTv != null && useTime != 0) {
-//            String overTimingString = getString(R.string.timer_over_timing_remind_text, TimeUnit.SECONDS.toHours(useTime));
-//            overTimingTitleTv.setText(overTimingString);
-//        }
     }
 
     @Nullable
@@ -103,14 +97,16 @@ public class OverTimingRemindDialogFragment extends BaseDialogFragment implement
     @Override
     public void onStart() {
         super.onStart();
-        Window window = getDialog().getWindow();
-        window.setGravity(Gravity.BOTTOM);
-        WindowManager.LayoutParams windowParams = window.getAttributes();
-        windowParams.dimAmount = 0.0f;
+        if (getDialog() != null && getDialog().getWindow() != null) {
+            Window window = getDialog().getWindow();
+            window.setGravity(Gravity.BOTTOM);
+            WindowManager.LayoutParams windowParams = window.getAttributes();
+            windowParams.dimAmount = 0.0f;
 
-        windowParams.y = DensityUtil.dip2px(getContext(), 50);
-        window.setLayout(DensityUtil.dip2px(getContext(), 260), DensityUtil.dip2px(getContext(), 52.3f));
-        window.setAttributes(windowParams);
+            windowParams.y = DensityUtil.dip2px(getContext(), 42);
+            window.setLayout(DensityUtil.dip2px(getContext(), 280), DensityUtil.dip2px(getContext(), 70f));
+            window.setAttributes(windowParams);
+        }
     }
 
     @Override
@@ -129,10 +125,6 @@ public class OverTimingRemindDialogFragment extends BaseDialogFragment implement
         if (!TextUtils.isEmpty(content)) {
             overTimingTitleTv.setText(content);
         }
-//        if (useTime != 0) {
-//            String overTimingString = getContext().getResources().getString(R.string.timer_over_timing_remind_text, TimeUnit.SECONDS.toHours(useTime));
-//            overTimingTitleTv.setText(overTimingString);
-//        }
     }
 
     @OnClick({R.id.over_timing_title_tv,
@@ -153,19 +145,14 @@ public class OverTimingRemindDialogFragment extends BaseDialogFragment implement
         }
     }
 
-    public void dismiss(boolean isSyncServer) {
-        this.isSyncServer = isSyncServer;
-        dismiss();
-    }
-
     /**
      * 关闭提醒泡泡
      *
      * @param isSyncServer 是否告诉服务器关闭提醒泡泡
      */
-    public void dismissAllowingStateLoss(boolean isSyncServer) {
+    public void dismiss(boolean isSyncServer) {
         this.isSyncServer = isSyncServer;
-        dismissAllowingStateLoss();
+        super.dismiss();
     }
 
     @Override

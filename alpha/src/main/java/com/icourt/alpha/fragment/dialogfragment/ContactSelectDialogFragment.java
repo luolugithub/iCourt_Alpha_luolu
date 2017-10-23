@@ -90,14 +90,15 @@ public class ContactSelectDialogFragment extends BaseDialogFragment {
     TextView headerCommSearchCancelTv;
     @BindView(R.id.header_comm_search_input_ll)
     LinearLayout headerCommSearchInputLl;
-    @BindView(R.id.empty_layout)
-    LinearLayout emptyLayout;
     @BindView(R.id.share_permission_rw_rb)
     RadioButton sharePermissionRwRb;
     @BindView(R.id.title_share_permission)
     LinearLayout titleSharePermission;
     @BindView(R.id.share_permission_r_rb)
     RadioButton sharePermissionRRb;
+    String title;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
 
     public static ContactSelectDialogFragment newInstance(
             @Nullable ArrayList<GroupContactBean> selectedList,
@@ -171,6 +172,8 @@ public class ContactSelectDialogFragment extends BaseDialogFragment {
 
     @Override
     protected void initView() {
+        contentEmptyText.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.mipmap.icon_placeholder_user, 0, 0);
+        contentEmptyText.setText(R.string.empty_list_im_search_group_member);
         Dialog dialog = getDialog();
         if (dialog != null) {
             Window window = dialog.getWindow();
@@ -187,7 +190,7 @@ public class ContactSelectDialogFragment extends BaseDialogFragment {
                 window.setAttributes(attributes);
             }
         }
-        titleContent.setText(getArguments().getString(KEY_TITLE, "选择成员"));
+        titleContent.setText(title = getArguments().getString(KEY_TITLE, "选择成员"));
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
         headerFooterAdapter = new HeaderFooterAdapter<>(imContactAdapter = new IMContactAdapter());
@@ -198,8 +201,10 @@ public class ContactSelectDialogFragment extends BaseDialogFragment {
         imContactAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override
             protected void updateUI() {
-                if (emptyLayout == null) return;
-                emptyLayout.setVisibility(imContactAdapter.getItemCount() <= 0 ? View.VISIBLE : View.GONE);
+                if (contentEmptyText == null) {
+                    return;
+                }
+                contentEmptyText.setVisibility(imContactAdapter.getItemCount() <= 0 ? View.VISIBLE : View.GONE);
             }
         });
         imContactAdapter.setSelectable(true);
@@ -217,7 +222,7 @@ public class ContactSelectDialogFragment extends BaseDialogFragment {
                     currSelectedList.remove(item);
                 }
                 int selectedSize = currSelectedList.size();
-                titleContent.setText(selectedSize > 0 ? String.format("选择成员(%s)", selectedSize) : "选择成员");
+                titleContent.setText(selectedSize > 0 ? String.format("%s(%s)", title, selectedSize) : title);
             }
         });
         headerCommSearchInputEt.addTextChangedListener(new TextWatcher() {
@@ -364,6 +369,7 @@ public class ContactSelectDialogFragment extends BaseDialogFragment {
                         }
                         filterSelectedUsers(contactBeen);
                         filterRobot(contactBeen);
+                        filterMySelf(contactBeen);
                         if (contactBeen != null) {
                             IndexUtils.setSuspensions(getContext(), contactBeen);
                             try {

@@ -19,12 +19,17 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
+import com.icourt.alpha.entity.bean.ISeaFile;
 import com.icourt.alpha.entity.event.SeaFolderEvent;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.utils.FileUtils;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.widget.filter.ListFilter;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -45,6 +50,8 @@ import retrofit2.Response;
 import static com.icourt.alpha.constants.Const.FILE_ACTION_ADD;
 import static com.icourt.alpha.constants.Const.FILE_ACTION_COPY;
 import static com.icourt.alpha.constants.Const.FILE_ACTION_MOVE;
+import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
+import static com.icourt.alpha.constants.SFileConfig.SFILE_FILE_NAME_MAX_LENGTH;
 
 /**
  * Description
@@ -74,7 +81,7 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
      * @param fromRepoDirPath
      * @param dstRepoId
      * @param dstRepoDirPath
-     * @param selectedFolderNames
+     * @param selectedFolderFiles
      * @return
      */
     public static FolderTargetListFragment newInstance(
@@ -83,7 +90,7 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
             String fromRepoDirPath,
             @Nullable String dstRepoId,
             String dstRepoDirPath,
-            ArrayList<String> selectedFolderNames,
+            ArrayList<? extends ISeaFile> selectedFolderFiles,
             String fileLocalPath) {
         FolderTargetListFragment fragment = new FolderTargetListFragment();
         Bundle args = new Bundle();
@@ -94,7 +101,7 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
         args.putString(KEY_SEA_FILE_DST_REPO_ID, dstRepoId);
         args.putString(KEY_SEA_FILE_DST_DIR_PATH, dstRepoDirPath);
 
-        args.putStringArrayList(KEY_SEA_FILE_SELCTED_FILES, selectedFolderNames);
+        args.putSerializable(KEY_SEA_FILE_SELCTED_FILES, selectedFolderFiles);
         args.putString(KEY_SEA_FILE_LOCAL_PATH, fileLocalPath);
         fragment.setArguments(args);
         return fragment;
@@ -107,9 +114,9 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
     @BindView(R.id.copy_or_move_tv)
     TextView copyOrMoveTv;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
     OnFragmentCallBackListener onFragmentCallBackListener;
-    ArrayList<String> selectedFolderNames;
+    ArrayList<ISeaFile> selectedFolderFiles;
 
     @Const.FILE_ACTION_TYPE
     private int getFileActionType() {
@@ -185,7 +192,7 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
 
     @Override
     protected void initView() {
-        selectedFolderNames = getArguments().getStringArrayList(KEY_SEA_FILE_SELCTED_FILES);
+        selectedFolderFiles = (ArrayList<ISeaFile>) getArguments().getSerializable(KEY_SEA_FILE_SELCTED_FILES);
         switch (getFileActionType()) {
             case FILE_ACTION_COPY:
                 emptyText.setText("点击\"复制\"，将所选项复制到此目录");
@@ -229,14 +236,13 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
             }
         });
         folderAdapter.setOnItemClickListener(this);
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setOnRefreshListener(new OnRefreshListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(RefreshLayout refreshlayout) {
                 getData(true);
             }
         });
-        refreshLayout.startRefresh();
+        refreshLayout.autoRefresh();
     }
 
     @Override
@@ -251,7 +257,18 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
                         stopRefresh();
                         //过滤 非文件夹的文件
                         if (response.body() != null) {
+                            //1.过滤文件
                             new ListFilter<FolderDocumentEntity>().filter(response.body(), FolderDocumentEntity.TYPE_FILE);
+
+                            //2.填充资料库id和父目录
+                            wrapData(getSeaFileDstRepoId(), getSeaFileDstDirPath(), response.body());
+
+                            //3.过滤只读文件夹
+                            filterOnlyReadFolder(response.body());
+
+                            //4.过滤自己
+                            filterSameRepoFolder(response.body());
+
                         }
                         folderAdapter.bindData(isRefresh, response.body());
                     }
@@ -264,10 +281,58 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
                 });
     }
 
+    /**
+     * 过滤只读权限的
+     *
+     * @param datas
+     */
+    private void filterOnlyReadFolder(List<FolderDocumentEntity> datas) {
+        if (datas == null) return;
+        if (datas.isEmpty()) return;
+        for (int i = datas.size() - 1; i >= 0; i--) {
+            FolderDocumentEntity folderDocumentEntity = datas.get(i);
+            if (folderDocumentEntity == null) continue;
+            if (!TextUtils.equals(PERMISSION_RW, folderDocumentEntity.permission)) {
+                datas.remove(i);
+            }
+        }
+    }
+
+    /**
+     * //过滤  移动的时候 不能自己移动到自己内部 eg.  /a-->/a/
+     * 统一 不能自己移动 复制 到自己里面
+     *
+     * @param datas
+     */
+    private void filterSameRepoFolder(List<FolderDocumentEntity> datas) {
+        if (datas != null
+                && !datas.isEmpty()
+                && selectedFolderFiles != null
+                && !selectedFolderFiles.isEmpty()) {
+            for (int i = datas.size() - 1; i >= 0; i--) {
+                FolderDocumentEntity folderDocumentEntity = datas.get(i);
+                if (folderDocumentEntity == null) continue;
+
+                if (!folderDocumentEntity.isDir()) continue;
+
+                for (int j = 0; j < selectedFolderFiles.size(); j++) {
+                    ISeaFile iSeaFile = selectedFolderFiles.get(j);
+                    if (iSeaFile == null) continue;
+                    //同一个资料库下面
+                    if (TextUtils.equals(iSeaFile.getSeaFileRepoId(), folderDocumentEntity.getSeaFileRepoId())
+                            && TextUtils.equals(iSeaFile.getSeaFileFullPath(), folderDocumentEntity.getSeaFileFullPath())) {
+                        datas.remove(i);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 
@@ -323,6 +388,11 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
             e.printStackTrace();
         }
         if (file != null && file.exists()) {
+            //3.再校验文件名称长度
+            if (StringUtils.isOverLength(file.getName(), SFILE_FILE_NAME_MAX_LENGTH)) {
+                showTopSnackBar(getString(R.string.sfile_length_limit_format, String.valueOf(SFILE_FILE_NAME_MAX_LENGTH)));
+                return;
+            }
             seaFileUploadFiles(
                     getSeaFileDstRepoId(),
                     getSeaFileDstDirPath(),
@@ -370,13 +440,13 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
      */
 
     private void copyOrMove() {
-        if (selectedFolderNames == null || selectedFolderNames.isEmpty()) return;
+        if (selectedFolderFiles == null || selectedFolderFiles.isEmpty()) return;
 
         //拼接字符串 以冒号做分割
         StringBuilder fileNameSb = new StringBuilder();
         String spliteStr = ":";
-        for (int i = 0; i < selectedFolderNames.size(); i++) {
-            String fileName = selectedFolderNames.get(i);
+        for (int i = 0; i < selectedFolderFiles.size(); i++) {
+            String fileName = FileUtils.getFileName(selectedFolderFiles.get(i).getSeaFileFullPath());
             fileNameSb.append(spliteStr);
             fileNameSb.append(fileName);
         }
@@ -458,23 +528,7 @@ public class FolderTargetListFragment extends SeaFileBaseFragment
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         FolderDocumentEntity item = folderAdapter.getItem(position);
         if (item == null) return;
-        //注意:不能复制或者移动到当前文件所在目录
         String dstDirPath = String.format("%s%s/", getSeaFileDstDirPath(), item.name);
-        if (TextUtils.equals(getSeaFileFromRepoId(), getSeaFileDstRepoId())
-                && TextUtils.equals(getSeaFileFromDirPath(), dstDirPath)) {
-            switch (getFileActionType()) {
-                case FILE_ACTION_COPY:
-                    showToast("不能复制到当前目录");
-                    break;
-                case FILE_ACTION_MOVE:
-                    showToast("不能移动到当前目录");
-                    break;
-                default:
-                    showToast("不能选择当前目录");
-                    break;
-            }
-            return;
-        }
         if (onFragmentCallBackListener != null) {
             Bundle bundle = new Bundle();
             bundle.putString(KEY_SEA_FILE_DST_REPO_ID, getSeaFileDstRepoId());

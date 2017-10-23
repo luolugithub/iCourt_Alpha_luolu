@@ -9,5 +9,5 @@ package com.icourt.alpha.entity.bean;
  */
 public class MsgConvert2Task {
     public String content;
-    public String startTime;
+    public long startTime;
 }

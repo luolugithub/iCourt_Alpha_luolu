@@ -1,5 +1,7 @@
 package com.icourt.alpha.activity;
 
+import android.text.TextUtils;
+
 import com.icourt.alpha.constants.SFileConfig;
 
 /**
@@ -24,7 +26,8 @@ public class FolderBaseActivity extends FileBaseActivity {
     }
 
     protected String getSeaFileDirPath() {
-        return getIntent().getStringExtra(KEY_SEA_FILE_DIR_PATH);
+        String stringExtra = getIntent().getStringExtra(KEY_SEA_FILE_DIR_PATH);
+        return TextUtils.isEmpty(stringExtra) ? "" : stringExtra;
     }
 
 

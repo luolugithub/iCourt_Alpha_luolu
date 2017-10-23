@@ -45,7 +45,7 @@ public class ProjectEndTaskActivity extends BaseActivity {
     String projectId;
 
     public static void launch(@NonNull Context context, @NonNull String projectId) {
-        if (context == null) return;
+        if (context == null) {return;}
         Intent intent = new Intent(context, ProjectEndTaskActivity.class);
         intent.putExtra(ProjectEndTaskFragment.KEY_PROJECT_ID, projectId);
         context.startActivity(intent);
@@ -69,7 +69,7 @@ public class ProjectEndTaskActivity extends BaseActivity {
     }
 
     private void addOrShowFragmentAnim(@NonNull Fragment targetFragment, @IdRes int containerViewId, boolean isAnim) {
-        if (targetFragment == null) return;
+        if (targetFragment == null) {return;}
         FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction transaction = fm.beginTransaction();
         if (isAnim) {
@@ -87,11 +87,6 @@ public class ProjectEndTaskActivity extends BaseActivity {
     @Override
     public void onClick(View v) {
         super.onClick(v);
-        switch (v.getId()) {
-            default:
-                super.onClick(v);
-                break;
-        }
     }
 
     @Override

@@ -19,9 +19,13 @@
 
 
             <include layout="@layout/layout_refresh_recyclerview" />
+            
 
-            <include
-                layout="@layout/layout_empty_tv"
+            <ProgressBar
+                android:id="@+id/search_pb"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
                 android:visibility="gone" />
         </FrameLayout>
 

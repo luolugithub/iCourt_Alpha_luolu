@@ -5,14 +5,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonElement;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
@@ -28,7 +26,7 @@ import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.entity.bean.RepoIdResEntity;
 import com.icourt.alpha.http.IDefNotify;
-import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.http.exception.ResponseException;
 import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.interfaces.OnParentTitleBarClickListener;
 import com.icourt.alpha.utils.IMUtils;
@@ -37,16 +35,19 @@ import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UriUtils;
 import com.icourt.alpha.utils.UrlUtils;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.comparators.FileSortComparator;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.alpha.widget.dialog.SortTypeSelectDialog;
 import com.icourt.alpha.widget.filter.SFileNameFilter;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -62,6 +63,7 @@ import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
 
+import static com.icourt.alpha.constants.SFileConfig.SFILE_FILE_NAME_MAX_LENGTH;
 import static com.icourt.alpha.widget.comparators.FileSortComparator.FILE_SORT_TYPE_DEFAULT;
 
 /**
@@ -75,12 +77,11 @@ public class ProjectFileFragment extends SeaFileBaseFragment
         implements OnParentTitleBarClickListener, BaseRecyclerAdapter.OnItemClickListener {
     private static final String KEY_PROJECT_ID = "key_project_id";
     private static final int REQUEST_CODE_CHOOSE_FILE = 1002;
-    private static final int MAX_LENGTH_FILE_NAME = 100;
 
     @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
     Unbinder unbinder;
     TextView footerView;
 
@@ -91,9 +92,6 @@ public class ProjectFileFragment extends SeaFileBaseFragment
     String path;
     int fileSortType = FILE_SORT_TYPE_DEFAULT;
 
-
-    final ArrayList<String> bigImageUrls = new ArrayList<>();
-    final ArrayList<String> smallImageUrls = new ArrayList<>();
     private GalleryFinal.OnHanlderResultCallback mOnHanlderResultCallback = new GalleryFinal.OnHanlderResultCallback() {
         @Override
         public void onHanlderSuccess(int reqeustCode, List<PhotoInfo> resultList) {
@@ -139,7 +137,7 @@ public class ProjectFileFragment extends SeaFileBaseFragment
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         headerFooterAdapter = new HeaderFooterAdapter<>(folderAdapter = new FolderAdapter());
 
-        footerView = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_folder_document_num, recyclerView);
+        footerView = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_folder_document_num, recyclerView.getRecyclerView());
         headerFooterAdapter.addFooter(footerView);
         footerView.setText("");
 
@@ -162,21 +160,21 @@ public class ProjectFileFragment extends SeaFileBaseFragment
                         }
                     }
                     if (dirNum == 0 && fileNum == 0) {
-                        footerView.setText(R.string.sfile_folder_empty);
+                        footerView.setText(R.string.empty_list_repo_file);
                     } else {
                         footerView.setText(getString(R.string.sfile_folder_statistics, String.valueOf(dirNum), String.valueOf(fileNum)));
                     }
                 }
             }
         });
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setEnableLoadmore(false);
+        refreshLayout.setOnRefreshListener(new OnRefreshListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(com.scwang.smartrefresh.layout.api.RefreshLayout refreshlayout) {
                 getData(true);
             }
         });
-        refreshLayout.startRefresh();
+        refreshLayout.autoRefresh();
     }
 
     @Override
@@ -192,13 +190,7 @@ public class ProjectFileFragment extends SeaFileBaseFragment
                 .flatMap(new Function<String, ObservableSource<List<String>>>() {
                     @Override
                     public ObservableSource<List<String>> apply(@NonNull String s) throws Exception {
-                        return getApi().permissionQueryObservable(getLoginUserId(), "MAT", s)
-                                .map(new Function<ResEntity<List<String>>, List<String>>() {
-                                    @Override
-                                    public List<String> apply(@NonNull ResEntity<List<String>> listResEntity) throws Exception {
-                                        return listResEntity != null ? listResEntity.result : new ArrayList<String>();
-                                    }
-                                });
+                        return sendObservable(getApi().permissionQueryObservable(getLoginUserId(), "MAT", s));
                     }
                 })
                 .filter(new Predicate<List<String>>() {  //2--->是否有可读或者可读写权限
@@ -211,23 +203,19 @@ public class ProjectFileFragment extends SeaFileBaseFragment
                 .flatMap(new Function<List<String>, ObservableSource<String>>() {//3--->项目id转换repoid
                     @Override
                     public ObservableSource<String> apply(@NonNull List<String> strings) throws Exception {
-                        return getApi().projectQueryDocumentIdObservable(projectId)
+                        return sendObservable3(getApi().projectQueryDocumentIdObservable(projectId))
                                 .map(new Function<RepoIdResEntity, String>() {
                                     @Override
                                     public String apply(@NonNull RepoIdResEntity repoIdResEntity) throws Exception {
-                                        return repoIdResEntity != null ? repoIdResEntity.seaFileRepoId : "";
+                                        if (TextUtils.isEmpty(repoIdResEntity.seaFileRepoId)) {
+                                            //1.反馈
+                                            bugSync("项目repoid 获取null", "projectid:" + projectId);
+                                            //2.阻止队列
+                                            throw new ResponseException(-1, "服务器 返回seaFileRepoId null");
+                                        }
+                                        return repoIdResEntity.seaFileRepoId;
                                     }
                                 });
-                    }
-                })
-                .filter(new Predicate<String>() {//4----->校验repoid不能为空
-                    @Override
-                    public boolean test(@NonNull String s) throws Exception {
-                        boolean canNext = !TextUtils.isEmpty(s);
-                        if (!canNext) {
-                            bugSync("项目repo 获取null", "projectid:" + projectId);
-                        }
-                        return canNext;
                     }
                 })
                 .flatMap(new Function<String, ObservableSource<List<FolderDocumentEntity>>>() {//5--->获取该repo下面的文件
@@ -238,7 +226,6 @@ public class ProjectFileFragment extends SeaFileBaseFragment
                     }
                 })
                 .compose(this.<List<FolderDocumentEntity>>bindToLifecycle())
-                .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new BaseObserver<List<FolderDocumentEntity>>() {
                     @Override
@@ -262,8 +249,8 @@ public class ProjectFileFragment extends SeaFileBaseFragment
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 
@@ -383,22 +370,7 @@ public class ProjectFileFragment extends SeaFileBaseFragment
      */
     private void sortFile(List<FolderDocumentEntity> datas) {
         seaFileSort(fileSortType, datas)
-                .map(new Function<List<FolderDocumentEntity>, List<FolderDocumentEntity>>() {
-                    @Override
-                    public List<FolderDocumentEntity> apply(@NonNull List<FolderDocumentEntity> folderDocumentEntities) throws Exception {
-                        bigImageUrls.clear();
-                        smallImageUrls.clear();
-                        for (int i = 0; i < folderDocumentEntities.size(); i++) {
-                            FolderDocumentEntity folderDocumentEntity = folderDocumentEntities.get(i);
-                            if (folderDocumentEntity == null) continue;
-                            if (IMUtils.isPIC(folderDocumentEntity.name)) {
-                                bigImageUrls.add(getSFileImageUrl(folderDocumentEntity.name, Integer.MAX_VALUE));
-                                smallImageUrls.add(getSFileImageUrl(folderDocumentEntity.name, 800));
-                            }
-                        }
-                        return folderDocumentEntities;
-                    }
-                })
+                .delay(500, TimeUnit.MILLISECONDS)
                 .compose(this.<List<FolderDocumentEntity>>bindToLifecycle())
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -478,8 +450,8 @@ public class ProjectFileFragment extends SeaFileBaseFragment
                         filePathsArray.remove(path);
                     } else {
                         //3.再校验文件名称长度
-                        if (StringUtils.isOverLength(file.getName(), MAX_LENGTH_FILE_NAME)) {
-                            showTopSnackBar(getString(R.string.sfile_length_limit_format, String.valueOf(MAX_LENGTH_FILE_NAME)));
+                        if (StringUtils.isOverLength(file.getName(), SFILE_FILE_NAME_MAX_LENGTH)) {
+                            showTopSnackBar(getString(R.string.sfile_length_limit_format, String.valueOf(SFILE_FILE_NAME_MAX_LENGTH)));
                             filePathsArray.remove(path);
                         }
                     }
@@ -535,21 +507,25 @@ public class ProjectFileFragment extends SeaFileBaseFragment
         } else {
             //图片 直接预览
             if (IMUtils.isPIC(item.name)) {
-                int indexOf = bigImageUrls.indexOf(getSFileImageUrl(item.name, Integer.MAX_VALUE));
+                ArrayList<FolderDocumentEntity> imageDatas = new ArrayList<>();
+                for (int i = 0; i < folderAdapter.getItemCount(); i++) {
+                    FolderDocumentEntity folderDocumentEntity = folderAdapter.getItem(i);
+                    if (folderDocumentEntity == null) continue;
+                    if (IMUtils.isPIC(folderDocumentEntity.name)) {
+                        imageDatas.add(folderDocumentEntity);
+                    }
+                }
+                int indexOf = imageDatas.indexOf(item);
                 ImageViewerActivity.launch(
                         getContext(),
-                        smallImageUrls,
-                        bigImageUrls,
+                        SFileConfig.FILE_FROM_PROJECT,
+                        imageDatas,
                         indexOf);
             } else {
                 FileDownloadActivity.launch(
                         getContext(),
-                        getSeaFileRepoId(),
-                        item.name,
-                        item.size,
-                        String.format("%s%s", getSeaFileDirPath(), item.name),
-                        null,
-                        FileDownloadActivity.FILE_FROM_PROJECT);
+                        item,
+                        SFileConfig.FILE_FROM_PROJECT);
             }
         }
     }

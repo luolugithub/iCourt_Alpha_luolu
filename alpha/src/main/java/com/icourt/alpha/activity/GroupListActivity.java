@@ -8,13 +8,11 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.andview.refreshview.XRefreshView;
 import com.gjiazhe.wavesidebar.WaveSideBar;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.GroupAdapter;
@@ -30,9 +28,12 @@ import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.IndexUtils;
-import com.icourt.alpha.widget.comparators.PinyinComparator;
 import com.icourt.alpha.view.recyclerviewDivider.SuspensionDecoration;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.widget.comparators.PinyinComparator;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -92,9 +93,9 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
     @BindView(R.id.titleView)
     AppBarLayout titleView;
     @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
     HeaderFooterAdapter<GroupAdapter> headerFooterAdapter;
     GroupAdapter groupAdapter;
     SuspensionDecoration mDecoration;
@@ -122,6 +123,7 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
     @Override
     protected void initView() {
         super.initView();
+        contentEmptyText.setText(R.string.empty_list_im_group);
         EventBus.getDefault().register(this);
         switch (getGroupQueryType()) {
             case GROUP_TYPE_MY_JOIN:
@@ -139,12 +141,11 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
             @Override
             protected void updateUI() {
                 if (contentEmptyText != null) {
-                    contentEmptyText.setText("暂无讨论组");
                     contentEmptyText.setVisibility(groupAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
                 }
             }
         });
-        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
+        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView.getRecyclerView());
         View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
         registerClick(rl_comm_search);
         headerFooterAdapter.addHeader(headerView);
@@ -175,16 +176,13 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
             }
         });
 
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setOnRefreshListener(new OnRefreshListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(RefreshLayout refreshlayout) {
                 getData(true);
             }
         });
-        refreshLayout.setPullRefreshEnable(true);
-        refreshLayout.setAutoRefresh(true);
-        refreshLayout.startRefresh();
+        refreshLayout.autoRefresh();
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -193,12 +191,12 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
         switch (event.action) {
             case GROUP_ACTION_JOIN:
                 if (getGroupQueryType() == GROUP_TYPE_MY_JOIN) {
-                    refreshLayout.startRefresh();
+                    getData(true);
                 }
                 break;
             case GROUP_ACTION_QUIT:
                 if (getGroupQueryType() == GROUP_TYPE_MY_JOIN) {
-                    refreshLayout.startRefresh();
+                    getData(true);
                 }
                 break;
         }
@@ -262,15 +260,15 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
 
     private void enableLoadMore(List result) {
         if (refreshLayout != null) {
-            refreshLayout.setPullLoadEnable(result != null
+            refreshLayout.setEnableLoadmore(result != null
                     && result.size() >= ActionConstants.DEFAULT_PAGE_SIZE);
         }
     }
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 

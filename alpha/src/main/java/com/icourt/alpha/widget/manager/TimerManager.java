@@ -100,12 +100,12 @@ public class TimerManager {
     public static TimerManager getInstance() {
         if (timerManager == null) {
             synchronized (TimerManager.class) {
-                timerManager = new TimerManager();
+                if (timerManager == null)
+                    timerManager = new TimerManager();
             }
         }
         return timerManager;
     }
-
 
     /**
      * 1秒一次
@@ -134,7 +134,6 @@ public class TimerManager {
             }
         }
     }
-
 
     /**
      * 获取登陆用户id
@@ -213,9 +212,9 @@ public class TimerManager {
 
                         SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), response.body().result);
                         SpUtils.getInstance().putData(String.format(KEY_TIMER_TASK_ID, getUid()), response.body().result.taskPkId);
-                        broadTimingEvent(response.body().result.pkId, TimingEvent.TIMING_ADD);
                         setBase(0);
                         startTimingTask();
+                        broadTimingEvent(response.body().result.pkId, TimingEvent.TIMING_ADD);
                         if (callBack != null) {
                             callBack.onResponse(null, Response.success(response.body().result));
                         }
@@ -246,7 +245,6 @@ public class TimerManager {
             startTimingTask();
         }
     }
-
 
     /**
      * 只是重置数据
@@ -281,7 +279,6 @@ public class TimerManager {
         setBase(timer.useTime / 1_000);
         startTimingTask();
     }
-
 
     /**
      * 获取计时对象
@@ -337,7 +334,6 @@ public class TimerManager {
         return timer != null && StringUtils.equalsIgnoreCase(id, timer.pkId, false);
     }
 
-
     /**
      * 同步网络计时
      */
@@ -356,6 +352,7 @@ public class TimerManager {
                             } else {
                                 TimerManager.getInstance().resumeTimer(response.body().result);
                             }
+                            broadTimingEvent(response.body().result.pkId, TimingEvent.TIMING_SYNC_SUCCESS);
                         }
                     }
 
@@ -408,9 +405,9 @@ public class TimerManager {
     public void setOverTimingRemind(boolean remind) {
         if (getTimer() != null) {
             if (remind) {
-                getTimer().noRemind = 0;
+                getTimer().noRemind = TimeEntity.ItemEntity.STATE_REMIND_ON;
             } else {
-                getTimer().noRemind = 1;
+                getTimer().noRemind = TimeEntity.ItemEntity.STATE_REMIND_OFF;
             }
         }
     }
@@ -422,9 +419,9 @@ public class TimerManager {
      */
     public boolean isOverTimingRemind() {
         if (getTimer() != null) {
-            return getTimer().noRemind == 0;
+            return getTimer().noRemind == TimeEntity.ItemEntity.STATE_REMIND_ON;
         }
-        return true;
+        return false;
     }
 
     /**
@@ -435,9 +432,9 @@ public class TimerManager {
     public void setOverBubbleRemind(boolean remind) {
         if (getTimer() != null) {
             if (remind) {
-                getTimer().bubbleOff = 0;
+                getTimer().bubbleOff = TimeEntity.ItemEntity.STATE_BUBBLE_ON;
             } else {
-                getTimer().bubbleOff = 1;
+                getTimer().bubbleOff = TimeEntity.ItemEntity.STATE_BUBBLE_OFF;
             }
         }
     }
@@ -449,11 +446,10 @@ public class TimerManager {
      */
     public boolean isBubbleRemind() {
         if (getTimer() != null) {
-            return getTimer().bubbleOff == 0;
+            return getTimer().bubbleOff == TimeEntity.ItemEntity.STATE_BUBBLE_ON;
         }
-        return true;
+        return false;
     }
-
 
     /**
      * 更新原计时对象（之前已经有对象正在计时了）
@@ -496,7 +492,6 @@ public class TimerManager {
         }
         return -1;
     }
-
 
     /**
      * 清除timer 并发停止的广播
@@ -561,7 +556,6 @@ public class TimerManager {
                     });
         }
     }
-
 
     private void broadTimingEvent(String id, @TimingEvent.TIMING_ACTION int action) {
         EventBus.getDefault().post(new TimingEvent(id, action));

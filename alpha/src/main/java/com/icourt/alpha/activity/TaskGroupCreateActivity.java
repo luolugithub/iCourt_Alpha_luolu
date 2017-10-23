@@ -39,15 +39,23 @@ import retrofit2.Response;
 /**
  * Description  新建任务组
  * Company Beijing icourt
- * author  lu.zhao  E-mail:zhaolu@icourt.cc
+ * @author  lu.zhao  E-mail:zhaolu@icourt.cc
  * date createTime：17/5/9
  * version 2.0.0
  */
 
 public class TaskGroupCreateActivity extends BaseActivity {
     private static final String KEY_PROJECT_ID = "key_project_id";
-    public static final int CREAT_TASK_GROUP_TYPE = 1;//新建任务组
-    public static final int UPDATE_TASK_GROUP_TYPE = 2;//编辑任务组
+    private static final String KEY_TYPE = "type";
+    private static final String KEY_ENTITY = "entity";
+    /**
+     * 新建任务组
+     */
+    public static final int CREAT_TASK_GROUP_TYPE = 1;
+    /**
+     * 编辑任务组
+     */
+    public static final int UPDATE_TASK_GROUP_TYPE = 2;
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -74,19 +82,19 @@ public class TaskGroupCreateActivity extends BaseActivity {
     TaskGroupEntity entity;
 
     public static void launchForResult(@NonNull Activity activity, @NonNull String projectId, @TASK_GROUP_TYPE int type, int requestCode) {
-        if (activity == null) return;
-        if (TextUtils.isEmpty(projectId)) return;
+        if (activity == null) {return;}
+        if (TextUtils.isEmpty(projectId)) {return;}
         Intent intent = new Intent(activity, TaskGroupCreateActivity.class);
         intent.putExtra(KEY_PROJECT_ID, projectId);
-        intent.putExtra("type", type);
+        intent.putExtra(KEY_TYPE, type);
         activity.startActivityForResult(intent, requestCode);
     }
 
     public static void launchForResult(@NonNull Activity activity, @NonNull TaskGroupEntity entity, @TASK_GROUP_TYPE int type, int requestCode) {
-        if (activity == null) return;
+        if (activity == null) {return;}
         Intent intent = new Intent(activity, TaskGroupCreateActivity.class);
-        intent.putExtra("entity", entity);
-        intent.putExtra("type", type);
+        intent.putExtra(KEY_ENTITY, entity);
+        intent.putExtra(KEY_TYPE, type);
         activity.startActivityForResult(intent, requestCode);
     }
 
@@ -102,17 +110,17 @@ public class TaskGroupCreateActivity extends BaseActivity {
     protected void initView() {
         super.initView();
         projectId = getIntent().getStringExtra(KEY_PROJECT_ID);
-        type = getIntent().getIntExtra("type", -1);
-        entity = (TaskGroupEntity) getIntent().getSerializableExtra("entity");
-        titleAction.setText("完成");
+        type = getIntent().getIntExtra(KEY_TYPE, -1);
+        entity = (TaskGroupEntity) getIntent().getSerializableExtra(KEY_ENTITY);
+        titleAction.setText(getString(R.string.task_finish));
         if (type == UPDATE_TASK_GROUP_TYPE) {
-            setTitle("编辑任务组");
+            setTitle(getString(R.string.task_edit_group));
             if (entity != null) {
                 groupNameEdittext.setText(entity.name);
                 groupNameEdittext.setSelection(groupNameEdittext.getText().length());
             }
         } else {
-            setTitle("新建任务组");
+            setTitle(getString(R.string.task_new_group));
         }
         setSaveBtnState();
         groupNameEdittext.requestFocus();
@@ -152,7 +160,6 @@ public class TaskGroupCreateActivity extends BaseActivity {
             R.id.edit_clear_tv})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.titleAction:
                 if (type == UPDATE_TASK_GROUP_TYPE) {
@@ -164,6 +171,9 @@ public class TaskGroupCreateActivity extends BaseActivity {
             case R.id.edit_clear_tv:
                 groupNameEdittext.setText("");
                 setSaveBtnState();
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }
