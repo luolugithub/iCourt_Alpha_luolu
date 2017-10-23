@@ -124,6 +124,7 @@
     <string name="empty_list_repo_file">本目录下没有文件</string>
     <string name="empty_list_repo_recycle_bin">回收站里没有文件</string>
     <string name="empty_list_repo_file_historical_version">暂无历史版本</string>
+    <string name="empty_list_repo_change_history">尚未有修改纪录</string>
     <string name="empty_list_repo_search">没有找到匹配的结果</string>
 
 

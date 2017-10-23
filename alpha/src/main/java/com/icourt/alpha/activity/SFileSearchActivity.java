@@ -104,7 +104,7 @@ public class SFileSearchActivity extends BaseActivity
             etSearchName.setTransitionName(transitionName);
         }
         etSearchName.setHint(R.string.sfile_search_range);
-        contentEmptyText.setText(R.string.sfile_searched_no_results);
+        contentEmptyText.setText(R.string.empty_list_repo_search);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(sFileSearchAdapter = new SFileSearchAdapter());
         sFileSearchAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
