@@ -163,7 +163,6 @@
     <string name="task_min_time">1970-01-01</string>
     <string name="task_max_time">2090-01-01</string>
     <string name="task_finish_dialog_msg_text">该任务由多人负责,确定完成?</string>
-    <string name="task_list_null_text">暂无任务</string>
     <string name="task_list_null_text_future">人生本有尽|宇宙永无穷</string>
     <array name="task_list_null_text_normal_arr">
         <item>忙处人多闲处少|闲处光阴几人晓</item>

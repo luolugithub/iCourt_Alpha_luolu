@@ -19,10 +19,10 @@ import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.CustomerEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
-import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.util.List;
 
@@ -70,7 +70,7 @@ public class MyCollectedCustomersActivity extends BaseActivity implements BaseRe
     protected void initView() {
         super.initView();
         setTitle(R.string.task_my_attention);
-        recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_user, R.string.client_not_collected);
+        recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_user, R.string.empty_list_customer_follow);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(customerAdapter = new CustomerAdapter());
         customerAdapter.setOnItemClickListener(this);

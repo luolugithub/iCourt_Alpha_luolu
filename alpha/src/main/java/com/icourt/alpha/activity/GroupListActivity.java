@@ -29,11 +29,11 @@ import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.IMUtils;
 import com.icourt.alpha.utils.IndexUtils;
 import com.icourt.alpha.view.recyclerviewDivider.SuspensionDecoration;
-import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
 import com.icourt.alpha.widget.comparators.PinyinComparator;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -123,6 +123,7 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
     @Override
     protected void initView() {
         super.initView();
+        contentEmptyText.setText(R.string.empty_list_im_group);
         EventBus.getDefault().register(this);
         switch (getGroupQueryType()) {
             case GROUP_TYPE_MY_JOIN:
@@ -140,7 +141,6 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
             @Override
             protected void updateUI() {
                 if (contentEmptyText != null) {
-                    contentEmptyText.setText("暂无讨论组");
                     contentEmptyText.setVisibility(groupAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
                 }
             }

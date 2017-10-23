@@ -150,6 +150,7 @@ public class TaskEverydayFragment extends BaseFragment
 
     @Override
     protected void initView() {
+        contentEmptyText.setText(R.string.empty_list_task);
         taskItemEntityList = (ArrayList<TaskEntity.TaskItemEntity>) getArguments().getSerializable(KEY_TASKS);
         if (taskItemEntityList == null) {
             taskItemEntityList = new ArrayList<>();

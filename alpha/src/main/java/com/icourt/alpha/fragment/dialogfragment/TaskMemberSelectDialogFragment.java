@@ -18,12 +18,14 @@ import android.view.Window;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.TaskMemberAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.entity.bean.TaskMemberEntity;
 import com.icourt.alpha.entity.bean.TaskMemberWrapEntity;
@@ -62,8 +64,6 @@ public class TaskMemberSelectDialogFragment extends BaseDialogFragment {
     TextView btOk;
     Unbinder unbinder;
     TaskMemberAdapter taskMemberAdapter;
-    @BindView(R.id.empty_layout)
-    LinearLayout emptyLayout;
     HeaderFooterAdapter<TaskMemberAdapter> headerFooterAdapter;
     @BindView(R.id.header_comm_search_input_et)
     EditText headerCommSearchInputEt;
@@ -72,6 +72,15 @@ public class TaskMemberSelectDialogFragment extends BaseDialogFragment {
     @BindView(R.id.header_comm_search_input_ll)
     LinearLayout headerCommSearchInputLl;
     List<TaskMemberEntity> members = new ArrayList<TaskMemberEntity>();
+    @BindView(R.id.share_permission_rw_rb)
+    RadioButton sharePermissionRwRb;
+    @BindView(R.id.share_permission_r_rb)
+    RadioButton sharePermissionRRb;
+    @BindView(R.id.title_share_permission)
+    LinearLayout titleSharePermission;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
+
     public static TaskMemberSelectDialogFragment newInstance() {
         TaskMemberSelectDialogFragment contactSelectDialogFragment = new TaskMemberSelectDialogFragment();
         Bundle args = new Bundle();
@@ -102,6 +111,8 @@ public class TaskMemberSelectDialogFragment extends BaseDialogFragment {
 
     @Override
     protected void initView() {
+        contentEmptyText.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.mipmap.icon_placeholder_user, 0, 0);
+        contentEmptyText.setText(R.string.empty_list_im_group_member);
         Dialog dialog = getDialog();
         if (dialog != null) {
             Window window = dialog.getWindow();
@@ -119,6 +130,14 @@ public class TaskMemberSelectDialogFragment extends BaseDialogFragment {
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
         headerFooterAdapter = new HeaderFooterAdapter<>(taskMemberAdapter = new TaskMemberAdapter(true));
+        taskMemberAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                if (contentEmptyText != null) {
+                    contentEmptyText.setVisibility(taskMemberAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+                }
+            }
+        });
         View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
         headerFooterAdapter.addHeader(headerView);
         registerClick(headerView.findViewById(R.id.header_comm_search_ll));
@@ -177,7 +196,7 @@ public class TaskMemberSelectDialogFragment extends BaseDialogFragment {
      * @param name
      */
     private void searchUserByName(String name) {
-        if (TextUtils.isEmpty(name)) return;
+        if (TextUtils.isEmpty(name)) {return;}
         if (members != null) {
             List<TaskMemberEntity> memberEntities = new ArrayList<TaskMemberEntity>();
             for (int i = 0; i < members.size(); i++) {
@@ -205,41 +224,12 @@ public class TaskMemberSelectDialogFragment extends BaseDialogFragment {
                                     members.addAll(taskMemberWrapEntity.members);
                                 }
                             }
-                            enableEmptyView(members);
                             taskMemberAdapter.bindData(isRefresh, members);
                         }
                     }
                 });
-        //无权限
-//        getApi().getUnPremissionTaskMembers().enqueue(new SimpleCallBack<List<TaskMemberWrapEntity>>() {
-//            @Override
-//            public void onSuccess(Call<ResEntity<List<TaskMemberWrapEntity>>> call, Response<ResEntity<List<TaskMemberWrapEntity>>> response) {
-//                if (response.body().result != null && !response.body().result.isEmpty()) {
-//                    List<TaskMemberEntity> memberEntities = new ArrayList<TaskMemberEntity>();
-//                    for (TaskMemberWrapEntity taskMemberWrapEntity : response.body().result) {
-//                        if (taskMemberWrapEntity.members != null) {
-//                            memberEntities.addAll(taskMemberWrapEntity.members);
-//                        }
-//                    }
-//                    enableEmptyView(memberEntities);
-//                    taskMemberAdapter.bindData(isRefresh, memberEntities);
-//                }
-//            }
-//        });
     }
 
-    private void enableEmptyView(List result) {
-        if (emptyLayout == null) return;
-        if (result != null) {
-            if (result.size() > 0) {
-                emptyLayout.setVisibility(View.GONE);
-            } else {
-                emptyLayout.setVisibility(View.VISIBLE);
-            }
-        } else {
-            emptyLayout.setVisibility(View.VISIBLE);
-        }
-    }
 
     @OnClick({R.id.bt_cancel, R.id.bt_ok, R.id.header_comm_search_cancel_tv})
     @Override
@@ -278,5 +268,10 @@ public class TaskMemberSelectDialogFragment extends BaseDialogFragment {
     public void onDestroy() {
         super.onDestroy();
         unbinder.unbind();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
     }
 }

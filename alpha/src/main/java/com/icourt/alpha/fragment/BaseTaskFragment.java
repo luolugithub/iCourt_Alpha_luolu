@@ -37,6 +37,7 @@ import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
+import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.alpha.widget.dialog.CenterMenuDialog;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.icourt.api.RequestUtils;
@@ -116,9 +117,19 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
     protected static final int SHOW_FINISH_DIALOG = 1;
 
     /**
+     * 恢复任务提示对话框
+     */
+    protected static final int SHOW_RENEW_DIALOG = 2;
+
+    /**
+     * 恢复二次确认
+     */
+    protected static final int SHOW_RENEW_BUTTOM_SHEET = 2;
+
+    /**
      * 以下为弹出对话框的分类
      */
-    @IntDef({SHOW_DELETE_DIALOG, SHOW_FINISH_DIALOG})
+    @IntDef({SHOW_DELETE_DIALOG, SHOW_FINISH_DIALOG, SHOW_RENEW_DIALOG})
     @Retention(RetentionPolicy.SOURCE)
     public @interface DialogType {
     }
@@ -330,6 +341,33 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
         );
     }
 
+    /**
+     * 恢复已删除任务（已删除任务列表会调用此接口）
+     *
+     * @param itemEntity
+     */
+    private void recoverTaskById(final TaskEntity.TaskItemEntity itemEntity) {
+        if (itemEntity == null) {
+            return;
+        }
+        showLoadingDialog(null);
+        callEnqueue(
+                getApi().taskRecoverById(itemEntity.id),
+                new SimpleCallBack<JsonElement>() {
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        dismissLoadingDialog();
+                        taskRevertBack(itemEntity);
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                }
+        );
+    }
 
     /**
      * 展示选择负责人对话框
@@ -539,6 +577,8 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
                             } else {
                                 updateTaskState(itemEntity, true);
                             }
+                        } else if (type == SHOW_RENEW_DIALOG) {
+                            recoverTaskById(itemEntity);
                         }
                         break;
                     default:
@@ -553,6 +593,32 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
         builder.setPositiveButton(R.string.task_confirm, dialogOnclicListener);
         builder.setNegativeButton(R.string.task_cancel, dialogOnclicListener);
         builder.create().show();
+    }
+
+    /**
+     * 显示二次确认对话框
+     */
+    protected void showTwiceSureDialog(final TaskEntity.TaskItemEntity itemEntity, String title, final int type) {
+        new BottomActionDialog(getContext(),
+                title,
+                Arrays.asList(getString(R.string.str_ok)),
+                0,
+                0xFFFF0000,
+                new BottomActionDialog.OnActionItemClickListener() {
+                    @Override
+                    public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+                        dialog.dismiss();
+                        switch (position) {
+                            case 0:
+                                 if (type == SHOW_RENEW_BUTTOM_SHEET) {
+                                    recoverTaskById(itemEntity);
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }).show();
     }
 
     /**
@@ -735,6 +801,14 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
      * @param taskId 如果为空，则是接收到停止计时的通知；如果不为空，则是接收到开始计时的通知。
      */
     protected abstract void taskTimingUpdateEvent(String taskId);
+
+    /**
+     * 恢复已删除任务（已删除任务列表会调用此接口）
+     * @param itemEntity
+     */
+    protected void taskRevertBack(TaskEntity.TaskItemEntity itemEntity){
+
+    }
 
 
     @Override

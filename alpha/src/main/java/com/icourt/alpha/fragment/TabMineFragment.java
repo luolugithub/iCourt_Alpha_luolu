@@ -20,6 +20,7 @@ import com.icourt.alpha.activity.SetingActivity;
 import com.icourt.alpha.activity.TaskMonthFinishActivity;
 import com.icourt.alpha.activity.UserInfoActivity;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.constants.TimingConfig;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.entity.bean.GroupBean;
@@ -29,6 +30,7 @@ import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.callback.AppUpdateCallBack;
+import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SystemUtils;
@@ -226,11 +228,11 @@ public class TabMineFragment extends BaseFragment {
                 break;
             //今日计时
             case R.id.today_duraction_layout:
-                showTopSnackBar(R.string.mine_today_time);
+                MyTimingActivity.launch(getContext(), TimingConfig.TIMING_QUERY_BY_DAY, DateUtils.millis());
                 break;
             //本月计时
             case R.id.month_duraction_layout:
-                showTopSnackBar(R.string.mine_month_time);
+                MyTimingActivity.launch(getContext(), TimingConfig.TIMING_QUERY_BY_MONTH, DateUtils.millis());
                 break;
             //本月完成任务
             case R.id.done_task_layout:

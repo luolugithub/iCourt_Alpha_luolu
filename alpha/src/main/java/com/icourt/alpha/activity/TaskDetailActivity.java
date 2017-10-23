@@ -397,7 +397,7 @@ public class TaskDetailActivity extends BaseActivity
                             if (taskItemEntity.attendeeUsers.size() > 1) {
                                 showDeleteDialog(getString(R.string.task_is_confirm_revert_task), SHOW_RENEW_DIALOG);
                             } else {
-                                showTwiceSureDialog(getString(R.string.task_is_revert_task), SHOW_RENEW_BUTTOM_SHEET);
+                                showTwiceSureDialog(getString(R.string.task_is_revert), SHOW_RENEW_BUTTOM_SHEET);
                             }
                         } else {
                             showTwiceSureDialog(getString(R.string.task_is_revert_task), SHOW_RENEW_BUTTOM_SHEET);
@@ -627,7 +627,7 @@ public class TaskDetailActivity extends BaseActivity
                                         if (taskItemEntity.attendeeUsers.size() > 1) {
                                             showDeleteDialog(getString(R.string.task_is_confirm_revert_task), SHOW_RENEW_DIALOG);
                                         } else {
-                                            showTwiceSureDialog(getString(R.string.task_is_revert_task), SHOW_RENEW_BUTTOM_SHEET);
+                                            showTwiceSureDialog(getString(R.string.task_is_revert), SHOW_RENEW_BUTTOM_SHEET);
                                         }
                                     } else {
                                         showTwiceSureDialog(getString(R.string.task_is_revert_task), SHOW_RENEW_BUTTOM_SHEET);

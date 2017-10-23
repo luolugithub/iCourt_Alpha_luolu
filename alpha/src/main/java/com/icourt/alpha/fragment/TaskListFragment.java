@@ -41,12 +41,12 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnTasksChangeListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
-import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
 import com.umeng.analytics.MobclickAgent;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -316,18 +316,18 @@ public class TaskListFragment extends BaseTaskFragment implements
         if (type == TYPE_ALL) {
             switch (stateType) {
                 case TaskConfig.TASK_STATETYPE_UNFINISH:
-                    return R.string.task_none_unfinish_task;
+                    return R.string.empty_list_task_unfinished_task;
                 case TaskConfig.TASK_STATETYPE_FINISHED:
-                    return R.string.task_none_finished_task;
+                    return R.string.empty_list_task_finished_task;
                 case TaskConfig.TASK_STATETYPE_DELETED:
-                    return R.string.task_none_deleted_task;
+                    return R.string.empty_list_task_deleted_task;
                 default:
                     break;
             }
         } else if (type == TYPE_MY_ATTENTION) {
-            return R.string.task_none_attention_task;
+            return R.string.empty_list_task_follow_task;
         }
-        return R.string.task_empty_nomal;
+        return R.string.empty_list_task;
     }
 
     @Override
@@ -889,11 +889,7 @@ public class TaskListFragment extends BaseTaskFragment implements
                 new SimpleCallBack<JsonElement>() {
                     @Override
                     public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                        dismissLoadingDialog();
-                        if (taskAdapter != null) {
-                            taskAdapter.removeItem(itemEntity);
-                            recyclerView.enableEmptyView(taskAdapter.getData());
-                        }
+
                     }
 
                     @Override
@@ -966,6 +962,19 @@ public class TaskListFragment extends BaseTaskFragment implements
                 lastEntity.isTiming = false;
             }
             taskAdapter.notifyDataSetChanged();
+        }
+    }
+
+    /**
+     * 恢复已删除任务（已删除任务列表会调用此接口）
+     *
+     * @param itemEntity
+     */
+    @Override
+    protected void taskRevertBack(TaskEntity.TaskItemEntity itemEntity) {
+        if (taskAdapter != null) {
+            taskAdapter.removeItem(itemEntity);
+            recyclerView.enableEmptyView(taskAdapter.getData());
         }
     }
 
@@ -1115,7 +1124,15 @@ public class TaskListFragment extends BaseTaskFragment implements
                         updateTaskState(itemEntity, false);
                     }
                 } else {//已删除列表
-                    recoverTaskById(itemEntity);
+                    if (itemEntity.attendeeUsers != null) {
+                        if (itemEntity.attendeeUsers.size() > 1) {
+                            showFinishDialog(getContext(), getString(R.string.task_is_confirm_revert_task), itemEntity, SHOW_RENEW_DIALOG);
+                        } else {
+                            showTwiceSureDialog(itemEntity, getString(R.string.task_is_revert), SHOW_RENEW_BUTTOM_SHEET);
+                        }
+                    } else {
+                        showTwiceSureDialog(itemEntity, getString(R.string.task_is_revert_task), SHOW_RENEW_BUTTOM_SHEET);
+                    }
                 }
                 break;
             default:

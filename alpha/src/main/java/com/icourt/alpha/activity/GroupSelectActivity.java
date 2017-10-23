@@ -21,10 +21,10 @@ import com.icourt.alpha.entity.bean.SelectGroupBean;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ItemDecorationUtils;
-import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -43,6 +43,8 @@ import retrofit2.Response;
  * date createTime：17/5/18
  * version 2.0.0
  */
+
+//TODO 改名字 改成TeamSelectActivity  GroupSelectActivity太像关联讨论组
 
 public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
 
@@ -89,7 +91,7 @@ public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAda
         if (groupList != null) {
             groupBeanList.addAll(groupList);
         }
-        recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_user, "暂无负责团队");
+        recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_user, R.string.empty_list_customer_team);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(this, true));
         recyclerView.setAdapter(selectGroupAdapter = new SelectGroupAdapter());

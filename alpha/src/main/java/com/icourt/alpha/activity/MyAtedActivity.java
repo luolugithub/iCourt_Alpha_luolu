@@ -18,10 +18,10 @@ import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
-import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.util.List;
 
@@ -37,6 +37,7 @@ import retrofit2.Response;
  * date createTime：2017/4/19
  * version 1.0.0
  */
+@Deprecated
 public class MyAtedActivity extends BaseActivity {
     MyAtedAdapter myAtedAdapter;
     @BindView(R.id.titleBack)
@@ -51,7 +52,9 @@ public class MyAtedActivity extends BaseActivity {
     SmartRefreshLayout refreshLayout;
 
     public static void launch(@NonNull Context context) {
-        if (context == null) return;
+        if (context == null) {
+            return;
+        }
         Intent intent = new Intent(context, MyAtedActivity.class);
         context.startActivity(intent);
     }
@@ -68,7 +71,7 @@ public class MyAtedActivity extends BaseActivity {
     protected void initView() {
         super.initView();
         setTitle("提及我的");
-        recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, R.string.my_center_null_atme_text);
+        recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, R.string.empty_list_im_at_me_msg);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(myAtedAdapter = new MyAtedAdapter());
         myAtedAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(recyclerView, myAtedAdapter));

@@ -25,12 +25,12 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
-import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
 import com.umeng.analytics.MobclickAgent;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -55,9 +55,10 @@ import retrofit2.Response;
 /**
  * Description 我分配的、选择查看对象（未完成｜已完成）
  * Company Beijing icourt
- * @author  lu.zhao  E-mail:zhaolu@icourt.cc
- * date createTime：17/5/19
- * version 2.0.0
+ *
+ * @author lu.zhao  E-mail:zhaolu@icourt.cc
+ *         date createTime：17/5/19
+ *         version 2.0.0
  */
 
 public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuickAdapter.OnItemClickListener, BaseQuickAdapter.OnItemChildClickListener {
@@ -89,6 +90,7 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
 
     }
 
+
     /**
      * 未完成
      */
@@ -105,6 +107,7 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
 
     }
 
+    //TODO 一大堆没用的常量与变量
     /**
      * 今天任务（暂时保留字段）
      */
@@ -157,6 +160,8 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
     TaskAdapter taskAdapter;
 
     TaskEntity.TaskItemEntity lastEntity;
+
+    //TODO 没用的变量
     /**
      * 用来存储每个group有多少个数量（暂时保留，待分页再优化）。
      */
@@ -187,9 +192,9 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
         finishType = getArguments().getInt(TAG_FINISH_TYPE);
         ids = getArguments().getStringArrayList(TAG_IDS);
         if (startType == TaskOtherListFragment.SELECT_OTHER_TYPE) {
-            recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_none_other_task);
+            recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, R.string.empty_list_task_other_people_task);
         } else {
-            recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_list_null_text);
+            recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, R.string.empty_list_task);
         }
         linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);

@@ -18,8 +18,8 @@ import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.RepoTypeEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.ItemDecorationUtils;
-import com.icourt.alpha.view.smartrefreshlayout.EmptyRecyclerView;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.util.Arrays;
 

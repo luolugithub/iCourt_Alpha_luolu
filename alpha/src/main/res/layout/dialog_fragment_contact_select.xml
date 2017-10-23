@@ -91,28 +91,7 @@
 
             <include layout="@layout/header_search_input_text2" />
 
-            <LinearLayout
-                android:id="@+id/empty_layout"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:visibility="gone">
-
-                <ImageView
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:src="@mipmap/icon_placeholder_user" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/dp10"
-                    android:text="暂无成员"
-                    android:textColor="@color/alpha_font_color_gray"
-                    android:textSize="15sp" />
-            </LinearLayout>
+            <include layout="@layout/layout_empty_tv"/>
         </FrameLayout>
 
         <RelativeLayout
