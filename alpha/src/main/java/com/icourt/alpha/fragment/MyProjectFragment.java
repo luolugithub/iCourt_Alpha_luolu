@@ -230,7 +230,7 @@ public class MyProjectFragment extends BaseFragment {
                         }
 
                         if (isRefresh)
-                            recyclerView.checkIfEmpty();
+                            recyclerView.enableEmptyView(response.body().result);
                         stopRefresh();
                         pageIndex += 1;
                         enableLoadMore(response.body().result);

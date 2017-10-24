@@ -2,6 +2,8 @@ package com.icourt.alpha.adapter.baseadapter;
 
 import android.support.annotation.CallSuper;
 
+import com.zhaol.refreshlayout.interfaces.IDataEmptyAdapter;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,10 +18,11 @@ import java.util.List;
 
 /**
  * 新版本 @see {@link BaseAdapter}
+ *
  * @param <T>
  */
 @Deprecated
-public abstract class BaseArrayRecyclerAdapter<T> extends BaseRecyclerAdapter {
+public abstract class BaseArrayRecyclerAdapter<T> extends BaseRecyclerAdapter implements IDataEmptyAdapter {
     private final List<T> dataList = new ArrayList<T>();
 
     public List<T> getData() {
@@ -155,6 +158,12 @@ public abstract class BaseArrayRecyclerAdapter<T> extends BaseRecyclerAdapter {
         return dataList.size();
     }
 
-
+    @Override
+    public int getRealAdapterCount() {
+        if (getData().isEmpty()) {
+            return 0;
+        }
+        return getData().size();
+    }
 }
 

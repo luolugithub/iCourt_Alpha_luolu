@@ -210,7 +210,7 @@ public class ChatHistortySearchActivity extends BaseActivity implements BaseRecy
                     @Override
                     public void accept(List<SearchItemEntity> searchPolymerizationEntities) throws Exception {
                         searchItemAdapter.bindData(true, searchPolymerizationEntities);
-                        recyclerView.enableEmptyView(searchItemAdapter.getData());
+//                        recyclerView.enableEmptyView(searchItemAdapter.getData());
                     }
                 });
     }
