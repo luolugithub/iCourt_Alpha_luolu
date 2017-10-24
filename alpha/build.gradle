@@ -3,6 +3,7 @@ apply plugin: 'com.bugtags.library.plugin'
 apply plugin: 'realm-android'
 //apply plugin: 'com.sensorsdata.analytics.android'
 apply plugin: 'com.jakewharton.butterknife'
+//apply plugin: 'com.antfortune.freeline'
 android {
     compileSdkVersion rootProject.ext.android.compileSdkVersion
     buildToolsVersion rootProject.ext.android.buildToolsVersion
@@ -302,7 +303,7 @@ dependencies {
     compile 'com.umeng.analytics:analytics:latest.integration'
     compile 'com.github.lecho:hellocharts-library:1.5.8@aar'
     compile project(':lib_calendar')
-    //compile 'com.sensorsdata.analytics.android:SensorsAnalyticsSDK:1.7.12'
+    //compile 'com.sensorsdata.analytics.android:SensorsAnalyticsSDK:1.8.8'
     compile project(path: ':lib_daemon')
     compile files('libs/MiPush_SDK_Client_3_4_3.jar')
     compile(name: 'HMS-SDK-2.4.0.300', ext: 'aar')
