@@ -16,6 +16,7 @@ import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.widget.manager.TimerManager;
+import com.zhaol.refreshlayout.interfaces.IDataEmptyAdapter;
 
 /**
  * * Description
@@ -25,7 +26,7 @@ import com.icourt.alpha.widget.manager.TimerManager;
  * version 2.0.0
  */
 
-public class TaskAdapter extends BaseMultiItemQuickAdapter<TaskEntity.TaskItemEntity, BaseViewHolder> {
+public class TaskAdapter extends BaseMultiItemQuickAdapter<TaskEntity.TaskItemEntity, BaseViewHolder> implements IDataEmptyAdapter{
 
     /**
      * 添加计时权限
@@ -285,5 +286,10 @@ public class TaskAdapter extends BaseMultiItemQuickAdapter<TaskEntity.TaskItemEn
     public void clearData() {
         getData().clear();
         notifyDataSetChanged();
+    }
+
+    @Override
+    public int getRealAdapterCount() {
+        return getData().size();
     }
 }

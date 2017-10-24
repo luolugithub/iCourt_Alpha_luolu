@@ -8,6 +8,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.zhaol.refreshlayout.interfaces.IDataEmptyAdapter;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,7 +25,7 @@ import java.util.List;
  * @param <T>
  */
 @Deprecated
-public class HeaderFooterAdapter<T extends RecyclerView.Adapter> extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class HeaderFooterAdapter<T extends RecyclerView.Adapter> extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements IDataEmptyAdapter{
 
     private final T mBase;
 
@@ -181,5 +183,13 @@ public class HeaderFooterAdapter<T extends RecyclerView.Adapter> extends Recycle
     public void unregisterAdapterDataObserver(RecyclerView.AdapterDataObserver observer) {
         super.unregisterAdapterDataObserver(observer);
         mBase.unregisterAdapterDataObserver(observer);
+    }
+
+    @Override
+    public int getRealAdapterCount() {
+        if (mBase == null) {
+            return 0;
+        }
+        return mBase.getItemCount();
     }
 }

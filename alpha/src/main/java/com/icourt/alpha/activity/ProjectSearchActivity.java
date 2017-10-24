@@ -18,13 +18,13 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ProjectListAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.util.List;
 
@@ -53,11 +53,9 @@ public class ProjectSearchActivity extends BaseActivity implements BaseRecyclerA
     @BindView(R.id.searchLayout)
     LinearLayout searchLayout;
     @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     @BindView(R.id.softKeyboardSizeWatchLayout)
     SoftKeyboardSizeWatchLayout softKeyboardSizeWatchLayout;
-    @BindView(R.id.contentEmptyText)
-    TextView contentEmptyText;
 
     ProjectListAdapter projectListAdapter;
 
@@ -82,21 +80,10 @@ public class ProjectSearchActivity extends BaseActivity implements BaseRecyclerA
     protected void initView() {
         super.initView();
         searchProjectType = getIntent().getIntExtra(KEY_SEARCH_PROJECT_TYPE, -1);
+        recyclerView.setEmptyContent(R.string.empty_list_project_search);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(projectListAdapter = new ProjectListAdapter());
         projectListAdapter.setOnItemClickListener(this);
-        projectListAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
-            @Override
-            protected void updateUI() {
-                if (contentEmptyText != null) {
-                    if (!TextUtils.isEmpty(etSearchName.getText())) {
-                        contentEmptyText.setVisibility(projectListAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
-                    } else {
-                        contentEmptyText.setVisibility(View.GONE);
-                    }
-                }
-            }
-        });
 
         etSearchName.addTextChangedListener(new TextWatcher() {
             @Override
@@ -119,7 +106,7 @@ public class ProjectSearchActivity extends BaseActivity implements BaseRecyclerA
                 }
             }
         });
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+        recyclerView.getRecyclerView().addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);

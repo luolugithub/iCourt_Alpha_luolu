@@ -13,6 +13,7 @@ import com.icourt.alpha.http.ApiChatService;
 import com.icourt.alpha.http.ApiProjectService;
 import com.icourt.alpha.http.ApiSFileService;
 import com.icourt.alpha.interfaces.ProgressHUDImp;
+import com.zhaol.refreshlayout.interfaces.IDataEmptyAdapter;
 
 import java.util.List;
 
@@ -23,7 +24,7 @@ import java.util.List;
  * date createTime：2017/10/7
  * version 2.1.0
  */
-public abstract class BaseSelectableAdapter<T extends com.asange.recyclerviewadapter.SelectableEntity> extends SelectableBaseAdapter<T>  implements ProgressHUDImp{
+public abstract class BaseSelectableAdapter<T extends com.asange.recyclerviewadapter.SelectableEntity> extends SelectableBaseAdapter<T>  implements ProgressHUDImp,IDataEmptyAdapter{
     final BaseActionHelper baseActionHelper = new BaseActionHelper();
 
     public BaseSelectableAdapter(@NonNull List<T> data) {
@@ -51,6 +52,14 @@ public abstract class BaseSelectableAdapter<T extends com.asange.recyclerviewada
     @UiThread
     public void showLoadingDialog(@Nullable String notice) {
         baseActionHelper.showLoadingDialog(notice);
+    }
+
+    @Override
+    public int getRealAdapterCount() {
+        if (getData().isEmpty()) {
+            return 0;
+        }
+        return getData().size();
     }
 
     @Override
