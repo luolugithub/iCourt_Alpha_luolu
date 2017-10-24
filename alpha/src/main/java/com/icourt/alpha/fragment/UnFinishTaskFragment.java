@@ -273,6 +273,9 @@ public class UnFinishTaskFragment extends BaseFragment implements BaseRecyclerAd
     }
 
     public void clearSelected() {
+        if (taskSelectAdapter == null) {
+            return;
+        }
         taskSelectAdapter.clearSelected();
     }
 }

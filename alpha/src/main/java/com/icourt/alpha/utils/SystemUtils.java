@@ -668,7 +668,7 @@ public class SystemUtils {
     public static CharSequence getString(Context context, @StringRes int id, CharSequence defaultStr) {
         if (context != null) {
             try {
-                context.getResources().getString(id);
+                return context.getResources().getString(id);
             } catch (Resources.NotFoundException e) {
                 e.printStackTrace();
             }

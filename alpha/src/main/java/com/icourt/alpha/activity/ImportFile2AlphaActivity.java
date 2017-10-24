@@ -110,6 +110,18 @@ public class ImportFile2AlphaActivity extends BaseActivity
         String extraSubject = getIntent().getStringExtra(Intent.EXTRA_SUBJECT);
         String extraText = getIntent().getStringExtra(Intent.EXTRA_TEXT);
         String extraStream = getIntent().getStringExtra(Intent.EXTRA_STREAM);
+        if (getIntent().getExtras() != null) {
+            Object extraStreamp = getIntent().getExtras().get(Intent.EXTRA_STREAM);
+            //可能file uri 为null 比如魅族手机 从extraStreamp获取
+            if (fileUir == null
+                    && extraStreamp != null) {
+                try {
+                    fileUir = Uri.parse(extraStreamp.toString());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
         log("-------->share action:" + action);
         log("-------->share type:" + type);
         log("-------->share uri:" + fileUir);
@@ -171,6 +183,10 @@ public class ImportFile2AlphaActivity extends BaseActivity
                 e.printStackTrace();
                 path = fileUir.toString();
             }
+        }
+        if (TextUtils.isEmpty(path)) {
+            showToast("文件地址为空");
+            bugSync("分享到Alpha失败", "fileUir:" + fileUir);
         }
         log("----------->path:" + path);
         viewPager.setAdapter(baseFragmentAdapter = new BaseFragmentAdapter(getSupportFragmentManager()));
