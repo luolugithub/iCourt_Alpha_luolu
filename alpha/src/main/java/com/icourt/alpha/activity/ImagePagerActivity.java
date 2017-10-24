@@ -132,6 +132,9 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
         if (selectedPos >= sFileImageInfoEntities.size()) {
             selectedPos = sFileImageInfoEntities.size() - 1;
         }
+        if (selectedPos < 0) {
+            selectedPos = 0;
+        }
         Intent intent = new Intent(context, ImagePagerActivity.class);
         intent.putExtra(KEY_IMAGE_FROM, imageFrom);
         intent.putExtra(KEY_POS, selectedPos);
