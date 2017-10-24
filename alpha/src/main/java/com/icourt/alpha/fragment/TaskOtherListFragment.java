@@ -107,28 +107,6 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
 
     }
 
-    //TODO 一大堆没用的常量与变量
-    /**
-     * 今天任务（暂时保留字段）
-     */
-    public static final int TASK_TYPE_TODAY = 1;
-    /**
-     * 即将到期任务（暂时保留字段）
-     */
-    public static final int TASK_TYPE_BEABOUT = 2;
-    /**
-     * 未来任务（暂时保留字段）
-     */
-    public static final int TASK_TYPE_FUTURE = 3;
-    /**
-     * 未指定到期任务（暂时保留字段）
-     */
-    public static final int TASK_TYPE_NODUE = 4;
-    /**
-     * 已过期任务（暂时保留字段）
-     */
-    public static final int TASK_TYPE_DATED = 5;
-
     /**
      * 用来判断是不是第一次进入该界面，如果是，滚动到一条任务，隐藏搜索栏。
      */
@@ -160,13 +138,6 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
     TaskAdapter taskAdapter;
 
     TaskEntity.TaskItemEntity lastEntity;
-
-    //TODO 没用的变量
-    /**
-     * 用来存储每个group有多少个数量（暂时保留，待分页再优化）。
-     */
-    private ArrayMap<String, Integer> mArrayMap = new ArrayMap<>();
-
 
     public static TaskOtherListFragment newInstance(@START_TYPE int startType, @IS_FINISH_TYPE int finishType, ArrayList<String> ids) {
         TaskOtherListFragment taskOtherListFragment = new TaskOtherListFragment();
