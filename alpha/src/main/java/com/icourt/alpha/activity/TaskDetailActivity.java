@@ -1022,6 +1022,9 @@ public class TaskDetailActivity extends BaseActivity
      * 更新tab的每个fragment
      */
     private void updateTabItemFragment() {
+        if (taskItemEntity == null) {
+            return;
+        }
         Bundle bundle = new Bundle();
         bundle.putBoolean(KEY_ISFINISH, taskItemEntity.state);
         bundle.putBoolean(KEY_VALID, taskItemEntity.valid);
@@ -1065,7 +1068,7 @@ public class TaskDetailActivity extends BaseActivity
      * @param taskId
      */
     private void recoverTaskById(String taskId) {
-        if (TextUtils.isEmpty(taskId)) {
+        if (taskItemEntity == null || TextUtils.isEmpty(taskId)) {
             return;
         }
         showLoadingDialog(null);
