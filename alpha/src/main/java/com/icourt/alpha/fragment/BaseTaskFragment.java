@@ -433,6 +433,10 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
      * @param taskItemEntity
      */
     protected void showLongMenu(TaskEntity.TaskItemEntity taskItemEntity) {
+        //屏蔽长按按钮
+        if (true) {
+            return;
+        }
         //已完成的任务不能进行长按操作
         if (taskItemEntity.state) {
             return;
@@ -610,7 +614,7 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
                         dialog.dismiss();
                         switch (position) {
                             case 0:
-                                 if (type == SHOW_RENEW_BUTTOM_SHEET) {
+                                if (type == SHOW_RENEW_BUTTOM_SHEET) {
                                     recoverTaskById(itemEntity);
                                 }
                                 break;
@@ -804,9 +808,10 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
 
     /**
      * 恢复已删除任务（已删除任务列表会调用此接口）
+     *
      * @param itemEntity
      */
-    protected void taskRevertBack(TaskEntity.TaskItemEntity itemEntity){
+    protected void taskRevertBack(TaskEntity.TaskItemEntity itemEntity) {
 
     }
 
