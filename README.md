@@ -37,7 +37,8 @@
  2017/7/26 v2.0.1 外部包 (fir账号：104421133@qq.com)  
  2017/8/8  v2.0.2 alpha-BaiDu-release-v2.0.2_2017-08-08 20/25_v202_jiagu_sign.apk  
  alpha-BaiDu-innerrelease-v2.1.0_2017-10-19 23/09.apk  
- alpha-BaiDu-innerrelease_daily-v2.1.0_2017-10-19 23/16.apk
+ alpha-BaiDu-innerrelease_daily-v2.1.0_2017-10-19 23/16.apk  
+ alpha-BaiDu-release-v2.2.0_2017-10-24 21/33_v220_jiagu_sign.apk
 
 #打包配置  
  已在gradle与Hconst中配置完成;  
