@@ -190,6 +190,6 @@ public class HeaderFooterAdapter<T extends RecyclerView.Adapter> extends Recycle
         if (mBase == null) {
             return 0;
         }
-        return mBase.getItemCount();
+        return getItemCount();
     }
 }
