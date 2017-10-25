@@ -70,7 +70,7 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
     TimeAdapter timeAdapter;
 
     private boolean canLoadMore;//是否可以加载更多（日、周不可以加载更多；月、年可以加载更多）
-    int pageIndex = 0;
+    int mPageIndex = 1;
 
     /**
      * @param queryType
@@ -193,11 +193,9 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
             pageSize = ActionConstants.DEFAULT_PAGE_SIZE;
         }
         if (isRefresh) {
-            pageIndex = 0;
-        } else {
-            pageIndex += 1;
+            mPageIndex = 1;
         }
-        timingListQueryByTime(isRefresh, pageIndex, pageSize, weekStartTime, weekEndTime);
+        timingListQueryByTime(isRefresh, mPageIndex, pageSize, weekStartTime, weekEndTime);
     }
 
     /**
@@ -206,7 +204,7 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
      * @param weekStartTime
      * @param weekEndTime
      */
-    private void timingListQueryByTime(final boolean isRefresh, int pageIndex, int pageSize, String weekStartTime, String weekEndTime) {
+    private void timingListQueryByTime(final boolean isRefresh, final int pageIndex, int pageSize, String weekStartTime, String weekEndTime) {
         callEnqueue(
                 getApi().timingListStatistic(weekStartTime, weekEndTime, pageIndex, pageSize),
                 new SimpleCallBack<TimeEntity>() {
@@ -222,6 +220,7 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
                             }
                         }
                         stopRefresh();
+                        mPageIndex += 1;
                     }
 
                     @Override

@@ -112,8 +112,8 @@ public class TimingSelectDayFragment extends BaseFragment {
         selectedDate.set(Calendar.MINUTE, 0);
         selectedDate.set(Calendar.SECOND, 0);
         selectedDate.set(Calendar.MILLISECOND, 0);
+        verifyToday(selectedDate.getTimeInMillis());
         setTitleContent(selectedDate.getTimeInMillis());
-
         if (onDateSelectedListener != null) {
             onDateSelectedListener.onDateSelected(selectedDate.getTimeInMillis());
         }
@@ -136,7 +136,8 @@ public class TimingSelectDayFragment extends BaseFragment {
                 }
                 break;
             case R.id.titleAction:
-                scrollToToday();
+                scrollToDate(System.currentTimeMillis());
+//                scrollToToday();
                 break;
             default:
                 super.onClick(v);
@@ -152,10 +153,24 @@ public class TimingSelectDayFragment extends BaseFragment {
     private void scrollToDate(long timeMillis) {
         selectedDate.clear();
         selectedDate.setTimeInMillis(DateUtils.getDayStartTime(timeMillis));
+        verifyToday(selectedDate.getTimeInMillis());
         setTitleContent(selectedDate.getTimeInMillis());
         mcvCalendar.setDateToView(timeMillis);
         if (onDateSelectedListener != null) {
             onDateSelectedListener.onDateSelected(selectedDate.getTimeInMillis());
+        }
+    }
+
+    /**
+     * 判断日期是不是今天
+     *
+     * @param timeMillis
+     */
+    private void verifyToday(long timeMillis) {
+        if (DateUtils.isToday(timeMillis)) {
+            titleAction.setVisibility(View.GONE);
+        } else {
+            titleAction.setVisibility(View.VISIBLE);
         }
     }
 

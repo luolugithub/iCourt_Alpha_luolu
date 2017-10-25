@@ -60,6 +60,7 @@ import com.icourt.alpha.fragment.dialogfragment.OverTimingRemindDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.TimingNoticeDialogFragment;
 import com.icourt.alpha.http.AlphaClient;
 import com.icourt.alpha.http.callback.SimpleCallBack;
+import com.icourt.alpha.http.callback.SimpleCallBack2;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
@@ -451,7 +452,8 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
         if (BuildConfig.BUILD_TYPE_INT > 0) {
             mHandler.addCheckAppUpdateTask();
         }
-        mHandler.addTokenRefreshTask();
+        //TODO 这里为什么要刷新token？
+//        mHandler.addTokenRefreshTask();
         mHandler.addCheckTimingTask();
     }
 
@@ -793,15 +795,15 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
         }
         callEnqueue(
                 getApi().refreshToken(loginUserInfo.getRefreshToken()),
-                new SimpleCallBack<AlphaUserInfo>() {
+                new SimpleCallBack2<AlphaUserInfo>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<AlphaUserInfo>> call, Response<ResEntity<AlphaUserInfo>> response) {
-                        if (response.body().result != null) {
-                            AlphaClient.setToken(response.body().result.getToken());
+                    public void onSuccess(Call<AlphaUserInfo> call, Response<AlphaUserInfo> response) {
+                        if (response.body() != null) {
+                            AlphaClient.setToken(response.body().getToken());
 
                             //重新附值两个最新的token
-                            loginUserInfo.setToken(response.body().result.getToken());
-                            loginUserInfo.setRefreshToken(response.body().result.getRefreshToken());
+                            loginUserInfo.setToken(response.body().getToken());
+                            loginUserInfo.setRefreshToken(response.body().getRefreshToken());
 
                             //保存
                             saveLoginUserInfo(loginUserInfo);
@@ -810,7 +812,7 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
 
                     @Override
                     public void defNotify(String noticeStr) {
-                        //super.defNotify(noticeStr);
+                        // super.defNotify(noticeStr);
                     }
                 });
     }
