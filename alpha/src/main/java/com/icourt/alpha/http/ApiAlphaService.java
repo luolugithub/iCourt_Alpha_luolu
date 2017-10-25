@@ -164,7 +164,7 @@ public interface ApiAlphaService {
      * @return
      */
     @GET("ilaw/api/v1/auth/refresh")
-    Call<ResEntity<AlphaUserInfo>> refreshToken(@Query("refreshToekn") String refreshToken);
+    Call<AlphaUserInfo> refreshToken(@Query("refreshToekn") String refreshToken);
 
     /**
      * 获取团队联系人列表
