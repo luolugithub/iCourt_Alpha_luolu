@@ -4,9 +4,12 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.TimerDetailActivity;
@@ -119,6 +122,14 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
 
     @Override
     protected void initView() {
+        if (recyclerView != null) {
+            recyclerView.setEmptyViewMarginTopDp(100);
+            if (recyclerView.getRecyclerView() != null) {
+                recyclerView.getRecyclerView().setBackgroundResource(R.color.alpha_background_window);
+                recyclerView.getRecyclerView().setLayoutParams(new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+            }
+        }
+
         queryType = TimingConfig.convert2timingQueryType(getArguments().getInt(KEY_QUERY_TYPE));
         long startTime = getArguments().getLong(KEY_START_TIME);
 

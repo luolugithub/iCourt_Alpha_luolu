@@ -238,26 +238,24 @@ public class TimingListMonthFragment extends BaseTimingListFragment {
         }
 
         //用第二条先提高纵轴高度，防止真正要显示的折线图数据过少而显示不全的问题。
-        if (maxValue < 8.0f) {
-            List<PointValue> values2 = Arrays.asList(
-                    new PointValue(0, 1.0f),
-                    new PointValue(1, 2.0f),
-                    new PointValue(2, 2.0f),
-                    new PointValue(3, 3.0f),
-                    new PointValue(4, 3.0f),
-                    new PointValue(5, 5.0f),
-                    new PointValue(6, 8.0f));
-            Line line2 = new Line(values2);
-            line2.setShape(shape);
-            line2.setCubic(false);
-            line2.setFilled(false);
-            line2.setHasLabels(hasLabels);
-            line2.setHasLabelsOnlyForSelected(hasLabelForSelected);
-            line2.setHasLines(false);
-            line2.setHasPoints(hasPoints);
-            line2.setColor(Color.TRANSPARENT);
-            lines.add(line2);
-        }
+        List<PointValue> values2 = Arrays.asList(
+                new PointValue(0, 4.0f),
+                new PointValue(1, 8.0f),
+                new PointValue(2, 12.0f),
+                new PointValue(3, 16.0f),
+                new PointValue(4, 20.0f),
+                new PointValue(5, 24.0f),
+                new PointValue(6, 20.0f));
+        Line line2 = new Line(values2);
+        line2.setShape(shape);
+        line2.setCubic(false);
+        line2.setFilled(false);
+        line2.setHasLabels(hasLabels);
+        line2.setHasLabelsOnlyForSelected(hasLabelForSelected);
+        line2.setHasLines(false);
+        line2.setHasPoints(hasPoints);
+        line2.setColor(Color.TRANSPARENT);
+        lines.add(line2);
 
         Line line = new Line(values);
         line.setShape(shape);

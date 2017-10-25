@@ -237,32 +237,29 @@ public class TimingListYearFragment extends BaseTimingListFragment {
         }
 
         //用第二条先提高纵轴高度
-        if (maxValue < 80.0f) {
-            List<PointValue> values2 = Arrays.asList(
-                    new PointValue(0, 10.0f),
-                    new PointValue(1, 20.0f),
-                    new PointValue(2, 30.0f),
-                    new PointValue(3, 40.0f),
-                    new PointValue(4, 50.0f),
-                    new PointValue(5, 60.0f),
-                    new PointValue(6, 70.0f),
-                    new PointValue(7, 80.0f),
-                    new PointValue(8, 70.0f),
-                    new PointValue(9, 60.0f),
-                    new PointValue(10, 50.0f),
-                    new PointValue(11, 40.0f));
-            Line line2 = new Line(values2);
-            line2.setShape(shape);
-            line2.setCubic(false);
-            line2.setFilled(false);
-            line2.setHasLabels(hasLabels);
-            line2.setHasLabelsOnlyForSelected(hasLabelForSelected);
-            line2.setHasLines(false);
-            line2.setHasPoints(hasPoints);
-            line2.setColor(Color.TRANSPARENT);
-            lines.add(line2);
-        }
-
+        List<PointValue> values2 = Arrays.asList(
+                new PointValue(0, 30.0f),
+                new PointValue(1, 60.0f),
+                new PointValue(2, 90.0f),
+                new PointValue(3, 120.0f),
+                new PointValue(4, 150.0f),
+                new PointValue(5, 180.0f),
+                new PointValue(6, 210.0f),
+                new PointValue(7, 240.0f),
+                new PointValue(8, 270.0f),
+                new PointValue(9, 300.0f),
+                new PointValue(10, 320.0f),
+                new PointValue(11, 300.0f));
+        Line line2 = new Line(values2);
+        line2.setShape(shape);
+        line2.setCubic(false);
+        line2.setFilled(false);
+        line2.setHasLabels(hasLabels);
+        line2.setHasLabelsOnlyForSelected(hasLabelForSelected);
+        line2.setHasLines(false);
+        line2.setHasPoints(hasPoints);
+        line2.setColor(Color.TRANSPARENT);
+        lines.add(line2);
 
         Line line = new Line(values);
         line.setShape(shape);
