@@ -314,7 +314,7 @@ public class CustomerCompanyCreateActivity extends BaseActivity {
                 }
                 break;
             case R.id.activity_add_group_contact_group_textview://选择团队
-                GroupSelectActivity.launchForResult(CustomerCompanyCreateActivity.this, groupBeanList, SELECT_GROUP_REQUEST);
+                TeamSelectActivity.launchForResult(CustomerCompanyCreateActivity.this, groupBeanList, SELECT_GROUP_REQUEST);
                 break;
             case R.id.activity_add_group_contact_add_address_layout://增加地址
                 addAddressItemView(null);

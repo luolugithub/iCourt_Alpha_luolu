@@ -374,8 +374,9 @@ public class TabMineFragment extends BaseFragment {
                         if (myGroups != null) {
                             if (myGroups.size() > 0) {
                                 for (GroupBean groupBean : myGroups) {
-                                    //TODO 空指针危险
-                                    stringBuilder.append(groupBean.getName()).append(",");
+                                    if (groupBean != null) {
+                                        stringBuilder.append(groupBean.getName()).append(",");
+                                    }
                                 }
                                 if (officeNameTv == null) {
                                     return;
