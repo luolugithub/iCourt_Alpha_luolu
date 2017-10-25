@@ -3,6 +3,7 @@ package com.icourt.alpha.fragment;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.view.LayoutInflater;
@@ -154,8 +155,7 @@ public class MyProjectFragment extends BaseFragment {
      * @param stateType
      * @return
      */
-    //TODO 加字符串资源注解
-    private int getEmptyContentId(int stateType) {
+    private @StringRes int getEmptyContentId(int stateType) {
         switch (stateType) {
             case Const.PROJECT_STATUS_ING:
                 return R.string.empty_list_project_executing;
@@ -163,6 +163,8 @@ public class MyProjectFragment extends BaseFragment {
                 return R.string.empty_list_project_finished;
             case Const.PROJECT_STATUS_END:
                 return R.string.empty_list_project_shelve;
+            default:
+                break;
         }
         return R.string.empty_list_project;
     }

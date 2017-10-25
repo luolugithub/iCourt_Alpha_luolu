@@ -44,9 +44,7 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-//TODO 改名字 改成TeamSelectActivity  GroupSelectActivity太像关联讨论组
-
-public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
+public class TeamSelectActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
 
     @BindView(R.id.titleBack)
     ImageView titleBack;
@@ -67,7 +65,7 @@ public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAda
 
     public static void launchForResult(@NonNull Activity context, List<SelectGroupBean> groupBeanList, int requestCode) {
         if (context == null) return;
-        Intent intent = new Intent(context, GroupSelectActivity.class);
+        Intent intent = new Intent(context, TeamSelectActivity.class);
         intent.putExtra("groupBeanList", (Serializable) groupBeanList);
         context.startActivityForResult(intent, requestCode);
     }
@@ -116,7 +114,7 @@ public class GroupSelectActivity extends BaseActivity implements BaseRecyclerAda
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.titleAction:
-                CustomerPersonCreateActivity.launchSetResultFromGroup(GroupSelectActivity.this, selectGroupAdapter.getSelectedData());
+                CustomerPersonCreateActivity.launchSetResultFromGroup(TeamSelectActivity.this, selectGroupAdapter.getSelectedData());
                 finish();
                 break;
             default:

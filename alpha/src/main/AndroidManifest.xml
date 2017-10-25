@@ -272,7 +272,7 @@
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustUnspecified|adjustResize|stateHidden" />
         <activity
-            android:name=".activity.GroupSelectActivity"
+            android:name=".activity.TeamSelectActivity"
             android:screenOrientation="portrait" />
         <activity
             android:name=".activity.SelectLiaisonActivity"

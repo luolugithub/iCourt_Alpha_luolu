@@ -33,12 +33,6 @@ import static com.icourt.alpha.activity.UpdateUserInfoActivity.UPDATE_PHONE_TYPE
  */
 
 public class UserInfoActivity extends BaseActivity {
-    //TODO 这些常量没有引用
-    private static final int REQUEST_CODE_CAMERA = 1000;//拍照 request code
-    private static final int REQUEST_CODE_GALLERY = 1001;//相册 request code
-    private static final int REQUEST_CODE_CROP = 1002;//裁剪 request code
-    private static final int REQ_CODE_PERMISSION_CAMERA = 1100; //相机权限
-    private static final int REQ_CODE_PERMISSION_ACCESS_FILE = 1101;//本地文件读写权限
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
