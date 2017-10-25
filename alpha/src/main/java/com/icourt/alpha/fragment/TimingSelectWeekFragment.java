@@ -117,13 +117,14 @@ public class TimingSelectWeekFragment extends BaseFragment {
         } catch (Exception e) {
 
         }
-        setWeekData();
+        initWeekData();
         wheelView.setOnItemSelectedListener(new OnItemSelectedListener() {
             @Override
             public void onItemSelected(int i) {
                 TimingSelectEntity item = adapter.getItem(i);
                 currentMonthDate.setTimeInMillis(item.endTimeMillis);//设置为周的结束时间，因为以周的结束时间所在月份来显示的
                 setMonthData(currentMonthDate);
+                verifyToday(item);
             }
         });
     }
@@ -143,7 +144,7 @@ public class TimingSelectWeekFragment extends BaseFragment {
     /**
      * 设置周数据
      */
-    private void setWeekData() {
+    private void initWeekData() {
         Observable.create(new ObservableOnSubscribe<List<TimingSelectEntity>>() {
             @Override
             public void subscribe(@NonNull ObservableEmitter<List<TimingSelectEntity>> e) throws Exception {
@@ -229,6 +230,21 @@ public class TimingSelectWeekFragment extends BaseFragment {
     }
 
     /**
+     * 判断日期是不是今天
+     */
+    private void verifyToday(TimingSelectEntity selectEntity) {
+        if (titleAction == null) {
+            return;
+        }
+        long currentTimeMillis = System.currentTimeMillis();
+        if (currentTimeMillis >= selectEntity.startTimeMillis && currentTimeMillis <= selectEntity.endTimeMillis) {
+            titleAction.setVisibility(View.GONE);
+        } else {
+            titleAction.setVisibility(View.VISIBLE);
+        }
+    }
+
+    /**
      * 获取前／后一个月
      *
      * @param isNext false，前一个月；true，后一个月。
@@ -273,9 +289,11 @@ public class TimingSelectWeekFragment extends BaseFragment {
             TimingSelectEntity timingSelectEntity = adapter.getTimeList().get(i);
             if (calendar.getTimeInMillis() >= timingSelectEntity.startTimeMillis && calendar.getTimeInMillis() <= timingSelectEntity.endTimeMillis) {
                 position = i;
+                break;
             }
         }
         wheelView.setCurrentItem(position);
+        verifyToday(adapter.getItem(position));
     }
 
     @Override

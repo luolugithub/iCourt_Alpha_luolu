@@ -451,7 +451,8 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
         if (BuildConfig.BUILD_TYPE_INT > 0) {
             mHandler.addCheckAppUpdateTask();
         }
-        mHandler.addTokenRefreshTask();
+        //TODO 这里为什么要刷新token？
+//        mHandler.addTokenRefreshTask();
         mHandler.addCheckTimingTask();
     }
 
