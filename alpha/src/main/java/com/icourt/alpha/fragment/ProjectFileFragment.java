@@ -368,7 +368,7 @@ public class ProjectFileFragment extends SeaFileBaseFragment
     /**
      * 排序
      */
-    private void sortFile(List<FolderDocumentEntity> datas) {
+    private void sortFile(final List<FolderDocumentEntity> datas) {
         seaFileSort(fileSortType, datas)
                 .delay(500, TimeUnit.MILLISECONDS)
                 .compose(this.<List<FolderDocumentEntity>>bindToLifecycle())
@@ -390,6 +390,9 @@ public class ProjectFileFragment extends SeaFileBaseFragment
                     public void onComplete() {
                         super.onComplete();
                         dismissLoadingDialog();
+                        if(datas.isEmpty()){
+                            folderAdapter.bindData(true, datas);
+                        }
                     }
                 });
     }

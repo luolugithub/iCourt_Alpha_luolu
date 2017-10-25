@@ -84,7 +84,6 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = super.onCreateView(R.layout.fragment_project_mine, inflater, container, savedInstanceState);
-        view.setBackgroundColor(Color.WHITE);
         unbinder = ButterKnife.bind(this, view);
         return view;
     }
@@ -100,7 +99,7 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
         timeAdapter.setSumTime(sumTime);
         recyclerView.addItemDecoration(new TimerItemDecoration(getActivity(), timeAdapter));
         timeAdapter.setOnItemClickListener(this);
-
+        recyclerView.getRecyclerView().setBackgroundColor(Color.WHITE);
         refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
             @Override
             public void onRefresh(RefreshLayout refreshlayout) {
