@@ -558,6 +558,17 @@ public class DateUtils {
     }
 
     /**
+     * 返回2017/2/14这种格式的时间格式
+     *
+     * @param milliSeconds
+     * @return
+     */
+    public static String getYYYYMD(long milliSeconds) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/M/d");
+        return dateFormat.format(milliSeconds);
+    }
+
+    /**
      * 获得天数差
      *
      * @param begin
