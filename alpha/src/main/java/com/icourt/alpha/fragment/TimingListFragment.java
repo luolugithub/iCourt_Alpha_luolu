@@ -125,8 +125,8 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
         if (recyclerView != null) {
             recyclerView.setEmptyViewMarginTopDp(100);
             if (recyclerView.getRecyclerView() != null) {
-                recyclerView.getRecyclerView().setBackgroundResource(R.color.alpha_background_window);
                 recyclerView.getRecyclerView().setLayoutParams(new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+                recyclerView.getRecyclerView().setBackgroundResource(R.color.alpha_background_window);
             }
         }
 
