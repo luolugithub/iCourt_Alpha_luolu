@@ -72,8 +72,8 @@ public class FileVersionEntity implements ILongFieldEntity, ISeaFile {
     @Nullable
     @Override
     public String getSeaFileVersionId() {
-        //每个版本一个时间
-        return String.valueOf(ctime);
+        //这里id 唯一区分
+        return id;
     }
 
     @Override
@@ -84,6 +84,11 @@ public class FileVersionEntity implements ILongFieldEntity, ISeaFile {
     @Override
     public String getSeaFilePermission() {
         return seaFilePermission;
+    }
+
+    @Override
+    public String getSeaFileDownloadTag() {
+        return String.valueOf(ctime);
     }
 
     public static class SFileUserInfo implements Serializable {

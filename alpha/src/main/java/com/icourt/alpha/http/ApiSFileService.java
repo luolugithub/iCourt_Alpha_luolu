@@ -118,22 +118,23 @@ public interface ApiSFileService {
      * @return
      */
     @GET("api2/repos/{seaFileRepoId}/file/")
-    Call<String> sFileDownloadUrlQuery(@Path("seaFileRepoId") String seaFileRepoId, @Query("p") String fullPath);
+    Call<String> sFileDownloadUrlQuery(@Path("seaFileRepoId") String seaFileRepoId,
+                                       @Query("p") String fullPath);
 
 
     /**
      * 获取历史版本文件下载地址
      *
      * @param seaFileRepoId
-     * @param fullPath      全路径
      * @param commit_id     历史版本提交的id
+     * @param fullPath      全路径
      * @return
      */
-    @GET("api2/repos/{seaFileRepoId}/file/")
+    @GET("api2/repos/{seaFileRepoId}/file/revision")
     Call<String> sFileDownloadUrlQuery(
             @Path("seaFileRepoId") String seaFileRepoId,
-            @Query("p") String fullPath,
-            @Query("commit_id") String commit_id);
+            @Query("commit_id") String commit_id,
+            @Query("p") String fullPath);
 
     /**
      * 获取资料库
