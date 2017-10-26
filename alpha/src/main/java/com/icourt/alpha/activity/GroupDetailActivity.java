@@ -48,6 +48,7 @@ import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.msg.MsgService;
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum;
 import com.netease.nimlib.sdk.team.TeamService;
+import com.netease.nimlib.sdk.team.constant.TeamMessageNotifyTypeEnum;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -461,11 +462,11 @@ public class GroupDetailActivity extends BaseActivity
                         dismissLoadingDialog();
                         if (response.body().result != null && response.body().result) {
                             groupNotDisturbSwitch.setChecked(true);
-                            NIMClient.getService(TeamService.class).muteTeam(getIntent().getStringExtra(KEY_TID), true);
+                            NIMClient.getService(TeamService.class).muteTeam(getIntent().getStringExtra(KEY_TID), TeamMessageNotifyTypeEnum.Mute);
                             broadNoDisturbingEvent();
                         } else {
                             groupNotDisturbSwitch.setChecked(false);
-                            NIMClient.getService(TeamService.class).muteTeam(getIntent().getStringExtra(KEY_TID), false);
+                            NIMClient.getService(TeamService.class).muteTeam(getIntent().getStringExtra(KEY_TID), TeamMessageNotifyTypeEnum.Mute);
                             broadNoDisturbingEvent();
                         }
                     }
@@ -507,11 +508,11 @@ public class GroupDetailActivity extends BaseActivity
                         dismissLoadingDialog();
                         if (response.body().result != null && response.body().result) {
                             groupNotDisturbSwitch.setChecked(false);
-                            NIMClient.getService(TeamService.class).muteTeam(getIntent().getStringExtra(KEY_TID), false);
+                            NIMClient.getService(TeamService.class).muteTeam(getIntent().getStringExtra(KEY_TID), TeamMessageNotifyTypeEnum.Mute);
                             broadNoDisturbingEvent();
                         } else {
                             groupNotDisturbSwitch.setChecked(true);
-                            NIMClient.getService(TeamService.class).muteTeam(getIntent().getStringExtra(KEY_TID), true);
+                            NIMClient.getService(TeamService.class).muteTeam(getIntent().getStringExtra(KEY_TID), TeamMessageNotifyTypeEnum.Mute);
                             broadNoDisturbingEvent();
                         }
                     }
