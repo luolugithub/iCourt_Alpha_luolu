@@ -20,6 +20,7 @@ import com.icourt.alpha.utils.DateUtils;
 
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 public class CircleTimerView extends View {
     private static final String TAG = "CircleTimerView";
@@ -395,7 +396,10 @@ public class CircleTimerView extends View {
                     }
                     if (mCircleTimerListener != null)
                         mCircleTimerListener.onTimerSetValueChange(getCurrentTime());
-                    mCurrentTime = (int) (24 / (2 * Math.PI) * mCurrentRadian * 60 * 60);
+                    int time = (int) (24 / (2 * Math.PI) * mCurrentRadian * 60 * 60);
+                    //将时间精确到分钟，不要精确到秒
+                    time = time / 60 * 60;
+                    mCurrentTime = time;
                     // LogUtils.d("--------->mCurrentRadian:" + mCurrentRadian + "   time：" + mCurrentTime);
                     invalidate();
                 }
