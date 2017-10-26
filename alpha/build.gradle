@@ -173,7 +173,7 @@ android {
             buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_release
             buildConfigField "String", "API_SFILE_URL", rootProject.ext.alphaSFileUrl.api_url_release
             buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_inner_release_daily
-            versionNameSuffix "release_daily_\"${releaseFormatDayTime()}\""
+            versionNameSuffix "_innerrelease_daily_${releaseFormatDayTime()}"
             shrinkResources false   // 移除无用的resource文件
             zipAlignEnabled false        //Zipalign优化
             minifyEnabled false     //混淆
@@ -236,7 +236,7 @@ def releaseFormatTime() {
     return new Date().format("yyyy-MM-dd HH:mm", TimeZone.getDefault())
 }
 
-// 发布的
+// 发布的日更新包时间尾巴
 def releaseFormatDayTime() {
     return new Date().format("yyyy-MM-dd", TimeZone.getDefault())
 }
