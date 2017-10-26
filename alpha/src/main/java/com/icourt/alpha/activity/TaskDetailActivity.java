@@ -596,7 +596,7 @@ public class TaskDetailActivity extends BaseActivity
                             mis = 60000;
                         }
                         if (taskItemEntity != null) {
-                            taskTime.setText(getHm(taskItemEntity.timingSum + mis));
+                            taskTime.setText(DateUtils.getHmIntegral(taskItemEntity.timingSum + mis));
                             taskItemEntity.timingSum += mis;
                         }
                     }
@@ -882,17 +882,6 @@ public class TaskDetailActivity extends BaseActivity
         }
     }
 
-    public String getHm(long times) {
-        times /= 1000;
-        long hour = times / 3600;
-        long minute = times % 3600 / 60;
-        long second = times % 60;
-        if (second > 0) {
-            minute += 1;
-        }
-        return String.format(Locale.CHINA, "%02d:%02d", hour, minute);
-    }
-
     /**
      * 设置数据到view
      *
@@ -925,9 +914,9 @@ public class TaskDetailActivity extends BaseActivity
                 titleAction.setImageResource(R.mipmap.header_icon_star_line);
             }
             if (taskItemEntity.timingSum > 0 && taskItemEntity.timingSum / 1000 / 60 <= 0) {
-                taskTime.setText(getHm(60000));
+                taskTime.setText(DateUtils.getHmIntegral(60000));
             } else {
-                taskTime.setText(getHm(taskItemEntity.timingSum));
+                taskTime.setText(DateUtils.getHmIntegral(taskItemEntity.timingSum));
             }
 
             SpannableString checkTextForegroundColorSpan = null;

@@ -270,7 +270,7 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
                             timeAdapter.bindData(true, response.body().result.items);
                             stopRefresh();
                             if (timingCountTotal != null)
-                                timingCountTotal.setText(getHm(response.body().result.timingSum));
+                                timingCountTotal.setText(DateUtils.getHmIntegral(response.body().result.timingSum));
                         }
                     }
 
@@ -300,14 +300,14 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
                             timingCountEntities.addAll(response.body().result.items);
                             generateData();
                             if (pageIndex <= 0) {
-                                timingTodayTotal.setText(getHm(0));
+                                timingTodayTotal.setText(DateUtils.getHmIntegral(0));
                             }
                             if (response.body().result.items != null && pageIndex <= 0) {
                                 for (TimingCountEntity timingCountEntity : response.body().result.items) {
                                     if (timingCountEntity != null) {
                                         boolean isToday = DateUtils.isToday(timingCountEntity.workDate);
                                         if (isToday) {
-                                            timingTodayTotal.setText(getHm(timingCountEntity.timingCount));
+                                            timingTodayTotal.setText(DateUtils.getHmIntegral(timingCountEntity.timingCount));
                                             break;
                                         }
                                     }
@@ -481,14 +481,6 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
                 break;
         }
     }
-
-    public String getHm(long milliSecond) {
-        milliSecond /= 1000;
-        long hour = milliSecond / 3600;
-        long minute = milliSecond % 3600 / 60;
-        return String.format("%d:%02d", hour, minute);
-    }
-
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {

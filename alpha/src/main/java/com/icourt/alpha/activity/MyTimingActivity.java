@@ -195,11 +195,11 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
      * @param todayTimeSum
      */
     private void showTimeSum(@TimingConfig.TIMINGQUERYTYPE int type, long selectedTimeSum, long todayTimeSum) {
-        timingTodayTotal.setText(DateUtils.getHm(todayTimeSum));
+        timingTodayTotal.setText(DateUtils.getHmIntegral(todayTimeSum));
         if (type == TimingConfig.TIMING_QUERY_BY_DAY) {
             timingCountTotalTv.setText("");
         } else {
-            timingCountTotalTv.setText(DateUtils.getHm(selectedTimeSum));
+            timingCountTotalTv.setText(DateUtils.getHmIntegral(selectedTimeSum));
         }
     }
 

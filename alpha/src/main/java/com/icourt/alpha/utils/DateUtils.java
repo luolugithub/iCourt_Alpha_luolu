@@ -344,7 +344,7 @@ public class DateUtils {
     }
 
     /**
-     * 获取时长 00:11
+     * 获取计时时长 00:11
      *
      * @param milliseconds
      * @return
@@ -1026,7 +1026,7 @@ public class DateUtils {
     }
 
     /**
-     * 将计时时间毫秒数转换为时：分的样式
+     * 将计时时间毫秒数转换为"时:分"的样式（如：1小时11分20秒 返回 1小时11分）
      *
      * @param timesMillis 毫秒
      * @return
@@ -1037,6 +1037,23 @@ public class DateUtils {
         long minute = timesMillis % 3600 / 60;
         if (minute < 0) {
             minute = 0;
+        }
+        return String.format(Locale.CHINA, "%d:%02d", hour, minute);
+    }
+
+    /**
+     * 将计时时间毫秒数转换为"时:分"的样式，和getHm()方法区别，如果秒数大于0，会多加一分钟（如：1小时11分20秒 返回 1小时12分）
+     *
+     * @param timesMillis 毫秒
+     * @return
+     */
+    public static String getHmIntegral(long timesMillis) {
+        timesMillis /= 1000;
+        long hour = timesMillis / 3600;
+        long minute = timesMillis % 3600 / 60;
+        long second = timesMillis % 60;
+        if (second > 0) {
+            minute += 1;
         }
         return String.format(Locale.CHINA, "%d:%02d", hour, minute);
     }
@@ -1081,6 +1098,7 @@ public class DateUtils {
 
     /**
      * 获取当月的最后一天
+     *
      * @return
      */
     public static String getCurrentMonthLastDay() {

@@ -150,7 +150,7 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
             timer_count_tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
             timer_count_tv.setTextColor(SystemUtils.getColor(timer_count_tv.getContext(), R.color.textColorPrimary));
             try {
-                timer_count_tv.setText(DateUtils.getHm(timeEntity.useTime));
+                timer_count_tv.setText(DateUtils.getHmIntegral(timeEntity.useTime));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -168,7 +168,7 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
                 divider_time.setText(DateUtils.getMMMdd(timeEntity.workDate));
             }
             long dayTimingLength = timeEntity.todayTimingSum;
-            divider_time_count.setText(DateUtils.getHm(dayTimingLength));
+            divider_time_count.setText(DateUtils.getHmIntegral(dayTimingLength));
         } else {
             divider_ll.setVisibility(View.GONE);
         }
@@ -180,7 +180,7 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
     private void setTypeTopData(ViewHolder holder, TimeEntity.ItemEntity timeEntity) {
         TextView totalView = holder.obtainView(R.id.time_top_total_tv);
         if (sumTime > 0) {
-            totalView.setText(DateUtils.getHm(sumTime) + "'");
+            totalView.setText(DateUtils.getHmIntegral(sumTime) + "'");
         }
     }
 
@@ -214,7 +214,7 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
             quantumView.setText(DateUtils.getTimeDurationDate(timeEntity.startTime) + " - 现在");
         } else {
             try {
-                durationView.setText(DateUtils.getHm(timeEntity.useTime));
+                durationView.setText(DateUtils.getHmIntegral(timeEntity.useTime));
                 quantumView.setText(DateUtils.getTimeDurationDate(timeEntity.startTime) + " - " + DateUtils.getTimeDurationDate(timeEntity.endTime));
             } catch (Exception e) {
                 e.printStackTrace();

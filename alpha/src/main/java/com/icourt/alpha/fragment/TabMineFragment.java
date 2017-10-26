@@ -333,8 +333,8 @@ public class TabMineFragment extends BaseFragment {
                         if (response.body().result != null) {
                             if (todayDuractionTv == null) return;
                             UserDataEntity userDataEntity = response.body().result;
-                            todayDuractionTv.setText(getHm(userDataEntity.timingCountToday));
-                            monthDuractionTv.setText(getHm(userDataEntity.timingCountMonth));
+                            todayDuractionTv.setText(DateUtils.getHmIntegral(userDataEntity.timingCountToday));
+                            monthDuractionTv.setText(DateUtils.getHmIntegral(userDataEntity.timingCountMonth));
                             doneTaskTv.setText(String.valueOf(userDataEntity.taskMonthConutDone));
 
                             todayDuractionTv.setTextColor(getDoneTextColor(userDataEntity.timingCountToday));
@@ -386,13 +386,6 @@ public class TabMineFragment extends BaseFragment {
                         }
                     }
                 });
-    }
-
-    public String getHm(long times) {
-        times /= 1000;
-        long hour = times / 3600;
-        long minute = times % 3600 / 60;
-        return String.format(Locale.CHINA, "%02d:%02d", hour, minute);
     }
 
     @Override
