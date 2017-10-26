@@ -61,4 +61,11 @@ public interface ISeaFile extends Serializable {
      */
     @SFileConfig.FILE_PERMISSION
     String getSeaFilePermission();
+
+    /**
+     * 下载的tag
+     *
+     * @return
+     */
+    String getSeaFileDownloadTag();
 }

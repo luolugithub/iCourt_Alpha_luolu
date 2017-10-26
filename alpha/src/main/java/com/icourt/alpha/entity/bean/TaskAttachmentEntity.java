@@ -27,7 +27,7 @@ public class TaskAttachmentEntity implements ISeaFile {
 
     @Override
     public String getSeaFileVersionId() {
-        return String.valueOf(fileUpdateTime);
+        return null;
     }
 
     @Override
@@ -38,6 +38,11 @@ public class TaskAttachmentEntity implements ISeaFile {
     @Override
     public String getSeaFilePermission() {
         return filePermission;
+    }
+
+    @Override
+    public String getSeaFileDownloadTag() {
+        return String.valueOf(fileUpdateTime);
     }
 
     @Override

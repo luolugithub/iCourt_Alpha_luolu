@@ -55,6 +55,11 @@ public class FileChangedHistoryEntity implements ILongFieldEntity,ISeaFile {
         return null;
     }
 
+    @Override
+    public String getSeaFileDownloadTag() {
+        return null;
+    }
+
     @StringDef({
             OP_TYPE_CREATE,
             OP_TYPE_MOVE,
