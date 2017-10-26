@@ -171,7 +171,7 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
         dateWheelAdapter = new DateWheelAdapter();
         ArrayList<TimingDateEntity> tempMenus = new ArrayList<>();
         Calendar cal = TimerDateManager.getStartDate();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 5; i++) {
             TimingDateEntity timingDateEntity = new TimingDateEntity();
             timingDateEntity.timeMillios = cal.getTimeInMillis();
             tempMenus.add(timingDateEntity);
@@ -210,7 +210,7 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
                 e.onNext(dayList);
                 e.onComplete();
             }
-        }).delay(300, TimeUnit.MILLISECONDS)
+        }).delay(100, TimeUnit.MILLISECONDS)
                 .compose(this.<List<TimingDateEntity>>bindToLifecycle())
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())

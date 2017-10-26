@@ -29,4 +29,5 @@
 
     <string name="timing_date_contact" formatted="false">%s - %s</string>
     <string name="timing_year">%s年</string>
+
 </resources>

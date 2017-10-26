@@ -36,7 +36,7 @@
                 android:layout_marginTop="45dp"
                 android:gravity="center"
                 android:text="00:00:00"
-                android:textColor="@color/alpha_font_color_title"
+                android:textColor="@color/alpha_tab_title_txt_selected_color"
                 android:textSize="50sp" />
 
 
@@ -45,7 +45,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="20dp"
+                android:layout_marginBottom="47dp"
                 android:background="@drawable/bg_stop_timing"
                 android:drawableLeft="@drawable/orange_side_dot_bg"
                 android:drawablePadding="10dp"
@@ -92,7 +92,7 @@
                     android:layout_marginRight="10dp"
                     android:padding="10dp"
                     android:text="9:00"
-                    android:textColor="@color/alpha_font_color_black"
+                    android:textColor="@color/alpha_tab_title_txt_selected_color"
                     android:textSize="18sp" />
 
                 <ImageView
@@ -107,7 +107,9 @@
                     android:layout_marginLeft="10dp"
                     android:layout_marginRight="20dp"
                     android:padding="10dp"
-                    android:text="现在" />
+                    android:text="@string/timing_today"
+                    android:textColor="@color/time_week_text_color"
+                    android:textSize="14sp" />
             </LinearLayout>
 
             <View
