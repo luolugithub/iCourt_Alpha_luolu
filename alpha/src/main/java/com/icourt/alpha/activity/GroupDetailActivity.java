@@ -466,7 +466,7 @@ public class GroupDetailActivity extends BaseActivity
                             broadNoDisturbingEvent();
                         } else {
                             groupNotDisturbSwitch.setChecked(false);
-                            NIMClient.getService(TeamService.class).muteTeam(getIntent().getStringExtra(KEY_TID), TeamMessageNotifyTypeEnum.Mute);
+                            NIMClient.getService(TeamService.class).muteTeam(getIntent().getStringExtra(KEY_TID), TeamMessageNotifyTypeEnum.All);
                             broadNoDisturbingEvent();
                         }
                     }
@@ -512,7 +512,7 @@ public class GroupDetailActivity extends BaseActivity
                             broadNoDisturbingEvent();
                         } else {
                             groupNotDisturbSwitch.setChecked(true);
-                            NIMClient.getService(TeamService.class).muteTeam(getIntent().getStringExtra(KEY_TID), TeamMessageNotifyTypeEnum.Mute);
+                            NIMClient.getService(TeamService.class).muteTeam(getIntent().getStringExtra(KEY_TID), TeamMessageNotifyTypeEnum.All);
                             broadNoDisturbingEvent();
                         }
                     }
