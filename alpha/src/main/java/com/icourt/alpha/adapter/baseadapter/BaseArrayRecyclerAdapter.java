@@ -16,6 +16,7 @@ import java.util.List;
 
 /**
  * 新版本 @see {@link BaseAdapter}
+ *
  * @param <T>
  */
 @Deprecated
@@ -35,6 +36,7 @@ public abstract class BaseArrayRecyclerAdapter<T> extends BaseRecyclerAdapter {
     public boolean bindData(boolean isRefresh, List<T> datas) {
         if (datas == null) return false;
         if (isRefresh) dataList.clear();
+        if (dataList.containsAll(datas)) return false;
         boolean b = dataList.addAll(datas);
         notifyDataSetChanged();
         return b;
