@@ -80,22 +80,22 @@ android {
             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.debugAppKey]
 
             //用正式
-            /* buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_release
-             buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_release
-             buildConfigField "String", "API_SFILE_URL", rootProject.ext.alphaSFileUrl.api_url_release
-             buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_release
-             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.releaseAppKey]
-             buildConfigField "String", "API_SENSORS_DATA_SERVER", rootProject.ext.sensorsDataAPIServer.server_url_release
-             buildConfigField "String", "API_SENSORS_DATA_CONFIGURE", rootProject.ext.sensorsDataAPIConfigure.configure_url_release*/
+            buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_release
+            buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_release
+            buildConfigField "String", "API_SFILE_URL", rootProject.ext.alphaSFileUrl.api_url_release
+            buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_release
+            manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.releaseAppKey]
+            buildConfigField "String", "API_SENSORS_DATA_SERVER", rootProject.ext.sensorsDataAPIServer.server_url_release
+            buildConfigField "String", "API_SENSORS_DATA_CONFIGURE", rootProject.ext.sensorsDataAPIConfigure.configure_url_release
 
             //测试用
-           /* buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_test
-            buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_test
-            buildConfigField "String", "API_SFILE_URL", rootProject.ext.alphaSFileUrl.api_url_test
-            buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_test
-            buildConfigField "String", "API_SENSORS_DATA_SERVER", rootProject.ext.sensorsDataAPIServer.server_url_test
-            buildConfigField "String", "API_SENSORS_DATA_CONFIGURE", rootProject.ext.sensorsDataAPIConfigure.configure_url_test
-            manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.testAppKey]*/
+            /*    buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_test
+                buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_test
+                buildConfigField "String", "API_SFILE_URL", rootProject.ext.alphaSFileUrl.api_url_test
+                buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_test
+                buildConfigField "String", "API_SENSORS_DATA_SERVER", rootProject.ext.sensorsDataAPIServer.server_url_test
+                buildConfigField "String", "API_SENSORS_DATA_CONFIGURE", rootProject.ext.sensorsDataAPIConfigure.configure_url_test
+                manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.testAppKey]*/
 
             //预览版用
             /*  buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_preview
@@ -173,7 +173,7 @@ android {
             buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_release
             buildConfigField "String", "API_SFILE_URL", rootProject.ext.alphaSFileUrl.api_url_release
             buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_inner_release_daily
-            versionNameSuffix "_inner_release_daily"
+            versionNameSuffix "release_daily_\"${releaseFormatDayTime()}\""
             shrinkResources false   // 移除无用的resource文件
             zipAlignEnabled false        //Zipalign优化
             minifyEnabled false     //混淆
@@ -234,6 +234,11 @@ android {
 //定义打包时间格式化
 def releaseFormatTime() {
     return new Date().format("yyyy-MM-dd HH:mm", TimeZone.getDefault())
+}
+
+// 发布的
+def releaseFormatDayTime() {
+    return new Date().format("yyyy-MM-dd", TimeZone.getDefault())
 }
 // 定义打包时间戳
 def releaseTime() {

@@ -18,6 +18,7 @@ import com.netease.nimlib.sdk.auth.OnlineClient;
 import com.netease.nimlib.sdk.msg.MsgService;
 import com.netease.nimlib.sdk.msg.MsgServiceObserve;
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum;
+import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.msg.model.RecentContact;
 import com.netease.nimlib.sdk.team.TeamService;
 import com.netease.nimlib.sdk.team.TeamServiceObserver;
@@ -71,6 +72,16 @@ public abstract class BaseRecentContactFragment extends BaseFragment {
         public void onEvent(RecentContact recentContact) {
             if (recentContact == null) return;
             recentContactDeleted(recentContact);
+        }
+    };
+
+    /**
+     * 消息状态发生变化的观察者
+     */
+    private Observer<IMMessage> msgMsgStatusObserver = new Observer<IMMessage>() {
+        @Override
+        public void onEvent(IMMessage imMessage) {
+            msgStatusUpdate(imMessage);
         }
     };
 
@@ -133,6 +144,7 @@ public abstract class BaseRecentContactFragment extends BaseFragment {
         MsgServiceObserve service = NIMClient.getService(MsgServiceObserve.class);
         service.observeRecentContact(recentContactMessageObserver, register);
         service.observeRecentContactDeleted(deleteRecentContactObserver, register);
+        service.observeMsgStatus(msgMsgStatusObserver, register);
         NIMClient.getService(TeamServiceObserver.class)
                 .observeTeamUpdate(teamUpdateObserver, register);
         NIMClient.getService(AuthServiceObserver.class)
@@ -222,6 +234,14 @@ public abstract class BaseRecentContactFragment extends BaseFragment {
      * @param teams
      */
     protected abstract void teamUpdates(@NonNull List<Team> teams);
+
+
+    /**
+     * 消息状态发生变化
+     *
+     * @param imMessage
+     */
+    protected abstract void msgStatusUpdate(IMMessage imMessage);
 
 
 }

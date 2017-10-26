@@ -61,6 +61,7 @@ import com.netease.nimlib.sdk.auth.LoginInfo;
 import com.netease.nimlib.sdk.auth.OnlineClient;
 import com.netease.nimlib.sdk.msg.MsgService;
 import com.netease.nimlib.sdk.msg.constant.MsgTypeEnum;
+import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.msg.model.RecentContact;
 import com.netease.nimlib.sdk.team.model.Team;
 
@@ -537,6 +538,14 @@ public class MessageListFragment extends BaseRecentContactFragment
 
     }
 
+    @Override
+    protected void msgStatusUpdate(IMMessage imMessage) {
+        if (imMessage == null) {
+            return;
+        }
+        IMUtils.logIMMessage("----------->msgMsgStatusUpdate:", imMessage);
+    }
+
 
     @Override
     protected void initView() {
@@ -651,7 +660,10 @@ public class MessageListFragment extends BaseRecentContactFragment
     @Override
     public void onResume() {
         super.onResume();
-        updateTeams();
+
+        getSession();
+
+
         SyncDataService.startSyncContact(getActivity());
         SyncDataService.startSysnClient(getActivity());
 
@@ -694,7 +706,6 @@ public class MessageListFragment extends BaseRecentContactFragment
      */
     @Override
     protected void getData(boolean isRefresh) {
-        updateTeams();
 
         //查询
         queryAllContactFromDbAsync(new Consumer<List<GroupContactBean>>() {
@@ -710,6 +721,12 @@ public class MessageListFragment extends BaseRecentContactFragment
         //监听联系人变化
         listenContacts();
 
+        //查询会话
+        getSession();
+    }
+
+    private void getSession() {
+        updateTeams();
         // 查询最近联系人列表数据
         NIMClient.getService(MsgService.class)
                 .queryRecentContacts()
@@ -723,7 +740,6 @@ public class MessageListFragment extends BaseRecentContactFragment
                         }
                     }
                 });
-
     }
 
     private void updateTeams() {
@@ -734,6 +750,7 @@ public class MessageListFragment extends BaseRecentContactFragment
                     localTeams.clear();
                     localTeams.addAll(result);
                     imSessionAdapter.notifyDataSetChanged();
+                    log("------------------->执行2");
                 }
             }
         });
