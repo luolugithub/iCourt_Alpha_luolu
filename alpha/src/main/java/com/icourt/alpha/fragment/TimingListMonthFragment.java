@@ -79,6 +79,8 @@ public class TimingListMonthFragment extends BaseTimingListFragment {
 
     long startTimeMillis;//传递进来的开始时间
 
+    private List<TimingSelectEntity> monthData = new ArrayList<>();//记录所有周的列表数据
+
     public static TimingListMonthFragment newInstance(long startTimeMillis) {
         TimingListMonthFragment fragment = new TimingListMonthFragment();
         Bundle bundle = new Bundle();
@@ -117,7 +119,7 @@ public class TimingListMonthFragment extends BaseTimingListFragment {
         timingChartView.setVisibility(View.VISIBLE);
         timingTextShowTimingLl.setVisibility(View.GONE);
 
-        final List<TimingSelectEntity> monthData = TimerDateManager.getMonthData();
+        monthData = TimerDateManager.getMonthData();
 
         viewPager.setAdapter(baseFragmentAdapter = new BaseRefreshFragmentAdapter(getChildFragmentManager()) {
             @Override
@@ -162,8 +164,16 @@ public class TimingListMonthFragment extends BaseTimingListFragment {
             }
         }
         viewPager.setCurrentItem(position, true);
-        TimingSelectEntity timingSelectEntity = monthData.get(position);
-        getTimingStatistic(TimingConfig.TIMING_QUERY_BY_MONTH, timingSelectEntity.startTimeMillis, timingSelectEntity.endTimeMillis);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (viewPager != null && monthData != null) {
+            int position = viewPager.getCurrentItem();
+            TimingSelectEntity timingSelectEntity = monthData.get(position);
+            getTimingStatistic(TimingConfig.TIMING_QUERY_BY_MONTH, timingSelectEntity.startTimeMillis, timingSelectEntity.endTimeMillis);
+        }
     }
 
     @Override
@@ -238,14 +248,26 @@ public class TimingListMonthFragment extends BaseTimingListFragment {
         }
 
         //用第二条先提高纵轴高度，防止真正要显示的折线图数据过少而显示不全的问题。
+        int secondMax;
+        if (maxValue <= 8) {
+            secondMax = 8;
+        } else if (maxValue <= 12) {
+            secondMax = 12;
+        } else if (maxValue <= 16) {
+            secondMax = 16;
+        } else if (maxValue <= 20) {
+            secondMax = 20;
+        } else {
+            secondMax = 24;
+        }
         List<PointValue> values2 = Arrays.asList(
-                new PointValue(0, 4.0f),
-                new PointValue(1, 8.0f),
-                new PointValue(2, 12.0f),
-                new PointValue(3, 16.0f),
-                new PointValue(4, 20.0f),
-                new PointValue(5, 24.0f),
-                new PointValue(6, 20.0f));
+                new PointValue(0, 2.0f),
+                new PointValue(1, 4.0f),
+                new PointValue(2, 6.0f),
+                new PointValue(3, secondMax),
+                new PointValue(4, 6.0f),
+                new PointValue(5, 4.0f),
+                new PointValue(6, 2.0f));
         Line line2 = new Line(values2);
         line2.setShape(shape);
         line2.setCubic(false);
