@@ -587,6 +587,7 @@ public class TaskDetailActivity extends BaseActivity
                         dialog.dismiss();
                         switch (position) {
                             case 0:
+                                //TODO 空指针危险
                                 if (taskItemEntity.valid) {
                                     deleteTask();
                                 } else {
@@ -876,6 +877,7 @@ public class TaskDetailActivity extends BaseActivity
      * 更新tab的每个fragment
      */
     private void updateTabItemFragment() {
+        //TODO 空指针危险
         Bundle bundle = new Bundle();
         bundle.putBoolean("isFinish", taskItemEntity.state);
         bundle.putBoolean("valid", taskItemEntity.valid);
@@ -923,6 +925,7 @@ public class TaskDetailActivity extends BaseActivity
                         }
                         taskUserArrowIv.setVisibility(View.VISIBLE);
                         taskStartIamge.setVisibility(View.VISIBLE);
+                        //TODO 空指针危险
                         taskItemEntity.valid = true;
                         updateTabItemFragment();
                         EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_DELETE_ACTION, taskItemEntity));

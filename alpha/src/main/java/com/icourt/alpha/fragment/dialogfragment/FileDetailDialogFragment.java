@@ -212,7 +212,11 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
                             SFileConfig.FILE_FROM_REPO,
                             true);
                 } else {
-
+                    FileDownloadActivity.launch(
+                            getContext(),
+                            iSeaFile,
+                            SFileConfig.FILE_FROM_REPO,
+                            true);
                 }
                 break;
             default:
@@ -232,6 +236,7 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
             } catch (Exception e) {
             }
             if (fileCreateInfoTv == null) return;
+            fileVersionTv.setVisibility(fileVersionEntities.isEmpty() ? View.GONE : View.VISIBLE);
             fileCreateInfoTv.setText("");
             fileUpdateInfoTv.setText("");
             if (fileVersionEntities.isEmpty()) return;

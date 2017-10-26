@@ -359,26 +359,17 @@ public abstract class ChatBaseActivity
      * 清除未读数量
      */
     protected final void clearUnReadNum() {
-        Observable.create(new ObservableOnSubscribe<Integer>() {
-            @Override
-            public void subscribe(ObservableEmitter<Integer> e) throws Exception {
-                if (e.isDisposed()) return;
-                switch (getIMChatType()) {
-                    case CHAT_TYPE_P2P:
-                        //会主动通知recentContact
-                        NIMClient.getService(MsgService.class)
-                                .clearUnreadCount(getIMChatId(), SessionTypeEnum.P2P);
-                        break;
-                    case CHAT_TYPE_TEAM:
-                        NIMClient.getService(MsgService.class)
-                                .clearUnreadCount(getIMChatId(), SessionTypeEnum.Team);
-                        break;
-                }
-                e.onNext(0);
-                e.onComplete();
-            }
-        }).subscribeOn(Schedulers.newThread())
-                .subscribe();
+        switch (getIMChatType()) {
+            case CHAT_TYPE_P2P:
+                //会主动通知recentContact
+                NIMClient.getService(MsgService.class)
+                        .clearUnreadCount(getIMChatId(), SessionTypeEnum.P2P);
+                break;
+            case CHAT_TYPE_TEAM:
+                NIMClient.getService(MsgService.class)
+                        .clearUnreadCount(getIMChatId(), SessionTypeEnum.Team);
+                break;
+        }
     }
 
 

@@ -90,6 +90,7 @@ public class GlideUtils {
         if (canLoadImage(context)) {
             Glide.with(context)
                     .load(path)
+                    .thumbnail(0.2f)
                     .transform(new GlideCircleTransform(context))
                     .placeholder(R.mipmap.avatar_default_80)
                     .error(R.mipmap.avatar_default_80)
@@ -111,6 +112,7 @@ public class GlideUtils {
         if (canLoadImage(context)) {
             Glide.with(context)
                     .load(path)
+                    .thumbnail(0.2f)
                     // .transform(new GlideCircleTransform(context))
                     .placeholder(R.mipmap.ic_group_icon_default)
                     .error(R.mipmap.ic_group_icon_default)

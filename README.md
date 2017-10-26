@@ -5,7 +5,7 @@
  3. 将gitlab的代码导入AS(时间可能持续很长) https://code.alphalawyer.cn/users/sign_in  
  4. 下载zeplin客户端(UI设计图)并注册账号,让管理员(李方明)邀请加入Android项目;
  5. 下载享聊客户端活着手机客户端 找李珊珊邀请加入jira bug管理系统 (http://jira.alphalawyer.cn/secure/BrowseProjects.jspa#all)  
- 6. 需求文档(wiki http://wiki.alphalawyer.cn) 找吕东东开一个账户;  
+ 6. 需求文档(wiki http://wiki.alphalawyer.cn) 找吴佑炫开一个账户;  
  7. app bug监控系统 bugtags,请自行注册,然后让吴佑炫邀请加入;  
  8. 查看app gradle环境与打包,安装好app,试用并测试和熟悉功能与业务;
  9. 接口文档地址:https://dev.alphalawyer.cn/ilaw/swagger/index.html#/ 
@@ -13,14 +13,16 @@
 #merge requests  
    分支名称规则： br_dev_版本号(2.1.0)_模块名称(chat)_个人名字简写(xyw)  eg.  br_dev_2.1.0_chat_xyw   
    默认情况:都从dev分支开;不能独立操作test,master分支  
-   插件:GitLab Projects
- 4
+   插件:GitLab Projects  
+   【注意】:开分支必须申请与讨论(版本与影响范围)  
+   版本备注:(补充)  
 #fir账号
  内部：wangchu@icourt.cc   q****  
  外部：104421133@qq.com    a*****  
  外部：it@icourt.cc        z****** （包内的更新token和id都引用的是1044账号的token和id）  
  test：394337795@qq.com    3*****  
- 内部日更新：zhouyong@icourt.cc     I******* 
+ 内部日更新：zhouyong@icourt.cc     I*******   
+ 蒲公英正式: xuanyouwu@163.com axuan******
 
 
 #上线打包日志  
@@ -33,7 +35,10 @@
  alpha-BaiDu-release-v2.0.2_2017-08-08 20/25_v202_jiagu_sign.apk  
  alpha-BaiDu-release-v2.0.3_2017-09-05 23/50_v203_jiagu_sign.apk    
  2017/7/26 v2.0.1 外部包 (fir账号：104421133@qq.com)  
- 2017/8/8  v2.0.2 alpha-BaiDu-release-v2.0.2_2017-08-08 20/25_v202_jiagu_sign.apk
+ 2017/8/8  v2.0.2 alpha-BaiDu-release-v2.0.2_2017-08-08 20/25_v202_jiagu_sign.apk  
+ alpha-BaiDu-innerrelease-v2.1.0_2017-10-19 23/09.apk  
+ alpha-BaiDu-innerrelease_daily-v2.1.0_2017-10-19 23/16.apk  
+ alpha-BaiDu-release-v2.2.0_2017-10-24 21/33_v220_jiagu_sign.apk
 
 #打包配置  
  已在gradle与Hconst中配置完成;  

@@ -59,6 +59,8 @@ import java.util.Set;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import cn.finalteam.galleryfinal.widget.zoonview.PhotoView;
+import cn.finalteam.galleryfinal.widget.zoonview.PhotoViewAttacher;
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -129,6 +131,9 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
         if (sFileImageInfoEntities == null || sFileImageInfoEntities.isEmpty()) return;
         if (selectedPos >= sFileImageInfoEntities.size()) {
             selectedPos = sFileImageInfoEntities.size() - 1;
+        }
+        if (selectedPos < 0) {
+            selectedPos = 0;
         }
         Intent intent = new Intent(context, ImagePagerActivity.class);
         intent.putExtra(KEY_IMAGE_FROM, imageFrom);
@@ -349,11 +354,13 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
                         menus.add("分享");
                         menus.add(isCollected ? "取消收藏" : "收藏");
                         menus.add(isDinged ? "取消钉" : "钉");
+                        menus.add("保存图片");
                         menus.add("保存到文档");
                         break;
                     default:
                         menus.add("转发给同事");
                         menus.add("分享");
+                        menus.add("保存图片");
                         menus.add("保存到文档");
                         break;
                 }
@@ -377,6 +384,8 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
                                     msgActionDing(!isDinged, finalChatFileInfoEntity.getChatMsgId());
                                 } else if (TextUtils.equals(action, "钉")) {
                                     msgActionDing(!isDinged, finalChatFileInfoEntity.getChatMsgId());
+                                } else if (TextUtils.equals(action, "保存图片")) {
+                                    downloadFile(originalImageUrl, picSavePath);
                                 } else if (TextUtils.equals(action, "保存到文档")) {
                                     shareHttpFile2repo(originalImageUrl, picSavePath);
                                 }
@@ -564,11 +573,11 @@ public class ImagePagerActivity extends ImageViewBaseActivity implements BasePag
 
         @Override
         public void bindDataToItem(final ChatFileInfoEntity chatFileInfoEntity, ViewGroup container, View itemView, final int pos) {
-            final ImageView touchImageView = itemView.findViewById(R.id.imageView);
+            final PhotoView touchImageView = itemView.findViewById(R.id.imageView);
             setTransitionView(touchImageView, chatFileInfoEntity.getChatMiddlePic());
-            touchImageView.setOnClickListener(new View.OnClickListener() {
+            touchImageView.setOnViewTapListener(new PhotoViewAttacher.OnViewTapListener() {
                 @Override
-                public void onClick(View v) {
+                public void onViewTap(View view, float v, float v1) {
                     onBackPressed();
                 }
             });

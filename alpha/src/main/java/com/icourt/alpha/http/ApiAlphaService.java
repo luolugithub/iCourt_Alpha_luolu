@@ -146,7 +146,7 @@ public interface ApiAlphaService {
      * @return
      */
     @GET("ilaw/api/v1/auth/refresh")
-    Call<ResEntity<AlphaUserInfo>> refreshToken(@Query("refreshToekn") String refreshToken);
+    Call<AlphaUserInfo> refreshToken(@Query("refreshToekn") String refreshToken);
 
     /**
      * 获取团队联系人列表
@@ -789,7 +789,7 @@ public interface ApiAlphaService {
      */
     @Multipart
     @POST("ilaw/api/v2/task/{taskId}/attachment/addFromFile")
-    Observable<JsonElement> taskAttachmentUploadObservable(@Path("taskId") String taskId, @PartMap Map<String, RequestBody> params);
+    Observable<ResEntity<JsonElement>> taskAttachmentUploadObservable(@Path("taskId") String taskId, @PartMap Map<String, RequestBody> params);
 
     /**
      * 获取指定时间段的计时
