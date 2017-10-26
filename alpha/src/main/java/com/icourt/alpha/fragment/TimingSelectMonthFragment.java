@@ -78,7 +78,6 @@ public class TimingSelectMonthFragment extends BaseFragment {
         List<String> yearList = new ArrayList<>();
         List<String> monthList = new ArrayList<>();
 
-
         int year = calendar.get(Calendar.YEAR);
         for (int i = 2015; i <= year; i++) {//2015年-当前年
             yearList.add(String.valueOf(i));

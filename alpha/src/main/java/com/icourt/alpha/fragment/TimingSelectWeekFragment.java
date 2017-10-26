@@ -81,17 +81,16 @@ public class TimingSelectWeekFragment extends BaseFragment {
 
     @Override
     protected void initView() {
+        wheelView.setTextSize(20);
+        adapter = new TimeWheelAdapter();
 
         if (getArguments() != null) {
             long timeMillis = getArguments().getLong(KEY_SELECTED_DATE, System.currentTimeMillis());
             currentMonthDate.setTimeInMillis(timeMillis);
         }
-
         setMonthData(currentMonthDate);
 
-        wheelView.setTextSize(20);
         try {//预加载10条数据
-            adapter = new TimeWheelAdapter();
             ArrayList<TimingSelectEntity> tempMenus = new ArrayList<>();
             //起始时间是2015年1月1日
             Calendar instance = TimerDateManager.getStartDate();
@@ -109,8 +108,8 @@ public class TimingSelectWeekFragment extends BaseFragment {
                 timingSelectEntity.endTimeMillis = weekEndTime;
                 timingSelectEntity.startTimeStr = DateUtils.getyyyy_MM_dd(weekStartTime);
                 timingSelectEntity.endTimeStr = DateUtils.getyyyy_MM_dd(weekEndTime);
-                instance.add(Calendar.DAY_OF_YEAR, 1);
                 tempMenus.add(timingSelectEntity);
+                instance.add(Calendar.DAY_OF_YEAR, 1);
             }
             adapter.setTimeList(tempMenus);
             wheelView.setAdapter(adapter);
@@ -151,7 +150,7 @@ public class TimingSelectWeekFragment extends BaseFragment {
                 e.onNext(TimerDateManager.getWeekData());
                 e.onComplete();
             }
-        }).delay(300, TimeUnit.MILLISECONDS)
+        }).delay(100, TimeUnit.MILLISECONDS)
                 .compose(this.<List<TimingSelectEntity>>bindToLifecycle())
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())

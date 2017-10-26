@@ -127,21 +127,14 @@ public class TimingSelectDialogFragment extends BaseDialogFragment implements On
                         TimingSelectWeekFragment.newInstance(selectedType == TimingConfig.TIMING_QUERY_BY_WEEK ? startTime : System.currentTimeMillis()),
                         TimingSelectMonthFragment.newInstance(selectedType == TimingConfig.TIMING_QUERY_BY_MONTH ? startTime : System.currentTimeMillis()),
                         TimingSelectYearFragment.newInstance(selectedType == TimingConfig.TIMING_QUERY_BY_YEAR ? startTime : System.currentTimeMillis())));
-        viewpager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
-            }
+        viewpager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
 
             @Override
             public void onPageSelected(int position) {
                 selectTabItem(position);
             }
 
-            @Override
-            public void onPageScrollStateChanged(int state) {
-
-            }
         });
 
         switch (selectedType) {//根据显示的type，切换到对应type页。

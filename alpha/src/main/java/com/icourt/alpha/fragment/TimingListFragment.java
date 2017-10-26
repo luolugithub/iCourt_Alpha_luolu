@@ -73,7 +73,8 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
     TimeAdapter timeAdapter;
 
     private boolean canLoadMore;//是否可以加载更多（日、周不可以加载更多；月、年可以加载更多）
-    int mPageIndex = 1;
+
+    int mPageIndex = 1;//列表起始页都是从1开始下
 
     /**
      * @param queryType

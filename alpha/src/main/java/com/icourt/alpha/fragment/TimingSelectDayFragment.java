@@ -137,7 +137,6 @@ public class TimingSelectDayFragment extends BaseFragment {
                 break;
             case R.id.titleAction:
                 scrollToDate(System.currentTimeMillis());
-//                scrollToToday();
                 break;
             default:
                 super.onClick(v);
@@ -171,19 +170,6 @@ public class TimingSelectDayFragment extends BaseFragment {
             titleAction.setVisibility(View.GONE);
         } else {
             titleAction.setVisibility(View.VISIBLE);
-        }
-    }
-
-    /**
-     * 日历滚动到今日
-     */
-    private void scrollToToday() {
-        selectedDate.setTimeInMillis(DateUtils.getDayStartTime(System.currentTimeMillis()));
-        setTitleContent(selectedDate.getTimeInMillis());
-        mcvCalendar.setTodayToView();
-
-        if (onDateSelectedListener != null) {
-            onDateSelectedListener.onDateSelected(selectedDate.getTimeInMillis());
         }
     }
 

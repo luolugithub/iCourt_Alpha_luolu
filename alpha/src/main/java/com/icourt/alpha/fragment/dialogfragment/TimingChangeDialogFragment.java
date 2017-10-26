@@ -42,7 +42,7 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 
 /**
- * Description
+ * Description 修改开始／结束计时时间的弹出窗
  * Company Beijing icourt
  * author  youxuan  E-mail:zhaodanyang@icourt.cc
  * date createTime：2017/9/16
