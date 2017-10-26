@@ -77,6 +77,7 @@ public class TimingListYearFragment extends BaseTimingListFragment {
 
     BaseRefreshFragmentAdapter baseFragmentAdapter;
     long startTimeMillis;//传递进来的开始时间
+    private List<TimingSelectEntity> yearData = TimerDateManager.getYearData();
 
     public static TimingListYearFragment newInstance(long startTimeMillis) {
         TimingListYearFragment fragment = new TimingListYearFragment();
@@ -114,7 +115,7 @@ public class TimingListYearFragment extends BaseTimingListFragment {
         timingChartView.setVisibility(View.VISIBLE);
         timingTextShowTimingLl.setVisibility(View.GONE);
 
-        final List<TimingSelectEntity> yearData = TimerDateManager.getYearData();
+        yearData = TimerDateManager.getYearData();
 
         viewPager.setAdapter(baseFragmentAdapter = new BaseRefreshFragmentAdapter(getChildFragmentManager()) {
             @Override
@@ -159,8 +160,16 @@ public class TimingListYearFragment extends BaseTimingListFragment {
             }
         }
         viewPager.setCurrentItem(position, true);
-        TimingSelectEntity timingSelectEntity = yearData.get(position);
-        getTimingStatistic(TimingConfig.TIMING_QUERY_BY_YEAR, timingSelectEntity.startTimeMillis, timingSelectEntity.endTimeMillis);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (viewPager != null && yearData != null) {
+            int position = viewPager.getCurrentItem();
+            TimingSelectEntity timingSelectEntity = yearData.get(position);
+            getTimingStatistic(TimingConfig.TIMING_QUERY_BY_YEAR, timingSelectEntity.startTimeMillis, timingSelectEntity.endTimeMillis);
+        }
     }
 
     @Override
@@ -237,19 +246,27 @@ public class TimingListYearFragment extends BaseTimingListFragment {
         }
 
         //用第二条先提高纵轴高度
+        int secondMaxValue;
+        if (maxValue <= 160) {
+            secondMaxValue = 160;
+        } else if (maxValue <= 240) {
+            secondMaxValue = 240;
+        } else {
+            secondMaxValue = 320;
+        }
         List<PointValue> values2 = Arrays.asList(
-                new PointValue(0, 30.0f),
+                new PointValue(0, 40.0f),
                 new PointValue(1, 60.0f),
-                new PointValue(2, 90.0f),
-                new PointValue(3, 120.0f),
-                new PointValue(4, 150.0f),
-                new PointValue(5, 180.0f),
-                new PointValue(6, 210.0f),
-                new PointValue(7, 240.0f),
-                new PointValue(8, 270.0f),
-                new PointValue(9, 300.0f),
-                new PointValue(10, 320.0f),
-                new PointValue(11, 300.0f));
+                new PointValue(2, 80.0f),
+                new PointValue(3, 100.0f),
+                new PointValue(4, 120.0f),
+                new PointValue(5, 140.0f),
+                new PointValue(6, secondMaxValue),
+                new PointValue(7, 140.0f),
+                new PointValue(8, 120.0f),
+                new PointValue(9, 100.0f),
+                new PointValue(10, 80.0f),
+                new PointValue(11, 60.0f));
         Line line2 = new Line(values2);
         line2.setShape(shape);
         line2.setCubic(false);
