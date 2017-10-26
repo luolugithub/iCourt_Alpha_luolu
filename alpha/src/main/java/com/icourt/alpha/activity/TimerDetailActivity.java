@@ -401,9 +401,7 @@ public class TimerDetailActivity extends BaseTimerActivity
             tvSurpassDay.setText("");
         }
 
-        long one_minutes_millis = TimeUnit.MINUTES.toMillis(1);
-        long rangeTime = (selectedEndDate.getTimeInMillis() / one_minutes_millis * one_minutes_millis
-                - selectedStartDate.getTimeInMillis() / one_minutes_millis * one_minutes_millis);
+        long rangeTime = selectedEndDate.getTimeInMillis() - selectedStartDate.getTimeInMillis();
         int time = (int) (rangeTime / 1000);
         circleTimerView.setCurrentTime(time);
     }

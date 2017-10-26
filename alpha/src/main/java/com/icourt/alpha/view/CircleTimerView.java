@@ -16,6 +16,8 @@ import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.icourt.alpha.utils.DateUtils;
+
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -319,9 +321,10 @@ public class CircleTimerView extends View {
         canvas.restore();
         // TimerNumber
         canvas.save();
-        long minute = mCurrentTime / 60 % 60;
-        long hour = mCurrentTime / (60 * 60);//小时
-        String text = String.format("%02d:%02d", hour, minute);
+//        long minute = mCurrentTime / 60 % 60;
+//        long hour = mCurrentTime / (60 * 60);//小时
+//        String text = String.format("%02d:%02d", hour, minute);
+        String text = DateUtils.getHHmIntegral(mCurrentTime * 1000);
         canvas.drawText(text, mCx, mCy + getFontHeight(mTimerNumberPaint) / 2, mTimerNumberPaint);
         //canvas.drawText(":", mCx, mCy + getFontHeight(mTimerNumberPaint) / 2, mTimerColonPaint);
         canvas.restore();

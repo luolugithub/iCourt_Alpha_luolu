@@ -3,6 +3,7 @@ package com.icourt.alpha.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
@@ -43,6 +44,8 @@ import com.icourt.api.RequestUtils;
 import com.umeng.analytics.MobclickAgent;
 
 import java.io.Serializable;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
@@ -69,18 +72,13 @@ public class TimerAddActivity extends BaseTimerActivity
     private static final String KEY_PROJECT_NAME = "key_project_name";//用来传递项目名称的key。
     private static final String KEY_TASKITEMENTITY = "key_taskItemEntity";//用来传递任务实体的key。
 
-    private static final int LAUNCH_TYPE_NORMAL = 1;//说明是默认的启动方式，没有携带数据，需要从本地取缓存。
-    private static final int LAUNCH_TYPE_OTHER = 2;//说明是其他携带参数的启动方式，有携带数据。
+    private static final int LAUNCH_TYPE_NORMAL = 1;//说明是从计时列表的启动方式，没有携带数据，需要从本地取缓存。
+    private static final int LAUNCH_TYPE_OTHER = 2;//说明是其他携带参数的启动方式，有携带数据，不取缓存。
 
     /**
      * 以下常量是用来缓存添加计时的相关数据
      */
     private static final String CACHE_NAME = "cache_name";
-    private static final String CACHE_PROJECT = "cache_project";
-    private static final String CACHE_WORKTYPE = "cache_worktype";
-    private static final String CACHE_TASK = "cache_task";
-    private static final String CACHE_START_TIME = "cache_start_time";
-    private static final String CACHE_END_TIME = "cache_end_time";
 
     @BindView(R.id.titleBack)
     CheckedTextView titleBack;
@@ -125,6 +123,9 @@ public class TimerAddActivity extends BaseTimerActivity
     Calendar selectedStartDate;//计时器选中的开始时间
     Calendar selectedEndDate;//计时器选中的结束时间
     String projectId, projectName;//用来记录计时的项目id和项目名称
+
+    //启动模式，是LAUNCH_TYPE_NORMAL、LAUNCH_TYPE_OTHER其中之一
+    private int lauchType;
 
     public static void launch(@NonNull Context context) {
         if (context == null) {
@@ -173,16 +174,11 @@ public class TimerAddActivity extends BaseTimerActivity
         if (titleActionTextView != null) {
             titleActionTextView.setText(R.string.timing_finish);
         }
-        int launchType = getIntent().getIntExtra(KEY_LAUNCH_TYPE, LAUNCH_TYPE_NORMAL);
+        lauchType = getIntent().getIntExtra(KEY_LAUNCH_TYPE, LAUNCH_TYPE_NORMAL);
         String cacheName = "";
         //根据启动方式，判断是从缓存取数据，还是取传递过来的数据。
-        if (launchType == LAUNCH_TYPE_NORMAL) {//取本地缓存的数据。
+        if (lauchType == LAUNCH_TYPE_NORMAL) {//取本地缓存的数据。
             cacheName = SpUtils.getTemporaryCache().getStringData(CACHE_NAME, null);
-            selectedProjectEntity = SpUtils.getTemporaryCache().getObjectData(CACHE_PROJECT, ProjectEntity.class);
-            selectedWorkType = SpUtils.getTemporaryCache().getObjectData(CACHE_WORKTYPE, WorkType.class);
-            selectedTaskItem = SpUtils.getTemporaryCache().getObjectData(CACHE_TASK, TaskEntity.TaskItemEntity.class);
-            selectedStartDate = SpUtils.getTemporaryCache().getObjectData(CACHE_START_TIME, Calendar.class);
-            selectedEndDate = SpUtils.getTemporaryCache().getObjectData(CACHE_END_TIME, Calendar.class);
         } else {
             projectId = getIntent().getStringExtra(KEY_PROJECT_ID);
             projectName = getIntent().getStringExtra(KEY_PROJECT_NAME);
@@ -322,9 +318,7 @@ public class TimerAddActivity extends BaseTimerActivity
             tvSurpassDay.setText("");
         }
 
-        long one_minutes_millis = TimeUnit.MINUTES.toMillis(1);
-        long rangeTime = (selectedEndDate.getTimeInMillis() / one_minutes_millis * one_minutes_millis
-                - selectedStartDate.getTimeInMillis() / one_minutes_millis * one_minutes_millis);
+        long rangeTime = selectedEndDate.getTimeInMillis() - selectedStartDate.getTimeInMillis();
         int time = (int) (rangeTime / 1000);
         circleTimerView.setCurrentTime(time);
     }
@@ -430,24 +424,18 @@ public class TimerAddActivity extends BaseTimerActivity
      * 缓存数据
      */
     private void cacheData() {
-        SpUtils.getTemporaryCache().putData(CACHE_NAME, timeNameTv.getText().toString());
-        SpUtils.getTemporaryCache().putObjectData(CACHE_PROJECT, selectedProjectEntity);
-        SpUtils.getTemporaryCache().putObjectData(CACHE_WORKTYPE, selectedWorkType);
-        SpUtils.getTemporaryCache().putObjectData(CACHE_TASK, selectedTaskItem);
-        SpUtils.getTemporaryCache().putObjectData(CACHE_START_TIME, selectedStartDate);
-        SpUtils.getTemporaryCache().putObjectData(CACHE_END_TIME, selectedEndDate);
+        if (lauchType == LAUNCH_TYPE_NORMAL) {
+            SpUtils.getTemporaryCache().putData(CACHE_NAME, timeNameTv.getText().toString());
+        }
     }
 
     /**
-     * 清除历史记录
+     * 至于普通模式会：清除历史记录
      */
     private void clearCache() {
-        SpUtils.getTemporaryCache().remove(CACHE_NAME);
-        SpUtils.getTemporaryCache().remove(CACHE_PROJECT);
-        SpUtils.getTemporaryCache().remove(CACHE_WORKTYPE);
-        SpUtils.getTemporaryCache().remove(CACHE_TASK);
-        SpUtils.getTemporaryCache().remove(CACHE_START_TIME);
-        SpUtils.getTemporaryCache().remove(CACHE_END_TIME);
+        if (lauchType == LAUNCH_TYPE_NORMAL) {
+            SpUtils.getTemporaryCache().remove(CACHE_NAME);
+        }
     }
 
     /**
