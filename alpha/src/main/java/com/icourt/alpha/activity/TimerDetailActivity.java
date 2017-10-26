@@ -431,6 +431,7 @@ public class TimerDetailActivity extends BaseTimerActivity
             Serializable serializable = params.getSerializable(BaseDialogFragment.KEY_FRAGMENT_RESULT);
             if (serializable instanceof WorkType) {
                 cloneEntity.workTypeId = ((WorkType) serializable).pkId;
+                cloneEntity.workTypeName = ((WorkType) serializable).name;
             }
         } else if (fragment instanceof TaskSelectDialogFragment && params != null) {
             Serializable serializable = params.getSerializable(BaseDialogFragment.KEY_FRAGMENT_RESULT);

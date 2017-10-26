@@ -176,6 +176,7 @@ public class GroupListActivity extends BaseActivity implements BaseRecyclerAdapt
             }
         });
 
+        refreshLayout.setEnableLoadmore(false);
         refreshLayout.setOnRefreshListener(new OnRefreshListener() {
             @Override
             public void onRefresh(RefreshLayout refreshlayout) {
