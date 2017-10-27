@@ -244,14 +244,12 @@ public class TimerTimingActivity extends BaseTimerActivity
                     public void onSuccess(Call<ResEntity<TimeEntity.ItemEntity>> call, Response<ResEntity<TimeEntity.ItemEntity>> response) {
                         dismissLoadingDialog();
                         if (response.body().result != null) {
-                            itemEntity.endTime = response.body().result.endTime;
                             itemEntity.createTime = response.body().result.createTime;
                             itemEntity.useTime = response.body().result.useTime;
+                            itemEntity.endTime = response.body().result.endTime;
                             itemEntity.workTypeId = response.body().result.workTypeId;
                             itemEntity.taskPkId = response.body().result.taskPkId;
                         }
-                        //TimerDetailActivity.launch(getContext(), response.body().result);
-                        finish();
                     }
 
                     @Override
@@ -393,6 +391,8 @@ public class TimerTimingActivity extends BaseTimerActivity
         switch (event.action) {
             case TimingEvent.TIMING_UPDATE_PROGRESS:
                 if (TextUtils.equals(event.timingId, itemEntity.pkId)) {
+                    itemEntity.useTime = event.timingSecond * TimeUnit.SECONDS.toMillis(1);
+                    itemEntity.endTime = itemEntity.startTime + itemEntity.useTime;
                     timingTv.setText(toTime(event.timingSecond));
 
                     if (itemEntity.noRemind == TimeEntity.ItemEntity.STATE_REMIND_ON) {

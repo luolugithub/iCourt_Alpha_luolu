@@ -109,7 +109,8 @@ public class TimerDetailActivity extends BaseTimerActivity
     TextView taskNameTv;
     @BindView(R.id.task_layout)
     LinearLayout taskLayout;
-    Calendar selectedStartDate, selectedEndDate;
+    Calendar selectedStartDate = Calendar.getInstance();
+    Calendar selectedEndDate = Calendar.getInstance();
 
     public static void launch(@NonNull Context context,
                               @NonNull TimeEntity.ItemEntity timeEntity) {
@@ -179,7 +180,6 @@ public class TimerDetailActivity extends BaseTimerActivity
         });
 
         if (itemEntity != null) {
-            selectedStartDate = Calendar.getInstance();
             selectedStartDate.clear();
             selectedStartDate.setTimeInMillis(itemEntity.startTime);
             useTimeDate.setText(DateUtils.getTimeDateFormatYear(selectedStartDate.getTimeInMillis()));
@@ -189,7 +189,6 @@ public class TimerDetailActivity extends BaseTimerActivity
             if (itemEntity.endTime - itemEntity.startTime < TimeUnit.MINUTES.toMillis(1)) {
                 itemEntity.endTime = itemEntity.startTime + TimeUnit.MINUTES.toMillis(1);
             }
-            selectedEndDate = Calendar.getInstance();
             selectedEndDate.clear();
             selectedEndDate.setTimeInMillis(itemEntity.endTime);
             stopTimeMinTv.setText(DateUtils.getHHmm(selectedEndDate.getTimeInMillis()));
