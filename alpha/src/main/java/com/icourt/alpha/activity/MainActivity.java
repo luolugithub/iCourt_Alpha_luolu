@@ -71,6 +71,7 @@ import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SFileTokenUtils;
 import com.icourt.alpha.utils.SimpleViewGestureListener;
 import com.icourt.alpha.utils.SpUtils;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.view.CheckableLayout;
@@ -279,7 +280,7 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
             Message obtain = Message.obtain();
             obtain.what = TYPE_OVER_TIMING_REMIND;
             obtain.obj = remindContent;
-            this.sendMessageDelayed(obtain, 100);
+            this.sendMessageDelayed(obtain, 1_00);
         }
 
         /**
@@ -936,7 +937,9 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                     switch (event.scene) {
                         case ServerTimingEvent.TIMING_SYNC_TOO_LONG://计时超长的通知（这个通知每2小时通知一次）
                             //使用handler来发送超时提醒，为了防止一次性收到多个超时提醒，导致弹出多个提示窗。
-                            mHandler.addOverTimingRemind(event.content);
+                            if (StringUtils.equals(event.id, TimerManager.getInstance().getTimerId(), false)) {
+                                mHandler.addOverTimingRemind(event.content);
+                            }
                             break;
                         case ServerTimingEvent.TIMING_SYNC_CLOSE_BUBBLE://关闭该计时任务超长提醒泡泡的通知
                             dismissOverTimingRemindDialogFragment(true);
@@ -1269,7 +1272,7 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
     }
 
     /**
-     * 显示 计时的覆层
+     * 显示正在计时的覆层
      */
     private void showTimingDialogFragment() {
         if (isDestroyOrFinishing()) return;
