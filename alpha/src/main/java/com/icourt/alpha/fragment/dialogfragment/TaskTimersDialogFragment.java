@@ -156,26 +156,26 @@ public class TaskTimersDialogFragment extends BaseDialogFragment implements Base
         callEnqueue(
                 getApi().taskTimesByIdQuery(taskItemEntity.id),
                 new SimpleCallBack<TimeEntity>() {
-            @Override
-            public void onSuccess(Call<ResEntity<TimeEntity>> call, Response<ResEntity<TimeEntity>> response) {
-                stopRefresh();
-                if (response.body().result != null) {
-                    if (response.body().result.items != null) {
-                        if (response.body().result.items.size() > 0) {
-                            response.body().result.items.add(0, new TimeEntity.ItemEntity());
+                    @Override
+                    public void onSuccess(Call<ResEntity<TimeEntity>> call, Response<ResEntity<TimeEntity>> response) {
+                        stopRefresh();
+                        if (response.body().result != null) {
+                            if (response.body().result.items != null) {
+                                if (response.body().result.items.size() > 0) {
+                                    response.body().result.items.add(0, new TimeEntity.ItemEntity());
+                                }
+                                timeAdapter.bindData(isRefresh, response.body().result.items);
+                                timeAdapter.setSumTime(response.body().result.timingSum);
+                            }
                         }
-                        timeAdapter.bindData(isRefresh, response.body().result.items);
-                        timeAdapter.setSumTime(response.body().result.timingSum);
                     }
-                }
-            }
 
-            @Override
-            public void onFailure(Call<ResEntity<TimeEntity>> call, Throwable t) {
-                super.onFailure(call, t);
-                stopRefresh();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<TimeEntity>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        stopRefresh();
+                    }
+                });
 
     }
 
@@ -197,6 +197,9 @@ public class TaskTimersDialogFragment extends BaseDialogFragment implements Base
         if (holder.getItemViewType() == 1) {
             TimeEntity.ItemEntity itemEntity = (TimeEntity.ItemEntity) adapter.getItem(adapter.getRealPos(position));
             if (itemEntity == null) return;
+            if (taskItemEntity != null) {
+                itemEntity.taskName = taskItemEntity.name;
+            }
             if (TextUtils.equals(itemEntity.createUserId, getLoginUserId())) {
                 if (StringUtils.equalsIgnoreCase(itemEntity.pkId, TimerManager.getInstance().getTimerId(), false)) {
                     TimerTimingActivity.launch(view.getContext(), itemEntity);
