@@ -2,14 +2,12 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/ICourtApplication.iml" filepath="$PROJECT_DIR$/ICourtApplication.iml" />
       <module fileurl="file://$PROJECT_DIR$/alpha/alpha.iml" filepath="$PROJECT_DIR$/alpha/alpha.iml" />
       <module fileurl="file://$PROJECT_DIR$/alpha_android_2.0.iml" filepath="$PROJECT_DIR$/alpha_android_2.0.iml" />
       <module fileurl="file://$PROJECT_DIR$/api/api.iml" filepath="$PROJECT_DIR$/api/api.iml" />
       <module fileurl="file://$PROJECT_DIR$/javatest/javatest.iml" filepath="$PROJECT_DIR$/javatest/javatest.iml" />
       <module fileurl="file://$PROJECT_DIR$/lib_calendar/lib_calendar.iml" filepath="$PROJECT_DIR$/lib_calendar/lib_calendar.iml" />
       <module fileurl="file://$PROJECT_DIR$/lib_daemon/lib_daemon.iml" filepath="$PROJECT_DIR$/lib_daemon/lib_daemon.iml" />
-      <module fileurl="file://$PROJECT_DIR$/lib_guideview/lib_guideview.iml" filepath="$PROJECT_DIR$/lib_guideview/lib_guideview.iml" />
     </modules>
   </component>
 </project>
