@@ -273,11 +273,15 @@ public class FileDownloadActivity extends ImageViewBaseActivity {
             }
             break;
             default: {
-                callEnqueue(
-                        getSFileApi().sFileDownloadUrlQuery(
-                                iSeaFile.getSeaFileRepoId(),
-                                iSeaFile.getSeaFileFullPath(),
-                                iSeaFile.getSeaFileVersionId()),
+                Call<String> downloadUrlQueryCall = getSFileApi().sFileDownloadUrlQuery(iSeaFile.getSeaFileRepoId(), iSeaFile.getSeaFileFullPath());
+                //有历史版本的下载
+                if (!TextUtils.isEmpty(iSeaFile.getSeaFileVersionId())) {
+                    downloadUrlQueryCall = getSFileApi().sFileDownloadUrlQuery(
+                            iSeaFile.getSeaFileRepoId(),
+                            iSeaFile.getSeaFileVersionId(),
+                            iSeaFile.getSeaFileFullPath());
+                }
+                callEnqueue(downloadUrlQueryCall,
                         new SFileCallBack<String>() {
                             @Override
                             public void onSuccess(Call<String> call, Response<String> response) {

@@ -287,6 +287,12 @@ public class IMMessageCustomBody implements ILongFieldEntity, Serializable {
         if (getClass() != o.getClass())
             return false;
         final IMMessageCustomBody other = (IMMessageCustomBody) o;
-        return other.id == this.id || StringUtils.equalsIgnoreCase(other.magic_id, this.magic_id, false);
+        if (StringUtils.equalsIgnoreCase(other.magic_id, this.magic_id, false)) {
+            return true;
+        }
+        if (other.id == this.id && other.id != 0) {
+            return true;
+        }
+        return false;
     }
 }

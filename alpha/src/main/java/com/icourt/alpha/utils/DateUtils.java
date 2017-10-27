@@ -330,7 +330,7 @@ public class DateUtils {
     }
 
     /**
-     * 获取时长 00:11
+     * 获取计时时长 00:11
      *
      * @param milliseconds
      * @return
@@ -744,5 +744,325 @@ public class DateUtils {
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
         return calendar.getTimeInMillis();
+    }
+
+    /**
+     * 获取日期和星期的组合
+     *
+     * @param millis
+     * @return
+     */
+    public static String getMMddWeek(long millis) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(millis);
+        SimpleDateFormat formatter = new SimpleDateFormat("MM月dd日");
+        String format = formatter.format(calendar.getTime());
+        int day = calendar.get(Calendar.DAY_OF_WEEK);
+        StringBuilder builder = new StringBuilder(format);
+        builder.append(" ");
+        switch (day) {
+            case Calendar.SUNDAY:
+                builder.append("周日");
+                break;
+            case Calendar.MONDAY:
+                builder.append("周一");
+                break;
+            case Calendar.TUESDAY:
+                builder.append("周二");
+                break;
+            case Calendar.WEDNESDAY:
+                builder.append("周三");
+                break;
+            case Calendar.THURSDAY:
+                builder.append("周四");
+                break;
+            case Calendar.FRIDAY:
+                builder.append("周五");
+                break;
+            case Calendar.SATURDAY:
+                builder.append("周六");
+                break;
+
+        }
+        return builder.toString();
+    }
+
+    /**
+     * 根据提供的年月日获取该月份的第一天
+     *
+     * @param year
+     * @param monthOfYear
+     * @return
+     */
+    public static Date getSupportBeginDayofMonth(int year, int monthOfYear) {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.YEAR, year);
+        cal.set(Calendar.MONTH, monthOfYear - 1);
+        cal.set(Calendar.DAY_OF_MONTH, 1);
+        return cal.getTime();
+    }
+
+    /**
+     * 根据提供的年月获取该月份的最后一天
+     *
+     * @param year
+     * @param monthOfYear
+     * @return
+     */
+    public static Date getSupportEndDayofMonth(int year, int monthOfYear) {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.YEAR, year);
+        cal.set(Calendar.MONTH, monthOfYear - 1);
+        cal.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH));
+
+        return cal.getTime();
+    }
+
+    /**
+     * 根据提供的年月日获取该月份的第一天
+     *
+     * @param year
+     * @return
+     */
+    public static Date getSupportBeginDayofYear(int year) {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.YEAR, year);
+        cal.set(Calendar.DAY_OF_YEAR, 1);
+        return cal.getTime();
+    }
+
+    /**
+     * 根据提供的年月获取该月份的最后一天
+     *
+     * @param year
+     * @return
+     */
+    public static Date getSupportEndDayofYear(int year) {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.YEAR, year);
+        cal.set(Calendar.DAY_OF_YEAR, cal.getActualMaximum(Calendar.DAY_OF_YEAR));
+        return cal.getTime();
+    }
+
+    /**
+     * 获取当前时间的时间戳（秒数为0）
+     * 比如：当前时间为12:10:30，返回的是12:10:00的时间戳
+     *
+     * @param timeMillis
+     * @return
+     */
+    public static long getFormatMillis(long timeMillis) {
+        Calendar instance = Calendar.getInstance();
+        instance.setTimeInMillis(timeMillis);
+        int currentYear = instance.get(Calendar.YEAR);
+        int currentMonth = instance.get(Calendar.MONTH);
+        int currentDay = instance.get(Calendar.DAY_OF_MONTH);
+        int currentHour = instance.get(Calendar.HOUR_OF_DAY);
+        int currentMinute = instance.get(Calendar.MINUTE);
+        //记录当前时间，精确到分钟，秒数置为0。
+        instance.set(currentYear, currentMonth, currentDay, currentHour, currentMinute, 0);
+        return instance.getTimeInMillis();
+    }
+
+    /**
+     * date2比date1多的天数
+     *
+     * @param startMillis
+     * @param endMillis
+     * @return
+     */
+    public static int differentDays(long startMillis, long endMillis) {
+        Calendar cal1 = Calendar.getInstance();
+        cal1.setTimeInMillis(startMillis);
+
+        Calendar cal2 = Calendar.getInstance();
+        cal2.setTimeInMillis(endMillis);
+        int day1 = cal1.get(Calendar.DAY_OF_YEAR);
+        int day2 = cal2.get(Calendar.DAY_OF_YEAR);
+
+        int year1 = cal1.get(Calendar.YEAR);
+        int year2 = cal2.get(Calendar.YEAR);
+        if (year1 != year2) {//不同年
+            int timeDistance = 0;
+            for (int i = year1; i < year2; i++) {
+                if (i % 4 == 0 && i % 100 != 0 || i % 400 == 0) {//闰年
+                    timeDistance += 366;
+                } else {//不是闰年
+                    timeDistance += 365;
+                }
+            }
+            return timeDistance + (day2 - day1);
+        } else {//同一年
+            return day2 - day1;
+        }
+    }
+
+    /**
+     * 获取时间戳所在月份的第一天的起始时间
+     *
+     * @param millis
+     * @return
+     */
+    public static long getMonthStartTime(long millis) {
+        Calendar instance = Calendar.getInstance();
+        instance.setTimeInMillis(millis);
+        instance.set(Calendar.DAY_OF_MONTH, 1);
+        instance.set(Calendar.HOUR_OF_DAY, 0);
+        instance.set(Calendar.MINUTE, 0);
+        instance.set(Calendar.SECOND, 0);
+        instance.set(Calendar.MILLISECOND, 0);
+        return instance.getTimeInMillis();
+    }
+
+    /**
+     * 获取时间戳所在月份的最后一天的最后一秒
+     *
+     * @param millis
+     * @return
+     */
+    public static long getMonthEndTime(long millis) {
+        Calendar instance = Calendar.getInstance();
+        instance.setTimeInMillis(millis);
+        instance.set(Calendar.DAY_OF_MONTH, instance.getActualMaximum(Calendar.DAY_OF_MONTH));
+        instance.set(Calendar.HOUR_OF_DAY, 23);
+        instance.set(Calendar.MINUTE, 59);
+        instance.set(Calendar.SECOND, 59);
+        return instance.getTimeInMillis();
+    }
+
+    /**
+     * 获取时间戳所在年的第一天的起始时间
+     *
+     * @param millis
+     * @return
+     */
+    public static long getYearStartTime(long millis) {
+        Calendar instance = Calendar.getInstance();
+        instance.setTimeInMillis(millis);
+        instance.set(Calendar.MONTH, Calendar.JANUARY);
+        instance.set(Calendar.DAY_OF_MONTH, 1);
+        instance.set(Calendar.HOUR_OF_DAY, 0);
+        instance.set(Calendar.MINUTE, 0);
+        instance.set(Calendar.SECOND, 0);
+        instance.set(Calendar.MILLISECOND, 0);
+        return instance.getTimeInMillis();
+    }
+
+    /**
+     * 获取时间戳所在年份的最后一天最后一秒
+     *
+     * @param millis
+     * @return
+     */
+    public static long getYearEndTime(long millis) {
+        Calendar instance = Calendar.getInstance();
+        instance.setTimeInMillis(millis);
+        instance.set(Calendar.MONTH, Calendar.DECEMBER);
+        instance.set(Calendar.DAY_OF_MONTH, 31);
+        instance.set(Calendar.HOUR_OF_DAY, 23);
+        instance.set(Calendar.MINUTE, 59);
+        instance.set(Calendar.SECOND, 59);
+        return instance.getTimeInMillis();
+    }
+
+    /**
+     * 将计时时间毫秒数转换为"时:分"的样式（如：1小时11分20秒 返回 1小时11分）
+     *
+     * @param timesMillis 毫秒
+     * @return
+     */
+    public static String getHm(long timesMillis) {
+        timesMillis /= 1000;
+        long hour = timesMillis / 3600;
+        long minute = timesMillis % 3600 / 60;
+        if (minute < 0) {
+            minute = 0;
+        }
+        return String.format(Locale.CHINA, "%d:%02d", hour, minute);
+    }
+
+    /**
+     * 将计时时间毫秒数转换为"时:分"的样式，和getHm()方法区别，如果秒数大于0，会多加一分钟（如：1小时11分20秒 返回 1小时12分）
+     *
+     * @param timesMillis 毫秒
+     * @return
+     */
+    public static String getHmIntegral(long timesMillis) {
+        timesMillis /= 1000;
+        long hour = timesMillis / 3600;
+        long minute = timesMillis % 3600 / 60;
+        long second = timesMillis % 60;
+        if (second >= 1) {
+            minute += 1;
+        }
+        return String.format(Locale.CHINA, "%d:%02d", hour, minute);
+    }
+
+    /**
+     * 将计时时间毫秒数转换为"时:分"的样式，和getHm()方法区别，如果秒数大于0，会多加一分钟（如：1小时11分20秒 返回 01小时12分）
+     *
+     * @param timesMillis 毫秒
+     * @return
+     */
+    public static String getHHmIntegral(long timesMillis) {
+        timesMillis /= 1000;
+        long hour = timesMillis / 3600;
+        long minute = timesMillis % 3600 / 60;
+        long second = timesMillis % 60;
+        if (second >= 1) {
+            minute += 1;
+        }
+        return String.format(Locale.CHINA, "%02d:%02d", hour, minute);
+    }
+
+    /**
+     * 获取计时的样式（比如：20:12:08）
+     *
+     * @param timeSeconds 秒
+     * @return
+     */
+    public static String getTimingStr(long timeSeconds) {
+        long hour = timeSeconds / 3600;
+        long minute = timeSeconds % 3600 / 60;
+        long second = timeSeconds % 60;
+        return String.format(Locale.CHINA, "%02d:%02d:%02d", hour, minute, second);
+    }
+
+    /**
+     * 获取时间戳所在的年份
+     *
+     * @param timeMillis
+     * @return
+     */
+    public static int getYear(long timeMillis) {
+        Calendar instance = Calendar.getInstance();
+        instance.setTimeInMillis(timeMillis);
+        return instance.get(Calendar.YEAR);
+    }
+
+    /**
+     * 获取当月的第一天
+     *
+     * @return
+     */
+    public static String getCurrentMonthFirstDay() {
+        SimpleDateFormat dateFormater = new SimpleDateFormat("yyyy-MM-dd");
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.DAY_OF_MONTH, 1);
+        cal.getTime();
+        return dateFormater.format(cal.getTime());
+    }
+
+    /**
+     * 获取当月的最后一天
+     *
+     * @return
+     */
+    public static String getCurrentMonthLastDay() {
+        SimpleDateFormat dateFormater = new SimpleDateFormat("yyyy-MM-dd");
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.DAY_OF_MONTH,
+                cal.getActualMaximum(Calendar.DAY_OF_MONTH));
+        return dateFormater.format(cal.getTime());
     }
 }

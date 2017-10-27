@@ -202,7 +202,8 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
             case R.id.file_type_iv:
             case R.id.file_size_tv:
                 if (!fileVersionEntities.isEmpty()) {
-                    FileVersionEntity item = fileVersionEntities.get(0);
+                    //下载最新版本
+                    FileVersionEntity item = fileVersionEntities.get(fileVersionEntities.size() - 1);
                     if (item == null) return;
                     item.seaFileFullPath = iSeaFile.getSeaFileFullPath();
                     item.seaFilePermission = iSeaFile.getSeaFilePermission();

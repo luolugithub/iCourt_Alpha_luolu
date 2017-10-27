@@ -202,4 +202,9 @@ public final class IMMessageExtBody implements ISeaFile, IConvertModel<ChatFileI
     public String getSeaFilePermission() {
         return null;
     }
+
+    @Override
+    public String getSeaFileDownloadTag() {
+        return null;
+    }
 }
