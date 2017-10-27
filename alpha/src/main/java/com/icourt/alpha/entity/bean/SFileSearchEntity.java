@@ -43,7 +43,7 @@ public class SFileSearchEntity implements ISeaFile {
 
     @Override
     public String getSeaFileVersionId() {
-        return String.valueOf(last_modified);
+        return null;
     }
 
     @Override
@@ -54,6 +54,11 @@ public class SFileSearchEntity implements ISeaFile {
     @Override
     public String getSeaFilePermission() {
         return null;
+    }
+
+    @Override
+    public String getSeaFileDownloadTag() {
+        return String.valueOf(last_modified);
     }
 
     @Override
