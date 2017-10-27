@@ -14,6 +14,7 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import java.util.List;
 import java.util.Map;
 
+import io.reactivex.Observable;
 import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -499,6 +500,15 @@ public interface ApiChatService {
     Call<ResEntity<List<String>>> sessionQueryAllsetTopIds();
 
     /**
+     * 获取置顶的会话ids
+     * 文档地址:https://www.showdoc.cc/1620156?page_id=14902507
+     *
+     * @return
+     */
+    @GET("im/v1/chats/sticks/ids")
+    Observable<ResEntity<List<String>>> sessionQueryAllsetTopIdsObservable();
+
+    /**
      * 会话置顶
      * 文档地址:https://www.showdoc.cc/1620156?page_id=14902507
      *
@@ -531,6 +541,15 @@ public interface ApiChatService {
      */
     @GET("im/v1/chats/nodisturbing/ids")
     Call<ResEntity<List<String>>> sessionQueryAllNoDisturbingIds();
+
+    /**
+     * 获取所有会话免打扰id
+     * 文档地址：https://www.showdoc.cc/1620156?page_id=14902507
+     *
+     * @return
+     */
+    @GET("im/v1/chats/nodisturbing/ids")
+    Observable<ResEntity<List<String>>> sessionQueryAllNoDisturbingIdsObservable();
 
     /**
      * 会话免打扰

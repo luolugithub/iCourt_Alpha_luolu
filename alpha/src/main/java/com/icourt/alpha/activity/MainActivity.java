@@ -1053,7 +1053,7 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                 mHandler.addOverTimingRemind(getOverTimingRemindContent(TimerManager.getInstance().getTimingSeconds()));
             }
         } else {
-            dismissTimingDialogFragment();
+            dismissOverTimingRemindDialogFragment(true);
         }
     }
 
@@ -1229,6 +1229,8 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
 
     /**
      * 界面移除 持续计时过久时的提醒覆层
+     *
+     * @param isSyncServer 是否同步到服务器
      */
     public void dismissOverTimingRemindDialogFragment(boolean isSyncServer) {
         if (isDestroyOrFinishing()) {
@@ -1257,7 +1259,7 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
     private void dismissTimingDialogFragment() {
         String tag = TimingNoticeDialogFragment.class.getSimpleName();
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
-        if (fragment instanceof DialogFragment) {
+        if (fragment != null && fragment instanceof DialogFragment) {
             ((DialogFragment) fragment).dismissAllowingStateLoss();
         }
     }
