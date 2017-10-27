@@ -143,7 +143,7 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
         } else {
             timer_icon.setImageResource(R.mipmap.icon_start_20);
             try {
-                timer_count_tv.setText(getHm(timeEntity.useTime));
+                timer_count_tv.setText(DateUtils.getHmIntegral(timeEntity.useTime));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -166,7 +166,7 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
                     dayTimingLength += item.useTime;
                 }
             }
-            divider_time_count.setText(getHm(dayTimingLength));
+            divider_time_count.setText(DateUtils.getHmIntegral(dayTimingLength));
         } else {
             divider_ll.setVisibility(View.GONE);
         }
@@ -180,17 +180,6 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
         return String.format(Locale.CHINA, "%02d:%02d:%02d", hour, minute, second);
     }
 
-    public String getHm(long times) {
-        times /= 1000;
-        long hour = times / 3600;
-        long minute = times % 3600 / 60;
-        if (minute < 0) {
-            minute = 0;
-        }
-        return String.format(Locale.CHINA, "%d:%02d", hour, minute);
-    }
-
-
     /**
      * 设置顶部数据
      */
@@ -198,7 +187,7 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
         TextView totalView = holder.obtainView(R.id.time_top_total_tv);
         ImageView addView = holder.obtainView(R.id.time_top_add_img);
         if (sumTime > 0) {
-            totalView.setText(getHm(sumTime) + "'");
+            totalView.setText(DateUtils.getHmIntegral(sumTime) + "'");
         }
     }
 
@@ -232,7 +221,7 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
             quantumView.setText(DateUtils.getTimeDurationDate(timeEntity.startTime) + " - 现在");
         } else {
             try {
-                durationView.setText(getHm(timeEntity.useTime));
+                durationView.setText(DateUtils.getHmIntegral(timeEntity.useTime));
                 quantumView.setText(DateUtils.getTimeDurationDate(timeEntity.startTime) + " - " + DateUtils.getTimeDurationDate(timeEntity.endTime));
             } catch (Exception e) {
                 e.printStackTrace();
