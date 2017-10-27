@@ -467,8 +467,8 @@ public class TimerTimingActivity extends BaseTimerActivity
         switch (event.action) {
             case TimingEvent.TIMING_UPDATE_PROGRESS:
                 if (TextUtils.equals(event.timingId, mItemEntity.pkId)) {
-                    itemEntity.useTime = event.timingSecond * TimeUnit.SECONDS.toMillis(1);
-                    itemEntity.endTime = itemEntity.startTime + itemEntity.useTime;
+                    mItemEntity.useTime = event.timingSecond * TimeUnit.SECONDS.toMillis(1);
+                    mItemEntity.endTime = mItemEntity.startTime + mItemEntity.useTime;
                     timingTv.setText(DateUtils.getTimingStr(event.timingSecond));
                     if (mItemEntity.noRemind == TimeEntity.ItemEntity.STATE_REMIND_ON) {
                         //如果该计时超过两小时，显示超过2小时的提醒。
