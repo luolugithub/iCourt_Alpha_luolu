@@ -10,6 +10,7 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeUnit;
 
 import static cn.finalteam.toolsfinal.DateUtils.date;
 import static cn.finalteam.toolsfinal.DateUtils.reformatTime;
@@ -635,6 +636,7 @@ public class DateUtils {
         currentDate.set(Calendar.SECOND, 59);
         return currentDate.getTimeInMillis();
     }
+
 
     /**
      * 获取本周的开始时间 毫秒

@@ -226,6 +226,9 @@ public class TaskTimersDialogFragment extends BaseDialogFragment implements Base
         if (holder.getItemViewType() == 1) {
             TimeEntity.ItemEntity itemEntity = (TimeEntity.ItemEntity) adapter.getItem(adapter.getRealPos(position));
             if (itemEntity == null) return;
+            if (taskItemEntity != null) {
+                itemEntity.taskName = taskItemEntity.name;
+            }
             if (TextUtils.equals(itemEntity.createUserId, getLoginUserId())) {
                 if (StringUtils.equalsIgnoreCase(itemEntity.pkId, TimerManager.getInstance().getTimerId(), false)) {
                     TimerTimingActivity.launch(view.getContext(), itemEntity);
