@@ -1074,7 +1074,7 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                 mHandler.addOverTimingRemind(getOverTimingRemindContent(TimerManager.getInstance().getTimingSeconds()));
             }
         } else {
-            dismissTimingDialogFragment();
+            dismissOverTimingRemindDialogFragment(true);
         }
     }
 
