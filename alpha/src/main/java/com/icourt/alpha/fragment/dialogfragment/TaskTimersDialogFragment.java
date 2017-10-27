@@ -28,6 +28,7 @@ import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.recyclerviewDivider.TimerItemDecoration;
 import com.icourt.alpha.widget.manager.TimerManager;
@@ -35,6 +36,8 @@ import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
 import com.zhaol.refreshlayout.EmptyRecyclerView;
+
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -68,6 +71,7 @@ public class TaskTimersDialogFragment extends BaseDialogFragment implements Base
     @BindView(R.id.refreshLayout)
     SmartRefreshLayout refreshLayout;
     TimeAdapter timeAdapter;
+    int pageIndex = 1;
 
     public static TaskTimersDialogFragment newInstance(@NonNull TaskEntity.TaskItemEntity taskItemEntity) {
         TaskTimersDialogFragment contactDialogFragment = new TaskTimersDialogFragment();
@@ -86,6 +90,16 @@ public class TaskTimersDialogFragment extends BaseDialogFragment implements Base
         return view;
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        if (getDialog() != null) {
+            Window window = getDialog().getWindow();
+            window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT);
+        }
+    }
+
+    @Override
     protected void initView() {
         Dialog dialog = getDialog();
         if (dialog != null) {
@@ -105,6 +119,7 @@ public class TaskTimersDialogFragment extends BaseDialogFragment implements Base
         if (taskItemEntity != null) {
             titleAction.setVisibility(taskItemEntity.valid ? View.VISIBLE : View.GONE);
         }
+        refreshLayout.setEnableLoadmore(false);
         recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_timing, R.string.empty_list_timing);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setItemAnimator(null);
@@ -144,36 +159,53 @@ public class TaskTimersDialogFragment extends BaseDialogFragment implements Base
                 if (taskItemEntity != null)
                     TimerAddActivity.launch(getContext(), taskItemEntity);
                 break;
+            default:
+
+                break;
         }
     }
 
     @Override
     protected void getData(final boolean isRefresh) {
-        if (taskItemEntity == null) return;
+        if (taskItemEntity == null) {
+            return;
+        }
+        if (isRefresh) {
+            pageIndex = 1;
+        }
         callEnqueue(
                 getApi().taskTimesByIdQuery(taskItemEntity.id),
                 new SimpleCallBack<TimeEntity>() {
-            @Override
-            public void onSuccess(Call<ResEntity<TimeEntity>> call, Response<ResEntity<TimeEntity>> response) {
-                stopRefresh();
-                if (response.body().result != null) {
-                    if (response.body().result.items != null) {
-                        if (response.body().result.items.size() > 0) {
-                            response.body().result.items.add(0, new TimeEntity.ItemEntity());
+                    @Override
+                    public void onSuccess(Call<ResEntity<TimeEntity>> call, Response<ResEntity<TimeEntity>> response) {
+                        stopRefresh();
+                        if (response.body().result != null) {
+                            if (response.body().result.items != null) {
+                                if (response.body().result.items.size() > 0) {
+                                    response.body().result.items.add(0, new TimeEntity.ItemEntity());
+                                }
+                                timeAdapter.bindData(isRefresh, response.body().result.items);
+                                timeAdapter.setSumTime(response.body().result.timingSum);
+
+                                pageIndex += 1;
+                            }
                         }
-                        timeAdapter.bindData(isRefresh, response.body().result.items);
-                        timeAdapter.setSumTime(response.body().result.timingSum);
                     }
-                }
-            }
 
-            @Override
-            public void onFailure(Call<ResEntity<TimeEntity>> call, Throwable t) {
-                super.onFailure(call, t);
-                stopRefresh();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<TimeEntity>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        stopRefresh();
+                    }
+                });
 
+    }
+
+    private void enableLoadMore(List result) {
+        if (refreshLayout != null) {
+            refreshLayout.setEnableLoadmore(result != null
+                    && result.size() >= ActionConstants.DEFAULT_PAGE_SIZE);
+        }
     }
 
     private void stopRefresh() {
