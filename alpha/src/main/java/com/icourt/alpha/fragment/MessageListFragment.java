@@ -27,7 +27,6 @@ import com.icourt.alpha.activity.MainActivity;
 import com.icourt.alpha.activity.SearchPolymerizationActivity;
 import com.icourt.alpha.adapter.IMSessionAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
@@ -503,9 +502,8 @@ public class MessageListFragment extends BaseRecentContactFragment
         imSessionAdapter = new IMSessionAdapter(localSetTops, localNoDisturbs);
         imSessionAdapter.setOnItemClickListener(this);
 
-        View view = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
-        imSessionAdapter.addHeader(view);
-        View rl_comm_search = view.findViewById(R.id.rl_comm_search);
+        View headerView = imSessionAdapter.addHeader(R.layout.header_search_comm, recyclerView);
+        View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
         registerClick(rl_comm_search);
         recyclerView.setAdapter(imSessionAdapter);
         imSessionAdapter.registerAdapterDataObserver(dataChangeAdapterObserver);
