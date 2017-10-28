@@ -100,6 +100,10 @@ public class MessageListFragment extends BaseRecentContactFragment
         OnItemClickListener,
         OnItemLongClickListener {
 
+    public static MessageListFragment newInstance() {
+        return new MessageListFragment();
+    }
+
     private final List<String> localSetTops = new ArrayList<>();
     private final List<String> localNoDisturbs = new ArrayList<>();
 
@@ -180,20 +184,6 @@ public class MessageListFragment extends BaseRecentContactFragment
         View view = super.onCreateView(R.layout.fragment_message_list, inflater, container, savedInstanceState);
         unbinder = ButterKnife.bind(this, view);
         return view;
-    }
-
-
-    @Override
-    public void onDestroy() {
-        if (unbinder != null) {
-            unbinder.unbind();
-        }
-        super.onDestroy();
-        EventBus.getDefault().unregister(this);
-    }
-
-    public static MessageListFragment newInstance() {
-        return new MessageListFragment();
     }
 
 
@@ -507,11 +497,10 @@ public class MessageListFragment extends BaseRecentContactFragment
         EventBus.getDefault().register(this);
         loginUserInfo = getLoginUserInfo();
         linearLayoutManager = new LinearLayoutManager(getContext());
-        linearLayoutManager.setStackFromEnd(true);
         recyclerView.setLayoutManager(linearLayoutManager);
+        recyclerView.setItemAnimator(null);
 
         imSessionAdapter = new IMSessionAdapter(localSetTops, localNoDisturbs);
-        imSessionAdapter.registerAdapterDataObserver(dataChangeAdapterObserver);
         imSessionAdapter.setOnItemClickListener(this);
 
         View view = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
@@ -519,6 +508,7 @@ public class MessageListFragment extends BaseRecentContactFragment
         View rl_comm_search = view.findViewById(R.id.rl_comm_search);
         registerClick(rl_comm_search);
         recyclerView.setAdapter(imSessionAdapter);
+        imSessionAdapter.registerAdapterDataObserver(dataChangeAdapterObserver);
 
         imSessionAdapter.setOnItemClickListener(this);
         imSessionAdapter.setOnItemLongClickListener(this);
@@ -881,10 +871,16 @@ public class MessageListFragment extends BaseRecentContactFragment
         }
     }
 
+
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
+    public void onDestroy() {
+        if (unbinder != null) {
+            unbinder.unbind();
+        }
+        EventBus.getDefault().unregister(this);
+        super.onDestroy();
     }
+
 
     @Override
     public void onItemClick(com.asange.recyclerviewadapter.BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {

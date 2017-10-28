@@ -72,12 +72,6 @@ public class IMSessionAdapter extends ContactBaseAdapter<IMSessionEntity> {
         return null;
     }
 
-    /**
-     * 刷新team
-     */
-    public void refreshTeams() {
-        initTeams();
-    }
 
     @Override
     public int bindView(int viewtype) {
