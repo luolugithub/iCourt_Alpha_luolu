@@ -161,6 +161,7 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
             }
         }
 
+        //TODO 抽取常量
         wheelviewDate.setTextSize(20);
         wheelviewDate.setCyclic(false);
         wheelviewHour.setTextSize(20);
@@ -300,6 +301,7 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
                 break;
             case R.id.tv_finish:
                 //如果传递进来的时间和当前选中的时间一致，则说明没有修改时间，点击完成就消失
+                //TODO  逻辑复杂
                 if (changeType == TYPE_CHANGE_START_TIME && startTimeMillis == currentTimeMillis) {
                     dismiss();
                 } else if (changeType == TYPE_CHANGE_END_TIME && endTimeMillis == currentTimeMillis) {
@@ -337,6 +339,7 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
         //从后往前遍历日期，选中当前日
         List<TimingDateEntity> dayList = dateWheelAdapter.getTimeList();
         Calendar calendar = Calendar.getInstance();
+        //TODO 角标不对
         for (int i = dayList.size() - 1; i > 0; i--) {
             TimingDateEntity dateEntity = dayList.get(i);
             calendar.setTimeInMillis(dateEntity.timeMillios);
@@ -372,6 +375,7 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
         }
     }
 
+    //TODO 重复 抽出去
     private class TimeWheelAdapter implements WheelAdapter<String> {
 
         List<String> timeList = new ArrayList<>();

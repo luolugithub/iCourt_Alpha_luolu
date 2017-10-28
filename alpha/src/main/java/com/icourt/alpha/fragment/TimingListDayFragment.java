@@ -122,6 +122,7 @@ public class TimingListDayFragment extends BaseTimingListFragment {
 
         //当前界面所传递的时间和起始时间（2015年1月1日）相差的天数。
         int differentDays = DateUtils.differentDays(calendar.getTimeInMillis(), startTimeMillis);
+        //TODO 有ANR危险
         viewPager.setCurrentItem(differentDays, true);
         selectedDayTime = calendar.getTimeInMillis() + viewPager.getCurrentItem() * TimeUnit.DAYS.toMillis(1);
         getTimingStatistic(TimingConfig.TIMING_QUERY_BY_DAY, DateUtils.getDayStartTime(selectedDayTime), DateUtils.getDayEndTime(selectedDayTime));

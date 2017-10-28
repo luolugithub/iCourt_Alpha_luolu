@@ -3,7 +3,6 @@ package com.icourt.alpha.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
@@ -44,8 +43,6 @@ import com.icourt.api.RequestUtils;
 import com.umeng.analytics.MobclickAgent;
 
 import java.io.Serializable;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
@@ -62,7 +59,7 @@ import retrofit2.Response;
  * date createTime：17/5/10
  * version 2.0.0
  */
-
+//TODO 重载和继承 抽取
 public class TimerAddActivity extends BaseTimerActivity
         implements
         OnFragmentCallBackListener {

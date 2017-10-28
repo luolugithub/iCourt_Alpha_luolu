@@ -112,12 +112,15 @@ public class TimingSelectYearFragment extends BaseFragment {
     @Override
     public Bundle getFragmentData(int type, Bundle inBundle) {
         Bundle arguments = new Bundle();
+
         TimingSelectEntity timingSelectEntity = new TimingSelectEntity();
         int currentYear = Integer.valueOf(yearAdapter.getItem(wheelviewYear.getCurrentItem()));
+
         timingSelectEntity.startTimeMillis = DateUtils.getSupportBeginDayofYear(currentYear).getTime();
         timingSelectEntity.endTimeMillis = DateUtils.getSupportEndDayofYear(currentYear).getTime();
         timingSelectEntity.startTimeStr = DateUtils.getyyyy_MM_dd(timingSelectEntity.startTimeMillis);
         timingSelectEntity.endTimeStr = DateUtils.getyyyy_MM_dd(timingSelectEntity.endTimeMillis);
+
         arguments.putSerializable(KEY_FRAGMENT_RESULT, timingSelectEntity);
         return arguments;
     }

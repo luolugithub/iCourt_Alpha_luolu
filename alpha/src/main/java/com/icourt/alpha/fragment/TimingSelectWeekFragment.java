@@ -284,6 +284,7 @@ public class TimingSelectWeekFragment extends BaseFragment {
             return;
         }
         int position = 0;
+        //TODO 倒序 提高code review
         for (int i = 0; i < adapter.getTimeList().size(); i++) {
             TimingSelectEntity timingSelectEntity = adapter.getTimeList().get(i);
             if (calendar.getTimeInMillis() >= timingSelectEntity.startTimeMillis && calendar.getTimeInMillis() <= timingSelectEntity.endTimeMillis) {

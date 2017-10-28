@@ -315,7 +315,10 @@ public class TimerDetailActivity extends BaseTimerActivity
                 break;
             case R.id.use_time_date:
                 //显示计时开始时间的日期
-                showDateTimeSelectDialogFragment(TimingChangeDialogFragment.TYPE_CHANGE_START_TIME, selectedStartDate.getTimeInMillis(), selectedEndDate.getTimeInMillis());
+                showDateTimeSelectDialogFragment(
+                        TimingChangeDialogFragment.TYPE_CHANGE_START_TIME,
+                        selectedStartDate.getTimeInMillis(),
+                        selectedEndDate.getTimeInMillis());
                 break;
             case R.id.start_time_min_tv:
                 //显示计时开始时间的时分

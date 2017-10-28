@@ -130,6 +130,7 @@ public class TimerTimingActivity extends BaseTimerActivity
         context.startActivity(intent);
     }
 
+    //TODO 移除
     @Override
     public void onAttachFragment(Fragment fragment) {
         super.onAttachFragment(fragment);

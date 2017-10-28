@@ -4,12 +4,10 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.TimerDetailActivity;
@@ -230,6 +228,7 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
                             } else {
                                 refreshLayout.setEnableLoadmore(false);
                             }
+                            //TODO eg  refreshLayout.setEnableLoadmore(canLoadMore && enableLoadMore(items));
                             if (isRefresh) {
                                 recyclerView.enableEmptyView(items);
                             }
