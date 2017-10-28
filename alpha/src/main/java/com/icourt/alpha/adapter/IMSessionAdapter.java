@@ -1,8 +1,8 @@
 package com.icourt.alpha.adapter;
 
 import android.support.annotation.CheckResult;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -11,8 +11,8 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.asange.recyclerviewadapter.BaseViewHolder;
 import com.icourt.alpha.R;
-import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
@@ -25,11 +25,8 @@ import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SpannableUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.bgabadgeview.BGABadgeImageView;
-import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.msg.constant.MsgStatusEnum;
 import com.netease.nimlib.sdk.team.model.Team;
-import com.netease.nimlib.sdk.uinfo.UserService;
-import com.netease.nimlib.sdk.uinfo.model.NimUserInfo;
 
 import java.util.List;
 
@@ -43,22 +40,10 @@ import static com.icourt.alpha.constants.Const.CHAT_TYPE_TEAM;
  * date createTime：2017/4/10
  * version 1.0.0
  */
-public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> {
+public class IMSessionAdapter extends ContactBaseAdapter<IMSessionEntity> {
 
     AlphaUserInfo alphaUserInfo;
     int foregroundColor = 0xFFed6c00;
-
-    /**
-     * 获取登陆昵称
-     *
-     * @return
-     */
-    private String getLoginUserName() {
-        if (alphaUserInfo != null) {
-            return alphaUserInfo.getName();
-        }
-        return null;
-    }
 
     private String getLoginUserId() {
         if (alphaUserInfo != null) {
@@ -67,60 +52,31 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
         return null;
     }
 
-    private List<Team> teams;
-    private List<GroupContactBean> groupContactBeans;
     private List<String> localSetTops;
     private List<String> localNoDisturbs;
 
-    @Nullable
-    @CheckResult
-    private GroupContactBean getUser(String accid) {
-        if (groupContactBeans != null && !TextUtils.isEmpty(accid)) {
-            GroupContactBean groupContactBean = new GroupContactBean();
-            groupContactBean.accid = accid.toLowerCase();
-            int indexOf = groupContactBeans.indexOf(groupContactBean);
-            if (indexOf >= 0) {
-                return groupContactBeans.get(indexOf);
-            }
-        }
-        return IMUtils.convert2GroupContact(getNimUser(accid));
-    }
 
-
-    /**
-     * @param accid
-     * @return
-     */
-    @CheckResult
-    @Nullable
-    protected NimUserInfo getNimUser(String accid) {
-        try {
-            return NIMClient.getService(UserService.class)
-                    .getUserInfo(accid);
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    @Nullable
-    @CheckResult
-    public Team getTeam(String id) {
-        if (teams == null) return null;
-        for (Team team : teams) {
-            if (StringUtils.equalsIgnoreCase(id, team.getId(), false)) {
-                return team;
-            }
-        }
-        return null;
-    }
-
-    public IMSessionAdapter(List<Team> teams, List<GroupContactBean> groupContactBeans, List<String> localSetTops, List<String> localNoDisturbs) {
-        this.teams = teams;
-        this.groupContactBeans = groupContactBeans;
+    public IMSessionAdapter(@NonNull List<String> localSetTops, @NonNull List<String> localNoDisturbs) {
         this.localNoDisturbs = localNoDisturbs;
         this.localSetTops = localSetTops;
         alphaUserInfo = LoginInfoUtils.getLoginUserInfo();
+    }
+
+    @Nullable
+    @CheckResult
+    public GroupContactBean getContact(int index) {
+        IMSessionEntity item = getItem(index);
+        if (item != null && item.recentContact != null) {
+            return getContactByAccid(item.recentContact.getContactId());
+        }
+        return null;
+    }
+
+    /**
+     * 刷新team
+     */
+    public void refreshTeams() {
+        initTeams();
     }
 
     @Override
@@ -128,10 +84,11 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
         return R.layout.adapter_item_im_session;
     }
 
-
     @Override
-    public void onBindHoder(ViewHolder holder, IMSessionEntity imSessionEntity, int position) {
-        if (imSessionEntity == null) return;
+    public void onBindHolder(BaseViewHolder holder, @Nullable IMSessionEntity imSessionEntity, int i) {
+        if (imSessionEntity == null) {
+            return;
+        }
         ImageView ivSessionIcon = holder.obtainView(R.id.iv_session_icon);
         TextView tvSessionTime = holder.obtainView(R.id.tv_session_time);
         TextView tvSessionTitle = holder.obtainView(R.id.tv_session_title);
@@ -140,10 +97,10 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
         tvSessionContent.setText(imSessionEntity.recentContact.getContent());
         if (imSessionEntity.recentContact != null) {
             //1.设置提示数量
-            setUnreadCount(holder, imSessionEntity, position);
+            setUnreadCount(holder, imSessionEntity, i);
 
             //3.设置消息展示的时间
-            setTimeView(tvSessionTime, imSessionEntity.recentContact.getTime(), position);
+            setTimeView(tvSessionTime, imSessionEntity.recentContact.getTime(), i);
 
 
             //4.设置消息体展示
@@ -157,14 +114,21 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
             setItemDontDisturbs(imSessionEntity, ivSessionNotDisturb);
 
             //6设置置顶状态
-            setItemSetTop(holder, imSessionEntity, position);
+            setItemSetTop(holder, imSessionEntity, i);
         }
     }
 
-    private void setItemSetTop(ViewHolder holder, IMSessionEntity imSessionEntity, int position) {
-        if (holder == null) return;
-        if (imSessionEntity == null) return;
-        if (imSessionEntity.recentContact == null) return;
+
+    private void setItemSetTop(BaseViewHolder holder, IMSessionEntity imSessionEntity, int position) {
+        if (holder == null) {
+            return;
+        }
+        if (imSessionEntity == null) {
+            return;
+        }
+        if (imSessionEntity.recentContact == null) {
+            return;
+        }
         boolean isSetToped = localSetTops.contains(imSessionEntity.recentContact.getContactId());
         holder.itemView.setBackgroundResource(isSetToped ? R.drawable.list_view_item_other_touch_bg : R.drawable.list_view_item_touch_bg);
     }
@@ -177,9 +141,13 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
      * @param imSessionEntity
      * @param position
      */
-    private void setUnreadCount(ViewHolder holder, IMSessionEntity imSessionEntity, int position) {
-        if (imSessionEntity == null) return;
-        if (imSessionEntity.recentContact == null) return;
+    private void setUnreadCount(BaseViewHolder holder, IMSessionEntity imSessionEntity, int position) {
+        if (imSessionEntity == null) {
+            return;
+        }
+        if (imSessionEntity.recentContact == null) {
+            return;
+        }
         BGABadgeImageView iv_session_icon = holder.obtainView(R.id.iv_session_icon);
         //草稿
         if (imSessionEntity.recentContact.getMsgStatus() == MsgStatusEnum.draft) {
@@ -214,9 +182,15 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
      * @param ivSessionNotDisturb
      */
     private void setItemDontDisturbs(IMSessionEntity imSessionEntity, ImageView ivSessionNotDisturb) {
-        if (imSessionEntity == null) return;
-        if (ivSessionNotDisturb == null) return;
-        if (imSessionEntity.customIMBody == null) return;
+        if (imSessionEntity == null) {
+            return;
+        }
+        if (ivSessionNotDisturb == null) {
+            return;
+        }
+        if (imSessionEntity.customIMBody == null) {
+            return;
+        }
         ivSessionNotDisturb.setVisibility(localNoDisturbs.contains(imSessionEntity.customIMBody.to)
                 ? View.VISIBLE : View.GONE);
     }
@@ -228,21 +202,29 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
      * @param ivSessionIcon
      */
     public void setSessionIcon(IMSessionEntity imSessionEntity, ImageView ivSessionIcon) {
-        if (ivSessionIcon == null) return;
-        if (imSessionEntity == null) return;
-        if (imSessionEntity.customIMBody == null) return;
-        if (imSessionEntity.recentContact == null) return;
+        if (ivSessionIcon == null) {
+            return;
+        }
+        if (imSessionEntity == null) {
+            return;
+        }
+        if (imSessionEntity.customIMBody == null) {
+            return;
+        }
+        if (imSessionEntity.recentContact == null) {
+            return;
+        }
         switch (imSessionEntity.customIMBody.ope) {
             case CHAT_TYPE_P2P:
-                GroupContactBean user = getUser(imSessionEntity.recentContact.getContactId());
+                GroupContactBean user = getContactByAccid(imSessionEntity.recentContact.getContactId());
                 if (user != null) {
                     GlideUtils.loadUser(ivSessionIcon.getContext(),
                             user.pic,
                             ivSessionIcon);
-                } else
-                    break;
+                }
+                break;
             case CHAT_TYPE_TEAM:
-                Team team = getTeam(imSessionEntity.recentContact.getContactId());
+                Team team = getTeamById(imSessionEntity.recentContact.getContactId());
                 if (team != null) {
                     if (!TextUtils.isEmpty(team.getIcon())) {
                         GlideUtils.loadGroup(ivSessionIcon.getContext(),
@@ -263,8 +245,12 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
      * @param ivSessionIcon
      */
     private void setTeamIcon(String teamName, ImageView ivSessionIcon) {
-        if (TextUtils.isEmpty(teamName)) return;
-        if (ivSessionIcon == null) return;
+        if (TextUtils.isEmpty(teamName)) {
+            return;
+        }
+        if (ivSessionIcon == null) {
+            return;
+        }
         IMUtils.setTeamIcon(teamName, ivSessionIcon);
     }
 
@@ -275,13 +261,21 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
      * @param tvSessionTitle
      */
     public void setSessionTitle(IMSessionEntity imSessionEntity, TextView tvSessionTitle) {
-        if (tvSessionTitle == null) return;
-        if (imSessionEntity == null) return;
-        if (imSessionEntity.customIMBody == null) return;
-        if (imSessionEntity.recentContact == null) return;
+        if (tvSessionTitle == null) {
+            return;
+        }
+        if (imSessionEntity == null) {
+            return;
+        }
+        if (imSessionEntity.customIMBody == null) {
+            return;
+        }
+        if (imSessionEntity.recentContact == null) {
+            return;
+        }
         switch (imSessionEntity.customIMBody.ope) {
             case CHAT_TYPE_P2P:
-                GroupContactBean user = getUser(imSessionEntity.recentContact.getContactId());
+                GroupContactBean user = getContactByAccid(imSessionEntity.recentContact.getContactId());
                 if (user != null) {
                     tvSessionTitle.setText(user.name);
                 } else {
@@ -293,7 +287,7 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
                 }
                 break;
             case CHAT_TYPE_TEAM:
-                Team team = getTeam(imSessionEntity.customIMBody.to);
+                Team team = getTeamById(imSessionEntity.customIMBody.to);
                 if (team != null) {
                     tvSessionTitle.setText(team.getName());
                 }
@@ -309,10 +303,18 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
      * @param tvSessionContent
      */
     private void setItemData(IMSessionEntity imSessionEntity, TextView tvSessionContent) {
-        if (imSessionEntity == null) return;
-        if (imSessionEntity.recentContact == null) return;
-        if (imSessionEntity.customIMBody == null) return;
-        if (tvSessionContent == null) return;
+        if (imSessionEntity == null) {
+            return;
+        }
+        if (imSessionEntity.recentContact == null) {
+            return;
+        }
+        if (imSessionEntity.customIMBody == null) {
+            return;
+        }
+        if (tvSessionContent == null) {
+            return;
+        }
         IMMessageCustomBody customIMBody = imSessionEntity.customIMBody;
         //草稿
         if (customIMBody.msg_statu == Const.MSG_STATU_DRAFT) {
@@ -428,7 +430,9 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
      */
     private String getSessionContent(IMMessageCustomBody customIMBody) {
         String sessionName = "";
-        if (customIMBody == null) return sessionName;
+        if (customIMBody == null) {
+            return sessionName;
+        }
         if (customIMBody.ope == Const.CHAT_TYPE_TEAM) {
             if (!StringUtils.equalsIgnoreCase(customIMBody.from, getLoginUserId(), false)) {
                 sessionName = customIMBody.name + " : ";
@@ -444,7 +448,9 @@ public class IMSessionAdapter extends BaseArrayRecyclerAdapter<IMSessionEntity> 
      * @param time
      */
     private void setTimeView(TextView tvSessionTime, long time, int pos) {
-        if (tvSessionTime == null) return;
+        if (tvSessionTime == null) {
+            return;
+        }
         tvSessionTime.setText(DateUtils.getFormatChatTimeSimple(time));
     }
 

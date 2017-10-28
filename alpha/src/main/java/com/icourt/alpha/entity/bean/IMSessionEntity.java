@@ -2,6 +2,7 @@ package com.icourt.alpha.entity.bean;
 
 import android.text.TextUtils;
 
+import com.asange.recyclerviewadapter.SelectableEntity;
 import com.google.gson.annotations.Expose;
 import com.netease.nimlib.sdk.msg.constant.MsgTypeEnum;
 import com.netease.nimlib.sdk.msg.model.RecentContact;
@@ -13,7 +14,7 @@ import com.netease.nimlib.sdk.msg.model.RecentContact;
  * date createTime：2017/4/10
  * version 1.0.0
  */
-public class IMSessionEntity {
+public class IMSessionEntity implements SelectableEntity {
 
     @Expose(serialize = false, deserialize = false)
     public RecentContact recentContact;
@@ -57,5 +58,20 @@ public class IMSessionEntity {
             return TextUtils.equals(other.recentContact.getContactId(), recentContact.getContactId());
         }
         return false;
+    }
+
+    @Override
+    public boolean isItemSelected() {
+        return false;
+    }
+
+    @Override
+    public void setItemSelect(boolean b) {
+
+    }
+
+    @Override
+    public void toggleItemSelect() {
+
     }
 }
