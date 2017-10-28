@@ -27,6 +27,7 @@ import com.icourt.alpha.fragment.dialogfragment.TimingSelectDialogFragment;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnTimingChangeListener;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.widget.manager.TimerManager;
 
 import java.util.Calendar;
 
@@ -94,6 +95,12 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
         setContentView(R.layout.activity_my_timing);
         ButterKnife.bind(this);
         initView();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        TimerManager.getInstance().timerQuerySync();
     }
 
     @Override
