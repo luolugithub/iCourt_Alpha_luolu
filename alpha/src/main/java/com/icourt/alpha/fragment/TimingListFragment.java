@@ -230,6 +230,9 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
                             } else {
                                 refreshLayout.setEnableLoadmore(false);
                             }
+                            if (isRefresh) {
+                                recyclerView.enableEmptyView(items);
+                            }
                         }
                         stopRefresh();
                         mPageIndex += 1;

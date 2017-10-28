@@ -610,7 +610,7 @@ public class TaskListFragment extends BaseTaskFragment implements
                         getTaskGroupData(response.body().result);
                         if (response.body().result != null) {
                             if (type == TYPE_ALL && onTasksChangeListener != null) {
-                                //暂时注释掉，因为现在每次切换到任务列表，都重新构建了TaskListFragment
+                                //暂时注释掉，因为现在每次切换到任务列表，都重新刷新了TaskListFragment
                                 //onTasksChangeListener.onTasksChanged(response.body().result.items);
                             }
                         }

@@ -262,12 +262,12 @@ public class TimingListMonthFragment extends BaseTimingListFragment {
         }
         List<PointValue> values2 = Arrays.asList(
                 new PointValue(0, 2.0f),
-                new PointValue(1, 4.0f),
-                new PointValue(2, 6.0f),
-                new PointValue(3, secondMax),
-                new PointValue(4, 6.0f),
-                new PointValue(5, 4.0f),
-                new PointValue(6, 2.0f));
+                new PointValue(4, 4.0f),
+                new PointValue(9, 6.0f),
+                new PointValue(14, secondMax),
+                new PointValue(19, 6.0f),
+                new PointValue(24, 4.0f),
+                new PointValue(29, 2.0f));
         Line line2 = new Line(values2);
         line2.setShape(shape);
         line2.setCubic(false);

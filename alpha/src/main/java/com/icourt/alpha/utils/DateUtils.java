@@ -1,6 +1,5 @@
 package com.icourt.alpha.utils;
 
-import android.os.SystemClock;
 import android.text.TextUtils;
 
 import java.text.SimpleDateFormat;
@@ -8,12 +7,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
-import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeUnit;
-
-import static cn.finalteam.toolsfinal.DateUtils.date;
-import static cn.finalteam.toolsfinal.DateUtils.reformatTime;
 
 public class DateUtils {
 
@@ -433,7 +427,7 @@ public class DateUtils {
      * @return
      */
     public static String getyyyyMM(long milliseconds) {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy年MM月");
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy年M月");
         return formatter.format(milliseconds);
     }
 
@@ -517,9 +511,9 @@ public class DateUtils {
     public static String getMMMdd(long milliseconds) {
         String formatStr = null;
         if (isThisYear(milliseconds)) {
-            formatStr = "MM月dd日";
+            formatStr = "M月d日";
         } else {
-            formatStr = "yyyy年MM月dd日";
+            formatStr = "yyyy年M月d日";
         }
         if (!TextUtils.isEmpty(formatStr)) {
             SimpleDateFormat formatter = new SimpleDateFormat(formatStr, Locale.CHINA);
@@ -564,9 +558,20 @@ public class DateUtils {
      * @param milliSeconds
      * @return
      */
-    public static String getYYYYMD(long milliSeconds) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/M/d");
+    public static String getyyyyMd(long milliSeconds) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/M/d", Locale.CHINA);
         return dateFormat.format(milliSeconds);
+    }
+
+    /**
+     * 返回2/14这种格式的时间
+     *
+     * @param millisSeconds
+     * @return
+     */
+    public static String getMd(long millisSeconds) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("M月d日", Locale.CHINA);
+        return dateFormat.format(millisSeconds);
     }
 
     /**

@@ -11,6 +11,7 @@
       <module fileurl="file://$PROJECT_DIR$/lib_daemon/lib_daemon.iml" filepath="$PROJECT_DIR$/lib_daemon/lib_daemon.iml" />
       <module fileurl="file://$PROJECT_DIR$/lib_guideview/lib_guideview.iml" filepath="$PROJECT_DIR$/lib_guideview/lib_guideview.iml" />
       <module fileurl="file://$PROJECT_DIR$/lib_guideview/lib_guideview.iml" filepath="$PROJECT_DIR$/lib_guideview/lib_guideview.iml" />
+      <module fileurl="file://$PROJECT_DIR$/lib_guideview/lib_guideview.iml" filepath="$PROJECT_DIR$/lib_guideview/lib_guideview.iml" />
     </modules>
   </component>
 </project>

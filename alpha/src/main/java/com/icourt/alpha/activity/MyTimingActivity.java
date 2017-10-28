@@ -165,11 +165,11 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
                 String endDate;
                 if (DateUtils.getYear(System.currentTimeMillis()) == DateUtils.getYear(weekStartTime)
                         && DateUtils.getYear(System.currentTimeMillis()) == DateUtils.getYear(weekEndTime)) {//开始和结束时间都是是今年，不需要显示年份
-                    startDate = DateUtils.getMMdd(weekStartTime);
-                    endDate = DateUtils.getMMdd(weekEndTime);
+                    startDate = DateUtils.getMd(weekStartTime);
+                    endDate = DateUtils.getMd(weekEndTime);
                 } else {//需要显示年份
-                    startDate = DateUtils.getYYYYMD(weekStartTime);
-                    endDate = DateUtils.getYYYYMD(weekEndTime);
+                    startDate = DateUtils.getyyyyMd(weekStartTime);
+                    endDate = DateUtils.getyyyyMd(weekEndTime);
                 }
                 timingDateTitleTv.setText(getString(R.string.timing_date_contact, startDate, endDate));
                 break;
