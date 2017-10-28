@@ -144,6 +144,12 @@ public class TimerTimingActivity extends BaseTimerActivity
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        TimerManager.getInstance().timerQuerySync();
+    }
+
+    @Override
     protected void initView() {
         super.initView();
         mItemEntity = (TimeEntity.ItemEntity) getIntent().getSerializableExtra(KEY_TIME);
