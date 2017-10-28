@@ -306,7 +306,6 @@ public class ContactListActivity extends BaseActivity implements BaseRecyclerAda
                 imContactAdapter.toggleSelected(position);
                 break;
             default:
-                //TODO 进入详情
                 break;
         }
     }
