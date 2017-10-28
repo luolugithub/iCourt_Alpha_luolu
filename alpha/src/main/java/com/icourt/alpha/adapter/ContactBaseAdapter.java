@@ -123,7 +123,7 @@ public abstract class ContactBaseAdapter<T extends SelectableEntity> extends Bas
     /**
      * 获取teams
      */
-    private void initTeams() {
+    protected void initTeams() {
         NIMClient.getService(TeamService.class)
                 .queryTeamList()
                 .setCallback(new RequestCallbackWrapper<List<Team>>() {
@@ -154,6 +154,9 @@ public abstract class ContactBaseAdapter<T extends SelectableEntity> extends Bas
             return null;
         }
         for (Team team : localTeams) {
+            if (team == null) {
+                continue;
+            }
             if (StringUtils.equalsIgnoreCase(id, team.getId(), false)) {
                 return team;
             }
