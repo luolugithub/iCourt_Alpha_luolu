@@ -60,6 +60,7 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
     public static final String UPDATE_APP_VERSION_KEY = "update_app_version_key";//版本更新版本号
     private static final String CUSTOM_APK_JOINT_NAME = "alphaNewApp";//自定义apk name拼接字符串 :为确保每次url不同
     private AlertDialog updateNoticeDialog;
+    //TODO 替换 已经过时
     private ProgressDialog updateProgressDialog;
     //TODO 用基类的权限
     public static final int REQUEST_FILE_PERMISSION = 9999;
@@ -88,6 +89,7 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
     @Override
     public final void checkAppUpdate(@NonNull BaseCallBack<ResEntity<AppVersionEntity>> callBack) {
         if (callBack == null) return;
+        //TODO 添加到队列
         getApi().getNewVersionAppInfo()
                 .enqueue(callBack);
     }
