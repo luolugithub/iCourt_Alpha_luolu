@@ -132,6 +132,11 @@ public class TimerTimingActivity extends BaseTimerActivity
         initView();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        TimerManager.getInstance().timerQuerySync();
+    }
 
     @Override
     protected void initView() {
