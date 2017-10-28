@@ -18,6 +18,8 @@ import java.util.List;
 public class TimerDateManager {
 
 
+    public static final int START_YEAR = 2015;
+
     /**
      * 返回计时列表筛选的开始日期（起始时间是2015年1月1日）
      *
@@ -27,7 +29,7 @@ public class TimerDateManager {
         //起始时间是2015年1月1日
         Calendar instance = Calendar.getInstance();
         instance.clear();
-        instance.set(Calendar.YEAR, 2015);
+        instance.set(Calendar.YEAR, START_YEAR);
         instance.set(Calendar.MONTH, Calendar.JANUARY);
         instance.set(Calendar.DAY_OF_MONTH, 1);
         instance.set(Calendar.HOUR_OF_DAY, 0);

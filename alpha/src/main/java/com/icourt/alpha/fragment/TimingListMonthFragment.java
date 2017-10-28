@@ -158,10 +158,12 @@ public class TimingListMonthFragment extends BaseTimingListFragment {
         //记录当前所在的position，根据position获取所在月份的统计数据
         int position = 0;
         for (int i = 0; i < monthData.size(); i++) {
-            //TODO 重复运算
-            if (startTimeMillis >= monthData.get(i).startTimeMillis && startTimeMillis <= monthData.get(i).endTimeMillis) {
-                position = i;
-                break;
+            TimingSelectEntity item = monthData.get(i);
+            if (item != null) {
+                if (startTimeMillis >= item.startTimeMillis && startTimeMillis <= item.endTimeMillis) {
+                    position = i;
+                    break;
+                }
             }
         }
         viewPager.setCurrentItem(position, true);

@@ -10,9 +10,11 @@ import android.view.ViewGroup;
 import com.bigkoo.pickerview.adapter.WheelAdapter;
 import com.bigkoo.pickerview.lib.WheelView;
 import com.icourt.alpha.R;
+import com.icourt.alpha.adapter.StringWheelAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TimingSelectEntity;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.widget.manager.TimerDateManager;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -29,13 +31,15 @@ import butterknife.Unbinder;
 
 public class TimingSelectYearFragment extends BaseFragment {
 
+    private static final int TEXT_SIZE_WHEELVIEW = 20;
+
     private static final String KEY_SELECTED_DATE = "keySelectedDate";
 
     Unbinder unbinder;
 
     @BindView(R.id.wheelview_year)
     WheelView wheelviewYear;
-    TimeWheelAdapter yearAdapter;
+    StringWheelAdapter yearAdapter;
 
     public static TimingSelectYearFragment newInstance(long selectedDate) {
         TimingSelectYearFragment fragment = new TimingSelectYearFragment();
@@ -55,7 +59,7 @@ public class TimingSelectYearFragment extends BaseFragment {
 
     @Override
     protected void initView() {
-        int selectedYear = 2015;
+        int selectedYear = TimerDateManager.START_YEAR;
         Calendar calendar = Calendar.getInstance();
         if (getArguments() != null) {
             long timeMillis = getArguments().getLong(KEY_SELECTED_DATE, System.currentTimeMillis());
@@ -64,17 +68,17 @@ public class TimingSelectYearFragment extends BaseFragment {
         }
 
         wheelviewYear.setCyclic(false);
-        wheelviewYear.setTextSize(20);
+        wheelviewYear.setTextSize(TEXT_SIZE_WHEELVIEW);
 
         calendar.clear();
         calendar.setTimeInMillis(System.currentTimeMillis());
         int year = calendar.get(Calendar.YEAR);
         List<String> yearList = new ArrayList<>();
-        for (int i = 2015; i <= year; i++) {
+        for (int i = TimerDateManager.START_YEAR; i <= year; i++) {
             yearList.add(String.valueOf(i));
         }
 
-        wheelviewYear.setAdapter(yearAdapter = new TimeWheelAdapter(yearList));
+        wheelviewYear.setAdapter(yearAdapter = new StringWheelAdapter(yearList));
 
         int currentYearPosition = 0;
         for (int i = 0; i < yearList.size(); i++) {
@@ -83,30 +87,6 @@ public class TimingSelectYearFragment extends BaseFragment {
             }
         }
         wheelviewYear.setCurrentItem(currentYearPosition);
-    }
-
-    private class TimeWheelAdapter implements WheelAdapter<String> {
-        List<String> timeList = new ArrayList<>();
-
-        public TimeWheelAdapter(List<String> data) {
-            this.timeList = data;
-        }
-
-        @Override
-        public int getItemsCount() {
-            return timeList.size();
-        }
-
-        @Override
-        public String getItem(int i) {
-            return timeList.get(i);
-        }
-
-        @Override
-        public int indexOf(String o) {
-            return timeList.indexOf(o);
-        }
-
     }
 
     @Override

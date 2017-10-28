@@ -7,13 +7,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.bigkoo.pickerview.adapter.WheelAdapter;
 import com.bigkoo.pickerview.lib.WheelView;
 import com.bigkoo.pickerview.listener.OnItemSelectedListener;
 import com.icourt.alpha.R;
+import com.icourt.alpha.adapter.StringWheelAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.TimingSelectEntity;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.widget.manager.TimerDateManager;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -30,6 +31,8 @@ import butterknife.Unbinder;
 
 public class TimingSelectMonthFragment extends BaseFragment {
 
+    private static final int TEXT_SIZE_WHEELVIEW = 20;
+
     private static final String KEY_SELECTED_DATE = "keySelectedDate";
 
     Unbinder unbinder;
@@ -39,8 +42,8 @@ public class TimingSelectMonthFragment extends BaseFragment {
     @BindView(R.id.wheelview_month)
     WheelView wheelviewMonth;
 
-    TimeWheelAdapter yearAdapter;
-    TimeWheelAdapter monthAdapter;
+    StringWheelAdapter yearAdapter;
+    StringWheelAdapter monthAdapter;
 
     private int selectedYearPosition;//选中的年所在的position
     private int selectedMonthPosition;//选中的月所在的position
@@ -70,16 +73,16 @@ public class TimingSelectMonthFragment extends BaseFragment {
             calendar.setTimeInMillis(timeMillis);
         }
 
-        wheelviewYear.setTextSize(20);
+        wheelviewYear.setTextSize(TEXT_SIZE_WHEELVIEW);
         wheelviewYear.setCyclic(false);
-        wheelviewMonth.setTextSize(20);
+        wheelviewMonth.setTextSize(TEXT_SIZE_WHEELVIEW);
         wheelviewMonth.setCyclic(false);
 
         List<String> yearList = new ArrayList<>();
         List<String> monthList = new ArrayList<>();
 
         int year = calendar.get(Calendar.YEAR);
-        for (int i = 2015; i <= year; i++) {//2015年-当前年
+        for (int i = TimerDateManager.START_YEAR; i <= year; i++) {//2015年-当前年
             yearList.add(String.valueOf(i));
         }
 
@@ -87,8 +90,8 @@ public class TimingSelectMonthFragment extends BaseFragment {
             monthList.add(String.valueOf(i));
         }
 
-        wheelviewYear.setAdapter(yearAdapter = new TimeWheelAdapter(yearList));
-        wheelviewMonth.setAdapter(monthAdapter = new TimeWheelAdapter(monthList));
+        wheelviewYear.setAdapter(yearAdapter = new StringWheelAdapter(yearList));
+        wheelviewMonth.setAdapter(monthAdapter = new StringWheelAdapter(monthList));
 
         wheelviewYear.setOnItemSelectedListener(new OnItemSelectedListener() {
             @Override
@@ -145,35 +148,6 @@ public class TimingSelectMonthFragment extends BaseFragment {
         } else {
             selectedMonthPosition = monthPosition;
         }
-    }
-
-
-    private class TimeWheelAdapter implements WheelAdapter<String> {
-        List<String> timeList = new ArrayList<>();
-
-        public TimeWheelAdapter(List<String> data) {
-            this.timeList = data;
-        }
-
-        public List<String> getTimeList() {
-            return timeList;
-        }
-
-        @Override
-        public int getItemsCount() {
-            return timeList.size();
-        }
-
-        @Override
-        public String getItem(int i) {
-            return timeList.get(i);
-        }
-
-        @Override
-        public int indexOf(String o) {
-            return timeList.indexOf(o);
-        }
-
     }
 
     @Override

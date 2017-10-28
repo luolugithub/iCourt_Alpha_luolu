@@ -223,15 +223,8 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
                         if (response.body().result != null) {
                             List<TimeEntity.ItemEntity> items = response.body().result.items;
                             timeAdapter.bindData(isRefresh, items);
-                            if (canLoadMore && enableLoadMore(items)) {
-                                refreshLayout.setEnableLoadmore(true);
-                            } else {
-                                refreshLayout.setEnableLoadmore(false);
-                            }
-                            //TODO eg  refreshLayout.setEnableLoadmore(canLoadMore && enableLoadMore(items));
-                            if (isRefresh) {
-                                recyclerView.enableEmptyView(items);
-                            }
+                            refreshLayout.setEnableLoadmore(canLoadMore && enableLoadMore(items));
+                            recyclerView.enableEmptyView(timeAdapter.getData());
                         }
                         stopRefresh();
                         mPageIndex += 1;

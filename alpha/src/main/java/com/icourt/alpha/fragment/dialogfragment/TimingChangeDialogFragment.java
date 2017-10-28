@@ -16,6 +16,7 @@ import com.bigkoo.pickerview.adapter.WheelAdapter;
 import com.bigkoo.pickerview.lib.WheelView;
 import com.bigkoo.pickerview.listener.OnItemSelectedListener;
 import com.icourt.alpha.R;
+import com.icourt.alpha.adapter.StringWheelAdapter;
 import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.entity.bean.TimingDateEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
@@ -50,6 +51,8 @@ import io.reactivex.schedulers.Schedulers;
  */
 
 public class TimingChangeDialogFragment extends BaseDialogFragment {
+
+    private static final int TEXT_SIZE_WHEELVIEW = 20;
 
     private static final String TIME_START_MILLIS = "timeStartMillis";//用来传递开始时间的tag
     private static final String TIME_END_MILLIS = "timeEndMillis";//用来传递结束时间的tag
@@ -94,8 +97,8 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
     private int lastMinutePosition;
 
     private DateWheelAdapter dateWheelAdapter;
-    private TimeWheelAdapter hourWheelAdapter;
-    private TimeWheelAdapter minuteWheelAdapter;
+    private StringWheelAdapter hourWheelAdapter;
+    private StringWheelAdapter minuteWheelAdapter;
 
     private OnFragmentCallBackListener onFragmentCallBackListener;
 
@@ -161,12 +164,11 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
             }
         }
 
-        //TODO 抽取常量
-        wheelviewDate.setTextSize(20);
+        wheelviewDate.setTextSize(TEXT_SIZE_WHEELVIEW);
         wheelviewDate.setCyclic(false);
-        wheelviewHour.setTextSize(20);
+        wheelviewHour.setTextSize(TEXT_SIZE_WHEELVIEW);
         wheelviewHour.setCyclic(false);
-        wheelviewMinute.setTextSize(20);
+        wheelviewMinute.setTextSize(TEXT_SIZE_WHEELVIEW);
         wheelviewMinute.setCyclic(false);
 
         dateWheelAdapter = new DateWheelAdapter();
@@ -186,7 +188,7 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
         for (int i = 0; i < 24; i++) {
             hourList.add(String.valueOf(i));
         }
-        hourWheelAdapter = new TimeWheelAdapter(hourList);
+        hourWheelAdapter = new StringWheelAdapter(hourList);
         wheelviewHour.setAdapter(hourWheelAdapter);
 
         //显示分钟的list
@@ -194,7 +196,7 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
         for (int i = 0; i < 60; i++) {
             minuteList.add(String.valueOf(i));
         }
-        minuteWheelAdapter = new TimeWheelAdapter(minuteList);
+        minuteWheelAdapter = new StringWheelAdapter(minuteList);
         wheelviewMinute.setAdapter(minuteWheelAdapter);
 
         Observable.create(new ObservableOnSubscribe<List<TimingDateEntity>>() {
@@ -301,19 +303,20 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
                 break;
             case R.id.tv_finish:
                 //如果传递进来的时间和当前选中的时间一致，则说明没有修改时间，点击完成就消失
-                //TODO  逻辑复杂
+                boolean isNeedChange;
                 if (changeType == TYPE_CHANGE_START_TIME && startTimeMillis == currentTimeMillis) {
-                    dismiss();
+                    isNeedChange = false;
                 } else if (changeType == TYPE_CHANGE_END_TIME && endTimeMillis == currentTimeMillis) {
-                    dismiss();
+                    isNeedChange = false;
                 } else {
-                    if (onFragmentCallBackListener != null) {
-                        Bundle bundle = new Bundle();
-                        bundle.putLong(TIME_RESULT_MILLIS, currentTimeMillis);
-                        onFragmentCallBackListener.onFragmentCallBack(this, changeType, bundle);
-                    }
-                    dismiss();
+                    isNeedChange = true;
                 }
+                if (isNeedChange && onFragmentCallBackListener != null) {
+                    Bundle bundle = new Bundle();
+                    bundle.putLong(TIME_RESULT_MILLIS, currentTimeMillis);
+                    onFragmentCallBackListener.onFragmentCallBack(this, changeType, bundle);
+                }
+                dismiss();
                 break;
             default:
                 break;
@@ -339,8 +342,7 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
         //从后往前遍历日期，选中当前日
         List<TimingDateEntity> dayList = dateWheelAdapter.getTimeList();
         Calendar calendar = Calendar.getInstance();
-        //TODO 角标不对
-        for (int i = dayList.size() - 1; i > 0; i--) {
+        for (int i = dayList.size() - 1; i >= 0; i--) {
             TimingDateEntity dateEntity = dayList.get(i);
             calendar.setTimeInMillis(dateEntity.timeMillios);
             if (calendar.get(Calendar.YEAR) == year && calendar.get(Calendar.MONTH) == month && calendar.get(Calendar.DAY_OF_MONTH) == day) {
@@ -373,36 +375,6 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
                 break;
             }
         }
-    }
-
-    //TODO 重复 抽出去
-    private class TimeWheelAdapter implements WheelAdapter<String> {
-
-        List<String> timeList = new ArrayList<>();
-
-        public TimeWheelAdapter(List<String> data) {
-            this.timeList = data;
-        }
-
-        public List<String> getTimeList() {
-            return timeList;
-        }
-
-        @Override
-        public int getItemsCount() {
-            return timeList.size();
-        }
-
-        @Override
-        public String getItem(int i) {
-            return timeList.get(i);
-        }
-
-        @Override
-        public int indexOf(String o) {
-            return timeList.indexOf(o);
-        }
-
     }
 
     private class DateWheelAdapter implements WheelAdapter<TimingDateEntity> {

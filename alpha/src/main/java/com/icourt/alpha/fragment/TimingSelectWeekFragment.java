@@ -43,6 +43,8 @@ import io.reactivex.schedulers.Schedulers;
 
 public class TimingSelectWeekFragment extends BaseFragment {
 
+    private static final int TEXT_SIZE_WHEELVIEW = 20;
+
     private static final String KEY_SELECTED_DATE = "keySelectedDate";
 
     Unbinder unbinder;
@@ -81,7 +83,7 @@ public class TimingSelectWeekFragment extends BaseFragment {
 
     @Override
     protected void initView() {
-        wheelView.setTextSize(20);
+        wheelView.setTextSize(TEXT_SIZE_WHEELVIEW);
         adapter = new TimeWheelAdapter();
 
         if (getArguments() != null) {
@@ -284,8 +286,7 @@ public class TimingSelectWeekFragment extends BaseFragment {
             return;
         }
         int position = 0;
-        //TODO 倒序 提高code review
-        for (int i = 0; i < adapter.getTimeList().size(); i++) {
+        for (int i = adapter.getTimeList().size() - 1; i >= 0; i--) {
             TimingSelectEntity timingSelectEntity = adapter.getTimeList().get(i);
             if (calendar.getTimeInMillis() >= timingSelectEntity.startTimeMillis && calendar.getTimeInMillis() <= timingSelectEntity.endTimeMillis) {
                 position = i;
