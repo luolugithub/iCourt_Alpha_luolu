@@ -1,5 +1,6 @@
 package com.icourt.alpha.adapter;
 
+import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -9,14 +10,13 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.chad.library.adapter.base.BaseMultiItemQuickAdapter;
-import com.chad.library.adapter.base.BaseViewHolder;
+import com.asange.recyclerviewadapter.BaseViewHolder;
 import com.icourt.alpha.R;
+import com.icourt.alpha.adapter.baseadapter.BaseAdapter;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.widget.manager.TimerManager;
-import com.zhaol.refreshlayout.interfaces.IDataEmptyAdapter;
 
 /**
  * * Description
@@ -26,7 +26,7 @@ import com.zhaol.refreshlayout.interfaces.IDataEmptyAdapter;
  * version 2.0.0
  */
 
-public class TaskAdapter extends BaseMultiItemQuickAdapter<TaskEntity.TaskItemEntity, BaseViewHolder> implements IDataEmptyAdapter{
+public class TaskAdapter extends BaseAdapter<TaskEntity.TaskItemEntity> {
 
     /**
      * 添加计时权限
@@ -44,23 +44,44 @@ public class TaskAdapter extends BaseMultiItemQuickAdapter<TaskEntity.TaskItemEn
      */
     private static final int TYPE_TASK_GROUP = 1;
 
-    public TaskAdapter() {
-        super(null);
-        addItemType(TYPE_TASK, R.layout.adapter_item_task);
-        addItemType(TYPE_TASK_GROUP, R.layout.adapter_item_task_title);
-    }
-
     public void setAddTime(boolean addTime) {
         isAddTime = addTime;
     }
 
     @Override
-    protected void convert(BaseViewHolder baseViewHolder, TaskEntity.TaskItemEntity taskItemEntity) {
-        //说明是标题
-        if (taskItemEntity.type == TYPE_TASK_GROUP) {
-            initTaskTitle(baseViewHolder, taskItemEntity);
-        } else {
+    public int getViewType(int index) {
+        TaskEntity.TaskItemEntity itemEntity = getItem(index);
+        if (itemEntity != null) {
+            switch (itemEntity.type) {
+                case 0:
+                    return TYPE_TASK;
+                case 1:
+                    return TYPE_TASK_GROUP;
+            }
+        }
+        return super.getViewType(index);
+    }
+
+    @Override
+    public int bindView(int i) {
+        switch (i) {
+            //任务
+            case TYPE_TASK:
+                return R.layout.adapter_item_task;
+            //任务组
+            case TYPE_TASK_GROUP:
+                return R.layout.adapter_item_task_title;
+        }
+        return 0;
+    }
+
+    @Override
+    public void onBindHolder(BaseViewHolder baseViewHolder, @Nullable TaskEntity.TaskItemEntity taskItemEntity, int i) {
+        int itemViewType = baseViewHolder.getItemViewType();
+        if (itemViewType == TYPE_TASK) {//任务
             initTaskItem(baseViewHolder, taskItemEntity);
+        } else if (itemViewType == TYPE_TASK_GROUP) {//任务组
+            initTaskTitle(baseViewHolder, taskItemEntity);
         }
     }
 
@@ -71,16 +92,16 @@ public class TaskAdapter extends BaseMultiItemQuickAdapter<TaskEntity.TaskItemEn
      * @param taskItemEntity
      */
     private void initTaskItem(BaseViewHolder baseViewHolder, TaskEntity.TaskItemEntity taskItemEntity) {
-        CheckedTextView checkBox = baseViewHolder.getView(R.id.task_item_checkbox);
-        TextView taskNameView = baseViewHolder.getView(R.id.task_title_tv);
-        ImageView startTimmingView = baseViewHolder.getView(R.id.task_item_start_timming);
-        TextView projectNameView = baseViewHolder.getView(R.id.task_project_belong_tv);
-        TextView timeView = baseViewHolder.getView(R.id.task_time_tv);
-        TextView checkListView = baseViewHolder.getView(R.id.task_check_list_tv);
-        TextView documentNumView = baseViewHolder.getView(R.id.task_file_num_tv);
-        TextView commentNumView = baseViewHolder.getView(R.id.task_comment_num_tv);
+        CheckedTextView checkBox = baseViewHolder.obtainView(R.id.task_item_checkbox);
+        TextView taskNameView = baseViewHolder.obtainView(R.id.task_title_tv);
+        ImageView startTimmingView = baseViewHolder.obtainView(R.id.task_item_start_timming);
+        TextView projectNameView = baseViewHolder.obtainView(R.id.task_project_belong_tv);
+        TextView timeView = baseViewHolder.obtainView(R.id.task_time_tv);
+        TextView checkListView = baseViewHolder.obtainView(R.id.task_check_list_tv);
+        TextView documentNumView = baseViewHolder.obtainView(R.id.task_file_num_tv);
+        TextView commentNumView = baseViewHolder.obtainView(R.id.task_comment_num_tv);
 
-        RecyclerView recyclerView = baseViewHolder.getView(R.id.tasl_member_recyclerview);
+        RecyclerView recyclerView = baseViewHolder.obtainView(R.id.tasl_member_recyclerview);
 
         taskNameView.setText(taskItemEntity.name);
         startTimmingView.setVisibility(isAddTime ? View.VISIBLE : View.GONE);
@@ -134,9 +155,9 @@ public class TaskAdapter extends BaseMultiItemQuickAdapter<TaskEntity.TaskItemEn
             checkBox.setBackgroundResource(R.drawable.sl_checkbox);
             checkBox.setChecked(taskItemEntity.state);
         }
+        baseViewHolder.bindChildClick(R.id.task_item_checkbox);
+        baseViewHolder.bindChildClick(R.id.task_item_start_timming);
 
-        baseViewHolder.addOnClickListener(R.id.task_item_checkbox);
-        baseViewHolder.addOnClickListener(R.id.task_item_start_timming);
     }
 
     /**
@@ -243,53 +264,10 @@ public class TaskAdapter extends BaseMultiItemQuickAdapter<TaskEntity.TaskItemEn
     }
 
     /**
-     * 删除其中某一个
-     *
-     * @param t
-     * @return
-     */
-    public boolean removeItem(TaskEntity.TaskItemEntity t) {
-        if (t == null) {
-            return false;
-        }
-        int index = getData().indexOf(t);
-        if (index >= 0) {
-            //remove方法已经对header进行判断了
-            remove(index);
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * 更新某一条
-     *
-     * @param t
-     * @return
-     */
-    public boolean updateItem(TaskEntity.TaskItemEntity t) {
-        if (t == null) {
-            return false;
-        }
-        int index = getData().indexOf(t);
-        if (index >= 0 && index < getData().size()) {
-            getData().set(index, t);
-            notifyItemChanged(index + getHeaderLayoutCount());
-            return true;
-        }
-        return false;
-    }
-
-    /**
      * 清空所有数据
      */
     public void clearData() {
         getData().clear();
         notifyDataSetChanged();
-    }
-
-    @Override
-    public int getRealAdapterCount() {
-        return getData().size();
     }
 }

@@ -10,10 +10,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.chad.library.adapter.base.BaseQuickAdapter;
+import com.asange.recyclerviewadapter.BaseRecyclerAdapter;
+import com.asange.recyclerviewadapter.BaseViewHolder;
+import com.asange.recyclerviewadapter.OnItemChildClickListener;
+import com.asange.recyclerviewadapter.OnItemClickListener;
+import com.asange.recyclerviewadapter.OnItemLongClickListener;
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.TaskSearchActivity;
 import com.icourt.alpha.activity.TaskDetailActivity;
+import com.icourt.alpha.activity.TaskSearchActivity;
 import com.icourt.alpha.activity.TimerDetailActivity;
 import com.icourt.alpha.activity.TimerTimingActivity;
 import com.icourt.alpha.adapter.TaskAdapter;
@@ -51,7 +55,7 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuickAdapter.OnItemClickListener, BaseQuickAdapter.OnItemChildClickListener, BaseQuickAdapter.OnItemLongClickListener {
+public class ProjectEndTaskFragment extends BaseTaskFragment implements OnItemClickListener, OnItemChildClickListener, OnItemLongClickListener {
 
     public static final String KEY_PROJECT_ID = "key_project_id";
     private static final String PROJECT_EDIT_TASK_PREMISSION = "MAT:matter.task:edit";
@@ -106,12 +110,11 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
         View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
         registerClick(rl_comm_search);
         taskAdapter = new TaskAdapter();
-        taskAdapter.addHeaderView(headerView);
+        View view = taskAdapter.addHeader(headerView);
         taskAdapter.setOnItemClickListener(this);
         taskAdapter.setOnItemChildClickListener(this);
         taskAdapter.setOnItemLongClickListener(this);
         recyclerView.setAdapter(taskAdapter);
-
 
         refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
             @Override
@@ -150,7 +153,7 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
                     return;
                 }
                 if (taskAdapter != null) {
-                    taskAdapter.addData(event.entity);
+                    taskAdapter.addItem(event.entity);
                 }
                 break;
             case TaskActionEvent.TASK_UPDATE_ITEM:
@@ -198,17 +201,11 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
                         stopRefresh();
                         TaskEntity taskEntity = response.body().result;
                         if (taskEntity != null) {
-                            if (isRefresh) {//如果是下拉刷新情况，才判断要不要显示空页面
-                                taskAdapter.setNewData(taskEntity.items);
-                                recyclerView.enableEmptyView(taskAdapter.getData());
-                            } else {
-                                if (taskEntity.items != null) {
-                                    taskAdapter.addData(taskEntity.items);
-                                }
-                            }
+                            taskAdapter.bindData(isRefresh, taskEntity.items);
+                            recyclerView.enableEmptyView(taskAdapter.getData());
                             //第一次进入 隐藏搜索框
                             if (isFirstTimeIntoPage && taskAdapter.getData().size() > 0) {
-                                linearLayoutManager.scrollToPositionWithOffset(taskAdapter.getHeaderLayoutCount(), 0);
+                                linearLayoutManager.scrollToPositionWithOffset(taskAdapter.getHeaderCount(), 0);
                                 isFirstTimeIntoPage = false;
                             }
                             pageIndex += 1;
@@ -220,9 +217,6 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
                     public void onFailure(Call<ResEntity<TaskEntity>> call, Throwable t) {
                         super.onFailure(call, t);
                         stopRefresh();
-                        if (isRefresh) {//如果是下拉刷新情况，才判断要不要显示空页面
-                            recyclerView.enableEmptyView(taskAdapter.getData());
-                        }
                     }
                 });
     }
@@ -266,9 +260,8 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
         }
     }
 
-
     @Override
-    public void onItemClick(BaseQuickAdapter baseQuickAdapter, View view, int i) {
+    public void onItemClick(BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
         TaskEntity.TaskItemEntity taskItemEntity = taskAdapter.getItem(i);
         if (taskItemEntity != null) {
             TaskDetailActivity.launch(view.getContext(), taskItemEntity.id);
@@ -276,7 +269,7 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
     }
 
     @Override
-    public void onItemChildClick(BaseQuickAdapter baseQuickAdapter, View view, int i) {
+    public void onItemChildClick(BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
         final TaskEntity.TaskItemEntity itemEntity = taskAdapter.getItem(i);
         switch (view.getId()) {
             case R.id.task_item_start_timming:
@@ -321,11 +314,12 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements BaseQuic
     }
 
     @Override
-    public boolean onItemLongClick(BaseQuickAdapter baseQuickAdapter, View view, int i) {
+    public boolean onItemLongClick(BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
         TaskEntity.TaskItemEntity item = taskAdapter.getItem(i);
         //说明是任务
         if (item != null && item.type == 0) {
             showLongMenu(item);
+            return true;
         }
         return false;
     }

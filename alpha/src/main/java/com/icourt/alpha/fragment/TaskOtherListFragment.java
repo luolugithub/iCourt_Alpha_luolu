@@ -4,17 +4,19 @@ import android.os.Bundle;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.util.ArrayMap;
 import android.support.v7.widget.LinearLayoutManager;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.chad.library.adapter.base.BaseQuickAdapter;
+import com.asange.recyclerviewadapter.BaseRecyclerAdapter;
+import com.asange.recyclerviewadapter.BaseViewHolder;
+import com.asange.recyclerviewadapter.OnItemChildClickListener;
+import com.asange.recyclerviewadapter.OnItemClickListener;
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.TaskSearchActivity;
 import com.icourt.alpha.activity.TaskDetailActivity;
+import com.icourt.alpha.activity.TaskSearchActivity;
 import com.icourt.alpha.activity.TimerDetailActivity;
 import com.icourt.alpha.activity.TimerTimingActivity;
 import com.icourt.alpha.adapter.TaskAdapter;
@@ -61,7 +63,7 @@ import retrofit2.Response;
  *         version 2.0.0
  */
 
-public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuickAdapter.OnItemClickListener, BaseQuickAdapter.OnItemChildClickListener {
+public class TaskOtherListFragment extends BaseTaskFragment implements OnItemClickListener, OnItemChildClickListener {
 
     /**
      * 实例化当前Fragment所要传递的参数标识
@@ -174,7 +176,7 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
         View headerView = getActivity().getLayoutInflater().inflate(R.layout.header_search_comm, (ViewGroup) recyclerView.getParent(), false);
         View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
         registerClick(rl_comm_search);
-        taskAdapter.addHeaderView(headerView);
+        View view = taskAdapter.addHeader(headerView);
         taskAdapter.setOnItemClickListener(this);
         taskAdapter.setOnItemChildClickListener(this);
         recyclerView.setAdapter(taskAdapter);
@@ -268,17 +270,16 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
             stateType = 0;
             orderBy = "dueTime";
         }
-        pageIndex = -1;
-        pageSize = 10000;
+        //没有分页
+        pageIndex = 1;
+        pageSize = -1;
         callEnqueue(
                 getApi().taskListItemQuery(getAssignTos(), stateType, 0, orderBy, pageIndex, pageSize, 0),
                 new SimpleCallBack<TaskEntity>() {
                     @Override
                     public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                         if (response.body().result != null) {
-                            getTaskGroupData(response.body().result);
-                            if (isRefresh)
-                                recyclerView.enableEmptyView(response.body().result.items);
+                            getTaskGroupData(isRefresh, response.body().result);
                             stopRefresh();
                         }
                     }
@@ -287,7 +288,6 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
                     public void onFailure(Call<ResEntity<TaskEntity>> call, Throwable t) {
                         super.onFailure(call, t);
                         stopRefresh();
-                        recyclerView.enableEmptyView(null);
                     }
                 }
         );
@@ -298,7 +298,7 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
      *
      * @param taskEntity
      */
-    private void getTaskGroupData(final TaskEntity taskEntity) {
+    private void getTaskGroupData(final boolean isRefresh, final TaskEntity taskEntity) {
         if (taskEntity == null) {
             return;
         }
@@ -320,7 +320,7 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
                 .subscribe(new Consumer<List<TaskEntity.TaskItemEntity>>() {
                     @Override
                     public void accept(List<TaskEntity.TaskItemEntity> searchPolymerizationEntities) throws Exception {
-                        taskAdapter.setNewData(searchPolymerizationEntities);
+                        taskAdapter.bindData(isRefresh, searchPolymerizationEntities);
                         recyclerView.enableEmptyView(searchPolymerizationEntities);
                         goFirstTask();
                     }
@@ -404,7 +404,16 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
     }
 
     @Override
-    public void onItemChildClick(BaseQuickAdapter baseQuickAdapter, final View view, int i) {
+    public void onItemClick(BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
+        TaskEntity.TaskItemEntity taskItemEntity = taskAdapter.getItem(i);
+        //item为任务的时候才可以点击
+        if (taskItemEntity != null && taskItemEntity.type == 0) {
+            TaskDetailActivity.launch(view.getContext(), taskItemEntity.id);
+        }
+    }
+
+    @Override
+    public void onItemChildClick(BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
         final TaskEntity.TaskItemEntity itemEntity = taskAdapter.getItem(i);
         switch (view.getId()) {
             case R.id.task_item_start_timming:
@@ -446,21 +455,12 @@ public class TaskOtherListFragment extends BaseTaskFragment implements BaseQuick
         }
     }
 
-    @Override
-    public void onItemClick(BaseQuickAdapter baseQuickAdapter, View view, int i) {
-        TaskEntity.TaskItemEntity taskItemEntity = taskAdapter.getItem(i);
-        //item为任务的时候才可以点击
-        if (taskItemEntity != null && taskItemEntity.type == 0) {
-            TaskDetailActivity.launch(view.getContext(), taskItemEntity.id);
-        }
-    }
-
     /**
      * 如果是第一次进入该界面，滚动到第一条任务，隐藏搜索框
      */
     private void goFirstTask() {
         if (isFirstTimeIntoPage && taskAdapter.getData().size() > 0) {
-            linearLayoutManager.scrollToPositionWithOffset(taskAdapter.getHeaderLayoutCount(), 0);
+            linearLayoutManager.scrollToPositionWithOffset(taskAdapter.getHeaderCount(), 0);
             isFirstTimeIntoPage = false;
         }
     }

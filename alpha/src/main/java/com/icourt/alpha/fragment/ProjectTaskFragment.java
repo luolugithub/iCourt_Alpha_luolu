@@ -9,10 +9,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.chad.library.adapter.base.BaseQuickAdapter;
+import com.asange.recyclerviewadapter.BaseRecyclerAdapter;
+import com.asange.recyclerviewadapter.BaseViewHolder;
+import com.asange.recyclerviewadapter.OnItemChildClickListener;
+import com.asange.recyclerviewadapter.OnItemClickListener;
+import com.asange.recyclerviewadapter.OnItemLongClickListener;
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.TaskSearchActivity;
 import com.icourt.alpha.activity.TaskDetailActivity;
+import com.icourt.alpha.activity.TaskSearchActivity;
 import com.icourt.alpha.activity.TimerDetailActivity;
 import com.icourt.alpha.activity.TimerTimingActivity;
 import com.icourt.alpha.adapter.TaskAdapter;
@@ -56,7 +60,7 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAdapter.OnItemLongClickListener, BaseQuickAdapter.OnItemChildClickListener, BaseQuickAdapter.OnItemClickListener {
+public class ProjectTaskFragment extends BaseTaskFragment implements OnItemLongClickListener, OnItemChildClickListener, OnItemClickListener {
 
     private static final String KEY_PROJECT_ID = "key_project_id";
     private static final String PROJECT_EDIT_TASK_PREMISSION = "MAT:matter.task:edit";
@@ -108,7 +112,7 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
         registerClick(rl_comm_search);
 
         taskAdapter = new TaskAdapter();
-        taskAdapter.addHeaderView(headerView);
+        View view = taskAdapter.addHeader(headerView);
         taskAdapter.setOnItemLongClickListener(this);
         taskAdapter.setOnItemChildClickListener(this);
         taskAdapter.setOnItemClickListener(this);
@@ -226,7 +230,7 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
                             public void accept(List<TaskEntity.TaskItemEntity> searchPolymerizationEntities) throws Exception {
                                 stopRefresh();
                                 taskAdapter.setAddTime(isAddTime);
-                                taskAdapter.setNewData(searchPolymerizationEntities);
+                                taskAdapter.bindData(true, searchPolymerizationEntities);
                                 goFirstTask();
                                 recyclerView.enableEmptyView(searchPolymerizationEntities);
                                 TimerManager.getInstance().timerQuerySync();
@@ -349,7 +353,7 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
      */
     private void goFirstTask() {
         if (isFirstTimeIntoPage && taskAdapter.getData().size() > 0) {
-            linearLayoutManager.scrollToPositionWithOffset(taskAdapter.getHeaderLayoutCount(), 0);
+            linearLayoutManager.scrollToPositionWithOffset(taskAdapter.getHeaderCount(), 0);
             isFirstTimeIntoPage = false;
         }
     }
@@ -409,17 +413,16 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
     }
 
     @Override
-    public boolean onItemLongClick(BaseQuickAdapter baseQuickAdapter, View view, int i) {
+    public void onItemClick(BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
         TaskEntity.TaskItemEntity item = taskAdapter.getItem(i);
         //说明是任务
         if (item != null && item.type == 0) {
-            showLongMenu(item);
+            TaskDetailActivity.launch(view.getContext(), item.id);
         }
-        return false;
     }
 
     @Override
-    public void onItemChildClick(BaseQuickAdapter baseQuickAdapter, View view, int i) {
+    public void onItemChildClick(BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
         TaskEntity.TaskItemEntity itemEntity = taskAdapter.getItem(i);
         switch (view.getId()) {
             case R.id.task_item_start_timming:
@@ -464,12 +467,14 @@ public class ProjectTaskFragment extends BaseTaskFragment implements BaseQuickAd
     }
 
     @Override
-    public void onItemClick(BaseQuickAdapter baseQuickAdapter, View view, int i) {
+    public boolean onItemLongClick(BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
         TaskEntity.TaskItemEntity item = taskAdapter.getItem(i);
         //说明是任务
         if (item != null && item.type == 0) {
-            TaskDetailActivity.launch(view.getContext(), item.id);
+            showLongMenu(item);
+            return true;
         }
+        return false;
     }
 
     @Override

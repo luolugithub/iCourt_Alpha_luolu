@@ -16,7 +16,10 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.chad.library.adapter.base.BaseQuickAdapter;
+import com.asange.recyclerviewadapter.BaseRecyclerAdapter;
+import com.asange.recyclerviewadapter.BaseViewHolder;
+import com.asange.recyclerviewadapter.OnItemChildClickListener;
+import com.asange.recyclerviewadapter.OnItemClickListener;
 import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.TaskDetailActivity;
@@ -53,7 +56,7 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class TaskSearchFragment extends BaseTaskFragment implements BaseQuickAdapter.OnItemClickListener, BaseQuickAdapter.OnItemChildClickListener {
+public class TaskSearchFragment extends BaseTaskFragment implements OnItemClickListener, OnItemChildClickListener {
 
     public static final String KEY_SEARCH_TASK_TYPE = "search_task_type";
     public static final String KEY_SEARCH_TASK_STATUS_TYPE = "search_task_status_type";
@@ -203,7 +206,7 @@ public class TaskSearchFragment extends BaseTaskFragment implements BaseQuickAda
                     return;
                 }
                 if (taskAdapter != null) {
-                    taskAdapter.addData(event.entity);
+                    taskAdapter.addItem(event.entity);
                 }
                 break;
             case TaskActionEvent.TASK_UPDATE_ITEM:
@@ -260,7 +263,7 @@ public class TaskSearchFragment extends BaseTaskFragment implements BaseQuickAda
                         @Override
                         public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                             if (response.body().result != null && recyclerView != null) {
-                                taskAdapter.setNewData(response.body().result.items);
+                                taskAdapter.bindData(true, response.body().result.items);
                             }
                         }
                     });
@@ -274,7 +277,7 @@ public class TaskSearchFragment extends BaseTaskFragment implements BaseQuickAda
                         @Override
                         public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                             if (response.body().result != null && recyclerView != null) {
-                                taskAdapter.setNewData(response.body().result.items);
+                                taskAdapter.bindData(true, response.body().result.items);
                             }
                         }
                     });
@@ -308,13 +311,15 @@ public class TaskSearchFragment extends BaseTaskFragment implements BaseQuickAda
     }
 
     @Override
-    public void onItemClick(BaseQuickAdapter baseQuickAdapter, View view, int i) {
+    public void onItemClick(BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
         TaskEntity.TaskItemEntity taskItemEntity = taskAdapter.getItem(i);
-        TaskDetailActivity.launch(getContext(), taskItemEntity.id);
+        if (taskItemEntity != null) {
+            TaskDetailActivity.launch(getContext(), taskItemEntity.id);
+        }
     }
 
     @Override
-    public void onItemChildClick(BaseQuickAdapter baseQuickAdapter, View view, int i) {
+    public void onItemChildClick(BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
         final TaskEntity.TaskItemEntity itemEntity = taskAdapter.getItem(i);
         switch (view.getId()) {
             case R.id.task_item_start_timming:

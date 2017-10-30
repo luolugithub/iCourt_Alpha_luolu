@@ -11,7 +11,10 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.chad.library.adapter.base.BaseQuickAdapter;
+import com.asange.recyclerviewadapter.BaseRecyclerAdapter;
+import com.asange.recyclerviewadapter.BaseViewHolder;
+import com.asange.recyclerviewadapter.OnItemChildClickListener;
+import com.asange.recyclerviewadapter.OnItemClickListener;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.TaskAdapter;
 import com.icourt.alpha.base.BaseActivity;
@@ -40,7 +43,7 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class TaskMonthFinishActivity extends BaseActivity implements BaseQuickAdapter.OnItemClickListener, BaseQuickAdapter.OnItemChildClickListener {
+public class TaskMonthFinishActivity extends BaseActivity implements OnItemClickListener, OnItemChildClickListener {
 
 
     @BindView(R.id.titleBack)
@@ -107,8 +110,6 @@ public class TaskMonthFinishActivity extends BaseActivity implements BaseQuickAd
     protected void getData(final boolean isRefresh) {
         if (isRefresh) {
             pageIndex = 1;
-        } else {
-            pageIndex++;
         }
         callEnqueue(
                 getApi().taskListItemByTimeQuery(
@@ -126,22 +127,16 @@ public class TaskMonthFinishActivity extends BaseActivity implements BaseQuickAd
                     @Override
                     public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                         stopRefresh();
-                        if (isRefresh) {
-                            taskAdapter.setNewData(response.body().result.items);
-                            recyclerView.enableEmptyView(response.body().result.items);
-                        } else {
-                            taskAdapter.addData(response.body().result.items);
-                        }
+                        taskAdapter.bindData(isRefresh, response.body().result.items);
+                        recyclerView.enableEmptyView(taskAdapter.getData());
                         enableLoadMore(response.body().result.items);
+                        pageIndex += 1;
                     }
 
                     @Override
                     public void onFailure(Call<ResEntity<TaskEntity>> call, Throwable t) {
                         super.onFailure(call, t);
                         stopRefresh();
-                        if (isRefresh) {
-                            recyclerView.enableEmptyView(null);
-                        }
                     }
                 });
     }
@@ -161,15 +156,15 @@ public class TaskMonthFinishActivity extends BaseActivity implements BaseQuickAd
     }
 
     @Override
-    public void onItemChildClick(BaseQuickAdapter baseQuickAdapter, View view, int i) {
-
-    }
-
-    @Override
-    public void onItemClick(BaseQuickAdapter baseQuickAdapter, View view, int i) {
+    public void onItemClick(BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
         TaskEntity.TaskItemEntity taskItemEntity = taskAdapter.getItem(i);
         if (taskItemEntity != null && taskItemEntity.type == 0) {//item为任务的时候才可以点击
             TaskDetailActivity.launch(view.getContext(), taskItemEntity.id);
         }
+    }
+
+    @Override
+    public void onItemChildClick(BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
+
     }
 }

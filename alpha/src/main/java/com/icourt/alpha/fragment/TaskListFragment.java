@@ -23,7 +23,11 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.chad.library.adapter.base.BaseQuickAdapter;
+import com.asange.recyclerviewadapter.BaseRecyclerAdapter;
+import com.asange.recyclerviewadapter.BaseViewHolder;
+import com.asange.recyclerviewadapter.OnItemChildClickListener;
+import com.asange.recyclerviewadapter.OnItemClickListener;
+import com.asange.recyclerviewadapter.OnItemLongClickListener;
 import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.MainActivity;
@@ -81,9 +85,7 @@ import retrofit2.Response;
  */
 
 public class TaskListFragment extends BaseTaskFragment implements
-        BaseQuickAdapter.OnItemClickListener,
-        BaseQuickAdapter.OnItemLongClickListener,
-        BaseQuickAdapter.OnItemChildClickListener {
+        OnItemClickListener, OnItemChildClickListener, OnItemLongClickListener {
 
     /**
      * type的传参标识，type的参数的含义：0，全部；1，我关注的。
@@ -284,7 +286,6 @@ public class TaskListFragment extends BaseTaskFragment implements
         isAddTime = true;
         isDeleteTask = true;
 
-
         newTaskEntities = new ArrayList<>();
 
         tabTaskFragment = getParentTabTaskFragment();
@@ -301,10 +302,12 @@ public class TaskListFragment extends BaseTaskFragment implements
         View headerView = LayoutInflater.from(getActivity()).inflate(R.layout.header_search_comm, recyclerView.getRecyclerView(), false);
         View rlCommSearch = headerView.findViewById(R.id.rl_comm_search);
         registerClick(rlCommSearch);
-        taskAdapter.addHeaderView(headerView);
+//        taskAdapter.addHeaderView(headerView);
+        View view = taskAdapter.addHeader(headerView);
         recyclerView.setAdapter(taskAdapter);
         taskAdapter.setOnItemClickListener(this);
         taskAdapter.setOnItemChildClickListener(this);
+        taskAdapter.setOnItemLongClickListener(this);
 
         refreshLayout.setEnableLoadmore(false);
         refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
@@ -388,7 +391,7 @@ public class TaskListFragment extends BaseTaskFragment implements
                                     taskAdapter.removeItem(event.entity);
                                     recyclerView.enableEmptyView(taskAdapter.getData());
                                 } else {//添加到已删除
-                                    taskAdapter.addData(event.entity);
+                                    taskAdapter.addItem(event.entity);
                                 }
                             }
                             break;
@@ -410,7 +413,7 @@ public class TaskListFragment extends BaseTaskFragment implements
                     //如果是已完成／已删除，可以直接添加item
                     if (stateType == TaskConfig.TASK_STATETYPE_FINISHED || stateType == TaskConfig.TASK_STATETYPE_DELETED) {
                         if (taskAdapter != null) {
-                            taskAdapter.addData(event.entity);
+                            taskAdapter.addItem(event.entity);
                         }
                     } else {//未完成的，暂时走刷新逻辑
                         getData(true);
@@ -501,7 +504,7 @@ public class TaskListFragment extends BaseTaskFragment implements
     private void scrollToByPosition(final String taskId) {
         isUpdate = true;
         final int itemPosition = getItemPosition(taskId);
-        final int itemPositionWithHeader = itemPosition + taskAdapter.getHeaderLayoutCount();
+        final int itemPositionWithHeader = itemPosition + taskAdapter.getHeaderCount();
 
         handler.removeCallbacksAndMessages(null);
         //如果新任务在屏幕完全可见，则直接执行动画。
@@ -672,7 +675,7 @@ public class TaskListFragment extends BaseTaskFragment implements
                     .subscribe(new Consumer<List<TaskEntity.TaskItemEntity>>() {
                         @Override
                         public void accept(List<TaskEntity.TaskItemEntity> searchPolymerizationEntities) throws Exception {
-                            taskAdapter.setNewData(searchPolymerizationEntities);
+                            taskAdapter.bindData(true, searchPolymerizationEntities);
                             goFirstTask();
                             recyclerView.enableEmptyView(taskAdapter.getData());
                             if (tabTaskFragment != null) {
@@ -696,11 +699,9 @@ public class TaskListFragment extends BaseTaskFragment implements
                         }
                     });
         } else if (stateType == TaskConfig.TASK_STATETYPE_FINISHED || stateType == TaskConfig.TASK_STATETYPE_DELETED) { //已完成/已删除的任务列表
+            taskAdapter.bindData(isRefresh, taskEntity.items);
             if (isRefresh) {
-                taskAdapter.setNewData(taskEntity.items);
                 goFirstTask();
-            } else {
-                taskAdapter.addData(taskEntity.items);
             }
             refreshLayout.setEnableLoadmore(enableLoadMore(taskEntity.items));
             recyclerView.enableEmptyView(taskAdapter.getData());
@@ -809,7 +810,7 @@ public class TaskListFragment extends BaseTaskFragment implements
      */
     private void goFirstTask() {
         if (isFirstTimeIntoPage && taskAdapter.getData().size() > 0) {
-            linearLayoutManager.scrollToPositionWithOffset(taskAdapter.getHeaderLayoutCount(), 0);
+            linearLayoutManager.scrollToPositionWithOffset(taskAdapter.getHeaderCount(), 0);
             isFirstTimeIntoPage = false;
         }
     }
@@ -1096,7 +1097,7 @@ public class TaskListFragment extends BaseTaskFragment implements
     }
 
     @Override
-    public void onItemClick(BaseQuickAdapter baseQuickAdapter, View view, int i) {
+    public void onItemClick(BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
         TaskEntity.TaskItemEntity taskItemEntity = taskAdapter.getItem(i);
         //任务才可以跳转，任务组不可以
         if (taskItemEntity != null && taskItemEntity.type == 0) {
@@ -1105,21 +1106,7 @@ public class TaskListFragment extends BaseTaskFragment implements
     }
 
     @Override
-    public boolean onItemLongClick(BaseQuickAdapter baseQuickAdapter, View view, int i) {
-        //已删除的任务列表不能进行长按操作
-        if (stateType == TaskConfig.TASK_STATETYPE_DELETED) {
-            return false;
-        }
-        TaskEntity.TaskItemEntity item = taskAdapter.getItem(i);
-        //说明是任务
-        if (item != null && item.type == 0) {
-            showLongMenu(item);
-        }
-        return false;
-    }
-
-    @Override
-    public void onItemChildClick(BaseQuickAdapter baseQuickAdapter, View view, int i) {
+    public void onItemChildClick(BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
         final TaskEntity.TaskItemEntity itemEntity = taskAdapter.getItem(i);
         switch (view.getId()) {
             //计时的按钮
@@ -1172,6 +1159,20 @@ public class TaskListFragment extends BaseTaskFragment implements
             default:
                 break;
         }
+    }
+
+    @Override
+    public boolean onItemLongClick(BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
+        //已删除的任务列表不能进行长按操作
+        if (stateType == TaskConfig.TASK_STATETYPE_DELETED) {
+            return false;
+        }
+        TaskEntity.TaskItemEntity item = taskAdapter.getItem(i);
+        //说明是任务
+        if (item != null && item.type == 0) {
+            showLongMenu(item);
+        }
+        return true;
     }
 
     @Override

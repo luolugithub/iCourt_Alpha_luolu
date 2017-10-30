@@ -3,7 +3,6 @@ package com.icourt.alpha.entity.bean;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
-import com.chad.library.adapter.base.entity.MultiItemEntity;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.annotations.SerializedName;
@@ -31,7 +30,7 @@ public class TaskEntity implements Serializable {
     public List<TaskItemEntity> items;
 
 
-    public static class TaskItemEntity implements Serializable, MultiItemEntity, Cloneable {
+    public static class TaskItemEntity implements Serializable, Cloneable {
         public String groupName;//任务所在分组名称
         public String groupId;//分组id
         public int groupTaskCount;//分组有多少个任务
@@ -64,16 +63,6 @@ public class TaskEntity implements Serializable {
 
         public List<AttendeeUserEntity> attendeeUsers;//任务相关人
         public List<String> right;//权限
-
-        /**
-         * 返回数据标记是任务还是任务组，给Adapter进行使用
-         *
-         * @return
-         */
-        @Override
-        public int getItemType() {
-            return type;
-        }
 
         /**
          * 构建更新任务标题的json
