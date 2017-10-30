@@ -27,8 +27,8 @@ import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.MainActivity;
-import com.icourt.alpha.activity.TaskSearchActivity;
 import com.icourt.alpha.activity.TaskDetailActivity;
+import com.icourt.alpha.activity.TaskSearchActivity;
 import com.icourt.alpha.activity.TimerDetailActivity;
 import com.icourt.alpha.activity.TimerTimingActivity;
 import com.icourt.alpha.adapter.TaskAdapter;
@@ -39,6 +39,7 @@ import com.icourt.alpha.entity.event.TaskActionEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnTasksChangeListener;
+import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.widget.manager.TimerManager;
@@ -186,6 +187,16 @@ public class TaskListFragment extends BaseTaskFragment implements
     View childItemView;
 
     /**
+     * 是否可以加载更多的标识（未完成不能加载更多，已完成、已删除可以加载更多）
+     */
+    boolean isCanLoadMore = false;
+
+    /**
+     * 加载到多少页
+     */
+    int pageIndex = 1;
+
+    /**
      * 新任务提醒动画加载完成的监听
      */
     private Animator.AnimatorListener animatorListener = new Animator.AnimatorListener() {
@@ -272,12 +283,15 @@ public class TaskListFragment extends BaseTaskFragment implements
         isEditTask = true;
         isAddTime = true;
         isDeleteTask = true;
+
+
         newTaskEntities = new ArrayList<>();
 
         tabTaskFragment = getParentTabTaskFragment();
         if (getArguments() != null) {
             type = convert2TaskType(getArguments().getInt(TYPE));
             stateType = TaskConfig.convert2TaskStateType(getArguments().getInt(STATE_TYPE));
+            isCanLoadMore = (stateType != TaskConfig.TASK_STATETYPE_UNFINISH);
         }
 
         recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, getEmptyContentId(stateType));
@@ -301,7 +315,7 @@ public class TaskListFragment extends BaseTaskFragment implements
 
             @Override
             public void onLoadmore(RefreshLayout refreshlayout) {
-
+                getData(false);
             }
         });
     }
@@ -588,7 +602,7 @@ public class TaskListFragment extends BaseTaskFragment implements
     }
 
     @Override
-    protected void getData(boolean isRefresh) {
+    protected void getData(final boolean isRefresh) {
         int attentionType = 0;
         String orderBy;
         if (type == TYPE_ALL) {
@@ -601,26 +615,33 @@ public class TaskListFragment extends BaseTaskFragment implements
         } else {
             orderBy = "updateTime";
         }
+
+        if (isRefresh) {
+            pageIndex = 1;
+        }
+
+        int pageSize;
+        if (isCanLoadMore) {//如果可以加载更多，说明需要分页
+            pageSize = ActionConstants.DEFAULT_PAGE_SIZE;
+        } else { //pageSize = -1表示加载全部
+            pageSize = -1;
+            pageIndex = 1;
+        }
+
         callEnqueue(
-                getApi().taskListQuery(0, getLoginUserId(), stateType, attentionType, orderBy, 1, -1, 0),
+                getApi().taskListQuery(0, getLoginUserId(), stateType, attentionType, orderBy, pageIndex, pageSize, 0),
                 new SimpleCallBack<TaskEntity>() {
                     @Override
                     public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                         stopRefresh();
-                        getTaskGroupData(response.body().result);
-                        if (response.body().result != null) {
-                            if (type == TYPE_ALL && onTasksChangeListener != null) {
-                                //暂时注释掉，因为现在每次切换到任务列表，都重新刷新了TaskListFragment
-                                //onTasksChangeListener.onTasksChanged(response.body().result.items);
-                            }
-                        }
+                        getTaskGroupData(isRefresh, response.body().result);
+                        pageIndex += 1;
                     }
 
                     @Override
                     public void onFailure(Call<ResEntity<TaskEntity>> call, Throwable t) {
                         super.onFailure(call, t);
                         stopRefresh();
-                        recyclerView.enableEmptyView(null);
                     }
                 });
     }
@@ -628,14 +649,14 @@ public class TaskListFragment extends BaseTaskFragment implements
     /**
      * 对接口返回数据进行分组(今天、即将到期、未来、未指定日期)
      *
+     * @param isRefresh  是否是刷新
      * @param taskEntity
      */
-    private void getTaskGroupData(final TaskEntity taskEntity) {
+    private void getTaskGroupData(boolean isRefresh, final TaskEntity taskEntity) {
         if (taskEntity == null || taskEntity.items == null) {
             return;
         }
-        //未完成的任务需要分组
-        if (stateType == TaskConfig.TASK_STATETYPE_UNFINISH) {
+        if (stateType == TaskConfig.TASK_STATETYPE_UNFINISH) { //未完成的任务需要分组
             Observable.create(new ObservableOnSubscribe<List<TaskEntity.TaskItemEntity>>() {
                 @Override
                 public void subscribe(ObservableEmitter<List<TaskEntity.TaskItemEntity>> e) throws Exception {
@@ -674,16 +695,29 @@ public class TaskListFragment extends BaseTaskFragment implements
                             }
                         }
                     });
-        } else if (stateType == TaskConfig.TASK_STATETYPE_FINISHED || stateType == TaskConfig.TASK_STATETYPE_DELETED) {
-            //已完成/已删除的任务列表
-            taskAdapter.setNewData(taskEntity.items);
-            goFirstTask();
+        } else if (stateType == TaskConfig.TASK_STATETYPE_FINISHED || stateType == TaskConfig.TASK_STATETYPE_DELETED) { //已完成/已删除的任务列表
+            if (isRefresh) {
+                taskAdapter.setNewData(taskEntity.items);
+                goFirstTask();
+            } else {
+                taskAdapter.addData(taskEntity.items);
+            }
+            refreshLayout.setEnableLoadmore(enableLoadMore(taskEntity.items));
             recyclerView.enableEmptyView(taskAdapter.getData());
             getNewTasksCount();
             if (linearLayoutManager.getStackFromEnd()) {
                 linearLayoutManager.setStackFromEnd(false);
             }
         }
+    }
+
+    private boolean enableLoadMore(List result) {
+        if (isCanLoadMore && refreshLayout != null) {
+            if (result != null && result.size() >= ActionConstants.DEFAULT_PAGE_SIZE) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
