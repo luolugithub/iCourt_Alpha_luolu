@@ -88,7 +88,7 @@ android {
             buildConfigField "String", "API_SENSORS_DATA_SERVER", rootProject.ext.sensorsDataAPIServer.server_url_release
             buildConfigField "String", "API_SENSORS_DATA_CONFIGURE", rootProject.ext.sensorsDataAPIConfigure.configure_url_release
 
-            def debugType = 3; //0:debug  1:test  2:preview 3:release
+            def debugType = 1; //0:debug  1:test  2:preview 3:release
             if (debugType == 1) {
                 //测试用
                 buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_test

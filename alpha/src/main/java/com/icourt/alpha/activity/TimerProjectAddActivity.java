@@ -2,50 +2,53 @@ package com.icourt.alpha.activity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
+import com.icourt.alpha.R;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
-import com.icourt.alpha.utils.SpUtils;
+
+import butterknife.ButterKnife;
 
 /**
- * Description  计时详情
+ * Description  从项目界面添加计时
  * Company Beijing icourt
  * author  lu.zhao  E-mail:zhaolu@icourt.cc
  * date createTime：17/5/10
  * version 2.0.0
  */
-//TODO 重载和继承 抽取
-public class TimerAddActivity extends BaseTimerAddActivity
+public class TimerProjectAddActivity extends BaseTimerAddActivity
         implements
         OnFragmentCallBackListener {
 
-    /**
-     * 以下常量是用来缓存添加计时的相关数据
-     */
-    private static final String CACHE_NAME = "cache_name";
+    private static final String KEY_PROJECT_ID = "key_project_id";//用来传递项目id的key。
+    private static final String KEY_PROJECT_NAME = "key_project_name";//用来传递项目名称的key。
 
-    public static void launch(@NonNull Context context) {
+    public static void launch(@NonNull Context context, @NonNull String projectId, @NonNull String projectName) {
         if (context == null) {
             return;
         }
-        Intent intent = new Intent(context, TimerAddActivity.class);
+        Intent intent = new Intent(context, TimerProjectAddActivity.class);
+        intent.putExtra(KEY_PROJECT_ID, projectId);
+        intent.putExtra(KEY_PROJECT_NAME, projectName);
         context.startActivity(intent);
     }
 
     @Override
     protected String getTimerTitle() {
-        return SpUtils.getTemporaryCache().getStringData(CACHE_NAME, "");
+        return "";
     }
 
     @Override
     protected String getProjectId() {
-        return null;
+        return getIntent().getStringExtra(KEY_PROJECT_ID);
     }
 
     @Override
     protected String getProjectName() {
-        return null;
+        return getIntent().getStringExtra(KEY_PROJECT_NAME);
     }
 
     @Override
@@ -53,19 +56,13 @@ public class TimerAddActivity extends BaseTimerAddActivity
         return null;
     }
 
-    /**
-     * 缓存数据
-     */
     @Override
     protected void cacheData() {
-        SpUtils.getTemporaryCache().putData(CACHE_NAME, timeNameTv.getText().toString());
+
     }
 
-    /**
-     * 至于普通模式会：清除历史记录
-     */
     @Override
     protected void clearCache() {
-        SpUtils.getTemporaryCache().remove(CACHE_NAME);
+
     }
 }

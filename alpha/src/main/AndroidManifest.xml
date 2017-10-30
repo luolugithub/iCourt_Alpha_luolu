@@ -228,6 +228,12 @@
             android:name=".activity.TimerAddActivity"
             android:screenOrientation="portrait" />
         <activity
+            android:name=".activity.TimerTaskAddActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.TimerProjectAddActivity"
+            android:screenOrientation="portrait" />
+        <activity
             android:name=".activity.TimerTimingActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateHidden" />

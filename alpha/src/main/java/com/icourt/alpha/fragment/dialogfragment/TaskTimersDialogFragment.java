@@ -19,6 +19,7 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.TimerAddActivity;
 import com.icourt.alpha.activity.TimerDetailActivity;
+import com.icourt.alpha.activity.TimerTaskAddActivity;
 import com.icourt.alpha.activity.TimerTimingActivity;
 import com.icourt.alpha.adapter.TimeAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
@@ -157,7 +158,7 @@ public class TaskTimersDialogFragment extends BaseDialogFragment implements Base
                 break;
             case R.id.titleAction:
                 if (taskItemEntity != null)
-                    TimerAddActivity.launch(getContext(), taskItemEntity);
+                    TimerTaskAddActivity.launch(getContext(), taskItemEntity);
                 break;
             default:
 
