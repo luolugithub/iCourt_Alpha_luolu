@@ -77,8 +77,8 @@ public class AboutActivity extends BaseAppUpdateActivity {
     @Override
     protected void initView() {
         super.initView();
-        //TODO 字符串引用res
-        setTitle("关于");
+        setTitle(R.string.mine_about);
+        registerClick(aboutCheckIsUpdateView);
         aboutVersonTextview.setText(BuildConfig.VERSION_NAME);
         aboutVersonReleaseTime.setText("build in " + DateUtils.getyyyyMMddHHmm(Long.valueOf(BuildConfig.APK_RELEASE_TIME)));
     }
