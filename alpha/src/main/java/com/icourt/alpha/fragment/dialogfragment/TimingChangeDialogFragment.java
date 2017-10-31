@@ -71,18 +71,18 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
 
     }
 
-    @BindView(R.id.tv_title)
-    TextView tvTitle;
-    @BindView(R.id.wheelview_date)
-    WheelView wheelviewDate;
-    @BindView(R.id.wheelview_hour)
-    WheelView wheelviewHour;
-    @BindView(R.id.wheelview_minute)
-    WheelView wheelviewMinute;
-    @BindView(R.id.tv_cancel)
-    TextView tvCancel;
-    @BindView(R.id.tv_finish)
-    TextView tvFinish;
+    @BindView(R.id.title_tv)
+    TextView titleTv;
+    @BindView(R.id.date_wheelview)
+    WheelView dateWheelview;
+    @BindView(R.id.hour_wheelview)
+    WheelView hourWheelview;
+    @BindView(R.id.minute_wheelview)
+    WheelView minuteWheelview;
+    @BindView(R.id.cancel_tv)
+    TextView cancelTv;
+    @BindView(R.id.complete_tv)
+    TextView completeTv;
 
     private Unbinder bind;
 
@@ -157,19 +157,19 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
             changeType = arguments.getInt(TYPE_CHANGE_TYPE);
             if (changeType == TYPE_CHANGE_START_TIME) {//说明是修改开始时间
                 currentTimeMillis = startTimeMillis;
-                tvTitle.setText(getString(R.string.timing_please_select_start_time));
+                titleTv.setText(getString(R.string.timing_please_select_start_time));
             } else {//说明是修改结束时间
                 currentTimeMillis = endTimeMillis;
-                tvTitle.setText(getString(R.string.timing_please_select_end_time));
+                titleTv.setText(getString(R.string.timing_please_select_end_time));
             }
         }
 
-        wheelviewDate.setTextSize(TEXT_SIZE_WHEELVIEW);
-        wheelviewDate.setCyclic(false);
-        wheelviewHour.setTextSize(TEXT_SIZE_WHEELVIEW);
-        wheelviewHour.setCyclic(false);
-        wheelviewMinute.setTextSize(TEXT_SIZE_WHEELVIEW);
-        wheelviewMinute.setCyclic(false);
+        dateWheelview.setTextSize(TEXT_SIZE_WHEELVIEW);
+        dateWheelview.setCyclic(false);
+        hourWheelview.setTextSize(TEXT_SIZE_WHEELVIEW);
+        hourWheelview.setCyclic(false);
+        minuteWheelview.setTextSize(TEXT_SIZE_WHEELVIEW);
+        minuteWheelview.setCyclic(false);
 
         dateWheelAdapter = new DateWheelAdapter();
         ArrayList<TimingDateEntity> tempMenus = new ArrayList<>();
@@ -181,7 +181,7 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
             cal.add(Calendar.DAY_OF_YEAR, 1);
         }
         dateWheelAdapter.setTimeList(tempMenus);
-        wheelviewDate.setAdapter(dateWheelAdapter);
+        dateWheelview.setAdapter(dateWheelAdapter);
 
         //显示小时的list
         List<String> hourList = new ArrayList<>();
@@ -189,7 +189,7 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
             hourList.add(String.valueOf(i));
         }
         hourWheelAdapter = new StringWheelAdapter(hourList);
-        wheelviewHour.setAdapter(hourWheelAdapter);
+        hourWheelview.setAdapter(hourWheelAdapter);
 
         //显示分钟的list
         List<String> minuteList = new ArrayList<>();
@@ -197,7 +197,7 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
             minuteList.add(String.valueOf(i));
         }
         minuteWheelAdapter = new StringWheelAdapter(minuteList);
-        wheelviewMinute.setAdapter(minuteWheelAdapter);
+        minuteWheelview.setAdapter(minuteWheelAdapter);
 
         Observable.create(new ObservableOnSubscribe<List<TimingDateEntity>>() {
             @Override
@@ -221,27 +221,27 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
                     @Override
                     public void accept(@io.reactivex.annotations.NonNull final List<TimingDateEntity> timingDateEntities) throws Exception {
                         dateWheelAdapter.setTimeList(timingDateEntities);
-                        wheelviewDate.invalidate();
+                        dateWheelview.invalidate();
 
                         setTime(currentTimeMillis);
                     }
                 });
 
-        wheelviewDate.setOnItemSelectedListener(new OnItemSelectedListener() {
+        dateWheelview.setOnItemSelectedListener(new OnItemSelectedListener() {
             @Override
             public void onItemSelected(int i) {
                 verifyData(i, lastHourPosition, lastMinutePosition);
             }
         });
 
-        wheelviewHour.setOnItemSelectedListener(new OnItemSelectedListener() {
+        hourWheelview.setOnItemSelectedListener(new OnItemSelectedListener() {
             @Override
             public void onItemSelected(int i) {
                 verifyData(lastDatePosition, i, lastMinutePosition);
             }
         });
 
-        wheelviewMinute.setOnItemSelectedListener(new OnItemSelectedListener() {
+        minuteWheelview.setOnItemSelectedListener(new OnItemSelectedListener() {
             @Override
             public void onItemSelected(int i) {
                 verifyData(lastDatePosition, lastHourPosition, i);
@@ -293,15 +293,15 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
         }
     }
 
-    @OnClick({R.id.tv_cancel,
-            R.id.tv_finish})
+    @OnClick({R.id.cancel_tv,
+            R.id.complete_tv})
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.tv_cancel:
+            case R.id.cancel_tv:
                 dismiss();
                 break;
-            case R.id.tv_finish:
+            case R.id.complete_tv:
                 //如果传递进来的时间和当前选中的时间一致，则说明没有修改时间，点击完成就消失
                 boolean isNeedChange;
                 if (changeType == TYPE_CHANGE_START_TIME && startTimeMillis == currentTimeMillis) {
@@ -346,8 +346,8 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
             TimingDateEntity dateEntity = dayList.get(i);
             calendar.setTimeInMillis(dateEntity.timeMillios);
             if (calendar.get(Calendar.YEAR) == year && calendar.get(Calendar.MONTH) == month && calendar.get(Calendar.DAY_OF_MONTH) == day) {
-                if (wheelviewDate != null) {
-                    wheelviewDate.setCurrentItem(i);
+                if (dateWheelview != null) {
+                    dateWheelview.setCurrentItem(i);
                 }
                 lastDatePosition = i;
                 break;
@@ -357,8 +357,8 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
         List<String> hourList = hourWheelAdapter.getTimeList();
         for (int i = 0; i < hourList.size(); i++) {
             if (Integer.valueOf(hourList.get(i)) == hour) {
-                if (wheelviewHour != null) {
-                    wheelviewHour.setCurrentItem(i);
+                if (hourWheelview != null) {
+                    hourWheelview.setCurrentItem(i);
                 }
                 lastHourPosition = i;
                 break;
@@ -368,8 +368,8 @@ public class TimingChangeDialogFragment extends BaseDialogFragment {
         List<String> minuteList = minuteWheelAdapter.getTimeList();
         for (int i = 0; i < minuteList.size(); i++) {
             if (Integer.valueOf(minuteList.get(i)) == minute) {
-                if (wheelviewMinute != null) {
-                    wheelviewMinute.setCurrentItem(i);
+                if (minuteWheelview != null) {
+                    minuteWheelview.setCurrentItem(i);
                 }
                 lastMinutePosition = i;
                 break;

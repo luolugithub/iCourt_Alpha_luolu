@@ -59,11 +59,11 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
     TextView timingCountTotalTv;
     @BindView(R.id.timing_today_total)
     TextView timingTodayTotal;
-    @BindView(R.id.fl_container)
-    FrameLayout flContainer;
+    @BindView(R.id.container_fl)
+    FrameLayout containerFl;
 
-    @BindView(R.id.ll_today_time)
-    LinearLayout llTodayTime;
+    @BindView(R.id.today_time_ll)
+    LinearLayout todayTimeLl;
 
     Calendar selectedDate = Calendar.getInstance();
     //当前选中的是日、周、月、年的哪一种状态。
@@ -120,14 +120,14 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
         showTargetFragment(selectedType, startTimeMillis, false);
     }
 
-    @OnClick({R.id.ll_all_time, R.id.ll_today_time, R.id.titleAction})
+    @OnClick({R.id.ll_all_time, R.id.today_time_ll, R.id.titleAction})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.ll_all_time:
                 showTimingSelectDialogFragment();
                 break;
-            case R.id.ll_today_time:
+            case R.id.today_time_ll:
                 showCurrentWeekFragment();
                 break;
             case R.id.titleAction:
@@ -264,7 +264,7 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
         if (isAnim) {
             transaction.setCustomAnimations(R.anim.fragment_slide_top_in, R.anim.fragment_slide_top_out);
         }
-        transaction.replace(R.id.fl_container, selectedFragment, String.valueOf(selectedFragment.hashCode())).commitAllowingStateLoss();
+        transaction.replace(R.id.container_fl, selectedFragment, String.valueOf(selectedFragment.hashCode())).commitAllowingStateLoss();
         transaction.addToBackStack(null);
     }
 
@@ -283,12 +283,12 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
     @Override
     public void onHeaderHide(boolean isHide) {
         if (isHide) {
-            if (llTodayTime.getVisibility() == View.VISIBLE) {
-                llTodayTime.setVisibility(View.GONE);
+            if (todayTimeLl.getVisibility() == View.VISIBLE) {
+                todayTimeLl.setVisibility(View.GONE);
             }
         } else {
-            if (llTodayTime.getVisibility() == View.GONE) {
-                llTodayTime.setVisibility(View.VISIBLE);
+            if (todayTimeLl.getVisibility() == View.GONE) {
+                todayTimeLl.setVisibility(View.VISIBLE);
             }
         }
     }

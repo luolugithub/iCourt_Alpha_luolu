@@ -37,10 +37,10 @@ public class TimingSelectMonthFragment extends BaseFragment {
 
     Unbinder unbinder;
 
-    @BindView(R.id.wheelview_year)
-    WheelView wheelviewYear;
-    @BindView(R.id.wheelview_month)
-    WheelView wheelviewMonth;
+    @BindView(R.id.year_wheelview)
+    WheelView yearWheelview;
+    @BindView(R.id.month_wheelview)
+    WheelView monthWheelview;
 
     StringWheelAdapter yearAdapter;
     StringWheelAdapter monthAdapter;
@@ -73,10 +73,10 @@ public class TimingSelectMonthFragment extends BaseFragment {
             calendar.setTimeInMillis(timeMillis);
         }
 
-        wheelviewYear.setTextSize(TEXT_SIZE_WHEELVIEW);
-        wheelviewYear.setCyclic(false);
-        wheelviewMonth.setTextSize(TEXT_SIZE_WHEELVIEW);
-        wheelviewMonth.setCyclic(false);
+        yearWheelview.setTextSize(TEXT_SIZE_WHEELVIEW);
+        yearWheelview.setCyclic(false);
+        monthWheelview.setTextSize(TEXT_SIZE_WHEELVIEW);
+        monthWheelview.setCyclic(false);
 
         List<String> yearList = new ArrayList<>();
         List<String> monthList = new ArrayList<>();
@@ -90,17 +90,17 @@ public class TimingSelectMonthFragment extends BaseFragment {
             monthList.add(String.valueOf(i));
         }
 
-        wheelviewYear.setAdapter(yearAdapter = new StringWheelAdapter(yearList));
-        wheelviewMonth.setAdapter(monthAdapter = new StringWheelAdapter(monthList));
+        yearWheelview.setAdapter(yearAdapter = new StringWheelAdapter(yearList));
+        monthWheelview.setAdapter(monthAdapter = new StringWheelAdapter(monthList));
 
-        wheelviewYear.setOnItemSelectedListener(new OnItemSelectedListener() {
+        yearWheelview.setOnItemSelectedListener(new OnItemSelectedListener() {
             @Override
             public void onItemSelected(int i) {
                 verifyDate(i, selectedMonthPosition);
             }
         });
 
-        wheelviewMonth.setOnItemSelectedListener(new OnItemSelectedListener() {
+        monthWheelview.setOnItemSelectedListener(new OnItemSelectedListener() {
             @Override
             public void onItemSelected(int i) {
                 verifyDate(selectedYearPosition, i);
@@ -117,8 +117,8 @@ public class TimingSelectMonthFragment extends BaseFragment {
                 selectedMonthPosition = i;
             }
         }
-        wheelviewYear.setCurrentItem(selectedYearPosition);
-        wheelviewMonth.setCurrentItem(selectedMonthPosition);
+        yearWheelview.setCurrentItem(selectedYearPosition);
+        monthWheelview.setCurrentItem(selectedMonthPosition);
     }
 
 
@@ -129,7 +129,7 @@ public class TimingSelectMonthFragment extends BaseFragment {
      * @param monthPosition
      */
     private void verifyDate(int yearPosition, int monthPosition) {
-        if (wheelviewMonth == null) return;
+        if (monthWheelview == null) return;
         selectedYearPosition = yearPosition;
         final Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(System.currentTimeMillis());
@@ -144,7 +144,7 @@ public class TimingSelectMonthFragment extends BaseFragment {
                     break;
                 }
             }
-            wheelviewMonth.setCurrentItem(selectedMonthPosition);
+            monthWheelview.setCurrentItem(selectedMonthPosition);
         } else {
             selectedMonthPosition = monthPosition;
         }

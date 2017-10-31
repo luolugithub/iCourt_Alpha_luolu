@@ -5,7 +5,7 @@
     android:orientation="vertical">
 
     <com.bigkoo.pickerview.lib.WheelView
-        android:id="@+id/wheelview_year"
+        android:id="@+id/year_wheelview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"

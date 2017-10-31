@@ -7,7 +7,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.bigkoo.pickerview.adapter.WheelAdapter;
 import com.bigkoo.pickerview.lib.WheelView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.StringWheelAdapter;
@@ -37,8 +36,8 @@ public class TimingSelectYearFragment extends BaseFragment {
 
     Unbinder unbinder;
 
-    @BindView(R.id.wheelview_year)
-    WheelView wheelviewYear;
+    @BindView(R.id.year_wheelview)
+    WheelView yearWheelview;
     StringWheelAdapter yearAdapter;
 
     public static TimingSelectYearFragment newInstance(long selectedDate) {
@@ -67,8 +66,8 @@ public class TimingSelectYearFragment extends BaseFragment {
             selectedYear = calendar.get(Calendar.YEAR);
         }
 
-        wheelviewYear.setCyclic(false);
-        wheelviewYear.setTextSize(TEXT_SIZE_WHEELVIEW);
+        yearWheelview.setCyclic(false);
+        yearWheelview.setTextSize(TEXT_SIZE_WHEELVIEW);
 
         calendar.clear();
         calendar.setTimeInMillis(System.currentTimeMillis());
@@ -78,7 +77,7 @@ public class TimingSelectYearFragment extends BaseFragment {
             yearList.add(String.valueOf(i));
         }
 
-        wheelviewYear.setAdapter(yearAdapter = new StringWheelAdapter(yearList));
+        yearWheelview.setAdapter(yearAdapter = new StringWheelAdapter(yearList));
 
         int currentYearPosition = 0;
         for (int i = 0; i < yearList.size(); i++) {
@@ -86,7 +85,7 @@ public class TimingSelectYearFragment extends BaseFragment {
                 currentYearPosition = i;
             }
         }
-        wheelviewYear.setCurrentItem(currentYearPosition);
+        yearWheelview.setCurrentItem(currentYearPosition);
     }
 
     @Override
@@ -94,7 +93,7 @@ public class TimingSelectYearFragment extends BaseFragment {
         Bundle arguments = new Bundle();
 
         TimingSelectEntity timingSelectEntity = new TimingSelectEntity();
-        int currentYear = Integer.valueOf(yearAdapter.getItem(wheelviewYear.getCurrentItem()));
+        int currentYear = Integer.valueOf(yearAdapter.getItem(yearWheelview.getCurrentItem()));
 
         timingSelectEntity.startTimeMillis = DateUtils.getSupportBeginDayofYear(currentYear).getTime();
         timingSelectEntity.endTimeMillis = DateUtils.getSupportEndDayofYear(currentYear).getTime();

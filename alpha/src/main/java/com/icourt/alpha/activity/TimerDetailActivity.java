@@ -90,8 +90,8 @@ public class TimerDetailActivity extends BaseTimerActivity
     TextView startTimeMinTv;
     @BindView(R.id.stop_time_min_tv)
     TextView stopTimeMinTv;
-    @BindView(R.id.tv_surpass_day)
-    TextView tvSurpassDay;
+    @BindView(R.id.surpass_day_tv)
+    TextView surpassDayTv;
     @BindView(R.id.time_name_tv)
     EditText timeNameTv;
     @BindView(R.id.project_name_tv)
@@ -399,9 +399,9 @@ public class TimerDetailActivity extends BaseTimerActivity
 
         int differentDay = DateUtils.differentDays(selectedStartDate.getTimeInMillis(), selectedEndDate.getTimeInMillis());
         if (differentDay >= 1) {
-            tvSurpassDay.setText(getString(R.string.timing_add_days, differentDay));
+            surpassDayTv.setText(getString(R.string.timing_add_days, differentDay));
         } else {
-            tvSurpassDay.setText("");
+            surpassDayTv.setText("");
         }
 
         long rangeTime = selectedEndDate.getTimeInMillis() - selectedStartDate.getTimeInMillis();

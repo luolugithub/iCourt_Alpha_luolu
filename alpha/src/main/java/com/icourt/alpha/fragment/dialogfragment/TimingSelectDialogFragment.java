@@ -52,20 +52,20 @@ public class TimingSelectDialogFragment extends BaseDialogFragment implements On
 
     private Unbinder bind;
 
-    @BindView(R.id.tv_date_day)
-    CheckedTextView tvDateDay;
-    @BindView(R.id.tv_date_week)
-    CheckedTextView tvDateWeek;
-    @BindView(R.id.tv_date_month)
-    CheckedTextView tvDateMonth;
-    @BindView(R.id.tv_date_year)
-    CheckedTextView tvDateYear;
+    @BindView(R.id.tab_day_ctv)
+    CheckedTextView tabDayCtv;
+    @BindView(R.id.tab_week_ctv)
+    CheckedTextView tabWeekCtv;
+    @BindView(R.id.tab_month_ctv)
+    CheckedTextView tabMonthCtv;
+    @BindView(R.id.tab_year_ctv)
+    CheckedTextView tabYearCtv;
     @BindView(R.id.viewpager)
     NoScrollViewPager viewpager;
-    @BindView(R.id.tv_cancel)
-    TextView tvCancel;
-    @BindView(R.id.tv_finish)
-    TextView tvFinish;
+    @BindView(R.id.cancel_tv)
+    TextView cancelTv;
+    @BindView(R.id.complete_tv)
+    TextView completeTv;
 
     private BaseFragmentAdapter baseFragmentAdapter;
     OnFragmentCallBackListener onFragmentCallBackListener;
@@ -165,10 +165,10 @@ public class TimingSelectDialogFragment extends BaseDialogFragment implements On
      * @param position
      */
     private void selectTabItem(int position) {
-        tvDateDay.setChecked(position == 0);//说明是日
-        tvDateWeek.setChecked(position == 1);//说明是周
-        tvDateMonth.setChecked(position == 2);//说明是月
-        tvDateYear.setChecked(position == 3);//说明是年
+        tabDayCtv.setChecked(position == 0);//说明是日
+        tabWeekCtv.setChecked(position == 1);//说明是周
+        tabMonthCtv.setChecked(position == 2);//说明是月
+        tabYearCtv.setChecked(position == 3);//说明是年
 
         if (position == 0) {//如果是日的选择时间，需要判断选择的时间是否在有效范围内
             Fragment fragment = baseFragmentAdapter.getItem(position);
@@ -177,36 +177,36 @@ public class TimingSelectDialogFragment extends BaseDialogFragment implements On
                 onDateSelected(dayFragment.getSelectedTime());
             }
         } else {
-            tvFinish.setBackgroundResource(R.drawable.bg_round_orange);
-            tvFinish.setEnabled(true);
+            completeTv.setBackgroundResource(R.drawable.bg_round_orange);
+            completeTv.setEnabled(true);
         }
     }
 
-    @OnClick({R.id.tv_cancel,
-            R.id.tv_finish,
-            R.id.tv_date_day,
-            R.id.tv_date_week,
-            R.id.tv_date_month,
-            R.id.tv_date_year})
+    @OnClick({R.id.cancel_tv,
+            R.id.complete_tv,
+            R.id.tab_day_ctv,
+            R.id.tab_week_ctv,
+            R.id.tab_month_ctv,
+            R.id.tab_year_ctv})
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.tv_date_day:
+            case R.id.tab_day_ctv:
                 viewpager.setCurrentItem(0);
                 break;
-            case R.id.tv_date_week:
+            case R.id.tab_week_ctv:
                 viewpager.setCurrentItem(1);
                 break;
-            case R.id.tv_date_month:
+            case R.id.tab_month_ctv:
                 viewpager.setCurrentItem(2);
                 break;
-            case R.id.tv_date_year:
+            case R.id.tab_year_ctv:
                 viewpager.setCurrentItem(3);
                 break;
-            case R.id.tv_cancel:
+            case R.id.cancel_tv:
                 dismiss();
                 break;
-            case R.id.tv_finish:
+            case R.id.complete_tv:
                 BaseFragment fragment = (BaseFragment) baseFragmentAdapter.getItem(viewpager.getCurrentItem());
                 Bundle fragmentData = fragment.getFragmentData(0, null);
                 if (fragmentData == null) {
@@ -241,14 +241,14 @@ public class TimingSelectDialogFragment extends BaseDialogFragment implements On
     @Override
     public void onDateSelected(long timeMillis) {
         if (timeMillis < TimerDateManager.getStartDate().getTimeInMillis()) {//如果选中的时间小于2015年1月1日，则完成按钮不可点击
-            tvFinish.setEnabled(false);
-            tvFinish.setBackgroundResource(R.drawable.bg_round_gray);
+            completeTv.setEnabled(false);
+            completeTv.setBackgroundResource(R.drawable.bg_round_gray);
         } else if (timeMillis > System.currentTimeMillis()) {//如果选中的时间大于当前时间，则完成按钮不可点击
-            tvFinish.setEnabled(false);
-            tvFinish.setBackgroundResource(R.drawable.bg_round_gray);
+            completeTv.setEnabled(false);
+            completeTv.setBackgroundResource(R.drawable.bg_round_gray);
         } else {//可点击
-            tvFinish.setEnabled(true);
-            tvFinish.setBackgroundResource(R.drawable.bg_round_orange);
+            completeTv.setEnabled(true);
+            completeTv.setBackgroundResource(R.drawable.bg_round_orange);
         }
     }
 
