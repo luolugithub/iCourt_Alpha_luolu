@@ -8,16 +8,13 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ImUserMessageAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.db.convertor.IConvertModel;
@@ -31,7 +28,10 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.ItemDecorationUtils;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -142,9 +142,9 @@ public class ChatMsgClassfyActivity extends BaseActivity implements BaseRecycler
     @BindView(R.id.titleView)
     AppBarLayout titleView;
     @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
 
 
     @MsgClassfyType
@@ -181,42 +181,37 @@ public class ChatMsgClassfyActivity extends BaseActivity implements BaseRecycler
         switch (getMsgClassfyType()) {
             case MSG_CLASSFY_CHAT_DING:
                 setTitle("钉的消息");
-                refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, "暂无钉的消息");
+                recyclerView.setNoticeEmpty(R.mipmap.ic_empty_data, R.string.empty_list_im_ding_msg);
                 break;
             case MSG_CLASSFY_CHAT_FILE:
                 setTitle("文件");
-                refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, "暂无文件");
+                recyclerView.setNoticeEmpty(R.mipmap.ic_empty_data, R.string.empty_list_im_file_msg);
                 break;
             case MSG_CLASSFY_MY_COLLECTEED:
                 setTitle("我收藏的消息");
-                refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.my_center_null_collect_text);
+                recyclerView.setNoticeEmpty(R.mipmap.ic_empty_data, R.string.empty_list_im_collected_msg);
                 break;
             default:
                 setTitle("我收藏的消息");
-                refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.my_center_null_collect_text);
+                recyclerView.setNoticeEmpty(R.mipmap.ic_empty_data, R.string.empty_list_im_collected_msg);
                 break;
         }
-        refreshLayout.setMoveForHorizontal(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.addItemDecoration(ItemDecorationUtils.getCommFull10Divider(getContext(), false));
-        recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(imUserMessageAdapter = new ImUserMessageAdapter(localContactList));
-        imUserMessageAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, imUserMessageAdapter));
         imUserMessageAdapter.setOnItemClickListener(this);
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(RefreshLayout refreshlayout) {
                 getData(true);
             }
 
             @Override
-            public void onLoadMore(boolean isSilence) {
-                super.onLoadMore(isSilence);
+            public void onLoadmore(RefreshLayout refreshlayout) {
                 getData(false);
             }
         });
-        refreshLayout.startRefresh();
+        refreshLayout.autoRefresh();
         getLocalContacts();
     }
 
@@ -274,7 +269,7 @@ public class ChatMsgClassfyActivity extends BaseActivity implements BaseRecycler
                 }
                 break;
         }
-        callEnqueue(call,new SimpleCallBack<List<IMMessageCustomBody>>() {
+        callEnqueue(call, new SimpleCallBack<List<IMMessageCustomBody>>() {
             @Override
             public void onSuccess(Call<ResEntity<List<IMMessageCustomBody>>> call, Response<ResEntity<List<IMMessageCustomBody>>> response) {
                 imUserMessageAdapter.bindData(isRefresh, response.body().result);
@@ -341,21 +336,23 @@ public class ChatMsgClassfyActivity extends BaseActivity implements BaseRecycler
 
     private void enableLoadMore(List result) {
         if (refreshLayout != null) {
-            refreshLayout.setPullLoadEnable(result != null
+            refreshLayout.setEnableLoadmore(result != null
                     && result.size() >= ActionConstants.DEFAULT_PAGE_SIZE);
         }
     }
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(MessageEvent event) {
-        if (event == null) return;
+        if (event == null) {
+            return;
+        }
         switch (event.action) {
             case MessageEvent.ACTION_MSG_CANCEL_COLLECT:
                 List<IMMessageCustomBody> data = imUserMessageAdapter.getData();
@@ -371,7 +368,9 @@ public class ChatMsgClassfyActivity extends BaseActivity implements BaseRecycler
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         IMMessageCustomBody item = imUserMessageAdapter.getItem(adapter.getRealPos(position));
-        if (item == null) return;
+        if (item == null) {
+            return;
+        }
         FileDetailsActivity.launch(getContext(), item, getMsgClassfyType());
     }
 

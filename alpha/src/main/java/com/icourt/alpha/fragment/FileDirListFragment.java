@@ -5,13 +5,11 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ProjectFileBoxAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
@@ -23,7 +21,10 @@ import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack2;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.ItemDecorationUtils;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.util.Iterator;
 import java.util.List;
@@ -45,9 +46,9 @@ import retrofit2.Response;
 public class FileDirListFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
     Unbinder unbinder;
     @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
     ProjectFileBoxAdapter projectFileBoxAdapter;
     String projectId, seaFileRepoId, filePath, rootName;
 
@@ -88,20 +89,17 @@ public class FileDirListFragment extends BaseFragment implements BaseRecyclerAda
         seaFileRepoId = getArguments().getString("seaFileRepoId");
         filePath = getArguments().getString("filePath");
         rootName = getArguments().getString("rootName");
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_project, "暂无文件夹");
-        refreshLayout.setMoveForHorizontal(true);
+        recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_project, R.string.empty_list_repo_dir);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(getContext(), true));
-        recyclerView.setHasFixedSize(true);
 
         recyclerView.setAdapter(projectFileBoxAdapter = new ProjectFileBoxAdapter());
         projectFileBoxAdapter.setOnItemClickListener(this);
-        projectFileBoxAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, projectFileBoxAdapter));
+        projectFileBoxAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(recyclerView, projectFileBoxAdapter));
 
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(RefreshLayout refreshlayout) {
                 if (TextUtils.isEmpty(seaFileRepoId)) {
                     getDocumentId();
                 } else {
@@ -110,8 +108,7 @@ public class FileDirListFragment extends BaseFragment implements BaseRecyclerAda
             }
 
             @Override
-            public void onLoadMore(boolean isSilence) {
-                super.onLoadMore(isSilence);
+            public void onLoadmore(RefreshLayout refreshlayout) {
                 if (TextUtils.isEmpty(seaFileRepoId)) {
                     getDocumentId();
                 } else {
@@ -119,7 +116,7 @@ public class FileDirListFragment extends BaseFragment implements BaseRecyclerAda
                 }
             }
         });
-        refreshLayout.startRefresh();
+        refreshLayout.autoRefresh();
     }
 
     /**
@@ -144,29 +141,29 @@ public class FileDirListFragment extends BaseFragment implements BaseRecyclerAda
         callEnqueue(
                 getSFileApi().projectQueryFileBoxByDir(seaFileRepoId, rootName),
                 new SFileCallBack<List<FileBoxBean>>() {
-            @Override
-            public void onSuccess(Call<List<FileBoxBean>> call, Response<List<FileBoxBean>> response) {
-                stopRefresh();
-                if (response.body() != null) {
-                    projectFileBoxAdapter.bindData(isRefresh, getFolders(response.body()));
-                    if (getFolders(response.body()) != null) {
-                        if (getFolders(response.body()).size() <= 0) {
-                            enableEmptyView(null);
+                    @Override
+                    public void onSuccess(Call<List<FileBoxBean>> call, Response<List<FileBoxBean>> response) {
+                        stopRefresh();
+                        if (response.body() != null) {
+                            projectFileBoxAdapter.bindData(isRefresh, getFolders(response.body()));
+                            if (getFolders(response.body()) != null) {
+                                if (getFolders(response.body()).size() <= 0) {
+                                    recyclerView.enableEmptyView(null);
+                                }
+                            }
+                        } else {
+                            recyclerView.enableEmptyView(null);
                         }
                     }
-                } else {
-                    enableEmptyView(null);
-                }
-            }
 
-            @Override
-            public void onFailure(Call<List<FileBoxBean>> call, Throwable t) {
-                super.onFailure(call, t);
-                stopRefresh();
-                enableEmptyView(null);
-                showTopSnackBar("获取文档列表失败");
-            }
-        });
+                    @Override
+                    public void onFailure(Call<List<FileBoxBean>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        stopRefresh();
+                        recyclerView.enableEmptyView(null);
+                        showTopSnackBar("获取文档列表失败");
+                    }
+                });
     }
 
     /**
@@ -190,29 +187,15 @@ public class FileDirListFragment extends BaseFragment implements BaseRecyclerAda
             public void onFailure(Call<RepoIdResEntity> call, Throwable t) {
                 super.onFailure(call, t);
                 stopRefresh();
-                enableEmptyView(null);
+                recyclerView.enableEmptyView(null);
             }
         });
     }
 
-    private void enableEmptyView(List result) {
-        if (refreshLayout != null) {
-            if (result != null) {
-                if (result.size() > 0) {
-                    refreshLayout.enableEmptyView(false);
-                } else {
-                    refreshLayout.enableEmptyView(true);
-                }
-            } else {
-                refreshLayout.enableEmptyView(true);
-            }
-        }
-    }
-
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 

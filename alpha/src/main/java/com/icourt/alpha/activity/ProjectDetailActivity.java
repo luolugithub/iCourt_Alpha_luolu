@@ -254,7 +254,7 @@ public class ProjectDetailActivity extends BaseActivity implements OnFragmentCal
                 break;
             case 0:     //概览
             case 2:     //计时
-                TimerAddActivity.launch(this, projectId, projectName);
+                TimerProjectAddActivity.launch(this, projectId, projectName);
                 break;
             case 3:     //文档
                 if (projectFileBoxFragment != null) {

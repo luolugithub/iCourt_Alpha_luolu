@@ -8,23 +8,23 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ProjectTaskGroupAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.TaskGroupEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ItemDecorationUtils;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.util.List;
 
@@ -43,8 +43,16 @@ import retrofit2.Response;
 
 public class ProjectTaskGroupActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
     private static final String KEY_PROJECT_ID = "key_project_id";
-    private static final int CREATE_GROUP_REQUEST_CODE = 0;//新建
-    private static final int UPDATE_GROUP_REQUEST_CODE = 1;//编辑
+    private static final String PROJECT_ADD_TASK_PERMISSION = "MAT:matter.task:add";
+    private static final String PROJECT_EDIT_TASK_PERMISSION = "MAT:matter.task:edit";
+    /**
+     * 新建
+     */
+    private static final int CREATE_GROUP_REQUEST_CODE = 0;
+    /**
+     * 编辑
+     */
+    private static final int UPDATE_GROUP_REQUEST_CODE = 1;
     @BindView(R.id.titleBack)
     ImageView titleBack;
     @BindView(R.id.titleContent)
@@ -52,27 +60,39 @@ public class ProjectTaskGroupActivity extends BaseActivity implements BaseRecycl
     @BindView(R.id.titleView)
     AppBarLayout titleView;
     @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
     @BindView(R.id.titleAction)
     ImageView titleAction;
 
     String projectId;
     ProjectTaskGroupAdapter projectTaskGroupAdapter;
-    boolean isCanAddGroup = false;//是否可以添加任务组
-    boolean isCanEditGroup = false;//是否可以编辑任务组
+    /**
+     * 是否可以添加任务组
+     */
+    boolean isCanAddGroup = false;
+    /**
+     * 是否可以编辑任务组
+     */
+    boolean isCanEditGroup = false;
 
     public static void launch(@NonNull Context context, @NonNull String projectId) {
-        if (context == null) return;
-        if (TextUtils.isEmpty(projectId)) return;
+        if (context == null) {
+            return;
+        }
+        if (TextUtils.isEmpty(projectId)) {
+            return;
+        }
         Intent intent = new Intent(context, ProjectTaskGroupActivity.class);
         intent.putExtra(KEY_PROJECT_ID, projectId);
         context.startActivity(intent);
     }
 
     public static void launchSetResult(@NonNull Activity activity, @NonNull TaskGroupEntity taskGroupEntity) {
-        if (activity == null) return;
+        if (activity == null) {
+            return;
+        }
         Intent intent = new Intent(activity, ProjectTaskGroupActivity.class);
         intent.putExtra(KEY_ACTIVITY_RESULT, taskGroupEntity);
         activity.setResult(RESULT_OK, intent);
@@ -91,29 +111,24 @@ public class ProjectTaskGroupActivity extends BaseActivity implements BaseRecycl
         super.initView();
         projectId = getIntent().getStringExtra(KEY_PROJECT_ID);
         setTitle(R.string.manage_task_group_text);
-        refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_list_group_null_text);
-        refreshLayout.setMoveForHorizontal(true);
+        recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_list_group_null_text);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setHasFixedSize(true);
 
         recyclerView.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(this, true));
         recyclerView.setAdapter(projectTaskGroupAdapter = new ProjectTaskGroupAdapter(false));
-        projectTaskGroupAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, projectTaskGroupAdapter));
         projectTaskGroupAdapter.setOnItemClickListener(this);
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(RefreshLayout refreshlayout) {
                 getData(true);
             }
 
             @Override
-            public void onLoadMore(boolean isSilence) {
-                super.onLoadMore(isSilence);
+            public void onLoadmore(RefreshLayout refreshlayout) {
                 getData(false);
             }
         });
-        refreshLayout.startRefresh();
+        refreshLayout.autoRefresh();
         titleAction.setVisibility(View.INVISIBLE);
         checkProjectPms();
     }
@@ -121,7 +136,8 @@ public class ProjectTaskGroupActivity extends BaseActivity implements BaseRecycl
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.titleAction://添加任务组
+            //添加任务组
+            case R.id.titleAction:
                 TaskGroupCreateActivity.launchForResult(this, projectId, TaskGroupCreateActivity.CREAT_TASK_GROUP_TYPE, CREATE_GROUP_REQUEST_CODE);
                 break;
             default:
@@ -141,11 +157,11 @@ public class ProjectTaskGroupActivity extends BaseActivity implements BaseRecycl
                     public void onSuccess(Call<ResEntity<List<String>>> call, Response<ResEntity<List<String>>> response) {
 
                         if (response.body().result != null) {
-                            if (response.body().result.contains("MAT:matter.task:add")) {
+                            if (response.body().result.contains(PROJECT_ADD_TASK_PERMISSION)) {
                                 isCanAddGroup = true;
                                 titleAction.setVisibility(View.VISIBLE);
                             }
-                            if (response.body().result.contains("MAT:matter.task:edit")) {
+                            if (response.body().result.contains(PROJECT_EDIT_TASK_PERMISSION)) {
                                 isCanEditGroup = true;
                             }
                             if (projectTaskGroupAdapter != null) {
@@ -185,13 +201,19 @@ public class ProjectTaskGroupActivity extends BaseActivity implements BaseRecycl
                             projectTaskGroupAdapter.bindData(isRefresh, response.body().result);
                         }
                     }
+
+                    @Override
+                    public void onFailure(Call<ResEntity<List<TaskGroupEntity>>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        stopRefresh();
+                    }
                 });
     }
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 

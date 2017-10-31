@@ -11,7 +11,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.andview.refreshview.XRefreshView;
 import com.gjiazhe.wavesidebar.WaveSideBar;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.GroupListActivity;
@@ -33,11 +32,14 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.IndexUtils;
-import com.icourt.alpha.widget.comparators.PinyinComparator;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.recyclerviewDivider.SuspensionDecoration;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.icourt.alpha.widget.comparators.PinyinComparator;
 import com.icourt.alpha.widget.filter.ListFilter;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -61,11 +63,11 @@ import retrofit2.Response;
 public class ContactListFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
     private static final String STRING_TOP = "↑︎";
     @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     @BindView(R.id.recyclerIndexBar)
     WaveSideBar recyclerIndexBar;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
     Unbinder unbinder;
     AlphaUserInfo loginUserInfo;
     RecyclerView headerRecyclerView;
@@ -112,11 +114,11 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
         contactDbService = new ContactDbService(loginUserInfo == null ? "" : loginUserInfo.getUserId());
         linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
-
+        refreshLayout.setEnableLoadmore(false);
 
         headerFooterAdapter = new HeaderFooterAdapter<IMContactAdapter>(imContactAdapter = new IMContactAdapter());
         imContactAdapter.setOnItemClickListener(this);
-        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_contact_search, recyclerView);
+        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_contact_search, recyclerView.getRecyclerView());
         headerRecyclerView = (RecyclerView) headerView.findViewById(R.id.headerRecyclerView);
         headerRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         headerRecyclerView.setAdapter(itemsEntityItemActionAdapter = new ItemActionAdapter<ItemsEntity>());
@@ -155,10 +157,9 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
 
         recyclerView.setAdapter(headerFooterAdapter);
 
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setOnRefreshListener(new OnRefreshListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(RefreshLayout refreshlayout) {
                 getData(true);
             }
         });
@@ -243,8 +244,8 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 

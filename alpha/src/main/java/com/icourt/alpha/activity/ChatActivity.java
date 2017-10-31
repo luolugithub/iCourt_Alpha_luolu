@@ -28,8 +28,9 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.andview.refreshview.XRefreshView;
+import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
+import com.google.gson.reflect.TypeToken;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ChatAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
@@ -40,6 +41,7 @@ import com.icourt.alpha.db.convertor.ListConvertor;
 import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.ChatFileInfoEntity;
+import com.icourt.alpha.entity.bean.ConstantMobileEntity;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.event.GroupActionEvent;
@@ -60,7 +62,6 @@ import com.icourt.alpha.view.bgabadgeview.BGABadgeTextView;
 import com.icourt.alpha.view.emoji.MySelectPhotoLayout;
 import com.icourt.alpha.view.emoji.MyXhsEmoticonsKeyBoard;
 import com.icourt.alpha.view.recyclerviewDivider.ChatItemDecoration;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.comparators.LongFieldEntityComparator;
 import com.icourt.alpha.widget.comparators.ORDER;
 import com.icourt.alpha.widget.nim.GlobalMessageObserver;
@@ -73,6 +74,9 @@ import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.msg.model.MessageReceipt;
 import com.netease.nimlib.sdk.team.model.Team;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 import com.sj.emoji.DefEmoticons;
 import com.sj.emoji.EmojiBean;
 import com.sj.emoji.EmojiDisplay;
@@ -81,10 +85,14 @@ import com.sj.emoji.EmojiSpan;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 
 import butterknife.BindView;
@@ -93,7 +101,12 @@ import butterknife.OnClick;
 import cn.finalteam.galleryfinal.FunctionConfig;
 import cn.finalteam.galleryfinal.GalleryFinal;
 import cn.finalteam.galleryfinal.model.PhotoInfo;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 import io.realm.RealmChangeListener;
 import io.realm.RealmResults;
 import retrofit2.Call;
@@ -180,7 +193,7 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
     @BindView(R.id.chat_unread_num_tv)
     TextView chatUnreadNumTv;
     @BindView(R.id.ek_bar)
@@ -366,6 +379,45 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
             default:
                 return getIntent().getStringExtra(KEY_TID);
         }
+    }
+
+    /**
+     * 获取asset下phone.json的所有固定的号码
+     *
+     * @return key:号码，value：名称。
+     */
+    private void getConstantMobile() {
+        Observable.create(new ObservableOnSubscribe<Map<String, String>>() {
+            @Override
+            public void subscribe(@io.reactivex.annotations.NonNull ObservableEmitter<Map<String, String>> e) throws Exception {
+                Map<String, String> map = new HashMap<>();
+                InputStream is;
+                ByteArrayOutputStream bos;
+                is = getAssets().open("phone.json");
+                bos = new ByteArrayOutputStream();
+                byte[] bytes = new byte[4 * 1024];
+                int len;
+                while ((len = is.read(bytes)) != -1) {
+                    bos.write(bytes, 0, len);
+                }
+                final String json = new String(bos.toByteArray());
+                Gson gson = new Gson();
+                final List<ConstantMobileEntity> list = gson.fromJson(json, new TypeToken<ArrayList<ConstantMobileEntity>>() {
+                }.getType());
+                for (ConstantMobileEntity mobileEntity : list) {
+                    map.put(mobileEntity.phone, mobileEntity.name);
+                }
+                e.onNext(map);
+            }
+        }).compose(this.<Map<String, String>>bindToLifecycle())
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<Map<String, String>>() {
+                    @Override
+                    public void accept(@io.reactivex.annotations.NonNull Map<String, String> stringStringMap) throws Exception {
+                        chatAdapter.setMobileEntityMap(stringStringMap);
+                    }
+                });
     }
 
 
@@ -810,25 +862,20 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
         });
         linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
+        refreshLayout.setEnableLoadmore(false);
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(chatAdapter = new ChatAdapter(localContactList));
         chatAdapter.setOnItemClickListener(this);
         chatAdapter.setOnItemLongClickListener(this);
         chatAdapter.setOnItemChildClickListener(this);
         chatAdapter.setOnItemChildLongClickListener(this);
+        getConstantMobile();
         recyclerView.addItemDecoration(new ChatItemDecoration(getContext(), chatAdapter));
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setOnRefreshListener(new OnRefreshListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(RefreshLayout refreshlayout) {
                 getData(false);
             }
-
-            @Override
-            public void onLoadMore(boolean isSilence) {
-                super.onLoadMore(isSilence);
-            }
-
         });
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -1213,8 +1260,8 @@ public class ChatActivity extends ChatBaseActivity implements BaseRecyclerAdapte
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 

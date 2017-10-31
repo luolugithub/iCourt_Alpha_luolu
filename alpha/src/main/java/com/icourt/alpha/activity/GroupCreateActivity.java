@@ -11,7 +11,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.CheckedTextView;
 import android.widget.EditText;
@@ -27,17 +28,19 @@ import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.IMContactAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
-import com.icourt.alpha.base.BaseActivity;
+import com.icourt.alpha.base.BaseDialogFragment;
+import com.icourt.alpha.constants.ChatConfig;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.GroupEntity;
-import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.fragment.dialogfragment.ContactSelectDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
+import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.StringUtils;
+import com.icourt.alpha.widget.filter.LengthListenFilter;
 import com.icourt.api.RequestUtils;
 
 import java.util.ArrayList;
@@ -58,8 +61,11 @@ import retrofit2.Response;
  * date createTime：2017/4/26
  * version 1.0.0
  */
-public class GroupCreateActivity extends BaseActivity implements OnFragmentCallBackListener {
+public class GroupCreateActivity extends ListenBackActivity implements OnFragmentCallBackListener {
     private static final int REQ_CODE_DEL_USER = 1002;
+    private static final String KEY_CACHE_TITLE = String.format("%s_%s", GroupCreateActivity.class.getSimpleName(), "cacheTitle");
+    private static final String KEY_CACHE_DESC = String.format("%s_%s", GroupCreateActivity.class.getSimpleName(), "cacheDesc");
+
 
     @BindView(R.id.titleBack)
     CheckedTextView titleBack;
@@ -107,7 +113,9 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
     }
 
     public static void launch(Context context) {
-        if (context == null) return;
+        if (context == null) {
+            return;
+        }
         Intent intent = new Intent(context, GroupCreateActivity.class);
         context.startActivity(intent);
     }
@@ -115,11 +123,7 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
     @Override
     protected void initView() {
         super.initView();
-        setTitle("创建讨论组");
-        TextView titleActionTextView = getTitleActionTextView();
-        if (titleActionTextView != null) {
-            titleActionTextView.setText("完成");
-        }
+        setTitle(R.string.chat_create_group);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
         groupMemberRecyclerView.setLayoutManager(linearLayoutManager);
         groupMemberRecyclerView.setNestedScrollingEnabled(false);
@@ -140,6 +144,40 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
                         REQ_CODE_DEL_USER);
             }
         });
+
+        groupNameEt.setFilters(LengthListenFilter.createSingleInputFilter(new LengthListenFilter(ChatConfig.GROUP_NAME_MAX_LENGTH) {
+            @Override
+            public void onInputOverLength(int maxLength) {
+                showToast(getString(R.string.chat_group_name_limit_format, String.valueOf(maxLength)));
+            }
+        }));
+        groupDescEt.setFilters(LengthListenFilter.createSingleInputFilter(new LengthListenFilter(ChatConfig.GROUP_DESC_MAX_LENGTH) {
+            @Override
+            public void onInputOverLength(int maxLength) {
+                showToast(getString(R.string.chat_group_desc_limit_format, String.valueOf(maxLength)));
+            }
+        }));
+        groupNameEt.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                titleAction.setEnabled(!StringUtils.isEmpty(s));
+            }
+        });
+
+        //恢复记录的输入
+        groupNameEt.setText(SpUtils.getTemporaryCache().getStringData(KEY_CACHE_TITLE, ""));
+        groupNameEt.setSelection(StringUtils.length(groupNameEt.getText()));
+        groupDescEt.setText(SpUtils.getTemporaryCache().getStringData(KEY_CACHE_DESC, ""));
 
         imContactAdapter.addItem(0, getMyAsContactBean());
     }
@@ -163,20 +201,8 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.titleAction:
-                if (StringUtils.isEmpty(getTextString(groupNameEt, ""))) {
-                    showTopSnackBar("请输入讨论组名称!");
-                    return;
-                }
-                if (groupNameEt.getText().length() < 1) {
-                    showTopSnackBar("讨论组名称太短!");
-                    return;
-                }
-                if (getTextString(groupNameEt, "").length() > 50) {
-                    showTopSnackBar("讨论组名称太长");
-                    return;
-                }
                 groupCreate(groupNameEt.getText().toString(),
-                        TextUtils.isEmpty(groupDescEt.getText()) ? "" : groupDescEt.getText().toString(),
+                        getTextString(groupDescEt, ""),
                         groupPrivateSwitch.isChecked());
                 break;
             case R.id.group_member_invite_tv:
@@ -196,6 +222,14 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
                 super.onClick(v);
                 break;
         }
+    }
+
+    @Override
+    protected boolean onPageBackClick(@FROM_BACK int from) {
+        //记录输入历史:名字和目标
+        SpUtils.getTemporaryCache().putData(KEY_CACHE_TITLE, getTextString(groupNameEt, ""));
+        SpUtils.getTemporaryCache().putData(KEY_CACHE_DESC, getTextString(groupDescEt, ""));
+        return false;
     }
 
     /**
@@ -248,6 +282,11 @@ public class GroupCreateActivity extends BaseActivity implements OnFragmentCallB
                     @Override
                     public void onSuccess(Call<ResEntity<GroupEntity>> call, Response<ResEntity<GroupEntity>> response) {
                         dismissLoadingDialog();
+
+                        //清除历史记录
+                        SpUtils.getTemporaryCache().remove(KEY_CACHE_TITLE);
+                        SpUtils.getTemporaryCache().remove(KEY_CACHE_DESC);
+
                         if (response.body().result != null) {
                             ChatActivity.launchTEAM(
                                     getContext(),

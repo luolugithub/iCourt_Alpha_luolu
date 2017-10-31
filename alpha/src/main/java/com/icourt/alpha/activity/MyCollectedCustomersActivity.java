@@ -7,22 +7,22 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.CustomerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.adapterObserver.RefreshViewEmptyObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.CustomerEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.util.List;
 
@@ -53,9 +53,9 @@ public class MyCollectedCustomersActivity extends BaseActivity implements BaseRe
     @BindView(R.id.titleView)
     AppBarLayout titleView;
     @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
     CustomerAdapter customerAdapter;
 
     @Override
@@ -69,31 +69,25 @@ public class MyCollectedCustomersActivity extends BaseActivity implements BaseRe
     @Override
     protected void initView() {
         super.initView();
-        setTitle("我关注的");
-        refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, "暂无关注联系人");
-        refreshLayout.setMoveForHorizontal(true);
+        setTitle(R.string.task_my_attention);
+        recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_user, R.string.empty_list_customer_follow);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(customerAdapter = new CustomerAdapter());
         customerAdapter.setOnItemClickListener(this);
-        customerAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, customerAdapter));
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(RefreshLayout refreshlayout) {
                 getData(true);
             }
 
             @Override
-            public void onLoadMore(boolean isSilence) {
-                super.onLoadMore(isSilence);
+            public void onLoadmore(RefreshLayout refreshlayout) {
                 getData(false);
             }
-        });
-        refreshLayout.setNoticeEmptyText("暂无关注联系人");
-        refreshLayout.setNoticeEmptyImage(R.mipmap.icon_placeholder_user);
 
-        refreshLayout.startRefresh();
+        });
+
+        refreshLayout.autoRefresh();
     }
 
     @Override
@@ -124,8 +118,8 @@ public class MyCollectedCustomersActivity extends BaseActivity implements BaseRe
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 

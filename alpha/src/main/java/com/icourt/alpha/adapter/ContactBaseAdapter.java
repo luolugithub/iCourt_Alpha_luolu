@@ -55,6 +55,31 @@ public abstract class ContactBaseAdapter<T extends SelectableEntity> extends Bas
 
     final List<Team> localTeams = new ArrayList<>();
 
+    public ContactBaseAdapter(@NonNull List<T> data) {
+        super(data);
+        loadContacts();
+        listenContacts();
+    }
+
+
+    public ContactBaseAdapter() {
+        loadContacts();
+        listenContacts();
+    }
+
+    /**
+     * 加载联系人
+     */
+    private void loadContacts() {
+        ContactDbService contactDbService = new ContactDbService(LoginInfoUtils.getLoginUserId());
+        RealmResults<ContactDbModel> contactDbModels = contactDbService.queryAll();
+        if (contactDbModels != null) {
+            localGroupContactBeans.clear();
+            localGroupContactBeans.addAll(ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(contactDbModels)));
+        }
+        contactDbService.releaseService();
+    }
+
     /**
      * 通过userid 查询 uid: eg. 7B113D3F234411E7843370106FAECE2E
      *
@@ -79,8 +104,7 @@ public abstract class ContactBaseAdapter<T extends SelectableEntity> extends Bas
     @Override
     public boolean bindData(boolean isRefresh, @NonNull List<T> datas) {
         if (isRefresh) {
-            initContacts();
-            initTeams();
+            loadTeams();
         }
         return super.bindData(isRefresh, datas);
     }
@@ -123,7 +147,7 @@ public abstract class ContactBaseAdapter<T extends SelectableEntity> extends Bas
     /**
      * 获取teams
      */
-    private void initTeams() {
+    protected void loadTeams() {
         NIMClient.getService(TeamService.class)
                 .queryTeamList()
                 .setCallback(new RequestCallbackWrapper<List<Team>>() {
@@ -138,7 +162,10 @@ public abstract class ContactBaseAdapter<T extends SelectableEntity> extends Bas
                 });
     }
 
-    private void initContacts() {
+    /**
+     * 监听联系人变化
+     */
+    private void listenContacts() {
         contactDbService = new ContactDbService(LoginInfoUtils.getLoginUserId());
         RealmResults<ContactDbModel> contactDbModels = contactDbService.queryAllAsync();
         if (contactDbModels != null) {
@@ -154,6 +181,9 @@ public abstract class ContactBaseAdapter<T extends SelectableEntity> extends Bas
             return null;
         }
         for (Team team : localTeams) {
+            if (team == null) {
+                continue;
+            }
             if (StringUtils.equalsIgnoreCase(id, team.getId(), false)) {
                 return team;
             }

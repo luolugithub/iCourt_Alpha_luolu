@@ -1,15 +1,20 @@
 package com.icourt.alpha.activity;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
+import android.text.TextUtils;
 import android.widget.EditText;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.icourt.alpha.R;
 import com.icourt.alpha.entity.bean.GroupDetailEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.api.RequestUtils;
 
 import retrofit2.Call;
@@ -43,6 +48,7 @@ public class GroupChangeDescActivity extends EditItemBaseActivity {
         super.initView();
         groupDetailEntity = (GroupDetailEntity) getIntent().getSerializableExtra(KEY_GROUP_DATA);
         setTitle("讨论组目标");
+        setTitleActionTextView(getContextString(R.string.str_finish));
         inputNameEt.setText(groupDetailEntity.intro);
         inputNameEt.setSelection(inputNameEt.length());
     }
@@ -58,8 +64,33 @@ public class GroupChangeDescActivity extends EditItemBaseActivity {
     }
 
     @Override
-    protected boolean onCancelSubmitInput(EditText et) {
-        return false;
+    protected boolean onCancelSubmitInput(final EditText et) {
+        if (StringUtils.isEmpty(et.getText())) {
+            finish();
+            return false;
+        }
+        //无需提交
+        if (TextUtils.equals(et.getText(), groupDetailEntity.intro)) {
+            finish();
+            return false;
+        }
+        new AlertDialog.Builder(getContext())
+                .setTitle(R.string.str_notice)
+                .setMessage("保存本次编辑?")
+                .setPositiveButton("保存", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        onSubmitInput(et);
+                    }
+                })
+                .setNegativeButton("不保存", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                        finish();
+                    }
+                }).show();
+        return true;
     }
 
     /**
@@ -80,7 +111,7 @@ public class GroupChangeDescActivity extends EditItemBaseActivity {
                     @Override
                     public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                         dismissLoadingDialog();
-                        groupDetailEntity.intro=groupDesc;
+                        groupDetailEntity.intro = groupDesc;
                         setResult();
                     }
 

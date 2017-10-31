@@ -48,6 +48,9 @@ import retrofit2.Response;
 
 public class FinishedTaskFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
 
+    private static final String KEY_PROJECTID = "projectId";
+    private static final String KEY_SELECTEDTASKID = "selectedTaskId";
+
     String projectId = null;
     String selectedTaskId;
     Unbinder unbinder;
@@ -71,8 +74,8 @@ public class FinishedTaskFragment extends BaseFragment implements BaseRecyclerAd
     public static FinishedTaskFragment newInstance(@Nullable String projectId, String selectedTaskId) {
         FinishedTaskFragment unFinishTaskFragment = new FinishedTaskFragment();
         Bundle args = new Bundle();
-        args.putString("projectId", projectId);
-        args.putString("selectedTaskId", selectedTaskId);
+        args.putString(KEY_PROJECTID, projectId);
+        args.putString(KEY_SELECTEDTASKID, selectedTaskId);
         unFinishTaskFragment.setArguments(args);
         return unFinishTaskFragment;
     }
@@ -87,8 +90,8 @@ public class FinishedTaskFragment extends BaseFragment implements BaseRecyclerAd
 
     @Override
     protected void initView() {
-        projectId = getArguments().getString("projectId");
-        selectedTaskId = getArguments().getString("selectedTaskId");
+        projectId = getArguments().getString(KEY_PROJECTID);
+        selectedTaskId = getArguments().getString(KEY_SELECTEDTASKID);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.addItemDecoration(ItemDecorationUtils.getCommFullDivider(getContext(), true));
         headerFooterAdapter = new HeaderFooterAdapter<>(taskSelectAdapter = new TaskSelectAdapter(true));
@@ -100,7 +103,9 @@ public class FinishedTaskFragment extends BaseFragment implements BaseRecyclerAd
         taskSelectAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override
             protected void updateUI() {
-                if (contentEmptyText == null) return;
+                if (contentEmptyText == null) {
+                    return;
+                }
                 contentEmptyText.setVisibility(taskSelectAdapter.getItemCount() <= 0 ? View.VISIBLE : View.GONE);
             }
         });
@@ -216,7 +221,9 @@ public class FinishedTaskFragment extends BaseFragment implements BaseRecyclerAd
      * @param taskName
      */
     private void searchTaskByName(final String taskName) {
-        if (TextUtils.isEmpty(taskName)) return;
+        if (TextUtils.isEmpty(taskName)) {
+            return;
+        }
         taskSelectAdapter.clearSelected();
         if (!TextUtils.isEmpty(projectId)) {
             //pms 环境有
@@ -267,6 +274,9 @@ public class FinishedTaskFragment extends BaseFragment implements BaseRecyclerAd
                 headerCommSearchInputEt.setText("");
                 SystemUtils.hideSoftKeyBoard(getActivity(), headerCommSearchInputEt, true);
                 headerCommSearchInputLl.setVisibility(View.GONE);
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }

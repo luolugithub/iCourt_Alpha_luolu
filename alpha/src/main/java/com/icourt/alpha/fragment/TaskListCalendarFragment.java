@@ -16,10 +16,10 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.SearchProjectActivity;
-import com.icourt.alpha.activity.SearchTaskActivity;
+import com.icourt.alpha.activity.TaskSearchActivity;
 import com.icourt.alpha.adapter.baseadapter.BaseRefreshFragmentAdapter;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.constants.TaskConfig;
 import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.event.TaskActionEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
@@ -54,9 +54,10 @@ import retrofit2.Response;
 /**
  * Description  任务周视图
  * Company Beijing icourt
- * author  youxuan  E-mail:xuanyouwu@163.com
- * date createTime：2017/7/7
- * version 1.0.0
+ *
+ * @author youxuan  E-mail:xuanyouwu@163.com
+ *         date createTime：2017/7/7
+ *         version 1.0.0
  */
 
 public class TaskListCalendarFragment extends BaseFragment {
@@ -104,6 +105,8 @@ public class TaskListCalendarFragment extends BaseFragment {
     private int MAXDAILYPAGE = 5000;
     private int dailyTaskPagePOS;
 
+    private long selectedDateMillis;
+
 
     public static Fragment newInstance(ArrayList<TaskEntity.TaskItemEntity> data) {
         TaskListCalendarFragment taskListCalendarFragment = new TaskListCalendarFragment();
@@ -122,6 +125,7 @@ public class TaskListCalendarFragment extends BaseFragment {
         return view;
     }
 
+    @Override
     protected void initView() {
         taskItemEntityList = (ArrayList<TaskEntity.TaskItemEntity>) getArguments().getSerializable(KEY_TASKS);
         if (taskItemEntityList == null) {
@@ -143,13 +147,11 @@ public class TaskListCalendarFragment extends BaseFragment {
                 return TaskEverydayFragment.newInstance(key, getDayTask(key));
             }
 
-
             @Override
             public int getCount() {
                 return MAXDAILYPAGE;
             }
         });
-
 
         //今天 定位在中间
         viewPager.setCurrentItem(MAXDAILYPAGE / 2, false);
@@ -168,8 +170,6 @@ public class TaskListCalendarFragment extends BaseFragment {
                 clendar.set(Calendar.MINUTE, 0);
                 clendar.set(Calendar.SECOND, 0);
                 clendar.set(Calendar.MILLISECOND, 0);
-                int centerPos = MAXDAILYPAGE / 2;
-                long key = clendar.getTimeInMillis() - (centerPos - position) * TimeUnit.DAYS.toMillis(1);
                 boolean deleted = false;
                 for (int i = taskItemEntityList.size() - 1; i >= 0; i--) {
                     TaskEntity.TaskItemEntity taskItemEntity = taskItemEntityList.get(i);
@@ -204,7 +204,6 @@ public class TaskListCalendarFragment extends BaseFragment {
     @Override
     public void onResume() {
         super.onResume();
-
         getTaskData();
     }
 
@@ -226,11 +225,14 @@ public class TaskListCalendarFragment extends BaseFragment {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDeleteTaskEvent(TaskActionEvent event) {
-        if (event == null) return;
-
+        if (event == null) {
+            return;
+        }
         switch (event.action) {
             case TaskActionEvent.TASK_REFRESG_ACTION:
                 getTaskData();
+                break;
+            default:
                 break;
         }
     }
@@ -270,15 +272,18 @@ public class TaskListCalendarFragment extends BaseFragment {
 
             @Override
             public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-                if (Math.abs(velocityX) > Math.abs(velocityY))
+                if (Math.abs(velocityX) > Math.abs(velocityY)) {
                     return super.onFling(e1, e2, velocityX, velocityY);
+                }
                 if (Math.abs(velocityY) > DensityUtil.dip2px(getContext(), 50)) {
-                    if (slSchedule.getmState() == ScheduleState.CLOSE) {//日历处于收起状态
+                    //日历处于收起状态
+                    if (slSchedule.getmState() == ScheduleState.CLOSE) {
                         if (gestureDetectorLayout.getY() > -calendarTitleLl.getHeight()
                                 && velocityY < 0) {
                             gestureDetectorLayout.setY(-calendarTitleLl.getHeight());
                         }
-                    } else if (slSchedule.getmState() == ScheduleState.OPEN) {//日历处于打开状态
+                    }//日历处于打开状态
+                    else if (slSchedule.getmState() == ScheduleState.OPEN) {
                         if (gestureDetectorLayout.getY() < 0
                                 && velocityY > 0) {
                             gestureDetectorLayout.setY(0);
@@ -290,8 +295,9 @@ public class TaskListCalendarFragment extends BaseFragment {
 
             @Override
             public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-                if (Math.abs(distanceX) >= Math.abs(distanceY))
+                if (Math.abs(distanceX) >= Math.abs(distanceY)) {
                     return super.onScroll(e1, e2, distanceX, distanceY);
+                }
                 if (slSchedule.getmState() == ScheduleState.CLOSE
                         && distanceY > 0) {
                     //向上
@@ -406,14 +412,12 @@ public class TaskListCalendarFragment extends BaseFragment {
         slSchedule.setOnCalendarClickListener(new OnCalendarClickListener() {
             @Override
             public void onClickDate(int year, int month, int day) {
-                log("----------->onClickDate year:" + year + "  month:" + month + "   day:" + day);
                 updateTitle(year, month + 1, day);
                 scrollToTaskPage(year, month, day);
             }
 
             @Override
             public void onPageChange(int year, int month, int day) {
-                log("----------->onPageChange year:" + year + "  month:" + month + "   day:" + day);
                 updateTitle(year, month + 1, day);
             }
         });
@@ -421,7 +425,6 @@ public class TaskListCalendarFragment extends BaseFragment {
                 slSchedule.getCurrentSelectMonth() + 1,
                 slSchedule.getCurrentSelectDay());
         addTaskHints();
-
         slSchedule.invalidate();
     }
 
@@ -433,9 +436,13 @@ public class TaskListCalendarFragment extends BaseFragment {
         HashMap<Long, List<Integer>> allTaskHint = getAllTaskHint();
         for (Map.Entry<Long, List<Integer>> entry : allTaskHint.entrySet()) {
             Long key = entry.getKey();
-            if (key == null) continue;
+            if (key == null) {
+                continue;
+            }
             List<Integer> value = entry.getValue();
-            if (value == null) continue;
+            if (value == null) {
+                continue;
+            }
             Calendar clendar = Calendar.getInstance();
             clendar.setTimeInMillis(key);
             CalendarUtils.getInstance(getContext())
@@ -443,11 +450,16 @@ public class TaskListCalendarFragment extends BaseFragment {
         }
     }
 
-
     private void updateTitle(int year, int month, int day) {
         titleContent.setText(String.format("%s年%s月", year, month));
+        Calendar instance = Calendar.getInstance();
+        instance.set(year, month, day);
+        selectedDateMillis = instance.getTimeInMillis();
     }
 
+    public long getSelectedDateMillis() {
+        return selectedDateMillis;
+    }
 
     /**
      * 动态计算
@@ -460,8 +472,12 @@ public class TaskListCalendarFragment extends BaseFragment {
         Calendar targetDay = Calendar.getInstance();
         targetDay.setTimeInMillis(targetDayTime);
         for (TaskEntity.TaskItemEntity item : taskItemEntityList) {
-            if (item == null) continue;
-            if (item.dueTime <= 0) continue;
+            if (item == null) {
+                continue;
+            }
+            if (item.dueTime <= 0) {
+                continue;
+            }
             Calendar clendar = Calendar.getInstance();
             clendar.setTimeInMillis(item.dueTime);
             clendar.set(Calendar.HOUR_OF_DAY, 0);
@@ -485,7 +501,9 @@ public class TaskListCalendarFragment extends BaseFragment {
     private HashMap<Long, List<Integer>> getAllTaskHint() {
         HashMap<Long, List<Integer>> allTaskHintMap = new HashMap<>();
         for (TaskEntity.TaskItemEntity item : taskItemEntityList) {
-            if (item == null) continue;
+            if (item == null) {
+                continue;
+            }
             Calendar clendar = Calendar.getInstance();
             clendar.setTimeInMillis(item.dueTime);
             int day = clendar.get(Calendar.DAY_OF_MONTH);
@@ -517,8 +535,12 @@ public class TaskListCalendarFragment extends BaseFragment {
     private List<Integer> getMonthTaskHint(int year, int month) {
         List<Integer> data = new ArrayList<>();
         for (TaskEntity.TaskItemEntity item : taskItemEntityList) {
-            if (item == null) continue;
-            if (item.dueTime <= 0) continue;
+            if (item == null) {
+                continue;
+            }
+            if (item.dueTime <= 0) {
+                continue;
+            }
             Calendar clendar = Calendar.getInstance();
             clendar.setTimeInMillis(item.dueTime);
             if (clendar.get(Calendar.YEAR) == year
@@ -531,7 +553,6 @@ public class TaskListCalendarFragment extends BaseFragment {
         }
         return data;
     }
-
 
     @OnClick({R.id.titleBack,
             R.id.titleForward,
@@ -567,7 +588,7 @@ public class TaskListCalendarFragment extends BaseFragment {
                 mcvCalendar.setTodayToView();
                 break;
             case R.id.header_comm_search_ll:
-                SearchTaskActivity.launchTask(getContext(),
+                TaskSearchActivity.launchTask(getContext(),
                         getLoginUserId(),
                         0);
                 break;
@@ -579,20 +600,27 @@ public class TaskListCalendarFragment extends BaseFragment {
                             TabTaskFragment tabTaskFragment = (TabTaskFragment) allFragment.getParentFragment();
                             tabTaskFragment.isShowCalendar = false;
                             tabTaskFragment.isAwayScroll = true;
-                            tabTaskFragment.setFirstTabText("未完成", 0);
-                            tabTaskFragment.updateListData(0);
+                            tabTaskFragment.setFirstTabText(getString(R.string.task_unfinished), 0);
+                            tabTaskFragment.updateListData(TaskConfig.TASK_STATETYPE_UNFINISH);
                         }
                     }
                 }
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onTaskEvent(TaskActionEvent event) {
-        if (event == null) return;
+        if (event == null) {
+            return;
+        }
         if (event.action == TaskActionEvent.TASK_UPDATE_ITEM) {
-            if (event.entity == null) return;
+            if (event.entity == null) {
+                return;
+            }
             int indexOf = taskItemEntityList.indexOf(event.entity);
             if (indexOf >= 0) {
                 TaskEntity.TaskItemEntity taskItemEntity = taskItemEntityList.get(indexOf);
@@ -610,8 +638,9 @@ public class TaskListCalendarFragment extends BaseFragment {
 
                 //刷新本月
                 if (slSchedule != null) {
-                    if ((targetYear == slSchedule.getCurrentSelectYear() && targetMonth == slSchedule.getCurrentSelectMonth())
-                            || (eventYear == slSchedule.getCurrentSelectYear() && eventMonth == slSchedule.getCurrentSelectMonth())) {
+                    boolean isRefresh = (targetYear == slSchedule.getCurrentSelectYear() && targetMonth == slSchedule.getCurrentSelectMonth())
+                            || (eventYear == slSchedule.getCurrentSelectYear() && eventMonth == slSchedule.getCurrentSelectMonth());
+                    if (isRefresh) {
                         List<Integer> taskHint = slSchedule.getTaskHint();
                         if (taskHint != null && !taskHint.isEmpty()) {
                             slSchedule.removeTaskHints(taskHint);
@@ -634,9 +663,10 @@ public class TaskListCalendarFragment extends BaseFragment {
     @Override
     public synchronized void notifyFragmentUpdate(Fragment targetFrgament, int type, Bundle bundle) {
         super.notifyFragmentUpdate(targetFrgament, type, bundle);
-        if (targetFrgament != this) return;
+        if (targetFrgament != this) {
+            return;
+        }
         if (bundle != null) {
-            ArrayList<TaskEntity.TaskItemEntity> tasks = (ArrayList<TaskEntity.TaskItemEntity>) bundle.getSerializable(KEY_FRAGMENT_RESULT);
             getTaskData();
         }
     }
@@ -647,7 +677,9 @@ public class TaskListCalendarFragment extends BaseFragment {
      * @param tasks
      */
     private void updateClendarTasks(List<TaskEntity.TaskItemEntity> tasks) {
-        if (viewPager == null || isDetached()) return;
+        if (viewPager == null || isDetached()) {
+            return;
+        }
         if (tasks != null && !tasks.isEmpty()) {
             updateClendarTasks(new ArrayList<TaskEntity.TaskItemEntity>(tasks));
         }
@@ -661,7 +693,6 @@ public class TaskListCalendarFragment extends BaseFragment {
     private void updateClendarTasks(ArrayList<TaskEntity.TaskItemEntity> tasks) {
         if (tasks != null && taskItemEntityList != null) {
             taskItemEntityList = tasks;
-
 
             //1.更新子fragment
             fragmentPagerAdapter.notifyRefresh();

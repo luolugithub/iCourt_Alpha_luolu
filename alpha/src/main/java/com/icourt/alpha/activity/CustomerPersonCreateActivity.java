@@ -392,7 +392,7 @@ public class CustomerPersonCreateActivity extends BaseActivity {
                 change_sex();
                 break;
             case R.id.activity_add_person_contact_group_textview://选择团队
-                GroupSelectActivity.launchForResult(CustomerPersonCreateActivity.this, groupBeanList, SELECT_GROUP_REQUEST);
+                TeamSelectActivity.launchForResult(CustomerPersonCreateActivity.this, groupBeanList, SELECT_GROUP_REQUEST);
                 break;
             case R.id.activity_add_person_contact_add_oldname_layout://增加曾用名
                 addOldNameItemView(null);

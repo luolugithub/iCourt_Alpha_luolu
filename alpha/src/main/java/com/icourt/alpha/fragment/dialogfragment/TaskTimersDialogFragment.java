@@ -6,7 +6,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -17,10 +16,10 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.andview.refreshview.XRefreshView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.TimerAddActivity;
 import com.icourt.alpha.activity.TimerDetailActivity;
+import com.icourt.alpha.activity.TimerTaskAddActivity;
 import com.icourt.alpha.activity.TimerTimingActivity;
 import com.icourt.alpha.adapter.TimeAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
@@ -30,10 +29,16 @@ import com.icourt.alpha.entity.bean.TaskEntity;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.view.recyclerviewDivider.TimerItemDecoration;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.manager.TimerManager;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
+
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -63,10 +68,11 @@ public class TaskTimersDialogFragment extends BaseDialogFragment implements Base
     @BindView(R.id.titleView)
     AppBarLayout titleView;
     @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
     TimeAdapter timeAdapter;
+    int pageIndex = 1;
 
     public static TaskTimersDialogFragment newInstance(@NonNull TaskEntity.TaskItemEntity taskItemEntity) {
         TaskTimersDialogFragment contactDialogFragment = new TaskTimersDialogFragment();
@@ -85,6 +91,16 @@ public class TaskTimersDialogFragment extends BaseDialogFragment implements Base
         return view;
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        if (getDialog() != null) {
+            Window window = getDialog().getWindow();
+            window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT);
+        }
+    }
+
+    @Override
     protected void initView() {
         Dialog dialog = getDialog();
         if (dialog != null) {
@@ -104,27 +120,24 @@ public class TaskTimersDialogFragment extends BaseDialogFragment implements Base
         if (taskItemEntity != null) {
             titleAction.setVisibility(taskItemEntity.valid ? View.VISIBLE : View.GONE);
         }
-        refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_timing, "暂无计时");
-        refreshLayout.setMoveForHorizontal(true);
+        refreshLayout.setEnableLoadmore(false);
+        recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_timing, R.string.empty_list_timing);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setItemAnimator(null);
 
         recyclerView.setAdapter(timeAdapter = new TimeAdapter());
         recyclerView.addItemDecoration(new TimerItemDecoration(getActivity(), timeAdapter));
-        recyclerView.setHasFixedSize(true);
         timeAdapter.setOnItemClickListener(this);
-        timeAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, timeAdapter));
+        timeAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(recyclerView, timeAdapter));
 
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(RefreshLayout refreshlayout) {
                 getData(true);
             }
 
             @Override
-            public void onLoadMore(boolean isSilence) {
-                super.onLoadMore(isSilence);
+            public void onLoadmore(RefreshLayout refreshlayout) {
                 getData(false);
             }
         });
@@ -145,44 +158,61 @@ public class TaskTimersDialogFragment extends BaseDialogFragment implements Base
                 break;
             case R.id.titleAction:
                 if (taskItemEntity != null)
-                    TimerAddActivity.launch(getContext(), taskItemEntity);
+                    TimerTaskAddActivity.launch(getContext(), taskItemEntity);
+                break;
+            default:
+
                 break;
         }
     }
 
     @Override
     protected void getData(final boolean isRefresh) {
-        if (taskItemEntity == null) return;
+        if (taskItemEntity == null) {
+            return;
+        }
+        if (isRefresh) {
+            pageIndex = 1;
+        }
         callEnqueue(
                 getApi().taskTimesByIdQuery(taskItemEntity.id),
                 new SimpleCallBack<TimeEntity>() {
-            @Override
-            public void onSuccess(Call<ResEntity<TimeEntity>> call, Response<ResEntity<TimeEntity>> response) {
-                stopRefresh();
-                if (response.body().result != null) {
-                    if (response.body().result.items != null) {
-                        if (response.body().result.items.size() > 0) {
-                            response.body().result.items.add(0, new TimeEntity.ItemEntity());
+                    @Override
+                    public void onSuccess(Call<ResEntity<TimeEntity>> call, Response<ResEntity<TimeEntity>> response) {
+                        stopRefresh();
+                        if (response.body().result != null) {
+                            if (response.body().result.items != null) {
+                                if (response.body().result.items.size() > 0) {
+                                    response.body().result.items.add(0, new TimeEntity.ItemEntity());
+                                }
+                                timeAdapter.bindData(isRefresh, response.body().result.items);
+                                timeAdapter.setSumTime(response.body().result.timingSum);
+
+                                pageIndex += 1;
+                            }
                         }
-                        timeAdapter.bindData(isRefresh, response.body().result.items);
-                        timeAdapter.setSumTime(response.body().result.timingSum);
                     }
-                }
-            }
 
-            @Override
-            public void onFailure(Call<ResEntity<TimeEntity>> call, Throwable t) {
-                super.onFailure(call, t);
-                stopRefresh();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<TimeEntity>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        stopRefresh();
+                    }
+                });
 
+    }
+
+    private void enableLoadMore(List result) {
+        if (refreshLayout != null) {
+            refreshLayout.setEnableLoadmore(result != null
+                    && result.size() >= ActionConstants.DEFAULT_PAGE_SIZE);
+        }
     }
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 
@@ -197,6 +227,9 @@ public class TaskTimersDialogFragment extends BaseDialogFragment implements Base
         if (holder.getItemViewType() == 1) {
             TimeEntity.ItemEntity itemEntity = (TimeEntity.ItemEntity) adapter.getItem(adapter.getRealPos(position));
             if (itemEntity == null) return;
+            if (taskItemEntity != null) {
+                itemEntity.taskName = taskItemEntity.name;
+            }
             if (TextUtils.equals(itemEntity.createUserId, getLoginUserId())) {
                 if (StringUtils.equalsIgnoreCase(itemEntity.pkId, TimerManager.getInstance().getTimerId(), false)) {
                     TimerTimingActivity.launch(view.getContext(), itemEntity);

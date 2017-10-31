@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.icourt.alpha.view.xrefreshlayout.RefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.scwang.smartrefresh.layout.SmartRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@id/refreshLayout"
     android:layout_width="match_parent"
@@ -26,8 +26,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:visibility="gone"
-                >
+                android:visibility="gone">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -57,12 +56,11 @@
                 <com.icourt.alpha.view.WrapContentHeightViewPager
                     android:id="@+id/project_viewpager"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    >
+                    android:layout_height="wrap_content">
 
                 </com.icourt.alpha.view.WrapContentHeightViewPager>
             </LinearLayout>
         </LinearLayout>
 
     </android.support.v4.widget.NestedScrollView>
-</com.icourt.alpha.view.xrefreshlayout.RefreshLayout>
+</com.scwang.smartrefresh.layout.SmartRefreshLayout>

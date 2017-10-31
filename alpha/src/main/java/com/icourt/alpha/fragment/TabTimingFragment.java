@@ -72,7 +72,10 @@ import retrofit2.Response;
  * date createTime：2017/4/17
  * version 1.0.0
  */
+@Deprecated
 public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
+
+    Unbinder unbinder;
 
     @BindView(R.id.tabLayout)
     TabLayout tabLayout;
@@ -88,11 +91,33 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
     RecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
     RefreshLayout refreshLayout;
-    Unbinder unbinder;
     @BindView(R.id.titleAction)
     ImageView titleAction;
     @BindView(R.id.empty_layout)
     LinearLayout emptyLayout;
+
+    private LineChartData data;//折线图的数据
+    private int numberOfPoints = 7;//点的数量
+    private boolean hasLines = true;//折线图是否有分割线
+    private boolean hasPoints = false;//不要圆点
+    private ValueShape shape = ValueShape.CIRCLE;
+    private boolean isFilled = true;
+    private boolean hasLabels = false;
+    private boolean isCubic = true;
+    private boolean hasLabelForSelected = false;
+
+
+    private final long weekMillSecond = 7 * 24 * 60 * 60 * 1000;//一周的秒数
+    private TimeAdapter timeAdapter;
+    private final List<TimingCountEntity> timingCountEntities = new ArrayList<>();//服务器返回的每日的计时时常
+    int pageIndex = 0;
+    CustomerXRefreshViewFooter customerXRefreshViewFooter;
+    CustomerXRefreshViewHeader customerXRefreshViewHeader;
+
+
+    public static TabTimingFragment newInstance() {
+        return new TabTimingFragment();
+    }
 
     @Nullable
     @Override
@@ -105,7 +130,6 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
     @Override
     public void onResume() {
         super.onResume();
-//        getData(true);
         if (refreshLayout != null) {
             refreshLayout.startRefresh();
         }
@@ -119,28 +143,6 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
             unbinder.unbind();
         }
     }
-
-    public static TabTimingFragment newInstance() {
-        return new TabTimingFragment();
-    }
-
-    private LineChartData data;
-    private int numberOfPoints = 7;
-    private boolean hasLines = true;
-
-    private boolean hasPoints = false;//不要圆点
-    private ValueShape shape = ValueShape.CIRCLE;
-    private boolean isFilled = true;
-    private boolean hasLabels = false;
-    private boolean isCubic = true;
-    private boolean hasLabelForSelected = false;
-
-    private final long weekMillSecond = 7 * 24 * 60 * 60 * 1000;
-    private TimeAdapter timeAdapter;
-    private final List<TimingCountEntity> timingCountEntities = new ArrayList<>();
-    int pageIndex = 0;
-    CustomerXRefreshViewFooter customerXRefreshViewFooter;
-    CustomerXRefreshViewHeader customerXRefreshViewHeader;
 
     @Override
     protected void initView() {
@@ -169,7 +171,6 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
         customerXRefreshViewHeader.setHeaderRefreshTitle("加载后一周");
         refreshLayout.setCustomHeaderView(customerXRefreshViewHeader);
 
-        //refreshLayout.setNoticeEmpty(R.mipmap.icon_placeholder_timing, "暂无计时");
         timeAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override
             protected void updateUI() {
@@ -269,7 +270,7 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
                             timeAdapter.bindData(true, response.body().result.items);
                             stopRefresh();
                             if (timingCountTotal != null)
-                                timingCountTotal.setText(getHm(response.body().result.timingSum));
+                                timingCountTotal.setText(DateUtils.getHmIntegral(response.body().result.timingSum));
                         }
                     }
 
@@ -283,15 +284,15 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
     }
 
     /**
-     * 获取某周的计时统计
+     * 统计时间段内每天计时时间
      *
-     * @param weekStartTime
-     * @param weekEndTime
+     * @param weekStartTime 开始时间
+     * @param weekEndTime   结束时间
      */
     private void getWeekTimingCount(String weekStartTime, String weekEndTime) {
         callEnqueue(
-                getApi().queryTimingCountByTime(weekStartTime, weekEndTime)
-                , new SimpleCallBack<ItemPageEntity<TimingCountEntity>>() {
+                getApi().queryTimingCountByTime(weekStartTime, weekEndTime),
+                new SimpleCallBack<ItemPageEntity<TimingCountEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<ItemPageEntity<TimingCountEntity>>> call, Response<ResEntity<ItemPageEntity<TimingCountEntity>>> response) {
                         if (response.body().result != null && timingTodayTotal != null) {
@@ -299,14 +300,14 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
                             timingCountEntities.addAll(response.body().result.items);
                             generateData();
                             if (pageIndex <= 0) {
-                                timingTodayTotal.setText(getHm(0));
+                                timingTodayTotal.setText(DateUtils.getHmIntegral(0));
                             }
                             if (response.body().result.items != null && pageIndex <= 0) {
                                 for (TimingCountEntity timingCountEntity : response.body().result.items) {
                                     if (timingCountEntity != null) {
                                         boolean isToday = DateUtils.isToday(timingCountEntity.workDate);
                                         if (isToday) {
-                                            timingTodayTotal.setText(getHm(timingCountEntity.timingCount));
+                                            timingTodayTotal.setText(DateUtils.getHmIntegral(timingCountEntity.timingCount));
                                             break;
                                         }
                                     }
@@ -338,9 +339,9 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
     private void generateData() {
         if (timingChartView == null) return;
         resetViewport();
-        List<Line> lines = new ArrayList<Line>();
+        List<Line> lines = new ArrayList<>();
 
-        List<PointValue> values = new ArrayList<PointValue>();
+        List<PointValue> values = new ArrayList<>();
         List<AxisValue> axisXValues = Arrays.asList(
                 new AxisValue(0).setLabel("周一"),
                 new AxisValue(1).setLabel("周二"),
@@ -355,7 +356,7 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
         }
 
         SparseArray<Long> weekDataArray = new SparseArray<>();
-        for (int i = 0; i < timingCountEntities.size(); i++) {
+        for (int i = 0; i < timingCountEntities.size(); i++) {//遍历每日的计时时常
             TimingCountEntity itemEntity = timingCountEntities.get(i);
             if (itemEntity != null) {
                 try {
@@ -371,7 +372,7 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
             }
         }
 
-
+        //计算出要展示的那天的计时时间
         float maxValue = 0f;
         for (int j = 0; j < numberOfPoints; j++) {
             float hour = 0;
@@ -441,6 +442,8 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.titleAction:
+//                TimingSelectDialogFragment dialogFragment = new TimingSelectDialogFragment();
+//                dialogFragment.show(getChildFragmentManager(), TimingSelectDialogFragment.class.getSimpleName());
                 TimerAddActivity.launch(getContext());
                 break;
             default:
@@ -478,14 +481,6 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
                 break;
         }
     }
-
-    public String getHm(long milliSecond) {
-        milliSecond /= 1000;
-        long hour = milliSecond / 3600;
-        long minute = milliSecond % 3600 / 60;
-        return String.format("%d:%02d", hour, minute);
-    }
-
 
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {

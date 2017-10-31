@@ -23,6 +23,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
+import com.icourt.alpha.activity.TaskDetailActivity;
 import com.icourt.alpha.adapter.TaskCheckItemAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseFragment;
@@ -33,7 +34,6 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.interfaces.OnUpdateTaskListener;
-import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.api.RequestUtils;
 
@@ -144,10 +144,11 @@ public class TaskCheckItemFragment extends BaseFragment
                 @Override
                 public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                     if (actionId == EditorInfo.IME_ACTION_DONE) {
-                        if (!TextUtils.isEmpty(checkItemEdit.getText().toString()))
+                        if (!TextUtils.isEmpty(checkItemEdit.getText().toString())) {
                             addCheckItem();
-                        else
+                        } else {
                             showTopSnackBar(R.string.task_please_input_check_name);
+                        }
                     }
                     return true;
                 }
@@ -188,8 +189,7 @@ public class TaskCheckItemFragment extends BaseFragment
                 new SimpleCallBack<TaskCheckItemEntity>() {
                     @Override
                     public void onSuccess(Call<ResEntity<TaskCheckItemEntity>> call, Response<ResEntity<TaskCheckItemEntity>> response) {
-                        if (getActivity() != null && !getActivity().isFinishing())
-                            dismissLoadingDialog();
+                        dismissLoadingDialog();
                         if (listLayout != null) {
                             if (response.body().result.items != null) {
                                 taskCheckItemAdapter.bindData(false, response.body().result.items);
@@ -225,10 +225,9 @@ public class TaskCheckItemFragment extends BaseFragment
         }
         if (updateTaskListener != null) {
             if (taskCheckItemAdapter.getSelectedArray() != null) {
-                LogUtils.e("size : ----   " + taskCheckItemAdapter.getSelectedArray().size());
-                updateTaskListener.onUpdateCheckItem(taskCheckItemAdapter.getSelectedArray().size() + "/" + taskCheckItemAdapter.getItemCount());
+                updateTaskListener.onUpdateCheckItem(getString(R.string.task_devide, String.valueOf(taskCheckItemAdapter.getSelectedArray().size()), String.valueOf(taskCheckItemAdapter.getItemCount())));
             } else {
-                updateTaskListener.onUpdateCheckItem(0 + "/" + taskCheckItemAdapter.getItemCount());
+                updateTaskListener.onUpdateCheckItem(getString(R.string.task_devide, String.valueOf(0), String.valueOf(taskCheckItemAdapter.getItemCount())));
             }
         }
     }
@@ -242,7 +241,7 @@ public class TaskCheckItemFragment extends BaseFragment
      */
     @Override
     public void notifyFragmentUpdate(Fragment targetFrgament, int type, Bundle bundle) {
-        if (type == 100 && bundle != null) {
+        if (type == TaskDetailActivity.TYPE_UPDATE_CHILD_FRAGMENT && bundle != null) {
             if (targetFrgament instanceof TaskCheckItemFragment) {
                 boolean isFinish = bundle.getBoolean("isFinish");
                 boolean valid = bundle.getBoolean("valid");
@@ -254,8 +253,14 @@ public class TaskCheckItemFragment extends BaseFragment
                     taskCheckItemAdapter.setOnItemChildClickListener(!isFinish && valid ? this : null);
                     taskCheckItemAdapter.setOnLoseFocusListener(!isFinish && valid ? this : null);
                 }
-                if (addItemLayout != null)
+                if (addItemLayout != null) {
                     addItemLayout.setVisibility(valid && !isFinish ? View.VISIBLE : View.GONE);
+                }
+            }
+        } else if (type == TaskDetailActivity.TYPE_CHECK_ITEM_SHOW_KEYBOARD && bundle != null) {
+            boolean isShowKeyboard = bundle.getBoolean(TaskDetailActivity.KEY_IS_CHECK_ITEM, false);
+            if (isShowKeyboard) {
+                SystemUtils.showSoftKeyBoard(getActivity(), checkItemEdit);
             }
         }
     }
@@ -275,8 +280,9 @@ public class TaskCheckItemFragment extends BaseFragment
                                 String id = response.body().result.getAsString();
                                 itemEntity.id = id;
                                 taskCheckItemAdapter.addItem(itemEntity);
-                                if (checkItemEdit != null)
+                                if (checkItemEdit != null) {
                                     checkItemEdit.setText("");
+                                }
                                 EventBus.getDefault().post(new TaskActionEvent(TaskActionEvent.TASK_REFRESG_ACTION));
                                 updateCheckItemCount();
                             }
@@ -314,7 +320,6 @@ public class TaskCheckItemFragment extends BaseFragment
         }
     }
 
-
     /**
      * edittext设置设置焦点
      *
@@ -350,10 +355,11 @@ public class TaskCheckItemFragment extends BaseFragment
                 case R.id.check_item_delete_image:
                     deleteCheckItem(itemEntity, adapter.getRealPos(position));
                     break;
+                default:
+                    break;
             }
         }
     }
-
 
     @Override
     public void loseFocus(TaskCheckItemEntity.ItemEntity itemEntity, int position, String name) {
@@ -393,7 +399,9 @@ public class TaskCheckItemFragment extends BaseFragment
      * @param itemEntity
      */
     private void updateCheckItem(final TaskCheckItemEntity.ItemEntity itemEntity, final String name) {
-        if (itemEntity == null) return;
+        if (itemEntity == null) {
+            return;
+        }
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("id", itemEntity.id);
         jsonObject.addProperty("name", name);
@@ -425,7 +433,9 @@ public class TaskCheckItemFragment extends BaseFragment
      * @param itemEntity
      */
     private void deleteCheckItem(final TaskCheckItemEntity.ItemEntity itemEntity, final int position) {
-        if (itemEntity == null) return;
+        if (itemEntity == null) {
+            return;
+        }
         callEnqueue(
                 getApi().taskCheckItemDelete(itemEntity.id),
                 new SimpleCallBack<JsonElement>() {

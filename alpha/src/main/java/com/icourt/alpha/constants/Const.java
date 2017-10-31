@@ -16,6 +16,8 @@ import java.lang.annotation.RetentionPolicy;
 
 public class Const {
     public static final String SHARE_PREFERENCES_FILE_NAME = "icourt_cache_data";//SharedPreferences 文件名称
+    public static final String SHARE_PREFERENCES_TEMPORARY_CACHE_FILE_NAME = "icourt_temporary_cache_data";//SharedPreferences 临时缓存 会清空
+
     //下载文件
     public static final String HTTP_DOWNLOAD_FILE = "ilaw/api/v2/file/download";
     public static final String MSC_XUN_APPID = "581bee35";//讯飞语音识别appid
@@ -110,6 +112,10 @@ public class Const {
     public static final String PROJECT_TYPE_NOJUDICIAL = "1";//非诉专项
     public static final String PROJECT_TYPE_COUNSELOR = "2";//常年顾问
     public static final String PROJECT_TYPE_AFFAIR = "3";//内部事务
+
+    public static final int PROJECT_STATUS_ING = 2;//进行中
+    public static final int PROJECT_STATUS_FINISH = 4;//已完结
+    public static final int PROJECT_STATUS_END = 7;//已搁置
 
     @StringDef({PROJECT_TYPE_DISPUTE, PROJECT_TYPE_NOJUDICIAL, PROJECT_TYPE_COUNSELOR, PROJECT_TYPE_AFFAIR})
     @Retention(RetentionPolicy.SOURCE)
@@ -236,4 +242,9 @@ public class Const {
     public @interface PROJECT_INFO_LIST_TYPE {//查看具体事物内容（成员、法官、书记员...）
 
     }
+
+    /**
+     * 显示计时蒙层引导的版本（注意：上线前需确认）
+     */
+    public static final String GUIDE_SHOW_TIME_VERSION_NAME = "v2.2.1";
 }

@@ -5,14 +5,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonElement;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
@@ -37,11 +35,13 @@ import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UriUtils;
 import com.icourt.alpha.utils.UrlUtils;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.comparators.FileSortComparator;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.alpha.widget.dialog.SortTypeSelectDialog;
 import com.icourt.alpha.widget.filter.SFileNameFilter;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -79,9 +79,9 @@ public class ProjectFileFragment extends SeaFileBaseFragment
     private static final int REQUEST_CODE_CHOOSE_FILE = 1002;
 
     @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
     Unbinder unbinder;
     TextView footerView;
 
@@ -137,7 +137,7 @@ public class ProjectFileFragment extends SeaFileBaseFragment
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         headerFooterAdapter = new HeaderFooterAdapter<>(folderAdapter = new FolderAdapter());
 
-        footerView = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_folder_document_num, recyclerView);
+        footerView = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_folder_document_num, recyclerView.getRecyclerView());
         headerFooterAdapter.addFooter(footerView);
         footerView.setText("");
 
@@ -160,21 +160,21 @@ public class ProjectFileFragment extends SeaFileBaseFragment
                         }
                     }
                     if (dirNum == 0 && fileNum == 0) {
-                        footerView.setText(R.string.sfile_folder_empty);
+                        footerView.setText(R.string.empty_list_repo_file);
                     } else {
                         footerView.setText(getString(R.string.sfile_folder_statistics, String.valueOf(dirNum), String.valueOf(fileNum)));
                     }
                 }
             }
         });
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setEnableLoadmore(false);
+        refreshLayout.setOnRefreshListener(new OnRefreshListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(com.scwang.smartrefresh.layout.api.RefreshLayout refreshlayout) {
                 getData(true);
             }
         });
-        refreshLayout.startRefresh();
+        refreshLayout.autoRefresh();
     }
 
     @Override
@@ -249,8 +249,8 @@ public class ProjectFileFragment extends SeaFileBaseFragment
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 
@@ -368,7 +368,7 @@ public class ProjectFileFragment extends SeaFileBaseFragment
     /**
      * 排序
      */
-    private void sortFile(List<FolderDocumentEntity> datas) {
+    private void sortFile(final List<FolderDocumentEntity> datas) {
         seaFileSort(fileSortType, datas)
                 .delay(500, TimeUnit.MILLISECONDS)
                 .compose(this.<List<FolderDocumentEntity>>bindToLifecycle())
@@ -390,6 +390,9 @@ public class ProjectFileFragment extends SeaFileBaseFragment
                     public void onComplete() {
                         super.onComplete();
                         dismissLoadingDialog();
+                        if(datas.isEmpty()){
+                            folderAdapter.bindData(true, datas);
+                        }
                     }
                 });
     }

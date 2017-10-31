@@ -3,14 +3,12 @@ package com.icourt.alpha.fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.SFileTrashAdapter;
@@ -23,8 +21,10 @@ import com.icourt.alpha.entity.bean.SeaFileTrashPageEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.JsonUtils;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.util.Arrays;
 
@@ -49,9 +49,9 @@ public class FileTrashListFragment extends SeaFileBaseFragment
 
     @BindView(R.id.recyclerView)
     @Nullable
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
     Unbinder unbinder;
     protected static final String KEY_SEA_FILE_REPO_ID = "seaFileRepoId";//仓库id
     protected static final String KEY_SEA_FILE_DIR_PATH = "seaFileDirPath";//目录路径
@@ -98,34 +98,32 @@ public class FileTrashListFragment extends SeaFileBaseFragment
         recyclerView.setAdapter(folderDocumentAdapter = new SFileTrashAdapter(
                 false,
                 TextUtils.equals(getRepoPermission(), PERMISSION_RW)));
-        emptyView = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_folder_document_num, recyclerView);
-        emptyView.setText(R.string.sfile_recycle_bin_empty);
-        refreshLayout.setEmptyView(emptyView);
+        emptyView = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_folder_document_num, recyclerView.getRecyclerView());
+        emptyView.setText(R.string.empty_list_repo_recycle_bin);
+        recyclerView.setEmptyView(emptyView);
         folderDocumentAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override
             protected void updateUI() {
                 if (refreshLayout != null) {
-                    refreshLayout.enableEmptyView(folderDocumentAdapter.getItemCount() <= 0);
+                    recyclerView.enableEmptyView(folderDocumentAdapter.getData());
                 }
             }
         });
 
         folderDocumentAdapter.setOnItemClickListener(this);
         folderDocumentAdapter.setOnItemChildClickListener(this);
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(com.scwang.smartrefresh.layout.api.RefreshLayout refreshlayout) {
                 getData(true);
             }
 
             @Override
-            public void onLoadMore(boolean isSilence) {
-                super.onLoadMore(isSilence);
+            public void onLoadmore(com.scwang.smartrefresh.layout.api.RefreshLayout refreshlayout) {
                 getData(false);
             }
         });
-        refreshLayout.startRefresh();
+        refreshLayout.autoRefresh();
     }
 
 
@@ -152,10 +150,10 @@ public class FileTrashListFragment extends SeaFileBaseFragment
                     @Override
                     public void onSuccess(Call<SeaFileTrashPageEntity<FolderDocumentEntity>> call, Response<SeaFileTrashPageEntity<FolderDocumentEntity>> response) {
                         scanStat = response.body().scan_stat;
-                        folderDocumentAdapter.bindData(isRefresh, wrapData(getSeaFileRepoId(),getSeaFileDirPath(),response.body().data));
+                        folderDocumentAdapter.bindData(isRefresh, wrapData(getSeaFileRepoId(), getSeaFileDirPath(), response.body().data));
                         stopRefresh();
                         if (refreshLayout != null) {
-                            refreshLayout.setPullLoadEnable(response.body().more);
+                            refreshLayout.setEnableLoadmore(response.body().more);
                         }
                     }
 
@@ -169,8 +167,8 @@ public class FileTrashListFragment extends SeaFileBaseFragment
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 
@@ -217,7 +215,7 @@ public class FileTrashListFragment extends SeaFileBaseFragment
                     @Override
                     public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
                         dismissLoadingDialog();
-                        if (JsonUtils.getBoolValue(response.body(),"success")) {
+                        if (JsonUtils.getBoolValue(response.body(), "success")) {
                             getData(true);
                             showToast(R.string.sfile_recovery_success);
                         } else {

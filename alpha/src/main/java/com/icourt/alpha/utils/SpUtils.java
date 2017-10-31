@@ -31,9 +31,11 @@ import Decoder.BASE64Encoder;
  */
 public class SpUtils {
     private static final String DEFAULT_FILE = Const.SHARE_PREFERENCES_FILE_NAME;
+    private static final String TEMPORARY_CACHE_FILE = Const.SHARE_PREFERENCES_TEMPORARY_CACHE_FILE_NAME;
     private SharedPreferences sp;
     private SharedPreferences.Editor editor;
     private static SpUtils instance;
+    private static SpUtils temporaryCache;
 
 
     private Context getContext() {
@@ -54,11 +56,28 @@ public class SpUtils {
     }
 
 
+    /**
+     * 临时缓存 不清空
+     *
+     * @return
+     */
     public static SpUtils getInstance() {
         if (instance == null) {
             instance = new SpUtils(DEFAULT_FILE);
         }
         return instance;
+    }
+
+    /**
+     * 临时缓存 我的-->清空缓存 要清空（缓存了添加计时、任务、项目上一次输入的内容）
+     *
+     * @return
+     */
+    public static SpUtils getTemporaryCache() {
+        if (temporaryCache == null) {
+            temporaryCache = new SpUtils(TEMPORARY_CACHE_FILE);
+        }
+        return temporaryCache;
     }
 
     public SpUtils remove(String key) {
@@ -164,7 +183,7 @@ public class SpUtils {
         try {
             String stringData = getStringData(key, null);
             if (!TextUtils.isEmpty(stringData)) {
-                return JsonUtils.Gson2Bean(key, c);
+                return JsonUtils.Gson2Bean(stringData, c);
             }
         } catch (JsonParseException e) {
             e.printStackTrace();

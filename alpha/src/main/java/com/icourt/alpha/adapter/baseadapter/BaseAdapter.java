@@ -12,6 +12,7 @@ import com.icourt.alpha.http.ApiChatService;
 import com.icourt.alpha.http.ApiProjectService;
 import com.icourt.alpha.http.ApiSFileService;
 import com.icourt.alpha.interfaces.ProgressHUDImp;
+import com.zhaol.refreshlayout.interfaces.IDataEmptyAdapter;
 
 import java.util.List;
 
@@ -24,7 +25,7 @@ import java.util.List;
  */
 public abstract class BaseAdapter<T>
         extends com.asange.recyclerviewadapter.BaseRecyclerAdapter<T>
-        implements ProgressHUDImp {
+        implements ProgressHUDImp, IDataEmptyAdapter {
     final BaseActionHelper baseActionHelper = new BaseActionHelper();
 
     public BaseAdapter(@NonNull List<T> data) {
@@ -60,6 +61,13 @@ public abstract class BaseAdapter<T>
         baseActionHelper.dismissLoadingDialog();
     }
 
+    @Override
+    public int getRealAdapterCount() {
+        if (getData().isEmpty()) {
+            return 0;
+        }
+        return getData().size();
+    }
 
     /**
      * 加载对话框是否展示中

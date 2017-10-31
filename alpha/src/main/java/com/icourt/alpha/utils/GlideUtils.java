@@ -94,7 +94,7 @@ public class GlideUtils {
                     .transform(new GlideCircleTransform(context))
                     .placeholder(R.mipmap.avatar_default_80)
                     .error(R.mipmap.avatar_default_80)
-                    .crossFade()
+                    .dontAnimate()
                     .into(imageView);
         }
     }

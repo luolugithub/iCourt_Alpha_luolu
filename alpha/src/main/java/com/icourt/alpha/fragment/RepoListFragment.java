@@ -1,17 +1,20 @@
 package com.icourt.alpha.fragment;
 
 import android.content.DialogInterface;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.andview.refreshview.XRefreshView;
+import com.asange.recyclerviewadapter.BaseViewHolder;
+import com.asange.recyclerviewadapter.OnItemChildClickListener;
+import com.asange.recyclerviewadapter.OnItemClickListener;
+import com.asange.recyclerviewadapter.OnItemLongClickListener;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.FolderListActivity;
 import com.icourt.alpha.activity.RepoRenameActivity;
@@ -31,8 +34,11 @@ import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.StringUtils;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.util.Arrays;
 import java.util.List;
@@ -64,18 +70,15 @@ import static com.icourt.alpha.constants.SFileConfig.REPO_SHARED_ME;
  * date createTime：2017/8/9
  * version 2.1.0
  */
-public class RepoListFragment extends RepoBaseFragment
-        implements BaseRecyclerAdapter.OnItemClickListener,
-        BaseRecyclerAdapter.OnItemLongClickListener,
-        BaseRecyclerAdapter.OnItemChildClickListener {
+public class RepoListFragment extends RepoBaseFragment implements OnItemClickListener, OnItemChildClickListener, OnItemLongClickListener {
     private static final String KEY_REPO_TYPE = "repoType";
 
     @BindView(R.id.recyclerView)
     @Nullable
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     Unbinder unbinder;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
     int pageIndex = 1;
     String defaultRopoId;
     int repoType;
@@ -114,43 +117,41 @@ public class RepoListFragment extends RepoBaseFragment
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         switch (repoType) {
             case REPO_MINE:
-                refreshLayout.setNoticeEmptyText(R.string.repo_empty);
+                recyclerView.setEmptyContent(R.string.empty_list_repo_my);
                 break;
             case REPO_SHARED_ME:
-                refreshLayout.setNoticeEmptyText(R.string.repo_share_empty);
+                recyclerView.setEmptyContent(R.string.empty_list_repo_shared);
                 break;
             case REPO_LAWFIRM:
-                refreshLayout.setNoticeEmptyText(R.string.repo_lawfirm_empty);
+                recyclerView.setEmptyContent(R.string.empty_list_repo_lawyer);
                 break;
             case REPO_PROJECT:
-                refreshLayout.setNoticeEmptyText(R.string.repo_empty);
+                recyclerView.setEmptyContent(R.string.empty_list_repo_project);
                 break;
         }
         recyclerView.setAdapter(repoAdapter = new RepoAdapter(repoType));
-        repoAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(refreshLayout, repoAdapter));
+        repoAdapter.registerAdapterDataObserver(new RefreshViewEmptyObserver(recyclerView, repoAdapter));
 
         repoAdapter.setOnItemClickListener(this);
         repoAdapter.setOnItemChildClickListener(this);
         repoAdapter.setOnItemLongClickListener(this);
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
             @Override
-            public void onLoadMore(boolean isSilence) {
-                super.onLoadMore(isSilence);
-                getData(false);
+            public void onRefresh(RefreshLayout refreshlayout) {
+                getData(true);
             }
 
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
-                getData(true);
+            public void onLoadmore(RefreshLayout refreshlayout) {
+                getData(false);
             }
         });
-        refreshLayout.startRefresh();
+        refreshLayout.autoRefresh();
     }
 
     private void enableLoadMore(List result) {
         if (refreshLayout != null) {
-            refreshLayout.setPullLoadEnable(result != null
+            refreshLayout.setEnableLoadmore(result != null
                     && result.size() >= ActionConstants.DEFAULT_PAGE_SIZE);
         }
     }
@@ -279,6 +280,7 @@ public class RepoListFragment extends RepoBaseFragment
                     public void onNext(@NonNull List<RepoEntity> repoEntities) {
                         stopRefresh();
                         repoAdapter.bindData(isRefresh, repoEntities);
+                        recyclerView.enableEmptyView(repoEntities);
                         pageIndex += 1;
                         enableLoadMore(repoEntities);
                     }
@@ -287,6 +289,7 @@ public class RepoListFragment extends RepoBaseFragment
                     public void onError(@NonNull Throwable throwable) {
                         super.onError(throwable);
                         stopRefresh();
+                        recyclerView.enableEmptyView(null);
                     }
 
                     @Override
@@ -299,8 +302,8 @@ public class RepoListFragment extends RepoBaseFragment
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 
@@ -406,17 +409,6 @@ public class RepoListFragment extends RepoBaseFragment
     }
 
 
-    @Override
-    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        RepoEntity item = repoAdapter.getItem(position);
-        if (item == null) return;
-        if (item.isNeedDecrypt()) {
-            showDecryptDialog(item);
-            return;
-        }
-        lookFolderList(item);
-    }
-
     /**
      * 查看文档目录子文件列表
      *
@@ -437,19 +429,6 @@ public class RepoListFragment extends RepoBaseFragment
                 item.encrypted);
     }
 
-
-    @Override
-    public boolean onItemLongClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, final View view, final int position) {
-        RepoEntity item = repoAdapter.getItem(position);
-        if (item != null && item.isNeedDecrypt()) {
-            showDecryptDialog(item);
-        } else {
-            if (repoType == 0) {
-                showDocumentActionDialog(position);
-            }
-        }
-        return true;
-    }
 
     private boolean isDefaultReop(String repo_id) {
         return StringUtils.equalsIgnoreCase(repo_id, defaultRopoId, false);
@@ -544,15 +523,20 @@ public class RepoListFragment extends RepoBaseFragment
      * @param pos
      */
     private void showDelConfirmDialog(final int pos) {
-        new BottomActionDialog(getContext(),
-                getString(R.string.repo_delete_confirm),
-                Arrays.asList(getString(R.string.str_ok)), new BottomActionDialog.OnActionItemClickListener() {
-            @Override
-            public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-                dialog.dismiss();
-                delDocument(pos);
-            }
-        }).show();
+        AlertDialog alertDialog = new AlertDialog.Builder(getContext())
+                .setMessage(R.string.repo_delete_confirm)
+                .setPositiveButton(R.string.str_delete, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        delDocument(pos);
+                    }
+                })
+                .setNegativeButton(R.string.str_cancel, null)
+                .create();
+        alertDialog.show();
+        alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.GRAY);
+        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.RED);
     }
 
     /**
@@ -585,9 +569,21 @@ public class RepoListFragment extends RepoBaseFragment
                 });
     }
 
+
     @Override
-    public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        RepoEntity item = repoAdapter.getItem(position);
+    public void onItemClick(com.asange.recyclerviewadapter.BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
+        RepoEntity item = repoAdapter.getItem(i);
+        if (item == null) return;
+        if (item.isNeedDecrypt()) {
+            showDecryptDialog(item);
+            return;
+        }
+        lookFolderList(item);
+    }
+
+    @Override
+    public void onItemChildClick(com.asange.recyclerviewadapter.BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
+        RepoEntity item = repoAdapter.getItem(i);
         if (item == null) return;
         if (item.isNeedDecrypt()) {
             showDecryptDialog(item);
@@ -595,11 +591,24 @@ public class RepoListFragment extends RepoBaseFragment
         }
         switch (view.getId()) {
             case R.id.document_expand_iv:
-                showDocumentActionDialog(position);
+                showDocumentActionDialog(i);
                 break;
             case R.id.document_detail_iv:
-                lookDetail(position);
+                lookDetail(i);
                 break;
         }
+    }
+
+    @Override
+    public boolean onItemLongClick(com.asange.recyclerviewadapter.BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
+        RepoEntity item = repoAdapter.getItem(i);
+        if (item != null && item.isNeedDecrypt()) {
+            showDecryptDialog(item);
+        } else {
+            if (repoType == 0) {
+                showDocumentActionDialog(i);
+            }
+        }
+        return true;
     }
 }

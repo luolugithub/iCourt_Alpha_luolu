@@ -9,7 +9,7 @@ import android.widget.EditText;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.constants.SFileConfig;
-import com.icourt.alpha.entity.bean.RepoEntity;
+import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.StringUtils;
@@ -79,24 +79,32 @@ public class FolderCreateActivity extends SFileEditBaseActivity {
     @Override
     protected void onSubmitInput(EditText et) {
         if (checkInput(et)) {
-            showLoadingDialog("创建中...");
+            showLoadingDialog(R.string.str_executing);
             JsonObject operationJsonObject = new JsonObject();
             operationJsonObject.addProperty("operation", "mkdir");
             callEnqueue(getSFileApi().folderCreate(
                     getSeaFileRepoId(),
                     String.format("%s%s", getSeaFileDirPath(), et.getText().toString().trim()),
                     RequestUtils.createJsonBody(operationJsonObject.toString())),
-                    new SFileCallBack<RepoEntity>() {
+                    new SFileCallBack<FolderDocumentEntity>() {
                         @Override
-                        public void onSuccess(Call<RepoEntity> call, Response<RepoEntity> response) {
+                        public void onSuccess(Call<FolderDocumentEntity> call, Response<FolderDocumentEntity> response) {
                             dismissLoadingDialog();
-                            showToast("新建文件夹成功");
                             SpUtils.getInstance().remove(KEY_CACHE_FOLDER);
+
+                            //需求 跳转到这个文件夹下面去
+                            FolderListActivity.launch(getContext(),
+                                    SFileConfig.REPO_MINE,
+                                    SFileConfig.PERMISSION_RW,
+                                    getSeaFileRepoId(),
+                                    response.body().name,
+                                    String.format("%s%s/", getSeaFileDirPath(), response.body().name),
+                                    false);
                             finish();
                         }
 
                         @Override
-                        public void onFailure(Call<RepoEntity> call, Throwable t) {
+                        public void onFailure(Call<FolderDocumentEntity> call, Throwable t) {
                             dismissLoadingDialog();
                             super.onFailure(call, t);
                             if (t instanceof HttpException

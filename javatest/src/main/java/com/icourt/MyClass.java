@@ -97,6 +97,11 @@ public class MyClass {
         return File.separator;
     }
 
+    /**
+     * dev 测试
+     * @param args
+     * @throws Exception
+     */
     public static void main(String[] args) throws Exception {
         String s = "/";
         log("-------->sub:" + getFileParentDir(s));

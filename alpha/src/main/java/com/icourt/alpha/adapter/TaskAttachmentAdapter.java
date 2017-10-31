@@ -18,7 +18,7 @@ import com.icourt.alpha.utils.IMUtils;
 
 public class TaskAttachmentAdapter extends SeaFileImageBaseAdapter<TaskAttachmentEntity> {
     @Override
-    public int bindView(int viewtype) {
+    public int bindView(int viewType) {
         return R.layout.adapter_item_task_attachment_layout;
     }
 

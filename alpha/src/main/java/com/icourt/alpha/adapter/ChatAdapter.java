@@ -1,9 +1,13 @@
 package com.icourt.alpha.adapter;
 
+import android.content.Context;
 import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
+import android.text.style.ClickableSpan;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -29,6 +33,8 @@ import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.transformations.FitHeightImgViewTarget;
 import com.icourt.alpha.view.BubbleImageView;
 import com.icourt.alpha.view.recyclerviewDivider.ITimeDividerInterface;
+import com.icourt.alpha.view.touchablespan.TouchableBaseSpan;
+import com.icourt.alpha.view.touchablespan.TouchableMovementMethod;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.uinfo.UserService;
 import com.netease.nimlib.sdk.uinfo.model.NimUserInfo;
@@ -37,7 +43,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.icourt.alpha.constants.Const.MSG_STATU_FAIL;
 import static com.icourt.alpha.constants.Const.MSG_STATU_SENDING;
@@ -134,6 +143,12 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
             }
         }
     };
+
+    private Map<String, String> mobileEntityMap;//asset里phone.json所缓存的号码，key是号码，value是手机号。
+
+    public void setMobileEntityMap(Map<String, String> mobileEntityMap) {
+        this.mobileEntityMap = mobileEntityMap;
+    }
 
     /**
      * 获取本地头像
@@ -539,25 +554,133 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
         TextView textView = holder.obtainView(R.id.chat_txt_tv);
         holder.bindChildLongClick(textView);
         if (imMessageCustomBody != null) {
-            //注意容易发生崩溃 华为mate9就会
-            /*try {
-                textView.setAutoLinkMask(Linkify.ALL);
-                textView.setMovementMethod(LinkMovementMethod.getInstance());
-            } catch (Throwable e) {
-                BugUtils.bugSync("文本中Link崩溃", e);
-                e.printStackTrace();
-            }*/
-            try {
+            if (TextUtils.isEmpty(imMessageCustomBody.content) || imMessageCustomBody.content.length() < 5) {
                 textView.setText(imMessageCustomBody.content);
-            } catch (Throwable e) {
-                BugUtils.bugSync("文本中Link崩溃2", e);
-                BugUtils.bugSync("文本中Link崩溃2:txt:", imMessageCustomBody.toString());
-                e.printStackTrace();
+            } else {
+                addTextClickSpan(textView, imMessageCustomBody.content);
             }
         } else {
             textView.setText("null");
         }
     }
+
+    /**
+     * 为聊天文本添加电话、链接的点击事件
+     *
+     * @param textView
+     * @param content
+     */
+    private void addTextClickSpan(TextView textView, String content) {
+        try {
+            textView.setMovementMethod(TouchableMovementMethod.getInstance());
+
+            SpannableStringBuilder style = new SpannableStringBuilder(content);
+            style.clearSpans();
+
+            //先匹配链接
+            Pattern pattern = Pattern.compile(StringUtils.getUrlPattern());
+            Matcher matcher = pattern.matcher(content);
+            while (matcher.find()) {
+                int start = matcher.start();
+                int end = matcher.end();
+                addItemClickSpan(textView.getContext(), TouchableBaseSpan.TYPE_URL, style, start, end, null);
+            }
+
+            //再匹配+86的手机号
+            Pattern mobile86Pattern = Pattern.compile(StringUtils.get86PhonePattern());
+            Matcher mobile86Mathcer = mobile86Pattern.matcher(content);
+            while (mobile86Mathcer.find()) {
+                int start = mobile86Mathcer.start();
+                int end = mobile86Mathcer.end();
+
+                String group = mobile86Mathcer.group();
+                //+86的手机号要判断结尾是不是数字，如果不是数字，就把字符串最后一个给删了。
+                String endStr = group.subSequence(group.length() - 1, group.length()).toString();
+                if (!endStr.matches(StringUtils.getNumberPattern())) {
+                    end = end - 1;
+                }
+                addItemClickSpan(textView.getContext(), TouchableBaseSpan.TYPE_PHONE, style, start, end, null);
+            }
+
+            //再匹配普通手机号
+            Pattern mobilePattern = Pattern.compile(StringUtils.getPhonePattern());
+            Matcher moblieMatcher = mobilePattern.matcher(content);
+            while (moblieMatcher.find()) {
+                int start = moblieMatcher.start();
+                int end = moblieMatcher.end();
+
+                String group = moblieMatcher.group();
+
+                //普通手机号要判断开头是不是数字，如果不是数字，把字符串第一个删除。
+                String startStr = group.subSequence(0, 1).toString();
+                if (!startStr.matches(StringUtils.getNumberPattern())) {
+                    start = start + 1;
+                }
+                //普通手机号要判断结尾是不是数字，如果不是数字，把字符串最后一个删除。
+                String endStr = group.subSequence(group.length() - 1, group.length()).toString();
+                if (!endStr.matches(StringUtils.getNumberPattern())) {
+                    end = end - 1;
+                }
+                addItemClickSpan(textView.getContext(), TouchableBaseSpan.TYPE_PHONE, style, start, end, null);
+            }
+
+            //再匹配一些固定号码
+            Pattern constantMobliePattern = Pattern.compile(StringUtils.getConstantMobilePattern());
+            if (constantMobliePattern.matcher(content).matches() && mobileEntityMap != null) {//先判断号码里是不是有5位连续数字，再进行匹配
+                Set<String> strings = mobileEntityMap.keySet();
+                for (String moblie : strings) {
+                    //如果字符串里包含号码，才进行Clickable的添加。
+                    if (content.contains(moblie)) {
+                        Pattern constantMoblie = Pattern.compile(moblie);
+                        Matcher constanMatcher = constantMoblie.matcher(content);
+                        while (constanMatcher.find()) {
+                            int start = constanMatcher.start();
+                            int end = constanMatcher.end();
+                            addItemClickSpan(textView.getContext(), TouchableBaseSpan.TYPE_PHONE, style, start, end, mobileEntityMap.get(moblie));
+                        }
+                    }
+                }
+            }
+            textView.setText(style);
+        } catch (Exception e) {
+            BugUtils.bugSync("Chat ClickableSpan Exception", e);
+            textView.setText(content);
+        }
+    }
+
+    /**
+     * 添加可点击的Span
+     *
+     * @param stringBuilder
+     * @param start
+     * @param end
+     * @param userName      如果电话有用户名的话，可以传进来
+     */
+    private void addItemClickSpan(Context context, @TouchableBaseSpan.LinkType int linkType, SpannableStringBuilder stringBuilder, int start, int end, String userName) {
+        if (isCanAddSpan(stringBuilder, start, end)) {
+            TouchableBaseSpan linkSpan = new TouchableBaseSpan(context, linkType, stringBuilder.subSequence(start, end).toString(), userName);
+            stringBuilder.setSpan(linkSpan, start, end, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
+        }
+    }
+
+    /**
+     * 判断该区域是否可以添加Span
+     *
+     * @param stringBuilder
+     * @param start
+     * @param end
+     * @return
+     */
+    public boolean isCanAddSpan(SpannableStringBuilder stringBuilder, int start, int end) {
+        if (stringBuilder == null) {
+            return false;
+        }
+        ClickableSpan[] spans = stringBuilder.getSpans(start, end, ClickableSpan.class);
+        if (spans == null)
+            return true;
+        return spans.length == 0;
+    }
+
 
     /**
      * 初始化左边 图片布局

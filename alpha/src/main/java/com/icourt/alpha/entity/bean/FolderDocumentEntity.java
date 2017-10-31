@@ -149,7 +149,7 @@ public class FolderDocumentEntity implements ISeaFile, IFilterEntity, ISuspensio
 
     @Override
     public String getSeaFileVersionId() {
-        return String.valueOf(mtime);
+        return null;
     }
 
     @Override
@@ -160,6 +160,11 @@ public class FolderDocumentEntity implements ISeaFile, IFilterEntity, ISuspensio
     @Override
     public String getSeaFilePermission() {
         return permission;
+    }
+
+    @Override
+    public String getSeaFileDownloadTag() {
+        return String.valueOf(mtime);
     }
 
     @Override

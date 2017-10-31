@@ -23,7 +23,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.CommentListAdapter;
@@ -43,8 +42,11 @@ import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -72,9 +74,9 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
     @BindView(R.id.titleView)
     AppBarLayout titleView;
     @BindView(R.id.recyclerview)
-    RecyclerView recyclerview;
+    EmptyRecyclerView recyclerview;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
     @BindView(R.id.comment_edit)
     EditText commentEdit;
     @BindView(R.id.comment_tv)
@@ -145,7 +147,7 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
         taskItemEntity = (TaskEntity.TaskItemEntity) getIntent().getSerializableExtra(KEY_TASK_ID);
         recyclerview.setLayoutManager(new LinearLayoutManager(this));
         headerFooterAdapter = new HeaderFooterAdapter<>(commentListAdapter = new CommentListAdapter());
-        View footerview = HeaderFooterAdapter.inflaterView(this, R.layout.footer_comment_list_layout, recyclerview);
+        View footerview = HeaderFooterAdapter.inflaterView(this, R.layout.footer_comment_list_layout, recyclerview.getRecyclerView());
         TextView contentTv = (TextView) footerview.findViewById(R.id.content_tv);
         if (taskItemEntity != null) {
             if (taskItemEntity.createUser != null)
@@ -156,11 +158,9 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
         }
         headerFooterAdapter.addFooter(footerview);
 
-        refreshLayout.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_no_comment_text);
-        refreshLayout.setMoveForHorizontal(true);
+        recyclerview.setNoticeEmpty(R.mipmap.bg_no_task, R.string.task_no_comment_text);
 
         recyclerview.addItemDecoration(ItemDecorationUtils.getCommFull05Divider(this, true));
-        recyclerview.setHasFixedSize(true);
         commentListAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override
             protected void updateUI() {
@@ -176,16 +176,14 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
         commentListAdapter.setOnItemChildClickListener(this);
         commentListAdapter.setOnItemLongClickListener(this);
         recyclerview.setAdapter(headerFooterAdapter);
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(RefreshLayout refreshlayout) {
                 getData(true);
             }
 
             @Override
-            public void onLoadMore(boolean isSilence) {
-                super.onLoadMore(isSilence);
+            public void onLoadmore(RefreshLayout refreshlayout) {
                 getData(false);
             }
         });
@@ -213,9 +211,9 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
                 }
             }
         });
-        refreshLayout.startRefresh();
+        refreshLayout.autoRefresh();
         commentEdit.setMaxEms(1500);
-        recyclerview.addOnScrollListener(new RecyclerView.OnScrollListener() {
+        recyclerview.getRecyclerView().addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
@@ -273,15 +271,15 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
 
     private void enableLoadMore(List result) {
         if (refreshLayout != null) {
-            refreshLayout.setPullLoadEnable(result != null
+            refreshLayout.setEnableLoadmore(result != null
                     && result.size() >= ActionConstants.DEFAULT_PAGE_SIZE);
         }
     }
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 
@@ -312,7 +310,7 @@ public class CommentListActivity extends BaseActivity implements BaseRecyclerAda
                         commentListAdapter.addItem(0, commentItemEntity);
                         commentEdit.setText("");
                         commentEdit.clearFocus();
-                        recyclerview.scrollToPosition(0);
+                        recyclerview.getRecyclerView().scrollToPosition(0);
                         commentTv.setVisibility(View.VISIBLE);
                         sendTv.setVisibility(View.GONE);
                         commentCount += 1;

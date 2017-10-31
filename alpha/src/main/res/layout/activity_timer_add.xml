@@ -78,23 +78,27 @@
                     android:maxLines="1"
                     android:paddingBottom="10dp"
                     android:paddingTop="10dp"
-                    android:text="2017-5-2" />
+                    android:text="2017-5-2"
+                    android:textColor="@color/time_week_text_color"
+                    android:textSize="14sp" />
 
                 <TextView
                     android:id="@+id/start_time_min_tv"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:paddingBottom="10dp"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
                     android:paddingTop="10dp"
                     android:text="9:00"
-                    android:textColor="@color/alpha_font_color_black"
+                    android:textColor="@color/alpha_tab_title_txt_selected_color"
                     android:textSize="18sp" />
 
                 <View
                     android:layout_width="@dimen/dp15"
                     android:layout_height="@dimen/dp1"
-                    android:layout_marginLeft="@dimen/dp15"
-                    android:layout_marginRight="@dimen/dp15"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
                     android:background="@color/alpha_divider_color" />
 
                 <TextView
@@ -102,10 +106,20 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:paddingBottom="10dp"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
                     android:paddingTop="10dp"
                     android:text="9:30"
-                    android:textColor="@color/alpha_font_color_black"
+                    android:textColor="@color/alpha_tab_title_txt_selected_color"
                     android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/surpass_day_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="10dp"
+                    android:textColor="@color/time_week_text_color"
+                    android:textSize="11sp" />
             </LinearLayout>
 
             <View

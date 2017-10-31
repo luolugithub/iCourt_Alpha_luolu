@@ -6,14 +6,12 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.andview.refreshview.XRefreshView;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
@@ -37,8 +35,11 @@ import com.icourt.alpha.interfaces.OnFragmentDataChangeListener;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.JsonUtils;
-import com.icourt.alpha.view.xrefreshlayout.RefreshLayout;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
+import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -74,9 +75,9 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
     OnFragmentDataChangeListener onFragmentDataChangeListener;
     @BindView(R.id.recyclerView)
     @Nullable
-    RecyclerView recyclerView;
+    EmptyRecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
-    RefreshLayout refreshLayout;
+    SmartRefreshLayout refreshLayout;
     Unbinder unbinder;
     Handler mHandler = new Handler();
 
@@ -134,9 +135,9 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
     @Override
     protected void initView() {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        TextView footerView = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_folder_document_num, recyclerView);
-        footerView.setText(R.string.sfile_change_history_empty);
-        refreshLayout.setEmptyView(footerView);
+        TextView footerView = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_folder_document_num, recyclerView.getRecyclerView());
+        footerView.setText(R.string.empty_list_repo_change_history);
+        recyclerView.setEmptyView(footerView);
 
 
         recyclerView.setAdapter(fileChangedHistoryAdapter = new FileChangedHistoryAdapter(
@@ -151,25 +152,23 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                             fileChangedHistoryAdapter.getData());
                 }
                 if (refreshLayout != null) {
-                    refreshLayout.enableEmptyView(fileChangedHistoryAdapter.getItemCount() <= 0);
+                    recyclerView.enableEmptyView(fileChangedHistoryAdapter.getData());
                 }
             }
         });
         fileChangedHistoryAdapter.setOnItemChildClickListener(this);
-        refreshLayout.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
+        refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
             @Override
-            public void onRefresh(boolean isPullDown) {
-                super.onRefresh(isPullDown);
+            public void onRefresh(RefreshLayout refreshlayout) {
                 getData(true);
             }
 
             @Override
-            public void onLoadMore(boolean isSilence) {
-                super.onLoadMore(isSilence);
+            public void onLoadmore(RefreshLayout refreshlayout) {
                 getData(false);
             }
         });
-        refreshLayout.startRefresh();
+        refreshLayout.autoRefresh();
     }
 
     private String getSeaFileRepoId() {
@@ -262,15 +261,15 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
 
     private void enableLoadMore(List result) {
         if (refreshLayout != null) {
-            refreshLayout.setPullLoadEnable(result != null
+            refreshLayout.setEnableLoadmore(result != null
                     && result.size() >= ActionConstants.DEFAULT_PAGE_SIZE);
         }
     }
 
     private void stopRefresh() {
         if (refreshLayout != null) {
-            refreshLayout.stopRefresh();
-            refreshLayout.stopLoadMore();
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
         }
     }
 

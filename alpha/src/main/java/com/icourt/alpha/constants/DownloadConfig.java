@@ -58,13 +58,13 @@ public class DownloadConfig {
      */
     public static final String getSeaFileDownloadPath(String userId, ISeaFile iSeaFile) {
         try {
-            //如果有版本 标记版本号
             String fileFullPath = iSeaFile.getSeaFileFullPath();
-            if (!TextUtils.isEmpty(iSeaFile.getSeaFileVersionId())) {
+            //有下载标记
+            if (!TextUtils.isEmpty(iSeaFile.getSeaFileDownloadTag())) {
                 String fileParentDir = FileUtils.getFileParentDir(iSeaFile.getSeaFileFullPath());
                 if (!TextUtils.isEmpty(fileFullPath)) {
                     fileFullPath = new StringBuilder(fileParentDir)
-                            .append(iSeaFile.getSeaFileVersionId())
+                            .append(iSeaFile.getSeaFileDownloadTag())
                             .append(File.separator)
                             .append(FileUtils.getFileName(fileFullPath))
                             .toString();

@@ -141,13 +141,15 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
             @Override
             public void onTabClick(View v, int pos) {
                 if (viewPager.getCurrentItem() == 0 && pos == 0) {//说明当前是第0个，并且点击了第0个，需要弹出筛选已完成、未完成、已删除的弹出窗。
-                    postDismissPop();
-                    topMiddlePopup.show(titleView, dropEntities, selectPosition);
-                    setFirstTabImage(true);
                     if (topMiddlePopup.isShowing()) {
+                        postDismissPop();
+                    } else {
+                        topMiddlePopup.show(titleView, dropEntities, selectPosition);
+                        setFirstTabImage(true);
                         getMatterStateCount(getMatterTypes());
                     }
                 } else {
+                    postDismissPop();
                     viewPager.setCurrentItem(pos, true);
                 }
             }
@@ -192,6 +194,15 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
         });
     }
 
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        //当Fragment不可见的时候，要隐藏弹出的PopWindow。
+        if (hidden) {
+            postDismissPop();
+        }
+    }
+
     /**
      * 隐藏pop
      */
@@ -202,13 +213,11 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
             public void run() {
                 if (topMiddlePopup != null) {
                     if (topMiddlePopup.isShowing()) {
-                        if (!isVisible()) {
-                            topMiddlePopup.dismiss();
-                        }
+                        topMiddlePopup.dismiss();
                     }
                 }
             }
-        }, 100);
+        }, 10);
     }
 
     /**
@@ -300,6 +309,7 @@ public class TabProjectFragment extends BaseFragment implements TopMiddlePopup.O
 
     @OnClick({R.id.titleAction, R.id.titleAction2})
     public void onViewClicked(View view) {
+        postDismissPop();
         switch (view.getId()) {
             case R.id.titleAction:
                 showProjectTypeSelectDialogFragment();

@@ -110,7 +110,7 @@
                             android:layout_height="match_parent"
                             android:paddingLeft="10dp"
                             android:paddingRight="10dp"
-                            android:src="@mipmap/arrow_right" />
+                            android:src="@mipmap/arrow_right_14" />
                     </LinearLayout>
 
                     <TextView

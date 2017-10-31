@@ -240,7 +240,7 @@ public class LoginBaseActivity extends BaseUmengActivity {
         jsonObject.addProperty("user", user);
         jsonObject.addProperty("password", pwd);
         jsonObject.addProperty("uniqueDevice", "device");
-        jsonObject.addProperty("deviceTyp", "android");
+        jsonObject.addProperty("deviceType", "android");
         return jsonObject;
     }
 

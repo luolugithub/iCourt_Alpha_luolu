@@ -1,10 +1,8 @@
 package com.icourt.alpha.fragment;
 
-import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,34 +14,27 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.AboutActivity;
 import com.icourt.alpha.activity.ChatMsgClassfyActivity;
-import com.icourt.alpha.activity.LoginSelectActivity;
-import com.icourt.alpha.activity.MyAtedActivity;
-import com.icourt.alpha.activity.MyFileTabActivity;
-import com.icourt.alpha.activity.SettingActivity;
-import com.icourt.alpha.base.BaseAppUpdateActivity;
+import com.icourt.alpha.activity.MyTimingActivity;
+import com.icourt.alpha.activity.SetingActivity;
+import com.icourt.alpha.activity.TaskMonthFinishActivity;
+import com.icourt.alpha.activity.UserInfoActivity;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.constants.TimingConfig;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.entity.bean.GroupBean;
-import com.icourt.alpha.entity.bean.SelectGroupBean;
 import com.icourt.alpha.entity.bean.UserDataEntity;
 import com.icourt.alpha.entity.event.ServerTimingEvent;
 import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
-import com.icourt.alpha.http.observer.BaseObserver;
+import com.icourt.alpha.interfaces.callback.AppUpdateCallBack;
+import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.GlideUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
-import com.icourt.alpha.utils.SpUtils;
-import com.icourt.alpha.utils.UMMobClickAgent;
+import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.transformations.BlurTransformation;
-import com.icourt.alpha.widget.manager.DataCleanManager;
-import com.umeng.analytics.MobclickAgent;
-import com.umeng.socialize.UMAuthListener;
-import com.umeng.socialize.UMShareAPI;
-import com.umeng.socialize.bean.SHARE_MEDIA;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -51,38 +42,27 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
-import io.reactivex.Observable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.annotations.NonNull;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Function;
-import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
 import retrofit2.HttpException;
 import retrofit2.Response;
-
-import static com.icourt.alpha.base.BaseAppUpdateActivity.UPDATE_APP_VERSION_KEY;
 
 /**
  * Description
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/4/8
- * version 1.0.0
+ * version 2.0.0
  */
 public class TabMineFragment extends BaseFragment {
 
     Unbinder unbinder;
     @BindView(R.id.photo_big_image)
     ImageView photoBigImage;
-    @BindView(R.id.set_image)
-    ImageView setImage;
     @BindView(R.id.photo_image)
     ImageView photoImage;
     @BindView(R.id.user_name_tv)
@@ -95,49 +75,30 @@ public class TabMineFragment extends BaseFragment {
     TextView monthDuractionTv;
     @BindView(R.id.done_task_tv)
     TextView doneTaskTv;
+    @BindView(R.id.my_center_timer_layout)
+    LinearLayout myCenterTimerLayout;
     @BindView(R.id.my_center_collect_textview)
     TextView myCenterCollectTextview;
     @BindView(R.id.my_center_collect_layout)
     LinearLayout myCenterCollectLayout;
-    @BindView(R.id.my_center_at_textview)
-    TextView myCenterAtTextview;
-    @BindView(R.id.my_center_at_layout)
-    LinearLayout myCenterAtLayout;
-    @BindView(R.id.my_center_file_textview)
-    TextView myCenterFileTextview;
-    @BindView(R.id.my_center_file_layout)
-    LinearLayout myCenterFileLayout;
-    @BindView(R.id.my_center_clear_cache_textview)
-    TextView myCenterClearCacheTextview;
-    @BindView(R.id.my_center_clear_cache_layout)
-    LinearLayout myCenterClearCacheLayout;
-    @BindView(R.id.my_center_about_count_view)
-    TextView myCenterAboutCountView;
-    @BindView(R.id.my_center_clear_about_layout)
-    LinearLayout myCenterClearAboutLayout;
-    @BindView(R.id.my_center_clear_loginout_layout)
-    LinearLayout myCenterClearLoginoutLayout;
+    @BindView(R.id.my_center_set_layout)
+    LinearLayout myCenterSetLayout;
     @BindView(R.id.menu_test)
     TextView menuTest;
-
-    private UMShareAPI mShareAPI;
-
-    private BaseAppUpdateActivity baseAppUpdateActivity;
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        try {
-            baseAppUpdateActivity = (BaseAppUpdateActivity) context;
-        } catch (ClassCastException e) {
-            e.printStackTrace();
-        }
-    }
+    @BindView(R.id.user_info_layout)
+    LinearLayout userInfoLayout;
+    @BindView(R.id.today_duraction_layout)
+    LinearLayout todayDuractionLayout;
+    @BindView(R.id.month_duraction_layout)
+    LinearLayout monthDuractionLayout;
+    @BindView(R.id.done_task_layout)
+    LinearLayout doneTaskLayout;
+    @BindView(R.id.setting_about_count_view)
+    TextView settingAboutCountView;
 
     public static TabMineFragment newInstance() {
         return new TabMineFragment();
     }
-
 
     @Nullable
     @Override
@@ -151,9 +112,6 @@ public class TabMineFragment extends BaseFragment {
     protected void initView() {
         EventBus.getDefault().register(this);
         getData(false);
-        getCacheFileSize();
-//        setDataToView(getLoginUserInfo());
-        mShareAPI = UMShareAPI.get(getContext());
         menuTest.setVisibility(BuildConfig.IS_DEBUG ? View.VISIBLE : View.GONE);
     }
 
@@ -161,14 +119,13 @@ public class TabMineFragment extends BaseFragment {
     public void onHiddenChanged(boolean hidden) {
         if (!hidden) {
             getData(false);
-            getCacheFileSize();
         }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        getCacheFileSize();
+        setDataToView(getLoginUserInfo());
     }
 
     /**
@@ -188,25 +145,9 @@ public class TabMineFragment extends BaseFragment {
                             .crossFade()
                             .into(photoBigImage);
                     userNameTv.setText(alphaUserInfo.getName());
-//                officeNameTv.setText(getUserGroup(alphaUserInfo.getGroups()));
                 }
             }
         }
-    }
-
-    /**
-     * 获取用户部门str
-     *
-     * @param groups
-     * @return
-     */
-    private String getUserGroup(List<SelectGroupBean> groups) {
-        if (groups == null) return "";
-        StringBuffer buffer = new StringBuffer();
-        for (SelectGroupBean group : groups) {
-            buffer.append(group.groupName).append(" ");
-        }
-        return buffer.toString();
     }
 
     /**
@@ -216,7 +157,9 @@ public class TabMineFragment extends BaseFragment {
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onTimerEvent(TimingEvent event) {
-        if (event == null) return;
+        if (event == null) {
+            return;
+        }
         switch (event.action) {
             case TimingEvent.TIMING_ADD:
 
@@ -225,6 +168,8 @@ public class TabMineFragment extends BaseFragment {
                 break;
             case TimingEvent.TIMING_STOP:
                 getMyDoneTask();
+                break;
+            default:
                 break;
         }
     }
@@ -244,8 +189,12 @@ public class TabMineFragment extends BaseFragment {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onServerTimingEvent(ServerTimingEvent event) {
-        if (event == null) return;
-        if (TextUtils.equals(event.clientId, getlocalUniqueId())) return;
+        if (event == null) {
+            return;
+        }
+        if (TextUtils.equals(event.clientId, getlocalUniqueId())) {
+            return;
+        }
         if (event.isSyncObject() && event.isSyncTimingType()) {
             if (TextUtils.equals(event.scene, ServerTimingEvent.TIMING_SYNC_START)) {
 
@@ -257,190 +206,55 @@ public class TabMineFragment extends BaseFragment {
         }
     }
 
-
-    @OnClick({R.id.set_image,
+    @OnClick({
+            R.id.photo_image,
+            R.id.user_info_layout,
+            R.id.today_duraction_layout,
+            R.id.month_duraction_layout,
+            R.id.done_task_layout,
             R.id.my_center_collect_layout,
-            R.id.my_center_at_layout,
-            R.id.my_center_file_layout,
-            R.id.my_center_clear_cache_layout,
-            R.id.my_center_clear_about_layout,
-            R.id.my_center_clear_loginout_layout,
-            R.id.menu_test})
+            R.id.my_center_set_layout,
+            R.id.menu_test,
+            R.id.my_center_timer_layout})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.set_image://设置
-                SettingActivity.launch(getContext());
+            case R.id.photo_image:
+//                ImagePagerActivity.launch(getContext(), Arrays.asList(getLoginUserInfo().getPic()));//头像大图浏览
+                UserInfoActivity.launch(getContext());
                 break;
-            case R.id.my_center_collect_layout://收藏
+            case R.id.user_info_layout:
+                UserInfoActivity.launch(getContext());
+                break;
+            //今日计时
+            case R.id.today_duraction_layout:
+                MyTimingActivity.launch(getContext(), TimingConfig.TIMING_QUERY_BY_DAY, DateUtils.millis());
+                break;
+            //本月计时
+            case R.id.month_duraction_layout:
+                MyTimingActivity.launch(getContext(), TimingConfig.TIMING_QUERY_BY_MONTH, DateUtils.millis());
+                break;
+            //本月完成任务
+            case R.id.done_task_layout:
+                TaskMonthFinishActivity.launch(getContext());
+                break;
+            //设置
+            case R.id.my_center_set_layout:
+                SetingActivity.launch(getContext());
+                break;
+            //收藏
+            case R.id.my_center_collect_layout:
                 ChatMsgClassfyActivity.launchMyCollected(getContext());
-                break;
-            case R.id.my_center_at_layout://提及我的
-                MyAtedActivity.launch(getContext());
-                break;
-            case R.id.my_center_file_layout://我的文件
-                MyFileTabActivity.launch(getContext());
-                break;
-            case R.id.my_center_clear_cache_layout://清除缓存
-                showDeleteConfirmDialog();
-                break;
-            case R.id.my_center_clear_about_layout://关于
-                AboutActivity.launch(getContext());
-                break;
-            case R.id.my_center_clear_loginout_layout://退出
-                showLoginOutConfirmDialog();
                 break;
             case R.id.menu_test:
 //                test1();
                 break;
+            case R.id.my_center_timer_layout:
+                MyTimingActivity.launch(getActivity());
+                break;
             default:
                 super.onClick(v);
                 break;
-        }
-    }
-
-    /**
-     * 删除确认对话框
-     */
-    private void showDeleteConfirmDialog() {
-        new AlertDialog.Builder(getContext())
-                .setMessage("确认清除?")
-                .setPositiveButton(R.string.str_ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                        if (checkAcessFilePermission()) {
-                            deleteCahceFile();
-                        } else {
-                            requestAcessFilePermission();
-                        }
-                    }
-                }).setNegativeButton(R.string.str_cancel, null)
-                .show();
-    }
-
-    /**
-     * 删除缓存
-     * * 考虑量级:1.资料库 2.任务项目文档 3.IM文件 多层路径
-     */
-    private void deleteCahceFile() {
-        Observable.just(getLoginUserId())
-                .map(new Function<String, Boolean>() {
-                    @Override
-                    public Boolean apply(@NonNull String s) throws Exception {
-                        return DataCleanManager.clearAllCache(s);
-                    }
-                })
-                .compose(this.<Boolean>bindToLifecycle())
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new BaseObserver<Boolean>() {
-                    @Override
-                    public void onSubscribe(@NonNull Disposable disposable) {
-                        super.onSubscribe(disposable);
-                        showLoadingDialog(null);
-                    }
-
-                    @Override
-                    public void onError(@NonNull Throwable throwable) {
-                        super.onError(throwable);
-                        dismissLoadingDialog();
-                    }
-
-                    @Override
-                    public void onNext(@NonNull Boolean aBoolean) {
-                    }
-
-                    @Override
-                    public void onComplete() {
-                        dismissLoadingDialog();
-                        myCenterClearCacheTextview.setText("0B");
-                        showTopSnackBar(R.string.my_center_clear_cache_succee_text);
-                        super.onComplete();
-                    }
-                });
-    }
-
-    /**
-     * 获取缓存文件大小
-     * 考虑量级:1.资料库 2.任务项目文档 3.IM文件 多层路径
-     */
-    private void getCacheFileSize() {
-        Observable.just(getLoginUserId())
-                .map(new Function<String, String>() {
-                    @Override
-                    public String apply(@NonNull String s) throws Exception {
-                        return DataCleanManager.getTotalCacheSize(s);
-                    }
-                })
-                .compose(this.<String>bindToLifecycle())
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new BaseObserver<String>() {
-                    @Override
-                    public void onNext(@NonNull String sizeFormat) {
-                        myCenterClearCacheTextview.setText(sizeFormat);
-                    }
-                });
-    }
-
-
-    private void showLoginOutConfirmDialog() {
-        new AlertDialog.Builder(getActivity())
-                .setTitle("提示")
-                .setMessage(getResources().getStringArray(R.array.my_center_isloginout_text_arr)[Math.random() > 0.5 ? 1 : 0].replace("|", "\n"))
-                .setPositiveButton("确认", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        loginOut();
-                        SpUtils.getInstance().remove(UPDATE_APP_VERSION_KEY);
-                    }
-                })
-                .setNegativeButton("取消", null)
-                .create().show();
-    }
-
-    /**
-     * 退出登录
-     */
-    private void loginOut() {
-        //神策退出
-       /* SensorsDataAPI.sharedInstance(getContext())
-                .logout();*/
-        MobclickAgent.onEvent(getContext(), UMMobClickAgent.login_out_click_id);
-        //撤销微信授权
-        if (!mShareAPI.isAuthorize(getActivity(), SHARE_MEDIA.WEIXIN)) {
-            dismissLoadingDialog();
-            LoginSelectActivity.launch(getContext());
-        } else {
-            mShareAPI.deleteOauth(getActivity(), SHARE_MEDIA.WEIXIN, new UMAuthListener() {
-                @Override
-                public void onStart(SHARE_MEDIA share_media) {
-                    showLoadingDialog(null);
-                }
-
-                @Override
-                public void onComplete(SHARE_MEDIA share_media, int i, Map<String, String> map) {
-                    exit();
-                }
-
-                @Override
-                public void onError(SHARE_MEDIA share_media, int i, Throwable throwable) {
-                    exit();
-                }
-
-
-                @Override
-                public void onCancel(SHARE_MEDIA share_media, int i) {
-                    exit();
-                }
-
-                private void exit() {
-                    dismissLoadingDialog();
-                    LoginSelectActivity.launch(getContext());
-                }
-
-            });
         }
     }
 
@@ -454,7 +268,6 @@ public class TabMineFragment extends BaseFragment {
                         AlphaUserInfo info = response.body().result;
                         AlphaUserInfo alphaUserInfo = getLoginUserInfo();
                         if (alphaUserInfo != null && info != null) {
-//                    info.setGroups(alphaUserInfo.getGroups());
                             alphaUserInfo.setMail(info.getMail());
                             alphaUserInfo.setPhone(info.getPhone());
                             alphaUserInfo.setName(info.getName());
@@ -470,29 +283,42 @@ public class TabMineFragment extends BaseFragment {
                         setDataToView(getLoginUserInfo());
                     }
                 });
+        checkVersion();
         getMyDoneTask();
         getGroupList();
-        if (baseAppUpdateActivity != null) {
-            baseAppUpdateActivity.checkAppUpdate(new SimpleCallBack<AppVersionEntity>() {
-                @Override
-                public void onSuccess(Call<ResEntity<AppVersionEntity>> call, Response<ResEntity<AppVersionEntity>> response) {
-                    if (myCenterAboutCountView == null) return;
-                    myCenterAboutCountView.setVisibility(baseAppUpdateActivity.isUpdateApp(response.body().result) ? View.VISIBLE : View.INVISIBLE);
-                }
+    }
 
-                @Override
-                public void onFailure(Call<ResEntity<AppVersionEntity>> call, Throwable t) {
-                    if (t instanceof HttpException) {
-                        HttpException hx = (HttpException) t;
-                        if (hx.code() == 401) {
-                            showTopSnackBar("fir token 更改");
+    /**
+     * 检测版本
+     */
+    private void checkVersion() {
+        callEnqueue(
+                getApi().getNewVersionAppInfo(BuildConfig.APK_UPDATE_URL), new AppUpdateCallBack() {
+                    @Override
+                    public void onSuccess(Call<AppVersionEntity> call, Response<AppVersionEntity> response) {
+                        if (settingAboutCountView == null) {
                             return;
                         }
+                        settingAboutCountView.setVisibility(shouldUpdate(response.body()) ? View.VISIBLE : View.INVISIBLE);
                     }
-                    super.onFailure(call, t);
-                }
-            });
-        }
+
+                    @Override
+                    public void onFailure(Call<AppVersionEntity> call, Throwable t) {
+                        if (t instanceof HttpException) {
+                            HttpException hx = (HttpException) t;
+                            if (hx.code() == 401) {
+                                showTopSnackBar("fir token 更改");
+                                return;
+                            }
+                        }
+                        super.onFailure(call, t);
+                    }
+                });
+    }
+
+    public final boolean shouldUpdate(@NonNull AppVersionEntity appVersionEntity) {
+        return appVersionEntity != null
+                && !TextUtils.equals(appVersionEntity.versionShort, BuildConfig.VERSION_NAME);
     }
 
     /**
@@ -506,12 +332,32 @@ public class TabMineFragment extends BaseFragment {
                     public void onSuccess(Call<ResEntity<UserDataEntity>> call, Response<ResEntity<UserDataEntity>> response) {
                         if (response.body().result != null) {
                             if (todayDuractionTv == null) return;
-                            todayDuractionTv.setText(getHm(response.body().result.timingCountToday));
-                            monthDuractionTv.setText(getHm(response.body().result.timingCountMonth));
-                            doneTaskTv.setText(response.body().result.taskMonthConutDone + "");
+                            UserDataEntity userDataEntity = response.body().result;
+                            todayDuractionTv.setText(DateUtils.getHmIntegral(userDataEntity.timingCountToday));
+                            monthDuractionTv.setText(DateUtils.getHmIntegral(userDataEntity.timingCountMonth));
+                            doneTaskTv.setText(String.valueOf(userDataEntity.taskMonthConutDone));
+
+                            todayDuractionTv.setTextColor(getDoneTextColor(userDataEntity.timingCountToday));
+                            todayDuractionLayout.setClickable(userDataEntity.timingCountToday > 0);
+
+                            monthDuractionTv.setTextColor(getDoneTextColor(userDataEntity.timingCountMonth));
+                            monthDuractionLayout.setClickable(userDataEntity.timingCountMonth > 0);
+
+                            doneTaskTv.setTextColor(getDoneTextColor(userDataEntity.taskMonthConutDone));
+                            doneTaskLayout.setClickable(userDataEntity.taskMonthConutDone > 0);
                         }
                     }
                 });
+    }
+
+    /**
+     * 获取完成数 字体颜色
+     *
+     * @param count
+     * @return
+     */
+    private int getDoneTextColor(long count) {
+        return count <= 0 ? SystemUtils.getColor(getContext(), R.color.alpha_font_color_gray) : SystemUtils.getColor(getContext(), R.color.alpha_font_color_orange);
     }
 
     /**
@@ -524,33 +370,22 @@ public class TabMineFragment extends BaseFragment {
                     @Override
                     public void onSuccess(Call<ResEntity<List<GroupBean>>> call, Response<ResEntity<List<GroupBean>>> response) {
                         List<GroupBean> myGroups = response.body().result;
-                        StringBuffer stringBuffer = new StringBuffer();
+                        StringBuilder stringBuilder = new StringBuilder();
                         if (myGroups != null) {
                             if (myGroups.size() > 0) {
                                 for (GroupBean groupBean : myGroups) {
-                                    stringBuffer.append(groupBean.getName() + ",");
+                                    if (groupBean != null) {
+                                        stringBuilder.append(groupBean.getName()).append(",");
+                                    }
                                 }
-                                if (officeNameTv == null) return;
-                                officeNameTv.setText(stringBuffer.toString().substring(0, stringBuffer.toString().length() - 1));
+                                if (officeNameTv == null) {
+                                    return;
+                                }
+                                officeNameTv.setText(stringBuilder.toString().substring(0, stringBuilder.toString().length() - 1));
                             }
                         }
                     }
                 });
-    }
-
-    public String getHm(long times) {
-        times /= 1000;
-        long hour = times / 3600;
-        long minute = times % 3600 / 60;
-        return String.format(Locale.CHINA, "%02d:%02d", hour, minute);
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        if (mShareAPI != null) {
-            mShareAPI.release();
-        }
     }
 
     @Override

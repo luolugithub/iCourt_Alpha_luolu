@@ -877,8 +877,8 @@ public abstract class ChatBaseActivity
     }
 
     /**
-     * <meta name="keywords" content="正则表达式,html"/>
-     * <meta name="description" content="正则表达式,html"/>
+     * <meta name="keywords" taskTitle="正则表达式,html"/>
+     * <meta name="description" taskTitle="正则表达式,html"/>
      *
      * @param htmlString
      * @return
@@ -1158,7 +1158,7 @@ public abstract class ChatBaseActivity
                                     response.body().result.startTime);
                         } else {
                             TaskCreateActivity.launch(getContext(),
-                                    textContentFinal, null);
+                                    textContentFinal, 0);
                         }
                     }
 
@@ -1167,7 +1167,7 @@ public abstract class ChatBaseActivity
                         super.onFailure(call, t);
                         dismissLoadingDialog();
                         TaskCreateActivity.launch(getContext(),
-                                textContentFinal, null);
+                                textContentFinal, 0);
                     }
 
                     @Override

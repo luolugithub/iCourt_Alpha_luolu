@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- 标准的字符串资源 str_开头-->
+    <!-- 标准的字符串资源 str_开头   包含foramt的字符如s% 用_format结尾 -->
     <string name="str_ok">确定</string>
     <string name="str_good">好的</string>
     <string name="str_close">关闭</string>
@@ -34,7 +34,13 @@
     <string name="str_sd_unavailable">sd卡不可用</string>
     <string name="str_click_refresh">点击刷新</string>
 
+    <string name="str_call">呼叫</string>
+    <string name="str_add_to_contacts">添加到手机通讯录</string>
+    <string name="str_copy_success">复制成功</string>
+
+
     <string name="str_executing_error">操作失败</string>
+    <string name="str_notice">提示</string>
 
     <string name="str_null"></string>
     <string name="str_empty">\u3000</string>

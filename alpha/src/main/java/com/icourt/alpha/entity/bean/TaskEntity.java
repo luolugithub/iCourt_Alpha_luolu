@@ -1,10 +1,13 @@
 package com.icourt.alpha.entity.bean;
 
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
-import com.chad.library.adapter.base.entity.MultiItemEntity;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.google.gson.annotations.SerializedName;
 import com.icourt.alpha.db.convertor.IConvertModel;
+import com.icourt.alpha.utils.DateUtils;
 
 import java.io.Serializable;
 import java.util.List;
@@ -26,7 +29,8 @@ public class TaskEntity implements Serializable {
     public int groupTaskCount;//分组内任务个数
     public List<TaskItemEntity> items;
 
-    public static class TaskItemEntity implements Serializable, MultiItemEntity {
+
+    public static class TaskItemEntity implements Serializable, Cloneable {
         public String groupName;//任务所在分组名称
         public String groupId;//分组id
         public int groupTaskCount;//分组有多少个任务
@@ -61,17 +65,63 @@ public class TaskEntity implements Serializable {
         public List<String> right;//权限
 
         /**
-         * 返回数据标记是任务还是任务组，给Adapter进行使用
+         * 构建更新任务标题的json
          *
          * @return
          */
-        @Override
-        public int getItemType() {
-            return type;
+        @NonNull
+        public static JsonObject createUpdateNameParam(@NonNull TaskItemEntity itemEntity, @NonNull String taskName) {
+            JsonObject jsonObject = new JsonObject();
+            if (itemEntity == null) return jsonObject;
+            jsonObject.addProperty("id", itemEntity.id);
+            jsonObject.addProperty("state", itemEntity.state);
+            jsonObject.addProperty("name", TextUtils.isEmpty(taskName) ? "" : taskName);
+            jsonObject.addProperty("parentId", itemEntity.parentId);
+            jsonObject.addProperty("valid", true);
+            jsonObject.addProperty("updateTime", DateUtils.millis());
+            JsonArray jsonarr = new JsonArray();
+            if (itemEntity.attendeeUsers != null) {
+                if (itemEntity.attendeeUsers.size() > 0) {
+                    for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
+                        if (attendeeUser == null) continue;
+                        jsonarr.add(attendeeUser.userId);
+                    }
+                }
+                jsonObject.add("attendees", jsonarr);
+            }
+            return jsonObject;
+        }
+
+        /**
+         * 构建更新任务描述的json
+         *
+         * @return
+         */
+        @NonNull
+        public static JsonObject createUpdateDescParam(@NonNull TaskItemEntity itemEntity, @NonNull String taskDesc) {
+            JsonObject jsonObject = new JsonObject();
+            if (itemEntity == null) return jsonObject;
+            jsonObject.addProperty("id", itemEntity.id);
+            jsonObject.addProperty("state", itemEntity.state);
+            jsonObject.addProperty("name", itemEntity.name);
+            jsonObject.addProperty("parentId", itemEntity.parentId);
+            jsonObject.addProperty("valid", true);
+            jsonObject.addProperty("updateTime", DateUtils.millis());
+            jsonObject.addProperty("description", TextUtils.isEmpty(taskDesc) ? "" : taskDesc);
+            JsonArray jsonarr = new JsonArray();
+            if (itemEntity.attendeeUsers != null) {
+                if (itemEntity.attendeeUsers.size() > 0) {
+                    for (TaskEntity.TaskItemEntity.AttendeeUserEntity attendeeUser : itemEntity.attendeeUsers) {
+                        jsonarr.add(attendeeUser.userId);
+                    }
+                }
+                jsonObject.add("attendees", jsonarr);
+            }
+            return jsonObject;
         }
 
         public static class MatterEntity
-                implements Serializable, IConvertModel<ProjectEntity> {
+                implements Serializable, IConvertModel<ProjectEntity>, Cloneable {
             public String id;
             public String name;
             public String matterType;
@@ -84,21 +134,31 @@ public class TaskEntity implements Serializable {
                 projectEntity.matterType = matterType;
                 return projectEntity;
             }
+
+            @Override
+            public Object clone() throws CloneNotSupportedException {
+                return super.clone();
+            }
         }
 
         /**
          * 任务创建人
          */
-        public static class CreateUserEntity implements Serializable {
+        public static class CreateUserEntity implements Serializable, Cloneable {
             public String userId;
             public String userName;
             public String pic;
+
+            @Override
+            public Object clone() throws CloneNotSupportedException {
+                return super.clone();
+            }
         }
 
         /**
          * 任务相关人
          */
-        public static class AttendeeUserEntity implements Serializable {
+        public static class AttendeeUserEntity implements Serializable, Cloneable {
             @SerializedName(value = "userId", alternate = {"id"})
             public String userId;
             @SerializedName(value = "userName", alternate = {"name"})
@@ -115,11 +175,21 @@ public class TaskEntity implements Serializable {
                 final AttendeeUserEntity other = (AttendeeUserEntity) o;
                 return TextUtils.equals(this.userId, other.userId);
             }
+
+            @Override
+            public Object clone() throws CloneNotSupportedException {
+                return super.clone();
+            }
         }
 
-        public static class ParentFlowEntity implements Serializable {
+        public static class ParentFlowEntity implements Serializable, Cloneable {
             public String id;
             public String name;
+
+            @Override
+            public Object clone() throws CloneNotSupportedException {
+                return super.clone();
+            }
         }
 
         @Override
@@ -133,7 +203,11 @@ public class TaskEntity implements Serializable {
             return TextUtils.equals(this.id, other.id);
         }
 
+        @Override
+        public Object clone() throws CloneNotSupportedException {
+            return super.clone();
+        }
+
     }
-
-
 }
+

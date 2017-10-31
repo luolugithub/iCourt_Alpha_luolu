@@ -20,6 +20,7 @@ import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.FileDownloadActivity;
 import com.icourt.alpha.activity.ImageViewerActivity;
+import com.icourt.alpha.activity.TaskDetailActivity;
 import com.icourt.alpha.adapter.TaskAttachmentAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
@@ -72,9 +73,10 @@ import retrofit2.Response;
 /**
  * Description  任务附件列表
  * Company Beijing icourt
- * author  lu.zhao  E-mail:zhaolu@icourt.cc
- * date createTime：17/5/12
- * version 2.0.0
+ *
+ * @author lu.zhao  E-mail:zhaolu@icourt.cc
+ *         date createTime：17/5/12
+ *         version 2.0.0
  */
 
 public class TaskAttachmentFragment extends SeaFileBaseFragment
@@ -87,7 +89,10 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
     private static final String KEY_TASK_ADD_ATTACHMENT_PERMISSION = "key_task_add_attachment_permission";
     private static final String KEY_TASK_DELETE_ATTACHMENT_PERMISSION = "key_task_delete_attachment_permission";
     private static final int REQUEST_CODE_CHOOSE_FILE = 1002;
-    private static final int FILE_MAX_SIZE = 30 * 1024 * 1024;//单个文件最大30M
+    /**
+     * 单个文件最大30M
+     */
+    private static final int FILE_MAX_SIZE = 30 * 1024 * 1024;
 
     /**
      * hasLookAttachmentPermission>hasAddAttachmentPermission
@@ -136,7 +141,9 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
                 List<String> paths = new ArrayList<>();
                 for (int i = 0; i < resultList.size(); i++) {
                     PhotoInfo photoInfo = resultList.get(i);
-                    if (photoInfo == null) continue;
+                    if (photoInfo == null) {
+                        continue;
+                    }
                     if (!TextUtils.isEmpty(photoInfo.getPhotoPath())) {
                         paths.add(resultList.get(i).getPhotoPath());
                     }
@@ -216,7 +223,7 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
         } else {
             footerAddView.setVisibility(View.GONE);
             footerNoticeView.setVisibility(View.VISIBLE);
-            footerNoticeView.setText("暂无权限查看");
+            footerNoticeView.setText(getString(R.string.task_no_permission_see_check));
         }
     }
 
@@ -236,17 +243,6 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
                 new SimpleCallBack<List<TaskAttachmentEntity>>() {
                     @Override
                     public void onSuccess(Call<ResEntity<List<TaskAttachmentEntity>>> call, Response<ResEntity<List<TaskAttachmentEntity>>> response) {
-                        if (response.body().result != null) {
-                            //填充文件权限
-                            // 暂时先不做 ，删除seafile文件 任务附件的大小变成0kb 没有消失
-                         /*   for (TaskAttachmentEntity taskAttachmentEntity : response.body().result) {
-                                if (taskAttachmentEntity == null) continue;
-                                if (TextUtils.isEmpty(taskAttachmentEntity.filePermission)) {
-                                    taskAttachmentEntity.filePermission =
-                                            hasDeleteAttachmentPermission ? PERMISSION_RW : PERMISSION_R;
-                                }
-                            }*/
-                        }
                         taskAttachmentAdapter.bindData(true, response.body().result);
                     }
                 });
@@ -267,14 +263,19 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
     @Override
     public void notifyFragmentUpdate(Fragment targetFrgament, int type, Bundle bundle) {
         if (targetFrgament instanceof TaskAttachmentFragment) {
-            if (type == 100 && bundle != null) {
-                boolean isFinish = bundle.getBoolean("isFinish");
-                boolean valid = bundle.getBoolean("valid");
-                if (footerAddView != null)
+            if (type == TaskDetailActivity.TYPE_UPDATE_CHILD_FRAGMENT && bundle != null) {
+                boolean isFinish = bundle.getBoolean(TaskDetailActivity.KEY_ISFINISH);
+                boolean valid = bundle.getBoolean(TaskDetailActivity.KEY_VALID);
+                if (footerAddView != null) {
                     footerAddView.setVisibility((!isFinish && valid && hasAddAttachmentPermission) ? View.VISIBLE : View.GONE);
+                }
+                if (footerAddView != null) {
+                    footerAddView.setVisibility(!isFinish && valid ? View.VISIBLE : View.GONE);
+                }
                 if (isFinish || !valid) {
-                    if (taskAttachmentAdapter != null)
+                    if (taskAttachmentAdapter != null) {
                         taskAttachmentAdapter.setOnItemLongClickListener(null);
+                    }
                 }
             }
         }
@@ -292,7 +293,11 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
     private void showBottomMenu() {
         new BottomActionDialog(getContext(),
                 null,
-                Arrays.asList("从文档中选取", "上传文件", "从相册选取", getString(R.string.str_camera)),
+                Arrays.asList(
+                        getString(R.string.task_attachment_from_document),
+                        getString(R.string.task_upload_file),
+                        getString(R.string.task_attachment_from_photo),
+                        getString(R.string.str_camera)),
                 new BottomActionDialog.OnActionItemClickListener() {
                     @Override
                     public void onItemClick(BottomActionDialog dialog, BottomActionDialog.ActionItemAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
@@ -313,6 +318,8 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
                                 break;
                             case 3:
                                 checkAndSelectFromCamera(mOnHanlderResultCallback);
+                                break;
+                            default:
                                 break;
                         }
                     }
@@ -430,8 +437,12 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         final TaskAttachmentEntity item = taskAttachmentAdapter.getItem(position);
-        if (item == null) return;
-        if (item.pathInfoVo == null) return;
+        if (item == null) {
+            return;
+        }
+        if (item.pathInfoVo == null) {
+            return;
+        }
         //图片 直接预览
         if (IMUtils.isPIC(item.getSeaFileFullPath())) {
             List<TaskAttachmentEntity> allData = taskAttachmentAdapter.getData();
@@ -439,7 +450,9 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
             ArrayList<TaskAttachmentEntity> imageDatas = new ArrayList<>();
             for (int i = 0; i < allData.size(); i++) {
                 TaskAttachmentEntity folderDocumentEntity = allData.get(i);
-                if (folderDocumentEntity == null) continue;
+                if (folderDocumentEntity == null) {
+                    continue;
+                }
                 if (IMUtils.isPIC(folderDocumentEntity.getSeaFileFullPath())) {
                     imageDatas.add(folderDocumentEntity);
                 }
@@ -501,8 +514,12 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
      * @param entity
      */
     private void showDeleteConfirmDialog(final TaskAttachmentEntity entity) {
-        if (entity == null) return;
-        if (entity.pathInfoVo == null) return;
+        if (entity == null) {
+            return;
+        }
+        if (entity.pathInfoVo == null) {
+            return;
+        }
         new BottomActionDialog(getContext(),
                 null,
                 Arrays.asList(getString(R.string.str_delete)),
@@ -513,6 +530,8 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
                         switch (position) {
                             case 0:
                                 deleteAttachment(entity);
+                                break;
+                            default:
                                 break;
                         }
                     }
@@ -525,8 +544,12 @@ public class TaskAttachmentFragment extends SeaFileBaseFragment
      * @param entity
      */
     private void deleteAttachment(final TaskAttachmentEntity entity) {
-        if (entity == null) return;
-        if (entity.pathInfoVo == null) return;
+        if (entity == null) {
+            return;
+        }
+        if (entity.pathInfoVo == null) {
+            return;
+        }
         showLoadingDialog(R.string.str_deleting);
         callEnqueue(
                 getApi().taskDocumentDelete(taskId, entity.pathInfoVo.filePath),

@@ -108,7 +108,7 @@ public abstract class BaseCallBack<T> implements Callback<T> {
         } else if (t instanceof SocketException) {
             defNotify("网络不稳定或服务器繁忙");
         } else if (t instanceof SocketTimeoutException) {
-            defNotify("服务器响应超时");
+            defNotify("请求超时");
 
             sendLimitHttpLog(call, t, "服务器响应超时");
         } else if (t instanceof FileNotFoundException) {

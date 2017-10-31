@@ -21,7 +21,7 @@
         android:maxLines="3"
         android:paddingLeft="10dp"
         android:paddingRight="10dp"
-        android:text="暂无任务"
+        android:text="没有任务"
         android:textSize="14dp"
         android:visibility="gone" />
 </FrameLayout>

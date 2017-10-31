@@ -1,4 +1,6 @@
 #alpha android客户端  
+#入职流程
+http://wiki.alphalawyer.cn/pages/viewpage.action?pageId=5603882
 #接入流程  
  1. 申请企业邮箱(eg. youxuan@icourt.cc),负责人(HR 韩时雨);用企业邮箱注册gitlab,并让管理员(吴佑炫)邀请  
  2. 下载最新的Android Studio,并安装git AS与git链接成功;  
