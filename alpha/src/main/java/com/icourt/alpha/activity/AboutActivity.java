@@ -77,6 +77,7 @@ public class AboutActivity extends BaseAppUpdateActivity {
     @Override
     protected void initView() {
         super.initView();
+        //TODO 字符串引用res
         setTitle("关于");
         aboutVersonTextview.setText(BuildConfig.VERSION_NAME);
         aboutVersonReleaseTime.setText("build in " + DateUtils.getyyyyMMddHHmm(Long.valueOf(BuildConfig.APK_RELEASE_TIME)));
@@ -115,6 +116,7 @@ public class AboutActivity extends BaseAppUpdateActivity {
         switch (view.getId()) {
             case R.id.about_check_is_update_view:
                 if (appVersionEntity == null) return;
+                //TODO 上下文严重引用错误
                 if (hasFilePermission(context)) {
                     MobclickAgent.onEvent(context, UMMobClickAgent.dialog_update_btn_click_id);
                     showAppDownloadingDialog(getActivity(), appVersionEntity.upgradeUrl);
