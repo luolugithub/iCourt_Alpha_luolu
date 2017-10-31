@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.CallSuper;
@@ -46,6 +47,7 @@ import com.icourt.alpha.http.ResEntityFunction;
 import com.icourt.alpha.http.ResEntitySimpleFunction;
 import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.interfaces.IContextResourcesImp;
 import com.icourt.alpha.interfaces.INotifyFragment;
 import com.icourt.alpha.interfaces.OnDialogFragmentDismissListener;
 import com.icourt.alpha.interfaces.ProgressHUDImp;
@@ -53,6 +55,7 @@ import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SnackbarUtils;
 import com.icourt.alpha.utils.StringUtils;
+import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.ToastUtils;
 import com.icourt.api.RequestUtils;
 import com.kaopiz.kprogresshud.KProgressHUD;
@@ -88,6 +91,7 @@ public abstract class BaseDialogFragment extends DialogFragment
         INotifyFragment,
         LifecycleProvider<FragmentEvent>,
         IAlphaPermission,
+        IContextResourcesImp,
         IAlphaSelectPhoto {
     Queue<WeakReference<Call>> contextCallQueue = new ConcurrentLinkedQueue<>();
 
@@ -1022,5 +1026,23 @@ public abstract class BaseDialogFragment extends DialogFragment
         } else {
             requestCameraPermission();
         }
+    }
+
+    @NonNull
+    @Override
+    public CharSequence getContextString(int id) {
+        return SystemUtils.getString(getContext(), id);
+    }
+
+    @NonNull
+    @Override
+    public int getContextColor(int id) {
+        return SystemUtils.getColor(getContext(), id);
+    }
+
+    @NonNull
+    @Override
+    public Drawable getContextDrawable(int id) {
+        return SystemUtils.getDrawable(getContext(), id);
     }
 }

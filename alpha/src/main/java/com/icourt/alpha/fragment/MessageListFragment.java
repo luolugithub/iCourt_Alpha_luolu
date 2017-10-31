@@ -432,10 +432,10 @@ public class MessageListFragment extends BaseRecentContactFragment
             log("------------>onlineClientEvent:first:" + client.getOs() + "  gettype:" + client.getClientType() + "  loginTime:" + client.getLoginTime());
             switch (client.getClientType()) {
                 case ClientType.Windows:
-                    updateLoginStateView(true, getString(R.string.message_statu_hint_multiport_logging) + getString(R.string.message_statu_hint_computer_version));
+                    updateLoginStateView(true, getContextString(R.string.message_statu_hint_multiport_logging).toString() + getContextString(R.string.message_statu_hint_computer_version));
                     break;
                 case ClientType.Web:
-                    updateLoginStateView(true, getString(R.string.message_statu_hint_multiport_logging) + getString(R.string.message_statu_hint_web_version));
+                    updateLoginStateView(true, getContextString(R.string.message_statu_hint_multiport_logging).toString() + getContextString(R.string.message_statu_hint_web_version));
                     break;
                 case ClientType.iOS:
                 case ClientType.Android:
@@ -458,7 +458,7 @@ public class MessageListFragment extends BaseRecentContactFragment
 
                                 }
                             });
-                    updateLoginStateView(true, getString(R.string.message_statu_hint_multiport_logging) + getString(R.string.message_statu_hint_mobile_version));
+                    updateLoginStateView(true, getContextString(R.string.message_statu_hint_multiport_logging).toString() + getContextString(R.string.message_statu_hint_mobile_version));
                     if (NIMClient.getStatus() == StatusCode.LOGINED) {
                         loginout();
                     }
@@ -477,7 +477,7 @@ public class MessageListFragment extends BaseRecentContactFragment
      * @param isShow
      * @param notice
      */
-    private void updateLoginStateView(boolean isShow, String notice) {
+    private void updateLoginStateView(boolean isShow, CharSequence notice) {
         if (loginStatusTv == null) return;
         loginStatusTv.setVisibility(isShow ? View.VISIBLE : View.GONE);
         loginStatusTv.setText(notice);
@@ -502,14 +502,14 @@ public class MessageListFragment extends BaseRecentContactFragment
             loginout();
         } else {
             if (code == StatusCode.NET_BROKEN) {
-                updateLoginStateView(true, getString(R.string.error_please_check_network));
+                updateLoginStateView(true, getContextString(R.string.error_please_check_network));
             } else if (code == StatusCode.UNLOGIN) {
                 //bugSync("用户登陆状态:", "" + code);
-                updateLoginStateView(true, getString(R.string.message_statu_hint_no_login));
+                updateLoginStateView(true, getContextString(R.string.message_statu_hint_no_login));
             } else if (code == StatusCode.CONNECTING) {
-                updateLoginStateView(true, getString(R.string.message_statu_hint_nim_status_connecting));
+                updateLoginStateView(true, getContextString(R.string.message_statu_hint_nim_status_connecting));
             } else if (code == StatusCode.LOGINING) {
-                updateLoginStateView(true, getString(R.string.message_statu_hint_nim_status_logining));
+                updateLoginStateView(true, getContextString(R.string.message_statu_hint_nim_status_logining));
             } else {
                 updateLoginStateView(false, "");
             }

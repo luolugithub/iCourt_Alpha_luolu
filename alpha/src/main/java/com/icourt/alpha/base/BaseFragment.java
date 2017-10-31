@@ -1,9 +1,13 @@
 package com.icourt.alpha.base;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.CallSuper;
 import android.support.annotation.CheckResult;
+import android.support.annotation.ColorInt;
+import android.support.annotation.ColorRes;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.IdRes;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
@@ -31,12 +35,14 @@ import com.icourt.alpha.http.ResEntityFunction;
 import com.icourt.alpha.http.ResEntitySimpleFunction;
 import com.icourt.alpha.http.RetrofitServiceFactory;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.interfaces.IContextResourcesImp;
 import com.icourt.alpha.interfaces.INotifyFragment;
 import com.icourt.alpha.interfaces.ProgressHUDImp;
 import com.icourt.alpha.utils.LogUtils;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.SnackbarUtils;
 import com.icourt.alpha.utils.StringUtils;
+import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.ToastUtils;
 import com.icourt.api.RequestUtils;
 import com.kaopiz.kprogresshud.KProgressHUD;
@@ -70,6 +76,7 @@ public abstract class BaseFragment
         IContextObservable,
         View.OnClickListener,
         INotifyFragment,
+        IContextResourcesImp,
         LifecycleProvider<FragmentEvent> {
     Queue<WeakReference<Call>> contextCallQueue = new ConcurrentLinkedQueue<>();
 
@@ -715,4 +722,40 @@ public abstract class BaseFragment
         RequestUtils.cancelCall(call);
     }
 
+
+    /**
+     * 获取字符串 安全
+     *
+     * @param id
+     * @return
+     */
+    @NonNull
+    @Override
+    public final CharSequence getContextString(@StringRes int id) {
+        return SystemUtils.getString(getContext(), id);
+    }
+
+    /**
+     * 获取颜色 安全
+     *
+     * @param id
+     * @return
+     */
+    @ColorInt
+    @Override
+    public final int getContextColor(@ColorRes int id) {
+        return SystemUtils.getColor(getContext(), id);
+    }
+
+    /**
+     * 获取图片 安全
+     *
+     * @param id
+     * @return
+     */
+    @NonNull
+    @Override
+    public Drawable getContextDrawable(@DrawableRes int id) {
+        return SystemUtils.getDrawable(getContext(), id);
+    }
 }
