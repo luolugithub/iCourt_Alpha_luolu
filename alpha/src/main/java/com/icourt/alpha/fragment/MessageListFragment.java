@@ -433,7 +433,7 @@ public class MessageListFragment extends BaseRecentContactFragment
      * @param isShow
      * @param notice
      */
-    private void updateLoginStateView(boolean isShow, String notice) {
+    private void updateLoginStateView(boolean isShow, CharSequence notice) {
         if (loginStatusTv == null) {
             return;
         }
