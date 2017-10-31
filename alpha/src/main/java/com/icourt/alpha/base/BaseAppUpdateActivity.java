@@ -9,7 +9,6 @@ import android.os.Environment;
 import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatCallback;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -24,7 +23,6 @@ import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.constants.DownloadConfig;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.http.callback.BaseCallBack;
-import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.UpdateAppDialogNoticeImp;
 import com.icourt.alpha.interfaces.callback.AppUpdateCallBack;
@@ -176,7 +174,7 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements UpdateAp
         } else {
             noUpdateTv.setVisibility(shouldForceUpdate(appVersionEntity) ? View.GONE : View.VISIBLE);
             updateTv.setVisibility(View.VISIBLE);
-            titleTv.setText(getString(mine_find_new_version));
+            titleTv.setText(getString(R.string.mine_find_new_version));
         }
         noUpdateTv.setOnClickListener(new View.OnClickListener() {
             @Override

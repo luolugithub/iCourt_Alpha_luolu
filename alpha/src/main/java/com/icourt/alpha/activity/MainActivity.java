@@ -513,16 +513,16 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
         if (!SystemUtils.isEnableNotification(getContext())
                 || !NotificationManagerCompat.from(getContext()).areNotificationsEnabled()) {
             new AlertDialog.Builder(getContext())
-                    .setTitle("提示")
-                    .setMessage("为了您能收到消息提醒,请打开通知设置开关!")
-                    .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    .setTitle(getString(R.string.task_remind))
+                    .setMessage(getString(R.string.permission_notifaction_switch))
+                    .setPositiveButton(getString(R.string.str_ok), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             bugSync("通知开关设置", "未打开");
                             SystemUtils.launchPhoneSettings(getContext());
                         }
                     })
-                    .setNegativeButton("取消", null)
+                    .setNegativeButton(getString(R.string.str_cancel), null)
                     .show();
         }
     }
@@ -1032,7 +1032,7 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
             case TimingEvent.TIMING_STOP:
                 dismissOverTimingRemindDialogFragment(true);
                 dismissTimingDialogFragment();
-                tabTimingTv.setText("开始计时");
+                tabTimingTv.setText(getString(R.string.task_start_timing));
                 tabTimingIcon.setImageResource(R.mipmap.ic_time_start);
                 tabTimingIcon.clearAnimation();
                 timingAnim = null;

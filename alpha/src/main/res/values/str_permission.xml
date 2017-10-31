@@ -47,4 +47,6 @@
     <string name="permission_rationale_camera">Alpha需要拍照权限!</string>
     <string name="permission_rationale_storage">Alpha需要文件读写权限!</string>
 
+    <string name="permission_notifaction_switch">为了您能收到消息提醒,请打开通知设置开关!</string>
+
 </resources>
