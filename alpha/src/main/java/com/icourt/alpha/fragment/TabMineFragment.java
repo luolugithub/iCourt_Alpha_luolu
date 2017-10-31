@@ -41,7 +41,6 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.List;
-import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -292,33 +291,33 @@ public class TabMineFragment extends BaseFragment {
      * 检测版本
      */
     private void checkVersion() {
-        callEnqueue(
-                getApi().getNewVersionAppInfo(BuildConfig.APK_UPDATE_URL), new AppUpdateCallBack() {
-                    @Override
-                    public void onSuccess(Call<AppVersionEntity> call, Response<AppVersionEntity> response) {
-                        if (settingAboutCountView == null) {
-                            return;
-                        }
-                        settingAboutCountView.setVisibility(shouldUpdate(response.body()) ? View.VISIBLE : View.INVISIBLE);
-                    }
 
-                    @Override
-                    public void onFailure(Call<AppVersionEntity> call, Throwable t) {
-                        if (t instanceof HttpException) {
-                            HttpException hx = (HttpException) t;
-                            if (hx.code() == 401) {
-                                showTopSnackBar("fir token 更改");
-                                return;
-                            }
-                        }
-                        super.onFailure(call, t);
+        callEnqueue(getApi().getNewVersionAppInfo(), new AppUpdateCallBack() {
+            @Override
+            public void onSuccess(Call<ResEntity<AppVersionEntity>> call, Response<ResEntity<AppVersionEntity>> response) {
+                if (settingAboutCountView == null) {
+                    return;
+                }
+                settingAboutCountView.setVisibility(shouldUpdate(response.body().result) ? View.VISIBLE : View.INVISIBLE);
+            }
+
+            @Override
+            public void onFailure(Call<ResEntity<AppVersionEntity>> call, Throwable t) {
+                if (t instanceof HttpException) {
+                    HttpException hx = (HttpException) t;
+                    if (hx.code() == 401) {
+                        showTopSnackBar("fir token 更改");
+                        return;
                     }
-                });
+                }
+                super.onFailure(call, t);
+            }
+        });
     }
 
     public final boolean shouldUpdate(@NonNull AppVersionEntity appVersionEntity) {
         return appVersionEntity != null
-                && !TextUtils.equals(appVersionEntity.versionShort, BuildConfig.VERSION_NAME);
+                && !TextUtils.equals(appVersionEntity.appVersion, BuildConfig.VERSION_NAME);
     }
 
     /**

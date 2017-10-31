@@ -16,8 +16,8 @@ import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseAppUpdateActivity;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
-import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.interfaces.callback.AppUpdateCallBack;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
 import com.umeng.analytics.MobclickAgent;
@@ -86,7 +86,7 @@ public class AboutActivity extends BaseAppUpdateActivity {
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-        checkAppUpdate(new SimpleCallBack<AppVersionEntity>() {
+        checkAppUpdate(new AppUpdateCallBack() {
             @Override
             public void onSuccess(Call<ResEntity<AppVersionEntity>> call, Response<ResEntity<AppVersionEntity>> response) {
                 appVersionEntity = response.body().result;
@@ -116,9 +116,8 @@ public class AboutActivity extends BaseAppUpdateActivity {
         switch (view.getId()) {
             case R.id.about_check_is_update_view:
                 if (appVersionEntity == null) return;
-                //TODO 上下文严重引用错误
-                if (hasFilePermission(context)) {
-                    MobclickAgent.onEvent(context, UMMobClickAgent.dialog_update_btn_click_id);
+                if (hasFilePermission(getContext())) {
+                    MobclickAgent.onEvent(getContext(), UMMobClickAgent.dialog_update_btn_click_id);
                     showAppDownloadingDialog(getActivity(), appVersionEntity.upgradeUrl);
                 } else {
                     requestFilePermission(context, REQUEST_FILE_PERMISSION);

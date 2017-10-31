@@ -327,7 +327,7 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                     refreshToken();
                     break;
                 case TYPE_CHECK_APP_UPDATE:
-                    checkAppUpdate(getContext(), "发现新版本");
+                    checkAppUpdate(getContext(), getString(R.string.mine_find_new_version));
                     break;
                 case TYPE_CHECK_TIMING_UPDATE:
                     TimerManager.getInstance().timerQuerySync();

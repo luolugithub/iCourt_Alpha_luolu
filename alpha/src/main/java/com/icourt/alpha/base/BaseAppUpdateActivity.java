@@ -9,6 +9,7 @@ import android.os.Environment;
 import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatCallback;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -26,6 +27,7 @@ import com.icourt.alpha.http.callback.BaseCallBack;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.UpdateAppDialogNoticeImp;
+import com.icourt.alpha.interfaces.callback.AppUpdateCallBack;
 import com.icourt.alpha.utils.ApkUtils;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.FileUtils;
@@ -54,8 +56,7 @@ import retrofit2.Response;
  * date createTime：2017/4/6
  * version 1.0.0
  */
-public class BaseAppUpdateActivity extends BaseUmengActivity implements
-        UpdateAppDialogNoticeImp {
+public class BaseAppUpdateActivity extends BaseUmengActivity implements UpdateAppDialogNoticeImp {
 
     public static final String UPDATE_APP_VERSION_KEY = "update_app_version_key";//版本更新版本号
     private static final String CUSTOM_APK_JOINT_NAME = "alphaNewApp";//自定义apk name拼接字符串 :为确保每次url不同
@@ -89,21 +90,19 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
     @Override
     public final void checkAppUpdate(@NonNull BaseCallBack<ResEntity<AppVersionEntity>> callBack) {
         if (callBack == null) return;
-        //TODO 添加到队列
-        getApi().getNewVersionAppInfo()
-                .enqueue(callBack);
+        callEnqueue(
+                getApi().getNewVersionAppInfo(),
+                callBack);
     }
 
     @Override
     public final void checkAppUpdate(@NonNull final Context context, final String title) {
         if (context == null) return;
-        checkAppUpdate(new SimpleCallBack<AppVersionEntity>() {
+        checkAppUpdate(new AppUpdateCallBack() {
             @Override
             public void onSuccess(Call<ResEntity<AppVersionEntity>> call, Response<ResEntity<AppVersionEntity>> response) {
                 if (response.body().result == null) return;
                 AppVersionEntity appVersionEntity = response.body().result;
-                // TODO: 17/9/15    测试下载url
-                appVersionEntity.upgradeUrl = "https://devbox.alphalawyer.cn/seafhttp/files/37ef8760-6e41-419c-96bf-8c720e6f216a/alpha-BaiDu-innertest-v2.0.4_2017-09-06%2014%3A13.apk";
                 if (!TextUtils.equals(appVersionEntity.appVersion, SpUtils.getInstance().getStringData(UPDATE_APP_VERSION_KEY, ""))) {
                     //upgradeStrategy!=-1则显示更新对话框
                     if (appVersionEntity.upgradeStrategy != -1) {
@@ -172,13 +171,12 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
         if (isLookDesc) {
             noUpdateTv.setVisibility(View.GONE);
             updateTv.setVisibility(View.VISIBLE);
-            //TODO 字符串资源
-            updateTv.setText("关闭");
-            titleTv.setText("更新日志");
+            updateTv.setText(getString(R.string.mine_close));
+            titleTv.setText(getString(R.string.mine_update_log));
         } else {
             noUpdateTv.setVisibility(shouldForceUpdate(appVersionEntity) ? View.GONE : View.VISIBLE);
             updateTv.setVisibility(View.VISIBLE);
-            titleTv.setText("发现新版本");
+            titleTv.setText(getString(mine_find_new_version));
         }
         noUpdateTv.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -216,8 +214,7 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
         View footerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_update_dialog_list_layout, recyclerView);
         TextView footerTv = (TextView) footerView.findViewById(R.id.footer_textview);
         headerFooterAdapter.addFooter(footerView);
-        //TODO 字符串资源
-        footerTv.setText("升级是小阿的信仰，我们下次见！");
+        footerTv.setText(getString(R.string.mine_update_alpha_content));
     }
 
     /**
@@ -276,7 +273,7 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
             updateProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
             updateProgressDialog.setCancelable(false);
             updateProgressDialog.setCanceledOnTouchOutside(false);
-            updateProgressDialog.setTitle("下载中...");
+            updateProgressDialog.setTitle(getString(R.string.mine_downloading));
         }
         return updateProgressDialog;
     }
@@ -308,7 +305,9 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
             if (totalBytes > 0) {
                 getUpdateProgressDialog().setMax(totalBytes);
             }
-            if (updateNoticeDialog.isShowing()) updateNoticeDialog.dismiss();
+            if (updateNoticeDialog != null && updateNoticeDialog.isShowing()) {
+                updateNoticeDialog.dismiss();
+            }
             getUpdateProgressDialog().setProgress(soFarBytes);
             getUpdateProgressDialog().show();
         }
@@ -342,20 +341,19 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
             }
             if (e instanceof FileDownloadHttpException) {
                 int code = ((FileDownloadHttpException) e).getCode();
-                showTopSnackBar(String.format("%s:%s", code, "下载异常!"));
+                showTopSnackBar(String.format("%s:%s", code, getString(R.string.mine_download_error)));
             } else if (e instanceof FileDownloadOutOfSpaceException) {
-                //TODO 字符串引用资源
                 new AlertDialog.Builder(getActivity())
-                        .setTitle("提示")
-                        .setMessage("存储空间严重不足,去清理?")
-                        .setPositiveButton("确认", new DialogInterface.OnClickListener() {
+                        .setTitle(getString(R.string.task_remind))
+                        .setMessage(getString(R.string.mine_isclear_cache))
+                        .setPositiveButton(getString(R.string.task_confirm), new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();
                             }
                         }).show();
             } else {
-                showTopSnackBar(String.format("下载异常!" + StringUtils.throwable2string(e)));
+                showTopSnackBar(String.format(getString(R.string.mine_download_error) + StringUtils.throwable2string(e)));
             }
             getUpdateProgressDialog().dismiss();
         }
@@ -378,7 +376,7 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
                     .setPath(path)
                     .setListener(apkDownloadListener).start();
         } else {
-            showTopSnackBar("sd卡不可用!");
+            showTopSnackBar(getString(R.string.str_sd_unavailable));
         }
     }
 
