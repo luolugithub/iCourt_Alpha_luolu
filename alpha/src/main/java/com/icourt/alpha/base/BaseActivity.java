@@ -1,12 +1,9 @@
 package com.icourt.alpha.base;
 
-import android.content.Context;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.CallSuper;
 import android.support.annotation.CheckResult;
-import android.support.annotation.ColorInt;
 import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.IdRes;
@@ -61,8 +58,6 @@ import io.reactivex.Observable;
 import io.reactivex.subjects.BehaviorSubject;
 import retrofit2.Call;
 import retrofit2.Callback;
-
-import static com.umeng.socialize.utils.DeviceConfig.context;
 
 /**
  * Description  基类封装
@@ -614,18 +609,26 @@ public class BaseActivity
 
     @Override
     public final int getContextColor(@ColorRes int id) {
-        return getContextColor(id, Color.BLACK);
+        return SystemUtils.getColor(getContext(), id);
     }
 
-    @Override
-    public final int getContextColor(@ColorRes int id, @ColorInt int defaultColor) {
-        return SystemUtils.getColor(context, id, defaultColor);
-    }
 
     @Nullable
     @Override
-    public Drawable getDrawable(Context context, @DrawableRes int id) {
-        return SystemUtils.getDrawable(context, id);
+    public Drawable getContextDrawable(@DrawableRes int id) {
+        return SystemUtils.getDrawable(getContext(), id);
+    }
+
+    /**
+     * 获取字符串 安全
+     *
+     * @param id
+     * @return
+     */
+    @NonNull
+    @Override
+    public final CharSequence getContextString(@StringRes int id) {
+        return SystemUtils.getString(getContext(), id);
     }
 
     @Override
@@ -874,23 +877,4 @@ public class BaseActivity
     }
 
 
-    /**
-     * 获取字符串 安全
-     *
-     * @param id
-     * @return
-     */
-    protected final CharSequence getContextString(@StringRes int id) {
-        return SystemUtils.getString(getContext(), id);
-    }
-
-    /**
-     * 获取字符串 安全
-     *
-     * @param id
-     * @return
-     */
-    protected final CharSequence getContextString(@StringRes int id, CharSequence defaultStr) {
-        return SystemUtils.getString(getContext(), id, defaultStr);
-    }
 }
