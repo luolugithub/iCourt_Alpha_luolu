@@ -16,6 +16,8 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.utils.StringUtils;
+import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.widget.filter.InputActionNextFilter;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -63,6 +65,13 @@ public abstract class SFileEditBaseActivity
         setTitleActionTextView("完成");
         inputNameEt.setFilters(new InputFilter[]{new InputFilter.LengthFilter(getMaxInputLimitNum())});
         inputNameEt.addTextChangedListener(this);
+        inputNameEt.setOnEditorActionListener(new InputActionNextFilter() {
+            @Override
+            public boolean onInputActionNext(TextView v) {
+                SystemUtils.hideSoftKeyBoard(getActivity(), v, true);
+                return super.onInputActionNext(v);
+            }
+        });
     }
 
     @Override

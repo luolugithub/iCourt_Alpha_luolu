@@ -12,8 +12,25 @@ import android.widget.TextView;
  * version 2.1.0
  */
 public class InputActionNextFilter implements TextView.OnEditorActionListener {
+
+
     @Override
-    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-        return (actionId == EditorInfo.IME_ACTION_NEXT) || (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER);
+    public final boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+        boolean isActionNext = (actionId == EditorInfo.IME_ACTION_NEXT)
+                || (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER);
+        if (isActionNext) {
+            return onInputActionNext(v);
+        }
+        return false;
+    }
+
+    /**
+     * 回车键  默认返回true
+     *
+     * @param v
+     * @return
+     */
+    public boolean onInputActionNext(TextView v) {
+        return true;
     }
 }
