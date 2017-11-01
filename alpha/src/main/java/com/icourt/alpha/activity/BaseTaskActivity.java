@@ -40,8 +40,6 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Response;
 
-import static com.umeng.socialize.utils.DeviceConfig.context;
-
 /**
  * Description  任务基类
  * Company Beijing icourt
@@ -171,7 +169,7 @@ public abstract class BaseTaskActivity extends BaseActivity {
      */
     protected void deleteTask(final TaskEntity.TaskItemEntity itemEntity) {
         showLoadingDialog(null);
-        MobclickAgent.onEvent(context, UMMobClickAgent.delete_task_click_id);
+        MobclickAgent.onEvent(getContext(), UMMobClickAgent.delete_task_click_id);
         callEnqueue(getApi().taskDelete(itemEntity.id),new SimpleCallBack<JsonElement>() {
             @Override
             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {

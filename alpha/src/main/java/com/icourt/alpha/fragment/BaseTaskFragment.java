@@ -57,8 +57,6 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static com.umeng.socialize.utils.DeviceConfig.context;
-
 /**
  * Description  任务列表碎片基类
  * Company Beijing icourt
@@ -320,8 +318,8 @@ public abstract class BaseTaskFragment extends BaseFragment implements OnFragmen
      */
     protected void deleteTask(final TaskEntity.TaskItemEntity itemEntity) {
         showLoadingDialog(null);
-        if (context != null) {
-            MobclickAgent.onEvent(context, UMMobClickAgent.delete_task_click_id);
+        if (getContext() != null) {
+            MobclickAgent.onEvent(getContext(), UMMobClickAgent.delete_task_click_id);
         }
         callEnqueue(
                 getApi().taskDelete(itemEntity.id),

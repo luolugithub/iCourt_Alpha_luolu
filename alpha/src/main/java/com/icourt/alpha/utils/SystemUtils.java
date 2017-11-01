@@ -653,7 +653,8 @@ public class SystemUtils {
      * @param id
      * @return
      */
-    public static CharSequence getString(Context context, @StringRes int id) {
+    @NonNull
+    public static CharSequence getString(@NonNull Context context, @StringRes int id) {
         return getString(context, id, "");
     }
 
@@ -665,10 +666,14 @@ public class SystemUtils {
      * @param defaultStr
      * @return
      */
-    public static CharSequence getString(Context context, @StringRes int id, CharSequence defaultStr) {
+    @NonNull
+    public static CharSequence getString(@NonNull Context context, @StringRes int id, CharSequence defaultStr) {
         if (context != null) {
             try {
-                return context.getResources().getString(id);
+                Resources resources = context.getResources();
+                if (resources != null) {
+                    return resources.getString(id);
+                }
             } catch (Resources.NotFoundException e) {
                 e.printStackTrace();
             }
@@ -698,7 +703,9 @@ public class SystemUtils {
      */
     @ColorInt
     public static int getColor(Context context, @ColorRes int id, @ColorInt int defaultColor) {
-        if (context == null) return defaultColor;
+        if (context == null) {
+            return defaultColor;
+        }
         try {
             return ContextCompat.getColor(context, id);
         } catch (android.content.res.Resources.NotFoundException e) {
@@ -716,7 +723,9 @@ public class SystemUtils {
     @CheckResult
     @Nullable
     public static ColorStateList getColorStateList(Context context, @ColorRes int id) {
-        if (context == null) return null;
+        if (context == null) {
+            return null;
+        }
         try {
             return ContextCompat.getColorStateList(context, id);
         } catch (android.content.res.Resources.NotFoundException e) {
@@ -725,27 +734,30 @@ public class SystemUtils {
     }
 
     /**
-     * ContextCompat.getDrawable() 将抛出异常,也没判断contexts是否为空
+     * ContextCompat.getContextDrawable() 将抛出异常,也没判断contexts是否为空
      * android.content.res.Resources.NotFoundException
      * 默认返回值为黑色
      *
      * @param context
      * @param id
      */
-    public static Drawable getDrawable(Context context, @DrawableRes int id) {
+    @NonNull
+    public static Drawable getDrawable(@NonNull Context context, @DrawableRes int id) {
         return getDrawable(context, id, R.mipmap.ic_launcher);
     }
 
     /**
-     * ContextCompat.getDrawable() 将抛出异常,也没判断contexts是否为空
+     * ContextCompat.getContextDrawable() 将抛出异常,也没判断contexts是否为空
      * android.content.res.Resources.NotFoundException
      *
      * @param context
      * @param id      如果不存在返回默认值                                                        does not exist.
      */
-    @Nullable
-    public static Drawable getDrawable(Context context, @DrawableRes int id, @DrawableRes int defaultDrawable) {
-        if (context == null) return null;
+    @NonNull
+    public static Drawable getDrawable(@NonNull Context context, @DrawableRes int id, @DrawableRes int defaultDrawable) {
+        if (context == null) {
+            return null;
+        }
         Drawable drawable = null;
         try {
             drawable = ContextCompat.getDrawable(context, id);

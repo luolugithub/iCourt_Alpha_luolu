@@ -15,7 +15,6 @@ import com.icourt.alpha.utils.SpUtils;
  * date createTime：17/5/10
  * version 2.0.0
  */
-//TODO 重载和继承 抽取
 public class TimerAddActivity extends BaseTimerAddActivity
         implements
         OnFragmentCallBackListener {

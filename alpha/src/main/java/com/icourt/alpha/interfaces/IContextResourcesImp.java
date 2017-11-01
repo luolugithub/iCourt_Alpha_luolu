@@ -1,14 +1,13 @@
 package com.icourt.alpha.interfaces;
 
-import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.ColorInt;
 import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
-import android.support.annotation.Nullable;
+import android.support.annotation.NonNull;
+import android.support.annotation.StringRes;
 
 /**
- * Description 定义过时的resource资源获取方式
+ * Description 定义过时的resource资源获取方式,更安全
  * Company Beijing guokeyuzhou
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：17/3/14
@@ -17,11 +16,14 @@ import android.support.annotation.Nullable;
 
 public interface IContextResourcesImp {
 
+    @NonNull
     int getContextColor(@ColorRes int id);
 
-    int getContextColor(@ColorRes int id, @ColorInt int defaultColor);
 
-    @Nullable
-    Drawable getDrawable(Context context, @DrawableRes int id);
+    @NonNull
+    Drawable getContextDrawable(@DrawableRes int id);
 
+
+    @NonNull
+    CharSequence getContextString(@StringRes int id);
 }
