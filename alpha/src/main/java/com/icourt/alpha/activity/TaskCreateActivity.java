@@ -90,8 +90,6 @@ public class TaskCreateActivity extends ListenBackActivity
 
     private static final String ACTION_FROM_PROJECT = "fromProject";
 
-    @BindView(R.id.titleBack)
-    CheckedTextView titleBack;
     @BindView(R.id.titleContent)
     TextView titleContent;
     @BindView(R.id.titleAction)

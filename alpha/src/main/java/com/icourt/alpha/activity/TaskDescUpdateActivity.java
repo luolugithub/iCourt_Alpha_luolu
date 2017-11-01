@@ -49,8 +49,6 @@ public class TaskDescUpdateActivity extends BaseActivity {
 
     public static final int UPDATE_TASK_DESC = 1;
     public static final int UPDATE_TASK_NAME = 2;
-    @BindView(R.id.titleBack)
-    CheckedTextView titleBack;
     @BindView(R.id.titleContent)
     TextView titleContent;
     @BindView(R.id.titleAction)

@@ -69,8 +69,6 @@ public class GroupCreateActivity extends ListenBackActivity implements OnFragmen
     private static final String KEY_CACHE_DESC = String.format("%s_%s", GroupCreateActivity.class.getSimpleName(), "cacheDesc");
 
 
-    @BindView(R.id.titleBack)
-    CheckedTextView titleBack;
     @BindView(R.id.titleContent)
     TextView titleContent;
     @BindView(R.id.titleAction)

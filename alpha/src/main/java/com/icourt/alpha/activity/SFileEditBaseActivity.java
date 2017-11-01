@@ -33,8 +33,6 @@ import butterknife.OnClick;
 public abstract class SFileEditBaseActivity
         extends BaseActivity implements TextWatcher {
 
-    @BindView(R.id.titleBack)
-    CheckedTextView titleBack;
     @BindView(R.id.titleContent)
     TextView titleContent;
     @BindView(R.id.titleAction)
