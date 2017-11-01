@@ -22,26 +22,37 @@ import java.util.concurrent.TimeUnit;
  *         version 2.2.1
  */
 public class DateUtils {
-
+    /**
+     * 年月
+     */
     public static final String DATE_YYYYMM_STYLE1 = "yyyy年MM月";
-
+    /**
+     * 年月日
+     */
     public static final String DATE_YYYYMMDD_STYLE1 = "yyyy-MM-dd";
     public static final String DATE_YYYYMMDD_STYLE2 = "yyyy年MM月dd日";
     public static final String DATE_YYYYMMDD_STYLE3 = "yyyy.MM.dd";
     public static final String DATE_YYYYMMDD_STYLE4 = "yyyy/MM/dd";
-
+    /**
+     * 年月日时分
+     */
     public static final String DATE_YYYYMMDD_HHMM_STYLE1 = "yyyy-MM-dd HH:mm";
     public static final String DATE_YYYYMMDD_HHMM_STYLE2 = "yyyy年MM月dd日 HH:mm";
     public static final String DATE_YYYYMMDD_HHMM_STYLE3 = "yyyy/MM/dd HH:mm";
-
+    /**
+     * 月日
+     */
     public static final String DATE_MMDD_STYLE1 = "MM月dd日";
     public static final String DATE_MMDD_STYLE2 = "MM/dd";
-
-
+    /**
+     * 月日时分
+     */
     public static final String DATE_MMDD_HHMM_STYLE1 = "MM-dd HH:mm";
     public static final String DATE_MMDD_HHMM_STYLE2 = "MM月dd日 HH:mm";
     public static final String DATE_MMDD_HHMM_STYLE3 = "MM/dd HH:mm";
-
+    /**
+     * 时分
+     */
     public static final String DATE_HHMM_STYLE1 = "HH:mm";
 
 
@@ -272,7 +283,7 @@ public class DateUtils {
             return dateFormat.format(millisSecond);
         } catch (Exception e) {
             e.printStackTrace();
-            BugUtils.bugSync("getFormatDate()异常", "时间戳：" + millisSecond + "，类型：" + dateStyle);
+            BugUtils.bugSync("DateUtils.getFormatDate()方法异常", StringUtils.throwable2string(e));
         }
         return "";
     }
@@ -395,7 +406,7 @@ public class DateUtils {
                 return formatter.format(milliseconds);
             } catch (Exception e) {
                 e.printStackTrace();
-                BugUtils.bugSync("getTimeDate()异常", "时间戳：" + milliseconds);
+                BugUtils.bugSync("DateUtils.getTimeDate()方法异常", StringUtils.throwable2string(e));
                 return "";
             }
         }
@@ -423,7 +434,7 @@ public class DateUtils {
                 return formatter.format(milliseconds);
             } catch (Exception e) {
                 e.printStackTrace();
-                BugUtils.bugSync("getTimeDate()异常", "时间戳：" + milliseconds);
+                BugUtils.bugSync("DateUtils.getTimeDateFormatMm()方法异常", StringUtils.throwable2string(e));
                 return "";
             }
         }
@@ -451,7 +462,7 @@ public class DateUtils {
                 return formatter.format(milliseconds);
             } catch (Exception e) {
                 e.printStackTrace();
-                BugUtils.bugSync("getTimeDateFormatXMm()异常", "时间戳：" + milliseconds);
+                BugUtils.bugSync("DateUtils.getTimeDateFormatXMm()方法异常", StringUtils.throwable2string(e));
                 return "";
             }
         }
@@ -478,8 +489,8 @@ public class DateUtils {
                 SimpleDateFormat formatter = new SimpleDateFormat(formatStr);
                 return formatter.format(milliseconds);
             } catch (Exception e) {
-                BugUtils.bugSync("getMMXdd()异常", "时间戳：" + milliseconds);
                 e.printStackTrace();
+                BugUtils.bugSync("DateUtils.getMMXdd()方法异常", StringUtils.throwable2string(e));
                 return "";
             }
         }
@@ -1045,11 +1056,17 @@ public class DateUtils {
      * @return
      */
     public static String getCurrentMonthFirstDay() {
-        SimpleDateFormat dateFormater = new SimpleDateFormat(DATE_YYYYMMDD_STYLE1);
-        Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.DAY_OF_MONTH, 1);
-        cal.getTime();
-        return dateFormater.format(cal.getTime());
+        try {
+            SimpleDateFormat dateFormater = new SimpleDateFormat(DATE_YYYYMMDD_STYLE1);
+            Calendar cal = Calendar.getInstance();
+            cal.set(Calendar.DAY_OF_MONTH, 1);
+            cal.getTime();
+            return dateFormater.format(cal.getTime());
+        } catch (Exception e) {
+            e.printStackTrace();
+            BugUtils.bugSync("DateUtils.getCurrentMonthFirstDay()方法异常", StringUtils.throwable2string(e));
+        }
+        return "";
     }
 
     /**
@@ -1058,10 +1075,16 @@ public class DateUtils {
      * @return
      */
     public static String getCurrentMonthLastDay() {
-        SimpleDateFormat dateFormater = new SimpleDateFormat(DATE_YYYYMMDD_STYLE1);
-        Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.DAY_OF_MONTH,
-                cal.getActualMaximum(Calendar.DAY_OF_MONTH));
-        return dateFormater.format(cal.getTime());
+        try {
+            SimpleDateFormat dateFormater = new SimpleDateFormat(DATE_YYYYMMDD_STYLE1);
+            Calendar cal = Calendar.getInstance();
+            cal.set(Calendar.DAY_OF_MONTH,
+                    cal.getActualMaximum(Calendar.DAY_OF_MONTH));
+            return dateFormater.format(cal.getTime());
+        } catch (Exception e) {
+            e.printStackTrace();
+            BugUtils.bugSync("DateUtils.getCurrentMonthFirstDay()方法异常", StringUtils.throwable2string(e));
+        }
+        return "";
     }
 }
