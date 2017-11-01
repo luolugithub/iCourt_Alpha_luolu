@@ -238,7 +238,13 @@ public class TimerDetailActivity extends BaseTimerActivity
         }
 
         timeNameTv.setFilters(timingNameInputFilters);
-        timeNameTv.setOnEditorActionListener(new InputActionNextFilter());
+        timeNameTv.setOnEditorActionListener(new InputActionNextFilter(){
+            @Override
+            public boolean onInputActionNext(TextView v) {
+                SystemUtils.hideSoftKeyBoard(getActivity(), v, true);
+                return super.onInputActionNext(v);
+            }
+        });
     }
 
     /**

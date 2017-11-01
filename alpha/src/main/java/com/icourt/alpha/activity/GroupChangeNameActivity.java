@@ -7,6 +7,7 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -15,6 +16,8 @@ import com.icourt.alpha.entity.bean.GroupDetailEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.StringUtils;
+import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.widget.filter.InputActionNextFilter;
 import com.icourt.api.RequestUtils;
 
 import retrofit2.Call;
@@ -23,7 +26,7 @@ import retrofit2.Response;
 /**
  * Description  改变讨论组名称
  * Company Beijing icourt
- * author  youxuan  E-mail:xuanyouwu@163.com
+ * @author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/9/27
  * version 2.1.0
  */
@@ -35,8 +38,9 @@ public class GroupChangeNameActivity extends EditItemBaseActivity {
     public static void launchForResult(@NonNull Activity context,
                                        int reqCode,
                                        GroupDetailEntity groupDetailEntity) {
-        if (context == null) return;
-        if (groupDetailEntity == null) return;
+        if (context == null || groupDetailEntity == null) {
+            return;
+        }
         Intent intent = new Intent(context, GroupChangeNameActivity.class);
         intent.putExtra(KEY_GROUP_DATA, groupDetailEntity);
         context.startActivityForResult(intent, reqCode);
@@ -52,6 +56,14 @@ public class GroupChangeNameActivity extends EditItemBaseActivity {
         setTitleActionTextView(getContextString(R.string.str_finish));
         inputNameEt.setText(groupDetailEntity.name);
         inputNameEt.setSelection(inputNameEt.length());
+        //禁止换行
+        inputNameEt.setOnEditorActionListener(new InputActionNextFilter() {
+            @Override
+            public boolean onInputActionNext(TextView v) {
+                SystemUtils.hideSoftKeyBoard(getActivity(), v, true);
+                return super.onInputActionNext(v);
+            }
+        });
     }
 
     @Override
@@ -71,7 +83,7 @@ public class GroupChangeNameActivity extends EditItemBaseActivity {
             return false;
         }
         //无需提交
-        if (TextUtils.equals(et.getText(),groupDetailEntity.name)) {
+        if (TextUtils.equals(et.getText(), groupDetailEntity.name)) {
             finish();
             return false;
         }

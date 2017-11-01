@@ -40,6 +40,8 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.StringUtils;
+import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.widget.filter.InputActionNextFilter;
 import com.icourt.alpha.widget.filter.LengthListenFilter;
 import com.icourt.api.RequestUtils;
 
@@ -67,8 +69,6 @@ public class GroupCreateActivity extends ListenBackActivity implements OnFragmen
     private static final String KEY_CACHE_DESC = String.format("%s_%s", GroupCreateActivity.class.getSimpleName(), "cacheDesc");
 
 
-    @BindView(R.id.titleBack)
-    CheckedTextView titleBack;
     @BindView(R.id.titleContent)
     TextView titleContent;
     @BindView(R.id.titleAction)
@@ -151,6 +151,13 @@ public class GroupCreateActivity extends ListenBackActivity implements OnFragmen
                 showToast(getString(R.string.chat_group_name_limit_format, String.valueOf(maxLength)));
             }
         }));
+        groupNameEt.setOnEditorActionListener(new InputActionNextFilter(){
+            @Override
+            public boolean onInputActionNext(TextView v) {
+                SystemUtils.hideSoftKeyBoard(getActivity(), v, true);
+                return super.onInputActionNext(v);
+            }
+        });
         groupDescEt.setFilters(LengthListenFilter.createSingleInputFilter(new LengthListenFilter(ChatConfig.GROUP_DESC_MAX_LENGTH) {
             @Override
             public void onInputOverLength(int maxLength) {

@@ -1,8 +1,6 @@
 package com.icourt.alpha.activity;
 
-import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -10,13 +8,11 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.view.KeyEvent;
 import android.view.View;
 import android.widget.CheckedTextView;
 import android.widget.EditText;
@@ -46,6 +42,7 @@ import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
+import com.icourt.alpha.widget.filter.InputActionNextFilter;
 import com.icourt.alpha.widget.filter.LengthListenFilter;
 import com.icourt.api.RequestUtils;
 import com.umeng.analytics.MobclickAgent;
@@ -93,8 +90,6 @@ public class TaskCreateActivity extends ListenBackActivity
 
     private static final String ACTION_FROM_PROJECT = "fromProject";
 
-    @BindView(R.id.titleBack)
-    CheckedTextView titleBack;
     @BindView(R.id.titleContent)
     TextView titleContent;
     @BindView(R.id.titleAction)
@@ -227,6 +222,13 @@ public class TaskCreateActivity extends ListenBackActivity
             @Override
             public void afterTextChanged(Editable s) {
                 titleAction.setEnabled(!StringUtils.isEmpty(s));
+            }
+        });
+        taskNameEt.setOnEditorActionListener(new InputActionNextFilter() {
+            @Override
+            public boolean onInputActionNext(TextView v) {
+                SystemUtils.hideSoftKeyBoard(getActivity(), v, true);
+                return super.onInputActionNext(v);
             }
         });
 

@@ -57,8 +57,6 @@ public class GroupMemberDelActivity extends BaseActivity implements BaseRecycler
     private static final String KEY_TID = "key_tid";
     private static final String KEY_CONTACTS = "key_contacts";
     private static final String KEY_DEL_FROM_NET = "key_del_from_net";
-    @BindView(R.id.titleBack)
-    CheckedTextView titleBack;
     @BindView(R.id.titleContent)
     TextView titleContent;
     @BindView(R.id.titleAction)
@@ -132,7 +130,9 @@ public class GroupMemberDelActivity extends BaseActivity implements BaseRecycler
         imContactAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override
             protected void updateUI() {
-                if (contentEmptyText == null) return;
+                if (contentEmptyText == null) {
+                    return;
+                }
                 contentEmptyText.setVisibility(imContactAdapter.getItemCount() <= 0 ? View.VISIBLE : View.GONE);
             }
         });
@@ -302,7 +302,9 @@ public class GroupMemberDelActivity extends BaseActivity implements BaseRecycler
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         imContactAdapter.toggleSelected(position);
         GroupContactBean item = imContactAdapter.getItem(adapter.getRealPos(position));
-        if (item == null) return;
+        if (item == null) {
+            return;
+        }
         if (imContactAdapter.isSelected(adapter.getRealPos(position))) {
             if (!currSelectedList.contains(item)) {
                 currSelectedList.add(item);
