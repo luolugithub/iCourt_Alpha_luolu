@@ -59,8 +59,6 @@ public abstract class BaseTimerAddActivity extends BaseTimerActivity
         implements
         OnFragmentCallBackListener {
 
-    @BindView(R.id.titleBack)
-    CheckedTextView titleBack;
     @BindView(R.id.titleContent)
     TextView titleContent;
     @BindView(R.id.titleAction)
@@ -220,7 +218,13 @@ public abstract class BaseTimerAddActivity extends BaseTimerActivity
             }
         });
         timeNameTv.setFilters(timingNameInputFilters);
-        timeNameTv.setOnEditorActionListener(new InputActionNextFilter());
+        timeNameTv.setOnEditorActionListener(new InputActionNextFilter() {
+            @Override
+            public boolean onInputActionNext(TextView v) {
+                SystemUtils.hideSoftKeyBoard(getActivity(), v, true);
+                return super.onInputActionNext(v);
+            }
+        });
     }
 
     /**

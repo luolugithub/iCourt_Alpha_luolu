@@ -5,7 +5,7 @@
     android:orientation="vertical">
 
     <!-- 编辑的模版  -->
-    <include layout="@layout/layout_title_type_3" />
+    <include layout="@layout/layout_title_type_2" />
 
     <LinearLayout
         android:layout_width="match_parent"
