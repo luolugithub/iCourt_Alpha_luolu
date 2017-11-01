@@ -270,7 +270,7 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
                             timeAdapter.bindData(true, response.body().result.items);
                             stopRefresh();
                             if (timingCountTotal != null)
-                                timingCountTotal.setText(DateUtils.getHmIntegral(response.body().result.timingSum));
+                                timingCountTotal.setText(DateUtils.getHHmmIntegral(response.body().result.timingSum));
                         }
                     }
 
@@ -300,14 +300,14 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
                             timingCountEntities.addAll(response.body().result.items);
                             generateData();
                             if (pageIndex <= 0) {
-                                timingTodayTotal.setText(DateUtils.getHmIntegral(0));
+                                timingTodayTotal.setText(DateUtils.getHHmmIntegral(0));
                             }
                             if (response.body().result.items != null && pageIndex <= 0) {
                                 for (TimingCountEntity timingCountEntity : response.body().result.items) {
                                     if (timingCountEntity != null) {
                                         boolean isToday = DateUtils.isToday(timingCountEntity.workDate);
                                         if (isToday) {
-                                            timingTodayTotal.setText(DateUtils.getHmIntegral(timingCountEntity.timingCount));
+                                            timingTodayTotal.setText(DateUtils.getHHmmIntegral(timingCountEntity.timingCount));
                                             break;
                                         }
                                     }

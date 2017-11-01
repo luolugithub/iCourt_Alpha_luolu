@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.TimeZone;
 
 import sun.rmi.runtime.Log;
@@ -18,10 +19,13 @@ public class CalendarTest {
 
     public static void main(String[] args) throws Exception {
 
-        Date date1 = new Date(2015, 11, 31);
-        Date date2 = new Date(2016, 11, 31);
 
-        System.out.print("是不是同一周" + isSameWeekDates(date1, date2));
+        System.out.print("======输出时间：" + String.format(Locale.CHINA, "%02d:%02d", 100, 1));
+
+//        Date date1 = new Date(2015, 11, 31);
+//        Date date2 = new Date(2016, 11, 31);
+//
+//        System.out.print("是不是同一周" + isSameWeekDates(date1, date2));
 
 
 //        try {
