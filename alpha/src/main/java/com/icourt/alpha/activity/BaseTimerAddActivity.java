@@ -235,9 +235,9 @@ public abstract class BaseTimerAddActivity extends BaseTimerActivity
         if (selectedStartDate == null || selectedEndDate == null) {
             return;
         }
-        useTimeDate.setText(DateUtils.getTimeDateFormatYear(selectedStartDate.getTimeInMillis()));
-        startTimeMinTv.setText(DateUtils.getHHmm(selectedStartDate.getTimeInMillis()));
-        stopTimeMinTv.setText(DateUtils.getHHmm(selectedEndDate.getTimeInMillis()));
+        useTimeDate.setText(DateUtils.getFormatDate(selectedStartDate.getTimeInMillis(), DateUtils.DATE_YYYYMMDD_STYLE2));
+        startTimeMinTv.setText(DateUtils.getFormatDate(selectedStartDate.getTimeInMillis(), DateUtils.DATE_HHMM_STYLE1));
+        stopTimeMinTv.setText(DateUtils.getFormatDate(selectedEndDate.getTimeInMillis(), DateUtils.DATE_HHMM_STYLE1));
 
         int differentDay = DateUtils.differentDays(selectedStartDate.getTimeInMillis(), selectedEndDate.getTimeInMillis());
         if (differentDay >= 1) {

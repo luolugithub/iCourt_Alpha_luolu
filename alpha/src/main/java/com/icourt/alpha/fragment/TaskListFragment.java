@@ -79,7 +79,8 @@ import retrofit2.Response;
  * Description 任务列表（未完成、已完成、已删除、我关注的）
  * Company Beijing icourt
  *
- * @author zhaodanyang  E-mail:zhaodanyang@icourt.cc
+ * @author zhaodanyang
+ *         E-mail:zhaodanyang@icourt.cc
  *         date createTime：17/9/6
  *         version 2.0.0
  */
@@ -746,7 +747,7 @@ public class TaskListFragment extends BaseTaskFragment implements
             //今天到期
             if (taskItemEntity.dueTime > 0) {
                 long dueTimeDiff = DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime);
-                if (TextUtils.equals(DateUtils.getTimeDateFormatYear(taskItemEntity.dueTime), DateUtils.getTimeDateFormatYear(DateUtils.millis())) || dueTimeDiff < 0) {
+                if (TextUtils.equals(DateUtils.getFormatDate(taskItemEntity.dueTime, DateUtils.DATE_YYYYMMDD_STYLE2), DateUtils.getFormatDate(DateUtils.millis(), DateUtils.DATE_YYYYMMDD_STYLE2)) || dueTimeDiff < 0) {
                     todayTaskEntities.add(taskItemEntity);
                 } //即将到期
                 else if (dueTimeDiff <= 3 && dueTimeDiff > 0) {

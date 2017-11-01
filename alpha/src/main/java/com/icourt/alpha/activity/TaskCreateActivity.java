@@ -432,9 +432,9 @@ public class TaskCreateActivity extends ListenBackActivity
         int minute = calendar.get(Calendar.MINUTE);
         int second = calendar.get(Calendar.SECOND);
         if ((hour == 23 && minute == 59 && second == 59) || (hour == 0 && minute == 0)) {
-            taskDuetimeTv.setText(String.format("%s(%s)", DateUtils.getMMMdd(dueTime), DateUtils.getWeekOfDateFromZ(dueTime)));
+            taskDuetimeTv.setText(String.format("%s(%s)", DateUtils.getTimeDate(dueTime), DateUtils.getWeekOfDateFromZ(dueTime)));
         } else {
-            taskDuetimeTv.setText(String.format("%s(%s)%s", DateUtils.getMMMdd(dueTime), DateUtils.getWeekOfDateFromZ(dueTime), DateUtils.getHHmm(dueTime)));
+            taskDuetimeTv.setText(String.format("%s(%s)%s", DateUtils.getTimeDate(dueTime), DateUtils.getWeekOfDateFromZ(dueTime), DateUtils.getFormatDate(dueTime, DateUtils.DATE_HHMM_STYLE1)));
         }
     }
 

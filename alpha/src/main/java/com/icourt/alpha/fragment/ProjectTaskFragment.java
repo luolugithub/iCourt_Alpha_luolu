@@ -199,7 +199,9 @@ public class ProjectTaskFragment extends BaseTaskFragment implements OnItemLongC
                     public void onFailure(Call<ResEntity<TaskEntity>> call, Throwable t) {
                         super.onFailure(call, t);
                         stopRefresh();
-                        recyclerView.enableEmptyView(null);
+                        if (recyclerView != null) {
+                            recyclerView.enableEmptyView(null);
+                        }
                     }
                 });
     }

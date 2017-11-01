@@ -202,8 +202,8 @@ public class ReminderListAdapter extends MultiSelectRecyclerAdapter<ReminderItem
                                 selectedCalendar.set(Calendar.HOUR_OF_DAY, i);
                                 selectedCalendar.set(Calendar.MINUTE, minuteWheelView.getCurrentItem());
                                 selectedCalendar.set(Calendar.MILLISECOND, 0);
-                                pointTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
-                                reminderItemEntity.customTimeItemEntity.point = DateUtils.getHHmm(selectedCalendar.getTimeInMillis());
+                                pointTv.setText(DateUtils.getFormatDate(selectedCalendar.getTimeInMillis(), DateUtils.DATE_HHMM_STYLE1));
+                                reminderItemEntity.customTimeItemEntity.point = DateUtils.getFormatDate(selectedCalendar.getTimeInMillis(), DateUtils.DATE_HHMM_STYLE1);
                             }
                         }
                     }
@@ -255,8 +255,8 @@ public class ReminderListAdapter extends MultiSelectRecyclerAdapter<ReminderItem
                                 selectedCalendar.set(Calendar.HOUR_OF_DAY, hourWheelView.getCurrentItem());
                                 selectedCalendar.set(Calendar.MINUTE, i);
                                 selectedCalendar.set(Calendar.MILLISECOND, 0);
-                                pointTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
-                                reminderItemEntity.customTimeItemEntity.point = DateUtils.getHHmm(selectedCalendar.getTimeInMillis());
+                                pointTv.setText(DateUtils.getFormatDate(selectedCalendar.getTimeInMillis(), DateUtils.DATE_HHMM_STYLE1));
+                                reminderItemEntity.customTimeItemEntity.point = DateUtils.getFormatDate(selectedCalendar.getTimeInMillis(), DateUtils.DATE_HHMM_STYLE1);
                             }
                         }
                     }

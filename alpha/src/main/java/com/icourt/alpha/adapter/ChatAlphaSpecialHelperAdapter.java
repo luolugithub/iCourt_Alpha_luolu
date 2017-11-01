@@ -103,9 +103,9 @@ public class ChatAlphaSpecialHelperAdapter
                 } else {
                     if (isAllDayTask(alphaSecialHeplerMsgEntity.dueTime)) {
                         //全天任务 eg. yyyy年MM月dd日
-                        msg_time_tv.setText(DateUtils.getTimeDateFormatYear(alphaSecialHeplerMsgEntity.dueTime));
+                        msg_time_tv.setText(DateUtils.getFormatDate(alphaSecialHeplerMsgEntity.dueTime, DateUtils.DATE_YYYYMMDD_STYLE2));
                     } else {
-                        msg_time_tv.setText(DateUtils.getyyyy_YEAR_MM_MONTH_dd_DAY_HHmm(alphaSecialHeplerMsgEntity.dueTime));
+                        msg_time_tv.setText(DateUtils.getFormatDate(alphaSecialHeplerMsgEntity.dueTime, DateUtils.DATE_YYYYMMDD_HHMM_STYLE2));
                     }
                     msg_time_tv.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.ic_message_due_14, 0, 0, 0);
                 }
@@ -125,12 +125,12 @@ public class ChatAlphaSpecialHelperAdapter
                 //显示时间
                 StringBuilder timeStringBuilder = new StringBuilder();
                 if (alphaSecialHeplerMsgEntity.startDate > 0 && alphaSecialHeplerMsgEntity.endDate > 0) {
-                    timeStringBuilder.append(DateUtils.getyyyyMMdd(alphaSecialHeplerMsgEntity.startDate));
+                    timeStringBuilder.append(DateUtils.getFormatDate(alphaSecialHeplerMsgEntity.startDate, DateUtils.DATE_YYYYMMDD_STYLE2));
                     timeStringBuilder.append(" - ");
-                    timeStringBuilder.append(DateUtils.getyyyyMMdd(alphaSecialHeplerMsgEntity.endDate));
+                    timeStringBuilder.append(DateUtils.getFormatDate(alphaSecialHeplerMsgEntity.endDate, DateUtils.DATE_YYYYMMDD_STYLE2));
                 } else {
                     long showTime = (alphaSecialHeplerMsgEntity.startDate > 0 ? alphaSecialHeplerMsgEntity.startDate : alphaSecialHeplerMsgEntity.endDate);
-                    timeStringBuilder.append(DateUtils.getyyyyMMdd(showTime));
+                    timeStringBuilder.append(DateUtils.getFormatDate(showTime, DateUtils.DATE_YYYYMMDD_STYLE2));
                 }
             } else if (!TextUtils.isEmpty(alphaSecialHeplerMsgEntity.status)) {
                 secondeContent = alphaSecialHeplerMsgEntity.status;

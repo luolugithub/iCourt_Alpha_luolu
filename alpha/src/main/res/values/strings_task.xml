@@ -66,6 +66,7 @@
     <string name="task_desc_limit_format" formatted="false">任务详情不能超过%s个字符</string>
 
     <string name="task_edit_group">编辑任务组</string>
+    <string name="task_group_name_hint">任务组名称</string>
     <string name="task_new_group">新建任务组</string>
 
     <string name="task_select_group">选择任务组</string>

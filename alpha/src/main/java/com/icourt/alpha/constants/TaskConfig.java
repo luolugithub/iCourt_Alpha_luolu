@@ -25,6 +25,11 @@ public class TaskConfig {
     public static final int TASK_DESC_MAX_LENGTH = 3000;
 
     /**
+     * 任务组标题最大长度
+     */
+    public static final int TASK_GROUP_NAME_MAX_LENGTH = 200;
+
+    /**
      * 任务的状态：
      * -1-全部任务；
      * 0-未完成；

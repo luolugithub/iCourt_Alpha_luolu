@@ -153,8 +153,8 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
         recyclerView.setAdapter(timeAdapter = new TimeAdapter(true));
         timeAdapter.setOnItemClickListener(this);
 
-        String weekStart = DateUtils.getMMMdd(DateUtils.getCurrWeekStartTime());
-        String weekEnd = DateUtils.getMMMdd(DateUtils.getCurrWeekEndTime());
+        String weekStart = DateUtils.getTimeDate(DateUtils.getCurrWeekStartTime());
+        String weekEnd = DateUtils.getTimeDate(DateUtils.getCurrWeekEndTime());
         timingDateTitle.setText(String.format("%s-%s", weekStart, weekEnd));
         generateData();
 
@@ -222,8 +222,8 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
         String weekStartTime = getFromatTime(weekStartTimeMillSecond);
         String weekEndTime = getFromatTime(weekEndTimeMillSecond);
 
-        String weekStart = DateUtils.getMMMdd(weekStartTimeMillSecond);
-        String weekEnd = DateUtils.getMMMdd(weekEndTimeMillSecond);
+        String weekStart = DateUtils.getTimeDate(weekStartTimeMillSecond);
+        String weekEnd = DateUtils.getTimeDate(weekEndTimeMillSecond);
         timingDateTitle.setText(String.format("%s-%s", weekStart, weekEnd));
 
 
@@ -231,20 +231,20 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
         String preWeekStart = null;
         String preWeekEnd = null;
         if (pageIndex <= 0) {
-            preWeekStart = DateUtils.getMMMdd(weekStartTimeMillSecond);
-            preWeekEnd = DateUtils.getMMMdd(weekEndTimeMillSecond);
+            preWeekStart = DateUtils.getTimeDate(weekStartTimeMillSecond);
+            preWeekEnd = DateUtils.getTimeDate(weekEndTimeMillSecond);
             customerXRefreshViewHeader.setHeaderRefreshTitle("下拉刷新");
         } else {
-            preWeekStart = DateUtils.getMMMdd(weekStartTimeMillSecond + weekMillSecond);
-            preWeekEnd = DateUtils.getMMMdd(weekEndTimeMillSecond + weekMillSecond);
+            preWeekStart = DateUtils.getTimeDate(weekStartTimeMillSecond + weekMillSecond);
+            preWeekEnd = DateUtils.getTimeDate(weekEndTimeMillSecond + weekMillSecond);
             customerXRefreshViewHeader.setHeaderRefreshTitle("加载后一周");
         }
         customerXRefreshViewHeader.setHeaderRefreshDesc(String.format("%s-%s", preWeekStart, preWeekEnd));
 
 
         //footer设置
-        String lastWeekStart = DateUtils.getMMMdd(weekStartTimeMillSecond - weekMillSecond);
-        String lastWeekEnd = DateUtils.getMMMdd(weekEndTimeMillSecond - weekMillSecond);
+        String lastWeekStart = DateUtils.getTimeDate(weekStartTimeMillSecond - weekMillSecond);
+        String lastWeekEnd = DateUtils.getTimeDate(weekEndTimeMillSecond - weekMillSecond);
         customerXRefreshViewFooter.setFooterLoadmoreDesc(String.format("%s-%s", lastWeekStart, lastWeekEnd));
 
         getWeekTimingCount(weekStartTime, weekEndTime);
@@ -270,7 +270,7 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
                             timeAdapter.bindData(true, response.body().result.items);
                             stopRefresh();
                             if (timingCountTotal != null)
-                                timingCountTotal.setText(DateUtils.getHmIntegral(response.body().result.timingSum));
+                                timingCountTotal.setText(DateUtils.getHHmmIntegral(response.body().result.timingSum));
                         }
                     }
 
@@ -300,14 +300,14 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
                             timingCountEntities.addAll(response.body().result.items);
                             generateData();
                             if (pageIndex <= 0) {
-                                timingTodayTotal.setText(DateUtils.getHmIntegral(0));
+                                timingTodayTotal.setText(DateUtils.getHHmmIntegral(0));
                             }
                             if (response.body().result.items != null && pageIndex <= 0) {
                                 for (TimingCountEntity timingCountEntity : response.body().result.items) {
                                     if (timingCountEntity != null) {
                                         boolean isToday = DateUtils.isToday(timingCountEntity.workDate);
                                         if (isToday) {
-                                            timingTodayTotal.setText(DateUtils.getHmIntegral(timingCountEntity.timingCount));
+                                            timingTodayTotal.setText(DateUtils.getHHmmIntegral(timingCountEntity.timingCount));
                                             break;
                                         }
                                     }

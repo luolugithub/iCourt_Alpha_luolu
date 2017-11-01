@@ -36,12 +36,21 @@ public abstract class BaseArrayRecyclerAdapter<T> extends BaseRecyclerAdapter im
 
 
     public boolean bindData(boolean isRefresh, List<T> datas) {
-        if (datas == null) return false;
-        if (isRefresh) dataList.clear();
-        if (dataList.containsAll(datas)) return false;
-        boolean b = dataList.addAll(datas);
-        notifyDataSetChanged();
-        return b;
+        if (datas == null) {
+            clearData();
+            return true;
+        }
+        if (isRefresh) {
+            dataList.clear();
+            dataList.addAll(datas);
+            notifyDataSetChanged();
+            return true;
+        } else if (!dataList.containsAll(datas)) {
+            dataList.addAll(datas);
+            notifyDataSetChanged();
+            return true;
+        }
+        return false;
     }
 
     public void clearData() {

@@ -20,7 +20,6 @@ import com.icourt.alpha.utils.DateUtils;
 
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
 
 public class CircleTimerView extends View {
     private static final String TAG = "CircleTimerView";
@@ -325,7 +324,7 @@ public class CircleTimerView extends View {
 //        long minute = mCurrentTime / 60 % 60;
 //        long hour = mCurrentTime / (60 * 60);//小时
 //        String text = String.format("%02d:%02d", hour, minute);
-        String text = DateUtils.getHHmIntegral(mCurrentTime * 1000);
+        String text = DateUtils.getHHmmIntegral(mCurrentTime * 1000);
         canvas.drawText(text, mCx, mCy + getFontHeight(mTimerNumberPaint) / 2, mTimerNumberPaint);
         //canvas.drawText(":", mCx, mCy + getFontHeight(mTimerNumberPaint) / 2, mTimerColonPaint);
         canvas.restore();

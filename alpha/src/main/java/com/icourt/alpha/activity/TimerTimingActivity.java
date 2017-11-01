@@ -221,8 +221,8 @@ public class TimerTimingActivity extends BaseTimerActivity
             useTimeSecond = useTimeSecond / TimeUnit.SECONDS.toMillis(1);
         }
         timingTv.setText(DateUtils.getTimingStr(useTimeSecond));
-        tvStartDate.setText(DateUtils.getTimeDateFormatYear(mItemEntity.startTime));
-        startTimeTv.setText(DateUtils.getHHmm(mItemEntity.startTime));
+        tvStartDate.setText(DateUtils.getFormatDate(mItemEntity.startTime, DateUtils.DATE_YYYYMMDD_STYLE2));
+        startTimeTv.setText(DateUtils.getFormatDate(mItemEntity.startTime, DateUtils.DATE_HHMM_STYLE1));
     }
 
     /**
