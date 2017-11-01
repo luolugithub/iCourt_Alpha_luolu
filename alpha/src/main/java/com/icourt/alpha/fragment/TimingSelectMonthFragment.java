@@ -159,9 +159,9 @@ public class TimingSelectMonthFragment extends BaseFragment {
 
         timingSelectEntity.startTimeMillis = DateUtils.getSupportBeginDayofMonth(currentYear, currentMonth).getTime();
         timingSelectEntity.endTimeMillis = DateUtils.getSupportEndDayofMonth(currentYear, currentMonth).getTime();
-        timingSelectEntity.startTimeStr = DateUtils.getyyyy_MM_dd(timingSelectEntity.startTimeMillis);
+        timingSelectEntity.startTimeStr = DateUtils.getFormatDate(timingSelectEntity.startTimeMillis, DateUtils.DATE_YYYYMMDD_STYLE1);
 
-        timingSelectEntity.endTimeStr = DateUtils.getyyyy_MM_dd(timingSelectEntity.endTimeMillis);
+        timingSelectEntity.endTimeStr = DateUtils.getFormatDate(timingSelectEntity.endTimeMillis, DateUtils.DATE_YYYYMMDD_STYLE1);
         arguments.putSerializable(KEY_FRAGMENT_RESULT, timingSelectEntity);
         return arguments;
     }

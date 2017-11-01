@@ -746,7 +746,7 @@ public class TaskListFragment extends BaseTaskFragment implements
             //今天到期
             if (taskItemEntity.dueTime > 0) {
                 long dueTimeDiff = DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime);
-                if (TextUtils.equals(DateUtils.getTimeDateFormatYear(taskItemEntity.dueTime), DateUtils.getTimeDateFormatYear(DateUtils.millis())) || dueTimeDiff < 0) {
+                if (TextUtils.equals(DateUtils.getFormatDate(taskItemEntity.dueTime, DateUtils.DATE_YYYYMMDD_STYLE2), DateUtils.getFormatDate(DateUtils.millis(), DateUtils.DATE_YYYYMMDD_STYLE2)) || dueTimeDiff < 0) {
                     todayTaskEntities.add(taskItemEntity);
                 } //即将到期
                 else if (dueTimeDiff <= 3 && dueTimeDiff > 0) {

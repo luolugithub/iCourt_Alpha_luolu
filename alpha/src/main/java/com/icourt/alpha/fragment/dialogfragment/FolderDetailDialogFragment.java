@@ -162,7 +162,7 @@ public class FolderDetailDialogFragment extends FileDetailsBaseDialogFragment {
                             FolderDocumentEntity folderDocumentEntity = response.body().get(0);
                             if (folderDocumentEntity != null && !TextUtils.isEmpty(folderDocumentEntity.modifier_name)) {
                                 fileUpdateInfoTv.setText("");
-                                fileCreateInfoTv.setText(String.format("%s 更新于 %s", StringUtils.getEllipsizeText(folderDocumentEntity.modifier_name, 8), DateUtils.getyyyyMMddHHmm(folderDocumentEntity.mtime * 1_000)));
+                                fileCreateInfoTv.setText(String.format("%s 更新于 %s", StringUtils.getEllipsizeText(folderDocumentEntity.modifier_name, 8), DateUtils.getFormatDate(folderDocumentEntity.mtime * 1_000, DateUtils.DATE_YYYYMMDD_HHMM_STYLE1)));
                             } else {
                                 fileUpdateInfoTv.setText("");
                                 fileCreateInfoTv.setText("");

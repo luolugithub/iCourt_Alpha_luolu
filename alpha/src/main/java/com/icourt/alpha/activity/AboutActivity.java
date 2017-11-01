@@ -68,7 +68,7 @@ public class AboutActivity extends BaseAppUpdateActivity {
         setTitle(R.string.mine_about);
         registerClick(aboutCheckIsUpdateView);
         aboutVersonTextview.setText(BuildConfig.VERSION_NAME);
-        aboutVersonReleaseTime.setText("build in " + DateUtils.getyyyyMMddHHmm(Long.valueOf(BuildConfig.APK_RELEASE_TIME)));
+        aboutVersonReleaseTime.setText("build in " + DateUtils.getFormatDate(Long.valueOf(BuildConfig.APK_RELEASE_TIME), DateUtils.DATE_YYYYMMDD_HHMM_STYLE1));
     }
 
     @Override

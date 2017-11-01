@@ -56,8 +56,8 @@ public class TimerDateManager {
             TimingSelectEntity timingSelectEntity = new TimingSelectEntity();
             timingSelectEntity.startTimeMillis = weekStartTime;
             timingSelectEntity.endTimeMillis = weekEndTime;
-            timingSelectEntity.startTimeStr = DateUtils.getyyyy_MM_dd(weekStartTime);
-            timingSelectEntity.endTimeStr = DateUtils.getyyyy_MM_dd(weekEndTime);
+            timingSelectEntity.startTimeStr = DateUtils.getFormatDate(weekStartTime, DateUtils.DATE_YYYYMMDD_STYLE1);
+            timingSelectEntity.endTimeStr = DateUtils.getFormatDate(weekEndTime, DateUtils.DATE_YYYYMMDD_STYLE1);
             dayList.add(timingSelectEntity);
             instance.clear();
             instance.setTimeInMillis(weekEndTime + 1);
@@ -84,8 +84,8 @@ public class TimerDateManager {
             TimingSelectEntity timingSelectEntity = new TimingSelectEntity();
             timingSelectEntity.startTimeMillis = monthStartTime;
             timingSelectEntity.endTimeMillis = monthEndTime;
-            timingSelectEntity.startTimeStr = DateUtils.getyyyy_MM_dd(monthStartTime);
-            timingSelectEntity.endTimeStr = DateUtils.getyyyy_MM_dd(monthEndTime);
+            timingSelectEntity.startTimeStr = DateUtils.getFormatDate(monthStartTime, DateUtils.DATE_YYYYMMDD_STYLE1);
+            timingSelectEntity.endTimeStr = DateUtils.getFormatDate(monthEndTime, DateUtils.DATE_YYYYMMDD_STYLE1);
             dayList.add(timingSelectEntity);
             instance.add(Calendar.MONTH, 1);//月+1
             monthStartTime = instance.getTimeInMillis();
@@ -112,8 +112,8 @@ public class TimerDateManager {
             TimingSelectEntity timingSelectEntity = new TimingSelectEntity();
             timingSelectEntity.startTimeMillis = yearStartTime;
             timingSelectEntity.endTimeMillis = yearEndTime;
-            timingSelectEntity.startTimeStr = DateUtils.getyyyy_MM_dd(yearStartTime);
-            timingSelectEntity.endTimeStr = DateUtils.getyyyy_MM_dd(yearEndTime);
+            timingSelectEntity.startTimeStr = DateUtils.getFormatDate(yearStartTime, DateUtils.DATE_YYYYMMDD_STYLE1);
+            timingSelectEntity.endTimeStr = DateUtils.getFormatDate(yearEndTime, DateUtils.DATE_YYYYMMDD_STYLE1);
             dayList.add(timingSelectEntity);
             instance.add(Calendar.YEAR, 1);//年+1
             yearStartTime = instance.getTimeInMillis();

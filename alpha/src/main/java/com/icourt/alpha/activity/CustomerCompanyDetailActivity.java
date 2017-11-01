@@ -131,6 +131,7 @@ public class CustomerCompanyDetailActivity extends BaseActivity {
 
     /**
      * 获取联系人详情
+     *
      * @param contact_id
      */
     private void getContactDetail(final String contact_id) {
@@ -254,7 +255,7 @@ public class CustomerCompanyDetailActivity extends BaseActivity {
 
                 if (!TextUtils.isEmpty(contactDeatilBean.getContact().getCrtUserName()) && contactDeatilBean.getContact().getCrtTime() > 0) {
                     activityPersonContactDetailCreatParentLayout.setVisibility(View.VISIBLE);
-                    activityPersonContactDetailCreatDateView.setText(String.format("%s 创建于 %s",contactDeatilBean.getContact().getCrtUserName(), DateUtils.getTimeDateFormatYear(contactDeatilBean.getContact().getCrtTime())));
+                    activityPersonContactDetailCreatDateView.setText(String.format("%s 创建于 %s", contactDeatilBean.getContact().getCrtUserName(), DateUtils.getFormatDate(contactDeatilBean.getContact().getCrtTime(), DateUtils.DATE_YYYYMMDD_STYLE2)));
                 } else {
                     activityPersonContactDetailCreatParentLayout.setVisibility(View.GONE);
                 }
@@ -338,7 +339,7 @@ public class CustomerCompanyDetailActivity extends BaseActivity {
             } else {
                 valueView.setVisibility(View.GONE);
             }
-        }else if (object instanceof ContactDeatilBean.AddressesBean) {
+        } else if (object instanceof ContactDeatilBean.AddressesBean) {
             ContactDeatilBean.AddressesBean address = (ContactDeatilBean.AddressesBean) object;
             keyView.setText(address.getItemValue());
             if (!TextUtils.isEmpty(address.getItemSubType())) {

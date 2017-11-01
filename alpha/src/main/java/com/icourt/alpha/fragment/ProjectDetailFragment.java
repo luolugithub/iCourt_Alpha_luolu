@@ -189,11 +189,11 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
 
             if (projectDetailBean.beginDate > 0) {
                 setKeyValueData(basicItemEntities, getString(R.string.project_start_date), String.format("%s",
-                        DateUtils.getTimeDateFormatYearDot(projectDetailBean.beginDate)), Const.PROJECT_TIME_TYPE);
+                        DateUtils.getFormatDate(projectDetailBean.beginDate, DateUtils.DATE_YYYYMMDD_STYLE3)), Const.PROJECT_TIME_TYPE);
             }
             if (projectDetailBean.endDate > 0) {
                 setKeyValueData(basicItemEntities, getString(R.string.project_end_date), String.format("%s",
-                        DateUtils.getTimeDateFormatYearDot(projectDetailBean.endDate)), Const.PROJECT_TIME_TYPE);
+                        DateUtils.getFormatDate(projectDetailBean.endDate, DateUtils.DATE_YYYYMMDD_STYLE3)), Const.PROJECT_TIME_TYPE);
             }
             if (projectDetailBean.matterType == Const.PROJECT_NON_LAWSUIT_TYPE) {
                 if (!TextUtils.isEmpty(projectDetailBean.lawField)) {
@@ -471,7 +471,7 @@ public class ProjectDetailFragment extends BaseFragment implements BaseRecyclerA
                 } else {
                     ProjectBasicTextInfoActivity.launch(view.getContext(), getString(R.string.project_clients), clientsBean.contactName, Const.PROJECT_CLIENT_TYPE);
                 }
-            }else if(object instanceof ProjectBasicItemEntity){
+            } else if (object instanceof ProjectBasicItemEntity) {
                 ProjectBasicItemEntity basicItemEntity = (ProjectBasicItemEntity) object;
                 ProjectBasicTextInfoActivity.launch(view.getContext(), basicItemEntity.key, basicItemEntity.value, basicItemEntity.type);
             }

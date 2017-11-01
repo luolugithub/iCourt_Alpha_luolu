@@ -193,7 +193,7 @@ public class DateSelectFragment extends BaseFragment {
                 if ((hour == 23 && minute == 59 && second == 59)) {
                     setNullDueTime();
                 } else {
-                    duetimeTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
+                    duetimeTv.setText(DateUtils.getFormatDate(selectedCalendar.getTimeInMillis(), DateUtils.DATE_HHMM_STYLE1));
                     duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_black));
                 }
             } else {
@@ -220,7 +220,7 @@ public class DateSelectFragment extends BaseFragment {
                 selectedCalendar.set(Calendar.HOUR_OF_DAY, i);
                 selectedCalendar.set(Calendar.MILLISECOND, 0);
                 if (duetimeTv != null)
-                    duetimeTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
+                    duetimeTv.setText(DateUtils.getFormatDate(selectedCalendar.getTimeInMillis(), DateUtils.DATE_HHMM_STYLE1));
                 taskReminderType = TaskReminderEntity.PRECISE;
             }
         });
@@ -231,7 +231,7 @@ public class DateSelectFragment extends BaseFragment {
                 selectedCalendar.set(Calendar.MINUTE, i);
                 selectedCalendar.set(Calendar.MILLISECOND, 0);
                 if (duetimeTv != null)
-                    duetimeTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
+                    duetimeTv.setText(DateUtils.getFormatDate(selectedCalendar.getTimeInMillis(), DateUtils.DATE_HHMM_STYLE1));
                 taskReminderType = TaskReminderEntity.PRECISE;
             }
         });
@@ -437,26 +437,26 @@ public class DateSelectFragment extends BaseFragment {
         callEnqueue(
                 getApi().taskReminderQuery(itemEntity.id),
                 new SimpleCallBack<TaskReminderEntity>() {
-            @Override
-            public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
-                dismissLoadingDialog();
-                taskReminderEntity = response.body().result;
+                    @Override
+                    public void onSuccess(Call<ResEntity<TaskReminderEntity>> call, Response<ResEntity<TaskReminderEntity>> response) {
+                        dismissLoadingDialog();
+                        taskReminderEntity = response.body().result;
 
-                if (addReminderLayout == null) return;
-                if (itemEntity.state) {
-                    addReminderLayout.setVisibility(View.GONE);
-                    noticeLl.setVisibility(View.GONE);
-                } else {
-                    visibiLayout();
-                }
-            }
+                        if (addReminderLayout == null) return;
+                        if (itemEntity.state) {
+                            addReminderLayout.setVisibility(View.GONE);
+                            noticeLl.setVisibility(View.GONE);
+                        } else {
+                            visibiLayout();
+                        }
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<TaskReminderEntity>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<TaskReminderEntity>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
     }
 
     /**
@@ -470,21 +470,21 @@ public class DateSelectFragment extends BaseFragment {
         callEnqueue(
                 getApi().taskQueryDetailWithRight(taskId),
                 new SimpleCallBack<TaskEntity.TaskItemEntity>() {
-            @Override
-            public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
-                TaskEntity.TaskItemEntity itemEntity = response.body().result;
-                if (itemEntity != null) {
+                    @Override
+                    public void onSuccess(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Response<ResEntity<TaskEntity.TaskItemEntity>> response) {
+                        TaskEntity.TaskItemEntity itemEntity = response.body().result;
+                        if (itemEntity != null) {
 
-                    getTaskReminder(itemEntity);
-                }
-            }
+                            getTaskReminder(itemEntity);
+                        }
+                    }
 
-            @Override
-            public void onFailure(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Throwable t) {
-                super.onFailure(call, t);
-                dismissLoadingDialog();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<TaskEntity.TaskItemEntity>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        dismissLoadingDialog();
+                    }
+                });
     }
 
     @OnClick({R.id.titleBack,
@@ -519,7 +519,7 @@ public class DateSelectFragment extends BaseFragment {
                     if (isUnSetDate()) {
                         setUnSetDate(10, 0, 0);
                     }
-                    duetimeTv.setText(DateUtils.getHHmm(selectedCalendar.getTimeInMillis()));
+                    duetimeTv.setText(DateUtils.getFormatDate(selectedCalendar.getTimeInMillis(), DateUtils.DATE_HHMM_STYLE1));
                     duetimeTv.setTextColor(SystemUtils.getColor(getContext(), R.color.alpha_font_color_black));
                     convertCoustomReminder();
                 }
@@ -763,21 +763,21 @@ public class DateSelectFragment extends BaseFragment {
         if (TextUtils.equals(taskReminderType, TaskReminderEntity.ALL_DAY)) {
             if (TaskReminderUtils.preciseMap.containsKey(timeKey) && reminderCalendar != null) {
                 if (TextUtils.equals(timeKey, "0MB")) {
-                    setAllDayReminder(customTimeItemEntity, "0", "day", DateUtils.getHHmm(reminderCalendar.getTimeInMillis()));
+                    setAllDayReminder(customTimeItemEntity, "0", "day", DateUtils.getFormatDate(reminderCalendar.getTimeInMillis(), DateUtils.DATE_HHMM_STYLE1));
                 } else if (TextUtils.equals(timeKey, "5MB")) {
-                    setAllDayReminder(customTimeItemEntity, "0", "day", DateUtils.getHHmm(DateUtils.getMillByHourmin(reminderCalendar.get(Calendar.HOUR_OF_DAY), reminderCalendar.get(Calendar.MINUTE)) - (5 * 60 * 1000)));
+                    setAllDayReminder(customTimeItemEntity, "0", "day", DateUtils.getFormatDate(DateUtils.getMillByHourmin(reminderCalendar.get(Calendar.HOUR_OF_DAY), reminderCalendar.get(Calendar.MINUTE)) - (5 * 60 * 1000), DateUtils.DATE_HHMM_STYLE1));
                 } else if (TextUtils.equals(timeKey, "10MB")) {
-                    setAllDayReminder(customTimeItemEntity, "0", "day", DateUtils.getHHmm(DateUtils.getMillByHourmin(reminderCalendar.get(Calendar.HOUR_OF_DAY), reminderCalendar.get(Calendar.MINUTE)) - (10 * 60 * 1000)));
+                    setAllDayReminder(customTimeItemEntity, "0", "day", DateUtils.getFormatDate(DateUtils.getMillByHourmin(reminderCalendar.get(Calendar.HOUR_OF_DAY), reminderCalendar.get(Calendar.MINUTE)) - (10 * 60 * 1000), DateUtils.DATE_HHMM_STYLE1));
                 } else if (TextUtils.equals(timeKey, "30MB")) {
-                    setAllDayReminder(customTimeItemEntity, "0", "day", DateUtils.getHHmm(DateUtils.getMillByHourmin(reminderCalendar.get(Calendar.HOUR_OF_DAY), reminderCalendar.get(Calendar.MINUTE)) - (30 * 60 * 1000)));
+                    setAllDayReminder(customTimeItemEntity, "0", "day", DateUtils.getFormatDate(DateUtils.getMillByHourmin(reminderCalendar.get(Calendar.HOUR_OF_DAY), reminderCalendar.get(Calendar.MINUTE)) - (30 * 60 * 1000), DateUtils.DATE_HHMM_STYLE1));
                 } else if (TextUtils.equals(timeKey, "1HB")) {
-                    setAllDayReminder(customTimeItemEntity, "0", "day", DateUtils.getHHmm(DateUtils.getMillByHourmin(reminderCalendar.get(Calendar.HOUR_OF_DAY), reminderCalendar.get(Calendar.MINUTE)) - (60 * 60 * 1000)));
+                    setAllDayReminder(customTimeItemEntity, "0", "day", DateUtils.getFormatDate(DateUtils.getMillByHourmin(reminderCalendar.get(Calendar.HOUR_OF_DAY), reminderCalendar.get(Calendar.MINUTE)) - (60 * 60 * 1000), DateUtils.DATE_HHMM_STYLE1));
                 } else if (TextUtils.equals(timeKey, "2HB")) {
-                    setAllDayReminder(customTimeItemEntity, "0", "day", DateUtils.getHHmm(DateUtils.getMillByHourmin(reminderCalendar.get(Calendar.HOUR_OF_DAY), reminderCalendar.get(Calendar.MINUTE)) - (2 * 60 * 60 * 1000)));
+                    setAllDayReminder(customTimeItemEntity, "0", "day", DateUtils.getFormatDate(DateUtils.getMillByHourmin(reminderCalendar.get(Calendar.HOUR_OF_DAY), reminderCalendar.get(Calendar.MINUTE)) - (2 * 60 * 60 * 1000), DateUtils.DATE_HHMM_STYLE1));
                 } else if (TextUtils.equals(timeKey, "1DB")) {
-                    setAllDayReminder(customTimeItemEntity, "1", "day", DateUtils.getHHmm(reminderCalendar.getTimeInMillis()));
+                    setAllDayReminder(customTimeItemEntity, "1", "day", DateUtils.getFormatDate(reminderCalendar.getTimeInMillis(), DateUtils.DATE_HHMM_STYLE1));
                 } else if (TextUtils.equals(timeKey, "2DB")) {
-                    setAllDayReminder(customTimeItemEntity, "2", "day", DateUtils.getHHmm(reminderCalendar.getTimeInMillis()));
+                    setAllDayReminder(customTimeItemEntity, "2", "day", DateUtils.getFormatDate(reminderCalendar.getTimeInMillis(), DateUtils.DATE_HHMM_STYLE1));
                 }
             }
         } else if (TextUtils.equals(taskReminderType, TaskReminderEntity.PRECISE)) {

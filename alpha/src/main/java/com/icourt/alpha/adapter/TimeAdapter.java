@@ -165,7 +165,7 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
             } else if (DateUtils.isYesterday(timeEntity.workDate)) {
                 divider_time.setText("昨天");
             } else {
-                divider_time.setText(DateUtils.getMMMdd(timeEntity.workDate));
+                divider_time.setText(DateUtils.getTimeDate(timeEntity.workDate));
             }
             long dayTimingLength = timeEntity.todayTimingSum;
             divider_time_count.setText(DateUtils.getHmIntegral(dayTimingLength));
@@ -211,11 +211,11 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
                 useTime = 0;
             }
             durationView.setText(DateUtils.getTimingStr(useTime / TimeUnit.SECONDS.toMillis(1)));
-            quantumView.setText(DateUtils.getTimeDurationDate(timeEntity.startTime) + " - 现在");
+            quantumView.setText(DateUtils.getFormatDate(timeEntity.startTime, DateUtils.DATE_HHMM_STYLE1) + " - 现在");
         } else {
             try {
                 durationView.setText(DateUtils.getHmIntegral(timeEntity.useTime));
-                quantumView.setText(DateUtils.getTimeDurationDate(timeEntity.startTime) + " - " + DateUtils.getTimeDurationDate(timeEntity.endTime));
+                quantumView.setText(DateUtils.getFormatDate(timeEntity.startTime, DateUtils.DATE_HHMM_STYLE1) + " - " + DateUtils.getFormatDate(timeEntity.endTime, DateUtils.DATE_HHMM_STYLE1));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -277,7 +277,7 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
                         DateUtils.getTimeDate(item.workDate);
                     }
                 } else {
-                    DateUtils.getTimeDateFormatYear(item.workDate);
+                    DateUtils.getFormatDate(item.workDate, DateUtils.DATE_YYYYMMDD_STYLE2);
                 }
             }
             return item != null ?

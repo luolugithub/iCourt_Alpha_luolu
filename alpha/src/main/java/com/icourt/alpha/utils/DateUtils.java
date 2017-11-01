@@ -1,7 +1,10 @@
 package com.icourt.alpha.utils;
 
+import android.support.annotation.StringDef;
 import android.text.TextUtils;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -10,6 +13,47 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 public class DateUtils {
+
+    public static final String DATE_YYYYMM_STYLE1 = "yyyy年MM月";
+
+    public static final String DATE_YYYYMMDD_STYLE1 = "yyyy-MM-dd";
+    public static final String DATE_YYYYMMDD_STYLE2 = "yyyy年MM月dd日";
+    public static final String DATE_YYYYMMDD_STYLE3 = "yyyy.MM.dd";
+    public static final String DATE_YYYYMMDD_STYLE4 = "yyyy/MM/dd";
+
+    public static final String DATE_YYYYMMDD_HHMM_STYLE1 = "yyyy-MM-dd HH:mm";
+    public static final String DATE_YYYYMMDD_HHMM_STYLE2 = "yyyy年MM月dd日 HH:mm";
+    public static final String DATE_YYYYMMDD_HHMM_STYLE3 = "yyyy/MM/dd HH:mm";
+
+    public static final String DATE_MMDD_STYLE1 = "MM月dd日";
+    public static final String DATE_MMDD_STYLE2 = "MM/dd";
+
+
+    public static final String DATE_MMDD_HHMM_STYLE1 = "MM-dd HH:mm";
+    public static final String DATE_MMDD_HHMM_STYLE2 = "MM月dd日 HH:mm";
+    public static final String DATE_MMDD_HHMM_STYLE3 = "MM/dd HH:mm";
+
+    public static final String DATE_HHMM_STYLE1 = "HH:mm";
+
+
+    @StringDef({DATE_YYYYMM_STYLE1,
+            DATE_YYYYMMDD_STYLE1,
+            DATE_YYYYMMDD_STYLE2,
+            DATE_YYYYMMDD_STYLE3,
+            DATE_YYYYMMDD_STYLE4,
+            DATE_YYYYMMDD_HHMM_STYLE1,
+            DATE_YYYYMMDD_HHMM_STYLE2,
+            DATE_YYYYMMDD_HHMM_STYLE3,
+            DATE_MMDD_STYLE1,
+            DATE_MMDD_STYLE2,
+            DATE_MMDD_HHMM_STYLE1,
+            DATE_MMDD_HHMM_STYLE2,
+            DATE_MMDD_HHMM_STYLE3,
+            DATE_HHMM_STYLE1})
+    @Retention(RetentionPolicy.SOURCE)
+    @interface DateStyle {
+
+    }
 
     /**
      * 获取聊天的时间格式化 简写版
@@ -32,7 +76,7 @@ public class DateUtils {
         Date yesterdaybegin = new Date(todaybegin.getTime() - 3600 * 24 * 1000);
         Date preyesterday = new Date(yesterdaybegin.getTime() - 3600 * 24 * 1000);
 
-        SimpleDateFormat timeformatter24 = new SimpleDateFormat("HH:mm", Locale.getDefault());
+        SimpleDateFormat timeformatter24 = new SimpleDateFormat(DATE_HHMM_STYLE1, Locale.getDefault());
         timeStringBy24 = timeformatter24.format(currentTime);
         if (!currentTime.before(todaybegin)) {
             dataString = timeStringBy24;
@@ -43,7 +87,7 @@ public class DateUtils {
         } else if (isSameWeekDates(currentTime, today)) {
             dataString = getWeekOfDate(currentTime);
         } else {
-            SimpleDateFormat dateformatter = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            SimpleDateFormat dateformatter = new SimpleDateFormat(DATE_YYYYMMDD_STYLE1, Locale.getDefault());
             dataString = dateformatter.format(currentTime);
         }
         return dataString;
@@ -70,7 +114,7 @@ public class DateUtils {
         Date yesterdaybegin = new Date(todaybegin.getTime() - 3600 * 24 * 1000);
         Date preyesterday = new Date(yesterdaybegin.getTime() - 3600 * 24 * 1000);
 
-        SimpleDateFormat timeformatter24 = new SimpleDateFormat("HH:mm", Locale.getDefault());
+        SimpleDateFormat timeformatter24 = new SimpleDateFormat(DATE_HHMM_STYLE1, Locale.getDefault());
         timeStringBy24 = timeformatter24.format(currentTime);
         if (!currentTime.before(todaybegin)) {
             dataString = timeStringBy24;
@@ -81,7 +125,7 @@ public class DateUtils {
         } else if (isSameWeekDates(currentTime, today)) {
             dataString = getWeekOfDate(currentTime) + " " + timeStringBy24;
         } else {
-            SimpleDateFormat dateformatter = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
+            SimpleDateFormat dateformatter = new SimpleDateFormat(DATE_YYYYMMDD_HHMM_STYLE1, Locale.getDefault());
             dataString = dateformatter.format(currentTime);
         }
         return dataString;
@@ -106,14 +150,14 @@ public class DateUtils {
     public static final String getStandardSimpleFormatTime(long milliseconds) {
         SimpleDateFormat sdf = new SimpleDateFormat();
         if (isOverToday(milliseconds)) {//1.未来
-            sdf.applyPattern("yyyy-MM-dd HH:mm");
+            sdf.applyPattern(DATE_YYYYMMDD_HHMM_STYLE1);
             return sdf.format(milliseconds);
         } else if (isToday(milliseconds)) {//2.今天
             long distanceMilliseconds = System.currentTimeMillis() - milliseconds;
             if (distanceMilliseconds < TimeUnit.HOURS.toMillis(1)) {//3.x分钟前
                 long distanceSeconds = TimeUnit.MILLISECONDS.toMinutes(distanceMilliseconds);
                 if (distanceMilliseconds < 0) {
-                    sdf.applyPattern("yyyy-MM-dd HH:mm");
+                    sdf.applyPattern(DATE_YYYYMMDD_HHMM_STYLE1);
                     return sdf.format(milliseconds);
                 } else if (distanceSeconds == 0) {
                     return "刚刚";
@@ -139,7 +183,7 @@ public class DateUtils {
             if (distanceDay < 10 && distanceDayInt <= 5) {//x天前（x = 2～5）
                 return String.format("%s天前", distanceDayInt);
             } else {//yyyy-mm-dd
-                sdf.applyPattern("yyyy-MM-dd");
+                sdf.applyPattern(DATE_YYYYMMDD_STYLE1);
                 return sdf.format(milliseconds);
             }
         }
@@ -166,14 +210,14 @@ public class DateUtils {
     public static final String getStandardFormatTime(long milliseconds) {
         SimpleDateFormat sdf = new SimpleDateFormat();
         if (isOverToday(milliseconds)) {//1.未来
-            sdf.applyPattern("yyyy-MM-dd HH:mm");
+            sdf.applyPattern(DATE_YYYYMMDD_HHMM_STYLE1);
             return sdf.format(milliseconds);
         } else if (isToday(milliseconds)) {//2.今天
             long distanceMilliseconds = System.currentTimeMillis() - milliseconds;
             if (distanceMilliseconds < TimeUnit.HOURS.toMillis(1)) {//3.x分钟前
                 long distanceSeconds = TimeUnit.MILLISECONDS.toMinutes(distanceMilliseconds);
                 if (distanceMilliseconds < 0) {
-                    sdf.applyPattern("yyyy-MM-dd HH:mm");
+                    sdf.applyPattern(DATE_YYYYMMDD_HHMM_STYLE1);
                     return sdf.format(milliseconds);
                 } else if (distanceSeconds == 0) {
                     return "刚刚";
@@ -200,10 +244,28 @@ public class DateUtils {
             if (distanceDay < 10 && distanceDayInt <= 5) {//x天前（x = 2～5）
                 return String.format("%s天前", distanceDayInt);
             } else {//yyyy-mm-dd
-                sdf.applyPattern("yyyy-MM-dd HH:mm");
+                sdf.applyPattern(DATE_YYYYMMDD_HHMM_STYLE1);
                 return sdf.format(milliseconds);
             }
         }
+    }
+
+    /**
+     * 获取格式化的日期
+     *
+     * @param millisSecond 毫秒
+     * @param dateStyle    指定的那几种日期类型
+     * @return
+     */
+    public static String getFormatDate(long millisSecond, @DateStyle String dateStyle) {
+        try {
+            SimpleDateFormat dateFormat = new SimpleDateFormat(dateStyle, Locale.CHINA);
+            return dateFormat.format(millisSecond);
+        } catch (Exception e) {
+            e.printStackTrace();
+            BugUtils.bugSync("getFormatDate()异常", "时间戳：" + millisSecond + "，类型：" + dateStyle);
+        }
+        return "";
     }
 
     /**
@@ -214,21 +276,11 @@ public class DateUtils {
      * @return
      */
     public static boolean isSameWeekDates(Date date1, Date date2) {
-        Calendar cal1 = Calendar.getInstance();
-        Calendar cal2 = Calendar.getInstance();
-        cal1.setTime(date1);
-        cal2.setTime(date2);
-        int subYear = cal1.get(Calendar.YEAR) - cal2.get(Calendar.YEAR);
-        if (0 == subYear) {
-            if (cal1.get(Calendar.WEEK_OF_YEAR) == cal2.get(Calendar.WEEK_OF_YEAR))
-                return true;
-        } else if (1 == subYear && 11 == cal2.get(Calendar.MONTH)) {
-            // 如果12月的最后一周横跨来年第一周的话则最后一周即算做来年的第一周
-            if (cal1.get(Calendar.WEEK_OF_YEAR) == cal2.get(Calendar.WEEK_OF_YEAR))
-                return true;
-        } else if (-1 == subYear && 11 == cal1.get(Calendar.MONTH)) {
-            if (cal1.get(Calendar.WEEK_OF_YEAR) == cal2.get(Calendar.WEEK_OF_YEAR))
-                return true;
+        long timeMillis1 = date1.getTime();
+        long timeMillis2 = date2.getTime();
+        if (getWeekStartTime(timeMillis1) == getWeekStartTime(timeMillis2) &&
+                getWeekEndTime(timeMillis1) == getWeekEndTime(timeMillis2)) {
+            return true;
         }
         return false;
     }
@@ -259,7 +311,7 @@ public class DateUtils {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         SimpleDateFormat timeformatter0to11 = new SimpleDateFormat("KK:mm", Locale.getDefault());
-        SimpleDateFormat timeformatter1to12 = new SimpleDateFormat("HH:mm", Locale.getDefault());
+        SimpleDateFormat timeformatter1to12 = new SimpleDateFormat(DATE_HHMM_STYLE1, Locale.getDefault());
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
         if (hour >= 0 && hour < 5) {
             return "凌晨 " + timeformatter0to11.format(date);
@@ -314,264 +366,115 @@ public class DateUtils {
     }
 
     /**
-     * 获取时长 00:11
-     * bug
+     * 获取日期
+     * 如果是今年，返回：MM月dd日
+     * 如果不是今年，返回：yyyy年MM月dd日
      *
-     * @param milliseconds
-     * @return
-     */
-    @Deprecated
-    public static String getTimeDurationDate(long milliseconds) {
-        SimpleDateFormat formatter = new SimpleDateFormat("HH:mm");
-        return formatter.format(milliseconds);
-    }
-
-
-    /**
-     * 获取时长 00:11
-     *
-     * @param milliseconds
-     * @return
-     */
-    public static String getHHmmss(long milliseconds) {
-        SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss");
-        return formatter.format(milliseconds);
-    }
-
-    /**
-     * 获取计时时长 00:11
-     *
-     * @param milliseconds
-     * @return
-     */
-    public static String getHHmm(long milliseconds) {
-        SimpleDateFormat formatter = new SimpleDateFormat("HH:mm");
-        return formatter.format(milliseconds);
-    }
-
-    /**
-     * 获取日期 yyyy年MM月dd日
-     *
-     * @param milliseconds
-     * @return
-     */
-    public static String getTimeDateFormatYear(long milliseconds) {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy年MM月dd日");
-        return formatter.format(milliseconds);
-    }
-
-    /**
-     * 获取日期 yyyy.MM.dd
-     *
-     * @param milliseconds
-     * @return
-     */
-    public static String getTimeDateFormatYearDot(long milliseconds) {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy.MM.dd");
-        return formatter.format(milliseconds);
-    }
-
-    /**
-     * 获取日期 MM月dd日
-     *
-     * @param milliseconds
+     * @param milliseconds 毫秒
      * @return
      */
     public static String getTimeDate(long milliseconds) {
         String formatStr = null;
         if (isThisYear(milliseconds)) {
-            formatStr = "MM月dd日";
+            formatStr = DATE_MMDD_STYLE1;
         } else {
-            formatStr = "yyyy年MM月dd日";
+            formatStr = DATE_YYYYMMDD_STYLE2;
         }
         if (!TextUtils.isEmpty(formatStr)) {
-            SimpleDateFormat formatter = new SimpleDateFormat(formatStr);
-            return formatter.format(milliseconds);
+            try {
+                SimpleDateFormat formatter = new SimpleDateFormat(formatStr);
+                return formatter.format(milliseconds);
+            } catch (Exception e) {
+                e.printStackTrace();
+                BugUtils.bugSync("getTimeDate()异常", "时间戳：" + milliseconds);
+                return "";
+            }
         }
         return "";
     }
 
     /**
-     * 获取日期 MM月dd日 HH:mm
+     * 获取日期
+     * 如果是今年，返回：MM月dd日 HH:mm；
+     * 如果不是今年，返回：yyyy年MM月dd日 HH:mm
      *
-     * @param milliseconds
+     * @param milliseconds 毫秒
      * @return
      */
     public static String getTimeDateFormatMm(long milliseconds) {
         String formatStr = null;
         if (isThisYear(milliseconds)) {
-            formatStr = "MM月dd日 HH:mm";
+            formatStr = DATE_MMDD_HHMM_STYLE2;
         } else {
-            formatStr = "yyyy年MM月dd日 HH:mm";
+            formatStr = DATE_YYYYMMDD_HHMM_STYLE2;
         }
         if (!TextUtils.isEmpty(formatStr)) {
-            SimpleDateFormat formatter = new SimpleDateFormat(formatStr);
-            return formatter.format(milliseconds);
+            try {
+                SimpleDateFormat formatter = new SimpleDateFormat(formatStr);
+                return formatter.format(milliseconds);
+            } catch (Exception e) {
+                e.printStackTrace();
+                BugUtils.bugSync("getTimeDate()异常", "时间戳：" + milliseconds);
+                return "";
+            }
         }
         return "";
     }
 
     /**
-     * @param milliseconds
-     * @return
-     */
-    public static String getyyyyMMdd(long milliseconds) {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy年MM月dd日");
-        return formatter.format(milliseconds);
-    }
-
-    /**
-     * 返回2017年10月这种格式
+     * 获取日期
+     * 如果是今年，返回：MM/dd HH:mm
+     * 如果不是今年，返回：yyyy/MM/dd HH:mm
      *
-     * @param milliseconds
-     * @return
-     */
-    public static String getyyyyMM(long milliseconds) {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy年M月");
-        return formatter.format(milliseconds);
-    }
-
-    /**
-     * 返回格式化成xx月xx日的格式
-     *
-     * @param milliseconds
-     * @return
-     */
-    public static String getMMdd(long milliseconds) {
-        SimpleDateFormat formatter = new SimpleDateFormat("MM月dd日");
-        return formatter.format(milliseconds);
-    }
-
-    /**
-     * yyyy-MM-dd 格式
-     *
-     * @param milliseconds
-     * @return
-     */
-    public static String getyyyy_MM_dd(long milliseconds) {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-        return formatter.format(milliseconds);
-    }
-
-    /**
-     * MM-dd HH:mm 格式
-     *
-     * @param milliseconds
-     * @return
-     */
-    public static String getMM_dd_HH_mm(long milliseconds) {
-        SimpleDateFormat formatter = new SimpleDateFormat("MM-dd HH:mm");
-        return formatter.format(milliseconds);
-    }
-
-    /**
-     * @param milliseconds
-     * @return
-     */
-    public static String getyyyyMMddHHmm(long milliseconds) {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-        return formatter.format(milliseconds);
-    }
-
-    /**
-     * yyyy年MM月dd日 HH:mm
-     *
-     * @param milliseconds
-     * @return
-     */
-    public static String getyyyy_YEAR_MM_MONTH_dd_DAY_HHmm(long milliseconds) {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy年MM月dd日 HH:mm");
-        return formatter.format(milliseconds);
-    }
-
-    /**
-     * 获取日期 MM/dd HH:mm
-     *
-     * @param milliseconds
+     * @param milliseconds 毫秒
      * @return
      */
     public static String getTimeDateFormatXMm(long milliseconds) {
         String formatStr = null;
         if (isThisYear(milliseconds)) {
-            formatStr = "MM/dd HH:mm";
+            formatStr = DATE_MMDD_HHMM_STYLE3;
         } else {
-            formatStr = "yyyy/MM/dd HH:mm";
+            formatStr = DATE_YYYYMMDD_HHMM_STYLE3;
         }
         if (!TextUtils.isEmpty(formatStr)) {
-            SimpleDateFormat formatter = new SimpleDateFormat(formatStr);
-            return formatter.format(milliseconds);
+            try {
+                SimpleDateFormat formatter = new SimpleDateFormat(formatStr);
+                return formatter.format(milliseconds);
+            } catch (Exception e) {
+                e.printStackTrace();
+                BugUtils.bugSync("getTimeDateFormatXMm()异常", "时间戳：" + milliseconds);
+                return "";
+            }
         }
         return "";
     }
 
     /**
-     * @param milliseconds
-     * @return
-     */
-    public static String getMMMdd(long milliseconds) {
-        String formatStr = null;
-        if (isThisYear(milliseconds)) {
-            formatStr = "M月d日";
-        } else {
-            formatStr = "yyyy年M月d日";
-        }
-        if (!TextUtils.isEmpty(formatStr)) {
-            SimpleDateFormat formatter = new SimpleDateFormat(formatStr, Locale.CHINA);
-            try {
-                return formatter.format(milliseconds);
-            } catch (IllegalArgumentException e) {
-                e.printStackTrace();
-            } catch (NullPointerException e) {
-                e.printStackTrace();
-            }
-        }
-        return String.valueOf(milliseconds);
-    }
-
-    /**
-     * @param milliseconds
+     * 返回日期
+     * 如果是今年，返回：MM/dd
+     * 如果不是今年，返回：yyyy/MM/dd
+     *
+     * @param milliseconds 毫秒
      * @return
      */
     public static String getMMXdd(long milliseconds) {
         String formatStr = null;
         if (isThisYear(milliseconds)) {
-            formatStr = "MM/dd";
+            formatStr = DATE_MMDD_STYLE2;
         } else {
-            formatStr = "yyyy/MM/dd";
+            formatStr = DATE_YYYYMMDD_STYLE4;
         }
         if (!TextUtils.isEmpty(formatStr)) {
-            SimpleDateFormat formatter = new SimpleDateFormat(formatStr);
             try {
+                SimpleDateFormat formatter = new SimpleDateFormat(formatStr);
                 return formatter.format(milliseconds);
-            } catch (IllegalArgumentException e) {
+            } catch (Exception e) {
+                BugUtils.bugSync("getMMXdd()异常", "时间戳：" + milliseconds);
                 e.printStackTrace();
-            } catch (NullPointerException e) {
-                e.printStackTrace();
+                return "";
             }
         }
-        return String.valueOf(milliseconds);
-    }
-
-    /**
-     * 返回2017/2/14这种格式的时间格式
-     *
-     * @param milliSeconds
-     * @return
-     */
-    public static String getyyyyMd(long milliSeconds) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/M/d", Locale.CHINA);
-        return dateFormat.format(milliSeconds);
-    }
-
-    /**
-     * 返回2/14这种格式的时间
-     *
-     * @param millisSeconds
-     * @return
-     */
-    public static String getMd(long millisSeconds) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("M月d日", Locale.CHINA);
-        return dateFormat.format(millisSeconds);
+        return "";
     }
 
     /**
@@ -642,7 +545,6 @@ public class DateUtils {
         return currentDate.getTimeInMillis();
     }
 
-
     /**
      * 获取本周的开始时间 毫秒
      *
@@ -651,7 +553,6 @@ public class DateUtils {
     public static long getCurrWeekStartTime() {
         return getWeekStartTime(System.currentTimeMillis());
     }
-
 
     /**
      * 获取本周的开始时间 毫秒
@@ -671,11 +572,7 @@ public class DateUtils {
     public static long getWeekStartTime(long timeMillis) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(timeMillis);
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
-        int d = 0;
+        int d;
         if (calendar.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {//如果是周日，则在当前日期上减去6天，就是周一了
             d = -6;
         } else {//如果不是周日，周一的起始值是减去今天所对应周几，得出这周的第一天。
@@ -683,6 +580,10 @@ public class DateUtils {
         }
         //所在周开始日期
         calendar.add(Calendar.DAY_OF_WEEK, d);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
         return calendar.getTimeInMillis();
     }
 
@@ -696,7 +597,12 @@ public class DateUtils {
         return getWeekStartTime(timeMillis) + TimeUnit.DAYS.toMillis(7) - 1;
     }
 
-
+    /**
+     * 判断是不是今天
+     *
+     * @param millis 毫秒
+     * @return
+     */
     public static boolean isToday(long millis) {
         Calendar current = Calendar.getInstance();
         Calendar todayStart = Calendar.getInstance();    //今天
@@ -720,9 +626,9 @@ public class DateUtils {
     }
 
     /**
-     * 是明天
+     * 今天以后的时间
      *
-     * @param millis
+     * @param millis 毫秒
      * @return
      */
     public static boolean isOverToday(long millis) {
@@ -758,7 +664,7 @@ public class DateUtils {
     /**
      * 判断是否是今年
      *
-     * @param millis
+     * @param millis 毫秒
      * @return
      */
     public static boolean isThisYear(long millis) {
@@ -773,7 +679,7 @@ public class DateUtils {
     /**
      * 23:59:59 不显示  xx月xx日 hh：mm
      *
-     * @param millis
+     * @param millis 毫秒
      * @return
      */
     public static String get23Hour59Min(long millis) {
@@ -783,7 +689,7 @@ public class DateUtils {
         int minute = calendar.get(Calendar.MINUTE);
         int second = calendar.get(Calendar.SECOND);
         if ((hour == 23 && minute == 59 && second == 59)) {
-            return getMMMdd(millis);
+            return getTimeDate(millis);
         } else {
             return getTimeDateFormatMm(millis);
         }
@@ -792,7 +698,7 @@ public class DateUtils {
     /**
      * 23:59:59 不显示 xx/xx hh：mm
      *
-     * @param millis
+     * @param millis 毫秒
      * @return
      */
     public static String get23Hour59MinFormat(long millis) {
@@ -827,13 +733,13 @@ public class DateUtils {
     /**
      * 获取日期和星期的组合
      *
-     * @param millis
+     * @param millis 毫秒
      * @return
      */
     public static String getMMddWeek(long millis) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(millis);
-        SimpleDateFormat formatter = new SimpleDateFormat("MM月dd日");
+        SimpleDateFormat formatter = new SimpleDateFormat(DATE_MMDD_STYLE1);
         String format = formatter.format(calendar.getTime());
         int day = calendar.get(Calendar.DAY_OF_WEEK);
         StringBuilder builder = new StringBuilder(format);
@@ -859,6 +765,8 @@ public class DateUtils {
                 break;
             case Calendar.SATURDAY:
                 builder.append("周六");
+                break;
+            default:
                 break;
 
         }
@@ -926,7 +834,7 @@ public class DateUtils {
      * 获取当前时间的时间戳（秒数为0）
      * 比如：当前时间为12:10:30，返回的是12:10:00的时间戳
      *
-     * @param timeMillis
+     * @param timeMillis 毫秒
      * @return
      */
     public static long getFormatMillis(long timeMillis) {
@@ -945,8 +853,8 @@ public class DateUtils {
     /**
      * date2比date1多的天数
      *
-     * @param startMillis
-     * @param endMillis
+     * @param startMillis 毫秒
+     * @param endMillis   毫秒
      * @return
      */
     public static int differentDays(long startMillis, long endMillis) {
@@ -978,7 +886,7 @@ public class DateUtils {
     /**
      * 获取时间戳所在月份的第一天的起始时间
      *
-     * @param millis
+     * @param millis 毫秒
      * @return
      */
     public static long getMonthStartTime(long millis) {
@@ -995,7 +903,7 @@ public class DateUtils {
     /**
      * 获取时间戳所在月份的最后一天的最后一秒
      *
-     * @param millis
+     * @param millis 毫秒
      * @return
      */
     public static long getMonthEndTime(long millis) {
@@ -1011,7 +919,7 @@ public class DateUtils {
     /**
      * 获取时间戳所在年的第一天的起始时间
      *
-     * @param millis
+     * @param millis 毫秒
      * @return
      */
     public static long getYearStartTime(long millis) {
@@ -1029,7 +937,7 @@ public class DateUtils {
     /**
      * 获取时间戳所在年份的最后一天最后一秒
      *
-     * @param millis
+     * @param millis 毫秒
      * @return
      */
     public static long getYearEndTime(long millis) {
@@ -1109,7 +1017,7 @@ public class DateUtils {
     /**
      * 获取时间戳所在的年份
      *
-     * @param timeMillis
+     * @param timeMillis 毫秒
      * @return
      */
     public static int getYear(long timeMillis) {
@@ -1124,7 +1032,7 @@ public class DateUtils {
      * @return
      */
     public static String getCurrentMonthFirstDay() {
-        SimpleDateFormat dateFormater = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat dateFormater = new SimpleDateFormat(DATE_YYYYMMDD_STYLE1);
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.DAY_OF_MONTH, 1);
         cal.getTime();
@@ -1137,7 +1045,7 @@ public class DateUtils {
      * @return
      */
     public static String getCurrentMonthLastDay() {
-        SimpleDateFormat dateFormater = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat dateFormater = new SimpleDateFormat(DATE_YYYYMMDD_STYLE1);
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.DAY_OF_MONTH,
                 cal.getActualMaximum(Calendar.DAY_OF_MONTH));

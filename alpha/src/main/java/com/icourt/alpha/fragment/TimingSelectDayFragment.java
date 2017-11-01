@@ -187,8 +187,8 @@ public class TimingSelectDayFragment extends BaseFragment {
         TimingSelectEntity timingSelectEntity = new TimingSelectEntity();
         timingSelectEntity.startTimeMillis = selectedDate.getTimeInMillis();
         timingSelectEntity.endTimeMillis = DateUtils.getDayEndTime(selectedDate.getTimeInMillis());
-        timingSelectEntity.startTimeStr = DateUtils.getyyyy_MM_dd(timingSelectEntity.startTimeMillis);
-        timingSelectEntity.endTimeStr = DateUtils.getyyyy_MM_dd(timingSelectEntity.endTimeMillis);
+        timingSelectEntity.startTimeStr = DateUtils.getFormatDate(timingSelectEntity.startTimeMillis, DateUtils.DATE_YYYYMMDD_STYLE1);
+        timingSelectEntity.endTimeStr = DateUtils.getFormatDate(timingSelectEntity.endTimeMillis, DateUtils.DATE_YYYYMMDD_STYLE1);
         arguments.putSerializable(KEY_FRAGMENT_RESULT, timingSelectEntity);
         return arguments;
     }

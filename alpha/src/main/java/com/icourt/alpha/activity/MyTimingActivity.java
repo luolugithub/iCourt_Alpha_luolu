@@ -161,7 +161,7 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
         switch (type) {
             //日
             case TimingConfig.TIMING_QUERY_BY_DAY:
-                String dayDate = DateUtils.getMMMdd(selectedTimeMillis);
+                String dayDate = DateUtils.getTimeDate(selectedTimeMillis);
                 timingDateTitleTv.setText(dayDate);
                 break;
             //周，周需要考虑又没有跨年
@@ -172,17 +172,17 @@ public class MyTimingActivity extends BaseActivity implements OnFragmentCallBack
                 String endDate;
                 if (DateUtils.getYear(System.currentTimeMillis()) == DateUtils.getYear(weekStartTime)
                         && DateUtils.getYear(System.currentTimeMillis()) == DateUtils.getYear(weekEndTime)) {//开始和结束时间都是是今年，不需要显示年份
-                    startDate = DateUtils.getMd(weekStartTime);
-                    endDate = DateUtils.getMd(weekEndTime);
+                    startDate = DateUtils.getFormatDate(weekStartTime, DateUtils.DATE_MMDD_STYLE1);
+                    endDate = DateUtils.getFormatDate(weekEndTime, DateUtils.DATE_MMDD_STYLE1);
                 } else {//需要显示年份
-                    startDate = DateUtils.getyyyyMd(weekStartTime);
-                    endDate = DateUtils.getyyyyMd(weekEndTime);
+                    startDate = DateUtils.getFormatDate(weekStartTime, DateUtils.DATE_YYYYMMDD_STYLE4);
+                    endDate = DateUtils.getFormatDate(weekEndTime, DateUtils.DATE_YYYYMMDD_STYLE4);
                 }
                 timingDateTitleTv.setText(getString(R.string.timing_date_contact, startDate, endDate));
                 break;
             //月
             case TimingConfig.TIMING_QUERY_BY_MONTH:
-                String monthDate = DateUtils.getyyyyMM(selectedTimeMillis);
+                String monthDate = DateUtils.getFormatDate(selectedTimeMillis, DateUtils.DATE_YYYYMM_STYLE1);
                 timingDateTitleTv.setText(monthDate);
                 break;
             //年

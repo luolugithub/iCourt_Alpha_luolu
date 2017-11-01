@@ -177,7 +177,7 @@ public class FileLinkFragment extends BaseFragment {
             }
             fileAccessPwdTv.setText(sFileLinkInfoEntity.isNeedAccessPwd() ? sFileLinkInfoEntity.password : getString(R.string.sfile_link_password_null));
             linkCopyTv.setText(sFileLinkInfoEntity.isNeedAccessPwd() ? "复制链接和密码" : "复制链接");
-            fileAccessTimeLimitTv.setText(sFileLinkInfoEntity.expireTime <= 0 ? getString(R.string.sfile_link_limit_date_0) : DateUtils.getMM_dd_HH_mm(sFileLinkInfoEntity.expireTime));
+            fileAccessTimeLimitTv.setText(sFileLinkInfoEntity.expireTime <= 0 ? getString(R.string.sfile_link_limit_date_0) : DateUtils.getFormatDate(sFileLinkInfoEntity.expireTime, DateUtils.DATE_MMDD_HHMM_STYLE1));
             fileShareLinkTv.setText(sFileLinkInfoEntity.getRealShareLink());
         } else {
             fileLinkCreateTv.setVisibility(View.VISIBLE);
