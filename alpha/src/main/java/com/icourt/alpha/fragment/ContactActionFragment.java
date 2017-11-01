@@ -44,6 +44,7 @@ import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
+import io.realm.Case;
 import io.realm.RealmResults;
 
 /**
@@ -214,7 +215,7 @@ public class ContactActionFragment extends BaseFragment implements BaseRecyclerA
                 try {
                     if (!e.isDisposed()) {
                         threadContactDbService = new ContactDbService(getLoginUserId());
-                        RealmResults<ContactDbModel> contactDbModels = threadContactDbService.contains("name", name);
+                        RealmResults<ContactDbModel> contactDbModels = threadContactDbService.contains("name", name, "nameCharacter", name, Case.INSENSITIVE);
                         if (contactDbModels != null) {
                             List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(contactDbModels));
                             if (contactBeen != null && isFilterMySelef()) {
