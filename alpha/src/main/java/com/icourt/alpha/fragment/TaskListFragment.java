@@ -79,7 +79,8 @@ import retrofit2.Response;
  * Description 任务列表（未完成、已完成、已删除、我关注的）
  * Company Beijing icourt
  *
- * @author zhaodanyang  E-mail:zhaodanyang@icourt.cc
+ * @author zhaodanyang
+ *         E-mail:zhaodanyang@icourt.cc
  *         date createTime：17/9/6
  *         version 2.0.0
  */

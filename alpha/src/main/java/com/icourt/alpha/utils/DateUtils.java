@@ -12,6 +12,15 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Description 时间格式化类，如果有新的时间格式，添加DateStyle枚举的类型，不要再添加方法了。
+ * Company Beijing icourt
+ *
+ * @author zhaodanyang
+ *         E-mail:zhaodanyang@icourt.cc
+ *         date createTime：17/11/1
+ *         version 2.2.1
+ */
 public class DateUtils {
 
     public static final String DATE_YYYYMM_STYLE1 = "yyyy年MM月";
@@ -478,10 +487,10 @@ public class DateUtils {
     }
 
     /**
-     * 获得天数差
+     * 获得天数差（这里返回的是两个时间戳差距超过24小时的倍数）
      *
-     * @param begin
-     * @param end
+     * @param begin 毫秒
+     * @param end   毫秒
      * @return
      */
     public static long getDayDiff(long begin, long end) {
@@ -494,6 +503,43 @@ public class DateUtils {
             day += (end - begin) / (24 * 60 * 60 * 1000);
         }
         return day;
+    }
+
+    /**
+     * endMillis比startMillis多的天数（比如"2017年10月11日08:00"比"2017年10月10日19:00"多一天，并不是按照是否差距24小时的倍数来计算的）
+     * 注意：endMillis要大于startMillis
+     *
+     * @param startMillis 毫秒
+     * @param endMillis   毫秒
+     * @return
+     */
+    public static int differentDays(long startMillis, long endMillis) {
+        Calendar cal1 = Calendar.getInstance();
+        cal1.setTimeInMillis(startMillis);
+
+        Calendar cal2 = Calendar.getInstance();
+        cal2.setTimeInMillis(endMillis);
+        int day1 = cal1.get(Calendar.DAY_OF_YEAR);
+        int day2 = cal2.get(Calendar.DAY_OF_YEAR);
+
+        int year1 = cal1.get(Calendar.YEAR);
+        int year2 = cal2.get(Calendar.YEAR);
+        if (year1 != year2) {
+            //不同年
+            int timeDistance = 0;
+            for (int i = year1; i < year2; i++) {
+                if (i % 4 == 0 && i % 100 != 0 || i % 400 == 0) {
+                    //闰年
+                    timeDistance += 366;
+                } else {
+                    //不是闰年
+                    timeDistance += 365;
+                }
+            }
+            return timeDistance + (day2 - day1);
+        } else {//同一年
+            return day2 - day1;
+        }
     }
 
     /**
@@ -848,39 +894,6 @@ public class DateUtils {
         //记录当前时间，精确到分钟，秒数置为0。
         instance.set(currentYear, currentMonth, currentDay, currentHour, currentMinute, 0);
         return instance.getTimeInMillis();
-    }
-
-    /**
-     * date2比date1多的天数
-     *
-     * @param startMillis 毫秒
-     * @param endMillis   毫秒
-     * @return
-     */
-    public static int differentDays(long startMillis, long endMillis) {
-        Calendar cal1 = Calendar.getInstance();
-        cal1.setTimeInMillis(startMillis);
-
-        Calendar cal2 = Calendar.getInstance();
-        cal2.setTimeInMillis(endMillis);
-        int day1 = cal1.get(Calendar.DAY_OF_YEAR);
-        int day2 = cal2.get(Calendar.DAY_OF_YEAR);
-
-        int year1 = cal1.get(Calendar.YEAR);
-        int year2 = cal2.get(Calendar.YEAR);
-        if (year1 != year2) {//不同年
-            int timeDistance = 0;
-            for (int i = year1; i < year2; i++) {
-                if (i % 4 == 0 && i % 100 != 0 || i % 400 == 0) {//闰年
-                    timeDistance += 366;
-                } else {//不是闰年
-                    timeDistance += 365;
-                }
-            }
-            return timeDistance + (day2 - day1);
-        } else {//同一年
-            return day2 - day1;
-        }
     }
 
     /**
