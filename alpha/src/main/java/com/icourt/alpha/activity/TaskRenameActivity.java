@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.constants.TaskConfig;
@@ -13,6 +14,8 @@ import com.icourt.alpha.entity.event.TaskActionEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.StringUtils;
+import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.widget.filter.InputActionNextFilter;
 import com.icourt.api.RequestUtils;
 
 import org.greenrobot.eventbus.EventBus;
@@ -50,6 +53,13 @@ public class TaskRenameActivity extends EditItemBaseActivity {
         inputNameEt.setHint(R.string.task_rename);
         inputNameEt.setText(itemEntity.name);
         inputNameEt.setSelection(StringUtils.length(inputNameEt.getText()));
+        inputNameEt.setOnEditorActionListener(new InputActionNextFilter() {
+            @Override
+            public boolean onInputActionNext(TextView v) {
+                SystemUtils.hideSoftKeyBoard(getActivity(), v, true);
+                return super.onInputActionNext(v);
+            }
+        });
     }
 
     @Override
