@@ -3,10 +3,10 @@ package com.icourt.alpha.activity;
 import android.app.Activity;
 import android.content.Intent;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.constants.TaskConfig;
@@ -21,36 +21,32 @@ import retrofit2.Call;
 import retrofit2.Response;
 
 /**
- * Description  新建任务组
- * Company Beijing icourt
- *
- * @author lu.zhao  E-mail:zhaolu@icourt.cc
- *         date createTime：17/5/9
- *         version 2.0.0
+ * @author youxuan  E-mail:xuanyouwu@163.com
+ * @version 2.2.1
+ * @Description 编辑任务组名称
+ * @Company Beijing icourt
+ * @date createTime：2017/11/1
  */
-
-public class TaskGroupCreateActivity extends EditItemBaseActivity {
-
-    private static final String KEY_PROJECT_ID = "key_project_id";
+public class TaskGroupRenameActivity extends EditItemBaseActivity {
+    private static final String KEY_ENTITY = "entity";
 
     public static void launchForResult(@NonNull Activity activity,
-                                       @NonNull String projectId,
+                                       @NonNull TaskGroupEntity taskGroupEntity,
                                        int requestCode) {
-        if (activity == null || TextUtils.isEmpty(projectId)) {
+        if (activity == null || taskGroupEntity == null) {
             return;
         }
-        Intent intent = new Intent(activity, TaskGroupCreateActivity.class);
-        intent.putExtra(KEY_PROJECT_ID, projectId);
+        Intent intent = new Intent(activity, TaskGroupRenameActivity.class);
+        intent.putExtra(KEY_ENTITY, taskGroupEntity);
         activity.startActivityForResult(intent, requestCode);
     }
 
-    private String projectId;
+    TaskGroupEntity taskGroupEntity;
 
     @Override
     protected void initView() {
         super.initView();
-        projectId = getIntent().getStringExtra(KEY_PROJECT_ID);
-        setTitle(R.string.task_new_group);
+        setTitle(getString(R.string.task_edit_group));
         inputNameEt.setHint(R.string.task_group_name_hint);
         inputNameEt.setOnEditorActionListener(new InputActionNextFilter() {
             @Override
@@ -59,6 +55,9 @@ public class TaskGroupCreateActivity extends EditItemBaseActivity {
                 return super.onInputActionNext(v);
             }
         });
+        taskGroupEntity = (TaskGroupEntity) getIntent().getSerializableExtra(KEY_ENTITY);
+        inputNameEt.setText(taskGroupEntity.name);
+        inputNameEt.setSelection(inputNameEt.getText().length());
     }
 
     @Override
@@ -68,54 +67,55 @@ public class TaskGroupCreateActivity extends EditItemBaseActivity {
 
     @Override
     protected void onSubmitInput(EditText et) {
-        taskGroupCreate(getTextString(et, ""));
-    }
-
-    @Override
-    protected boolean onCancelSubmitInput(EditText et) {
-        return false;
+        updateTaskGroup(getTextString(et, ""));
     }
 
     /**
-     * 获取添加任务组json
-     * {name: "测试一", assignTo: "", type: 1, valid: 1, state: 0, matterId: "5EC208BAB0D311E6992300163E162ADD"}
+     * 修改任务组json
+     * {id: "1F82393CB0D511E6992300163E162ADD", name: "勿忘我1", valid: true}
      *
      * @return
      */
-    private String getAddGroupJson(@NonNull String taskGroupName) {
+    private String getUpdateGroupJson(@NonNull String taskGroupName) {
         JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("id", taskGroupEntity.id);
         jsonObject.addProperty("name", taskGroupName.trim());
-        jsonObject.addProperty("assignTo", "");
-        jsonObject.addProperty("type", 1);
-        jsonObject.addProperty("valid", 1);
-        jsonObject.addProperty("state", 0);
-        jsonObject.addProperty("matterId", projectId);
+        jsonObject.addProperty("valid", true);
         return jsonObject.toString();
     }
 
     /**
-     * 任务组创建
+     * 更新任务组标题
+     *
+     * @param taskGroupName
      */
-    private void taskGroupCreate(@NonNull String taskGroupName) {
+    private void updateTaskGroup(final String taskGroupName) {
         showLoadingDialog(null);
         callEnqueue(
-                getApi().taskGroupCreate(RequestUtils.createJsonBody(getAddGroupJson(taskGroupName))),
-                new SimpleCallBack<TaskGroupEntity>() {
+                getApi().taskUpdate(RequestUtils.createJsonBody(getUpdateGroupJson(taskGroupName))),
+                new SimpleCallBack<JsonElement>() {
                     @Override
-                    public void onSuccess(Call<ResEntity<TaskGroupEntity>> call, Response<ResEntity<TaskGroupEntity>> response) {
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                         dismissLoadingDialog();
-                        setResult(response.body().result);
+                        if (response.body().result != null) {
+                            taskGroupEntity.name = taskGroupName.trim();
+                        }
+                        setResult(taskGroupEntity);
                         finish();
                     }
 
                     @Override
-                    public void onFailure(Call<ResEntity<TaskGroupEntity>> call, Throwable t) {
+                    public void onFailure(Call<ResEntity<JsonElement>> call, Throwable t) {
                         super.onFailure(call, t);
                         dismissLoadingDialog();
                     }
                 });
     }
 
+    @Override
+    protected boolean onCancelSubmitInput(EditText et) {
+        return false;
+    }
 
     private void setResult(TaskGroupEntity taskGroupEntity) {
         if (taskGroupEntity == null) {
