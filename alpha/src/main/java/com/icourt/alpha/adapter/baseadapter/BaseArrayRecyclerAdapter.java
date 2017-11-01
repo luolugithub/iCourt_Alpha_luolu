@@ -36,19 +36,20 @@ public abstract class BaseArrayRecyclerAdapter<T> extends BaseRecyclerAdapter im
 
 
     public boolean bindData(boolean isRefresh, List<T> datas) {
-        if (datas == null) {
-            clearData();
-            return true;
-        }
-        if (isRefresh) {
+        if (isRefresh) {//下拉刷新
             dataList.clear();
-            dataList.addAll(datas);
+            if (datas != null) {
+                dataList.addAll(datas);
+            }
             notifyDataSetChanged();
             return true;
-        } else if (!dataList.containsAll(datas)) {
-            dataList.addAll(datas);
-            notifyDataSetChanged();
-            return true;
+        } else {//上拉加载
+            if (datas != null
+                    && !dataList.containsAll(datas)) {
+                dataList.addAll(datas);
+                notifyDataSetChanged();
+                return true;
+            }
         }
         return false;
     }
