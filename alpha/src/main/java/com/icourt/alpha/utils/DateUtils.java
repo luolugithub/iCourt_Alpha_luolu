@@ -976,15 +976,27 @@ public class DateUtils {
     }
 
     /**
-     * 将计时时间毫秒数转换为"时:分"的样式（如：1小时11分20秒 返回 1小时11分）
+     * 时间格式化 秒 --> 时：分：秒
      *
-     * @param timesMillis 毫秒
+     * @param seconds 秒
      * @return
      */
-    public static String getHHmm(long timesMillis) {
-        timesMillis /= 1000;
-        long hour = timesMillis / 3600;
-        long minute = timesMillis % 3600 / 60;
+    public static String getHHmmss(long seconds) {
+        long hour = seconds / 3600;
+        long minute = seconds % 3600 / 60;
+        long second = seconds % 60;
+        return String.format(Locale.CHINA, "%02d:%02d:%02d", hour, minute, second);
+    }
+
+    /**
+     * 时间格式化：秒 --> 时：分
+     *
+     * @param seconds 秒
+     * @return
+     */
+    public static String getHHmm(long seconds) {
+        long hour = seconds / 3600;
+        long minute = seconds % 3600 / 60;
         if (minute < 0) {
             minute = 0;
         }

@@ -1026,7 +1026,7 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                     timingAnim = getTimingAnimation(fromDegrees, toDegrees);
                     tabTimingIcon.startAnimation(timingAnim);
                 }
-                tabTimingTv.setText(toTime(event.timingSecond));
+                tabTimingTv.setText(DateUtils.getHHmmss(event.timingSecond));
                 break;
             case TimingEvent.TIMING_STOP:
                 dismissOverTimingRemindDialogFragment(true);
@@ -1075,19 +1075,6 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
         anim.setInterpolator(new LinearInterpolator());
         anim.setRepeatCount(-1);
         return anim;
-    }
-
-    /**
-     * 时间格式化 秒--->小时分钟
-     *
-     * @param times
-     * @return
-     */
-    public String toTime(long times) {
-        long hour = times / 3600;
-        long minute = times % 3600 / 60;
-        long second = times % 60;
-        return String.format("%02d:%02d:%02d", hour, minute, second);
     }
 
     /**
