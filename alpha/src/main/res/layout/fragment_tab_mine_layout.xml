@@ -311,7 +311,7 @@
                     android:gravity="center"
                     android:textColor="@color/alpha_background_window"
                     android:textSize="12dp"
-                    android:visibility="visible" />
+                    android:visibility="invisible" />
 
                 <ImageView
                     android:layout_width="wrap_content"

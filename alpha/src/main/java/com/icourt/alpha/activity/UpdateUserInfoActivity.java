@@ -264,7 +264,6 @@ public class UpdateUserInfoActivity extends BaseActivity {
      */
     private void setStatreViewImage(boolean isTrue) {
         myCenterUpdateStateView.setImageResource(isTrue ? R.mipmap.verify_ok : R.mipmap.verify_no);
-        myCenterUpdateErrorHintText.setVisibility(isTrue ? View.GONE : View.VISIBLE);
     }
 
     /**
@@ -287,7 +286,13 @@ public class UpdateUserInfoActivity extends BaseActivity {
                 break;
             case R.id.titleAction:
                 if (!TextUtils.isEmpty(myCenterUpdateEdittext.getText())) {
-                    updateInfo(alphaUserInfo.getUserId(), myCenterUpdateEdittext.getText().toString().trim());
+                    String content = myCenterUpdateEdittext.getText().toString();
+                    if (content.contains("+86") && !content.contains(" ")) {
+                        String part1 = content.subSequence(0, 3).toString();
+                        String part2 = content.subSequence(3, content.length()).toString();
+                        content = String.format("%s %s", part1, part2);
+                    }
+                    updateInfo(alphaUserInfo.getUserId(), content.trim());
                 }
                 break;
             case R.id.my_center_update_clear_view:
