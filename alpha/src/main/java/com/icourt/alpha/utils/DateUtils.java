@@ -976,6 +976,7 @@ public class DateUtils {
     }
 
     /**
+     * 计时器通用的样式
      * 时间格式化 秒 --> 时：分：秒
      *
      * @param seconds 秒
@@ -1018,19 +1019,6 @@ public class DateUtils {
             minute += 1;
         }
         return String.format(Locale.CHINA, "%02d:%02d", hour, minute);
-    }
-
-    /**
-     * 获取计时的样式（比如：20:12:08）
-     *
-     * @param timeSeconds 秒
-     * @return
-     */
-    public static String getTimingStr(long timeSeconds) {
-        long hour = timeSeconds / 3600;
-        long minute = timeSeconds % 3600 / 60;
-        long second = timeSeconds % 60;
-        return String.format(Locale.CHINA, "%02d:%02d:%02d", hour, minute, second);
     }
 
     /**

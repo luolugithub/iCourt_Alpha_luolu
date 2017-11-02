@@ -182,7 +182,7 @@ public class TimerTimingActivity extends BaseTimerActivity
         });
         EventBus.getDefault().register(this);
         timeNameTv.setFilters(timingNameInputFilters);
-        timeNameTv.setOnEditorActionListener(new InputActionNextFilter(){
+        timeNameTv.setOnEditorActionListener(new InputActionNextFilter() {
             @Override
             public boolean onInputActionNext(TextView v) {
                 SystemUtils.hideSoftKeyBoard(getActivity(), v, true);
@@ -220,7 +220,7 @@ public class TimerTimingActivity extends BaseTimerActivity
             useTimeSecond = System.currentTimeMillis() - selectedStartDate.getTimeInMillis();
             useTimeSecond = useTimeSecond / TimeUnit.SECONDS.toMillis(1);
         }
-        timingTv.setText(DateUtils.getTimingStr(useTimeSecond));
+        timingTv.setText(DateUtils.getHHmmss(useTimeSecond));
         tvStartDate.setText(DateUtils.getFormatDate(mItemEntity.startTime, DateUtils.DATE_YYYYMMDD_STYLE2));
         startTimeTv.setText(DateUtils.getFormatDate(mItemEntity.startTime, DateUtils.DATE_HHMM_STYLE1));
     }
@@ -476,7 +476,7 @@ public class TimerTimingActivity extends BaseTimerActivity
                 if (TextUtils.equals(event.timingId, mItemEntity.pkId)) {
                     mItemEntity.useTime = event.timingSecond * TimeUnit.SECONDS.toMillis(1);
                     mItemEntity.endTime = mItemEntity.startTime + mItemEntity.useTime;
-                    timingTv.setText(DateUtils.getTimingStr(event.timingSecond));
+                    timingTv.setText(DateUtils.getHHmmss(event.timingSecond));
                     if (mItemEntity.noRemind == TimeEntity.ItemEntity.STATE_REMIND_ON) {
                         //如果该计时超过两小时，显示超过2小时的提醒。
                         if (TimeUnit.SECONDS.toHours(event.timingSecond) >= 2) {

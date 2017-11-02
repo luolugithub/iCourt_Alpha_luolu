@@ -143,7 +143,7 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
             }
             timer_count_tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
             timer_count_tv.setTextColor(SystemUtils.getColor(timer_count_tv.getContext(), R.color.colorPrimary));
-            timer_count_tv.setText(DateUtils.getTimingStr(useTime));
+            timer_count_tv.setText(DateUtils.getHHmmss(useTime));
             timer_icon.setImageResource(R.drawable.orange_side_dot_bg);
         } else {
             //说明没有在计时
@@ -210,7 +210,7 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
             if (useTime < 0) {
                 useTime = 0;
             }
-            durationView.setText(DateUtils.getTimingStr(useTime / TimeUnit.SECONDS.toMillis(1)));
+            durationView.setText(DateUtils.getHHmmss(useTime / TimeUnit.SECONDS.toMillis(1)));
             quantumView.setText(DateUtils.getFormatDate(timeEntity.startTime, DateUtils.DATE_HHMM_STYLE1) + " - 现在");
         } else {
             try {

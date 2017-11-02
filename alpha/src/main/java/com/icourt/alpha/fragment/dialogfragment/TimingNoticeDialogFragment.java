@@ -119,7 +119,7 @@ public class TimingNoticeDialogFragment extends BaseDialogFragment {
         if (itemEntity == null) return;
         switch (event.action) {
             case TimingEvent.TIMING_UPDATE_PROGRESS:
-                noticeTimingTv.setText(DateUtils.getHHmm(event.timingSecond));
+                noticeTimingTv.setText(DateUtils.getHHmmss(event.timingSecond));
                 break;
             default:
                 break;
