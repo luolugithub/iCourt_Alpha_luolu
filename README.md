@@ -52,12 +52,12 @@ http://wiki.alphalawyer.cn/pages/viewpage.action?pageId=5603882
  4. release   正式版   https://alphalawyer.cn/
 
 #版本命名规范
- 1.debug            开发版         命名规范:v2.2.0_debug
- 2.innertest        内测版         命名规范:v2.2.0_test
- 3.preview          预览版         命名规范:v2.2.0_preview
- 4.release          正式版         命名规范:v2.2.0
- 5.daily            每日更新版本    命名规范:v2.2.0_daily_2017_10_30
- 6.inner_release    内部版本       命名规范:v2.2.0_inner_release
+ 1. debug            开发版         命名规范:v2.2.0_debug
+ 2. innertest        内测版         命名规范:v2.2.0_test
+ 3. preview          预览版         命名规范:v2.2.0_preview
+ 4. release          正式版         命名规范:v2.2.0
+ 5. daily            每日更新版本    命名规范:v2.2.0_daily_2017_10_30
+ 6. inner_release    内部版本       命名规范:v2.2.0_inner_release
 
  云信配置 com.netease.nim.appKey
  1. 云信开发版 b0888ddeed001121372f4c050e1de737
