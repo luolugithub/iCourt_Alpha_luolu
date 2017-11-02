@@ -175,7 +175,7 @@ public class UpdateUserInfoActivity extends BaseActivity {
                 break;
         }
         String value = getValue();
-        myCenterUpdateEdittext.setText(value);
+        myCenterUpdateEdittext.setText(value.trim());
         setRightLayoutVisible(value);
         setNameEditMaxLength();
         myCenterUpdateEdittext.setSelection(value.length());
@@ -221,6 +221,12 @@ public class UpdateUserInfoActivity extends BaseActivity {
      */
     private void setRightLayoutVisible(CharSequence content) {
         if (!TextUtils.isEmpty(content)) {
+            String info = content.toString().trim();
+            if (TextUtils.isEmpty(info)) {
+                setSaveViewState(false);
+                updateRightLayout.setVisibility(View.INVISIBLE);
+                return;
+            }
             updateRightLayout.setVisibility(View.VISIBLE);
             myCenterUpdateClearView.setVisibility(View.VISIBLE);
             switch (getType()) {
@@ -280,7 +286,9 @@ public class UpdateUserInfoActivity extends BaseActivity {
                 finish();
                 break;
             case R.id.titleAction:
-                updateInfo(alphaUserInfo.getUserId(), myCenterUpdateEdittext.getText().toString().trim());
+                if (!TextUtils.isEmpty(myCenterUpdateEdittext.getText())) {
+                    updateInfo(alphaUserInfo.getUserId(), myCenterUpdateEdittext.getText().toString().trim());
+                }
                 break;
             case R.id.my_center_update_clear_view:
                 myCenterUpdateEdittext.setText("");
