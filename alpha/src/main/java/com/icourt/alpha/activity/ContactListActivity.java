@@ -44,6 +44,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.realm.Case;
 import io.realm.RealmResults;
 
 import static com.icourt.alpha.constants.Const.CHOICE_TYPE_MULTIPLE;
@@ -261,7 +262,7 @@ public class ContactListActivity extends BaseActivity implements BaseRecyclerAda
      */
     private void serachGroupMember(String name) {
         try {
-            RealmResults<ContactDbModel> result = contactDbService.contains("name", name);
+            RealmResults<ContactDbModel> result = contactDbService.contains("name", name, "nameCharacter", name, Case.INSENSITIVE);
             if (result == null) {
                 imContactAdapter.clearData();
                 return;

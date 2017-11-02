@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingBottom="@dimen/dp5"
+    android:paddingTop="@dimen/dp5">
+
+    <TextView
+        android:id="@+id/version_type_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:lineSpacingExtra="6sp"
+        android:text="[新增]"
+        android:textColor="#63bc7d"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/version_desc_tv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/dp5"
+        android:layout_weight="1"
+        android:lineSpacingExtra="4sp"
+        android:text="可以在剪藏同时添加关键词、备注、复制到项目"
+        android:textColor="#606060"
+        android:textSize="14sp" />
+
+</LinearLayout>

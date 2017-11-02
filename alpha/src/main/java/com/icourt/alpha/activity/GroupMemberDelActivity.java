@@ -32,6 +32,7 @@ import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.fragment.dialogfragment.ContactDialogFragment;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.utils.GroupAndContactUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.ClearEditText;
@@ -73,7 +74,6 @@ public class GroupMemberDelActivity extends BaseActivity implements BaseRecycler
     LinearLayout headerCommSearchInputLl;
     @BindView(R.id.contentEmptyText)
     TextView contentEmptyText;
-
 
     /**
      * 选择删除  返回剩余的成员
@@ -188,16 +188,33 @@ public class GroupMemberDelActivity extends BaseActivity implements BaseRecycler
     }
 
     /**
+     * 用户名称是否已经本地pinyin转换
+     */
+    private boolean isContactNameCharacterPinyin = false;
+
+    /**
      * 名字匹配
      *
      * @param s
      */
     private void serachGroupMember(String s) {
         if (groupContactBeenList != null) {
+
+            if (!isContactNameCharacterPinyin) {
+                // 对名字匹配做本地拼音转换
+                GroupAndContactUtils.pinyinContactNameCharacters(this, groupContactBeenList);
+                isContactNameCharacterPinyin = true;
+            }
+
             List<GroupContactBean> filterList = new ArrayList<>();
             for (GroupContactBean bean : groupContactBeenList) {
-                if (bean != null && !TextUtils.isEmpty(bean.name) && bean.name.contains(s)) {
-                    filterList.add(bean);
+                if (bean != null && !TextUtils.isEmpty(bean.name)) {
+                    if (StringUtils.equalsIgnoreCase(bean.name, s, false)
+                            || StringUtils.containsIgnoreCase(bean.name, s)) {
+                        filterList.add(bean);
+                    } else if (StringUtils.containsIgnoreCase(bean.nameCharacter, s)) {
+                        filterList.add(bean);
+                    }
                 }
             }
             imContactAdapter.clearSelected();

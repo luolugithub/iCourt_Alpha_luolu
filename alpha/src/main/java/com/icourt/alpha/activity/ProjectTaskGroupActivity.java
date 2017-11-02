@@ -138,7 +138,10 @@ public class ProjectTaskGroupActivity extends BaseActivity implements BaseRecycl
         switch (v.getId()) {
             //添加任务组
             case R.id.titleAction:
-                TaskGroupCreateActivity.launchForResult(this, projectId, TaskGroupCreateActivity.CREAT_TASK_GROUP_TYPE, CREATE_GROUP_REQUEST_CODE);
+                TaskGroupCreateActivity.launchForResult(
+                        getActivity(),
+                        projectId,
+                        CREATE_GROUP_REQUEST_CODE);
                 break;
             default:
                 super.onClick(v);
@@ -221,7 +224,10 @@ public class ProjectTaskGroupActivity extends BaseActivity implements BaseRecycl
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         if (isCanEditGroup) {
             TaskGroupEntity entity = (TaskGroupEntity) adapter.getItem(position);
-            TaskGroupCreateActivity.launchForResult(this, entity, TaskGroupCreateActivity.UPDATE_TASK_GROUP_TYPE, UPDATE_GROUP_REQUEST_CODE);
+            TaskGroupRenameActivity.launchForResult(
+                    getActivity(),
+                    entity,
+                    UPDATE_GROUP_REQUEST_CODE);
         }
     }
 }

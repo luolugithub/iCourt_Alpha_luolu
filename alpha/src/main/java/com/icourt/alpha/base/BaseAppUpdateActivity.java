@@ -9,16 +9,29 @@ import android.os.Environment;
 import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.view.View;
+import android.view.Window;
+import android.widget.TextView;
 
 import com.icourt.alpha.BuildConfig;
+import com.icourt.alpha.R;
+import com.icourt.alpha.adapter.VersionDescAdapter;
+import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
+import com.icourt.alpha.constants.DownloadConfig;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.http.callback.BaseCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.UpdateAppDialogNoticeImp;
 import com.icourt.alpha.interfaces.callback.AppUpdateCallBack;
 import com.icourt.alpha.utils.ApkUtils;
+import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.Md5Utils;
 import com.icourt.alpha.utils.NetUtils;
+import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.utils.UrlUtils;
@@ -32,7 +45,6 @@ import com.umeng.analytics.MobclickAgent;
 import java.io.File;
 
 import retrofit2.Call;
-import retrofit2.HttpException;
 import retrofit2.Response;
 
 /**
@@ -42,11 +54,26 @@ import retrofit2.Response;
  * date createTime：2017/4/6
  * version 1.0.0
  */
-public class BaseAppUpdateActivity extends BaseUmengActivity implements
-        UpdateAppDialogNoticeImp {
+public class BaseAppUpdateActivity extends BaseUmengActivity implements UpdateAppDialogNoticeImp {
+
+    public static final String UPDATE_APP_VERSION_KEY = "update_app_version_key";//版本更新版本号
+    private static final String CUSTOM_APK_JOINT_NAME = "alphaNewApp";//自定义apk name拼接字符串 :为确保每次url不同
     private AlertDialog updateNoticeDialog;
+    //TODO 替换 已经过时
     private ProgressDialog updateProgressDialog;
-    private static final int REQUEST_FILE_PERMISSION = 9999;
+    //TODO 用基类的权限
+    public static final int REQUEST_FILE_PERMISSION = 9999;
+
+    private static final int UPGRADE_STRATEGY_NO_TYPE = -1;//无更新
+    private static final int UPGRADE_STRATEGY_UNCOMPEL_TYPE = 1;//非强制升级
+    private static final int UPGRADE_STRATEGY_COMPEL_TYPE = 2;//强制升级
+
+    @CallSuper
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        pauseDownloadApk();
+    }
 
     @Override
     public final boolean hasFilePermission(@NonNull Context context) {
@@ -59,29 +86,33 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
     }
 
     @Override
-    public final void checkAppUpdate(@NonNull BaseCallBack<AppVersionEntity> callBack) {
+    public final void checkAppUpdate(@NonNull BaseCallBack<ResEntity<AppVersionEntity>> callBack) {
         if (callBack == null) return;
-        callEnqueue(getApi().getNewVersionAppInfo(BuildConfig.APK_UPDATE_URL), callBack);
+        callEnqueue(
+                getApi().getNewVersionAppInfo(),
+                callBack);
     }
 
     @Override
-    public final void checkAppUpdate(@NonNull final Context context) {
+    public final void checkAppUpdate(@NonNull final Context context, final String title) {
         if (context == null) return;
         checkAppUpdate(new AppUpdateCallBack() {
             @Override
-            public void onSuccess(Call<AppVersionEntity> call, Response<AppVersionEntity> response) {
-                showAppUpdateDialog(getActivity(), response.body());
+            public void onSuccess(Call<ResEntity<AppVersionEntity>> call, Response<ResEntity<AppVersionEntity>> response) {
+                if (response.body().result == null) return;
+                AppVersionEntity appVersionEntity = response.body().result;
+                if (!TextUtils.equals(appVersionEntity.appVersion, SpUtils.getInstance().getStringData(UPDATE_APP_VERSION_KEY, ""))) {
+                    //upgradeStrategy!=-1则显示更新对话框
+                    if (appVersionEntity.upgradeStrategy != -1) {
+                        showAppUpdateDialog(getActivity(), appVersionEntity, title);
+                    }
+                }
             }
 
             @Override
-            public void onFailure(Call<AppVersionEntity> call, Throwable t) {
-                if (t instanceof HttpException) {
-                    HttpException hx = (HttpException) t;
-                    if (hx.code() == 401) {
-                        showTopSnackBar("fir token 更改");
-                        return;
-                    }
-                }
+            public void onFailure(Call<ResEntity<AppVersionEntity>> call, Throwable t) {
+                showTopSnackBar(t.getMessage());
+                bugSync("检查最新版本失败", t);
                 super.onFailure(call, t);
             }
         });
@@ -90,8 +121,7 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
     @Override
     public boolean hasLocalApkFile(String url) {
         try {
-            String ROOTPATH = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator;
-            String apkPath = ROOTPATH + Md5Utils.md5(url, url) + ".apk";
+            String apkPath = String.format("%s/%s.apk", getApkSavePath(), Md5Utils.md5(url, url));
             File file = new File(apkPath);
             return file.exists();
         } catch (Exception e) {
@@ -100,38 +130,105 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
     }
 
     @Override
-    public final void showAppUpdateDialog(@NonNull final Context context, @NonNull final AppVersionEntity appVersionEntity) {
+    public final void showAppUpdateDialog(@NonNull final Context context, @NonNull final AppVersionEntity appVersionEntity, String title) {
         if (isDestroyOrFinishing()) return;
         if (updateNoticeDialog != null && updateNoticeDialog.isShowing()) return;
-        if (!shouldUpdate(appVersionEntity)) return;
-        AlertDialog.Builder builder = new AlertDialog.Builder(context)
-                .setTitle("更新提醒")
-                .setMessage(TextUtils.isEmpty(appVersionEntity.changelog) ? "有一个新版本,请立即更新吧" : appVersionEntity.changelog); //设置内容
-        builder.setPositiveButton("更新", new DialogInterface.OnClickListener() {
+        showUpdateDescDialog(context, appVersionEntity, false);
+    }
+
+    /**
+     * 显示更新对话框
+     *
+     * @param appVersionEntity
+     * @param isLookDesc
+     */
+    public void showUpdateDescDialog(@NonNull final Context context, @NonNull final AppVersionEntity appVersionEntity, final boolean isLookDesc) {
+        if (appVersionEntity == null) return;
+
+        updateNoticeDialog = new AlertDialog.Builder(this).create();
+        updateNoticeDialog.show();
+        Window window = updateNoticeDialog.getWindow();
+        window.setBackgroundDrawableResource(android.R.color.transparent);
+        window.setContentView(R.layout.dialog_update_app_layout);
+        TextView titleTv = (TextView) window.findViewById(R.id.last_version_title_tv);
+        RecyclerView recyclerView = (RecyclerView) window.findViewById(R.id.last_version_content_recyclerview);
+        TextView noUpdateTv = (TextView) window.findViewById(R.id.last_version_no_update_tv);
+        TextView updateTv = (TextView) window.findViewById(R.id.last_version_update_tv);
+
+
+        recyclerView.setLayoutManager(new LinearLayoutManager(context));
+        VersionDescAdapter versionDescAdapter = null;
+        HeaderFooterAdapter headerFooterAdapter = new HeaderFooterAdapter<>(
+                versionDescAdapter = new VersionDescAdapter());
+        addHeaderView(headerFooterAdapter, recyclerView, appVersionEntity);
+        addFooterView(headerFooterAdapter, recyclerView);
+        recyclerView.setAdapter(headerFooterAdapter);
+        versionDescAdapter.bindData(true, appVersionEntity.versionDescs);
+
+        updateNoticeDialog.setCancelable(shouldUpdate(appVersionEntity));
+        if (isLookDesc) {
+            noUpdateTv.setVisibility(View.GONE);
+            updateTv.setVisibility(View.VISIBLE);
+            updateTv.setText(getString(R.string.mine_close));
+            titleTv.setText(getString(R.string.mine_update_log));
+        } else {
+            noUpdateTv.setVisibility(shouldForceUpdate(appVersionEntity) ? View.GONE : View.VISIBLE);
+            updateTv.setVisibility(View.VISIBLE);
+            titleTv.setText(getString(R.string.mine_find_new_version));
+        }
+        noUpdateTv.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
-                if (hasFilePermission(context)) {
-                    MobclickAgent.onEvent(context, UMMobClickAgent.dialog_update_btn_click_id);
-                    getUpdateProgressDialog().setMax(appVersionEntity.binary != null ? (int) appVersionEntity.binary.fsize : 1_000);
-                    String updateUrl = UrlUtils.appendParam(appVersionEntity.install_url, "versionShort", appVersionEntity.versionShort);
-                    showAppDownloadingDialog(getActivity(), updateUrl);
+            public void onClick(View v) {
+                SpUtils.getInstance().remove(UPDATE_APP_VERSION_KEY);
+                SpUtils.getInstance().putData(UPDATE_APP_VERSION_KEY, appVersionEntity.appVersion);
+                updateNoticeDialog.dismiss();
+            }
+        });
+        updateTv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isLookDesc) {
+                    updateNoticeDialog.dismiss();
                 } else {
-                    requestFilePermission(context, REQUEST_FILE_PERMISSION);
+                    if (hasFilePermission(context)) {
+                        MobclickAgent.onEvent(context, UMMobClickAgent.dialog_update_btn_click_id);
+                        String updateUrl = UrlUtils.appendParam(appVersionEntity.upgradeUrl, CUSTOM_APK_JOINT_NAME, appVersionEntity.appVersion);
+                        showAppDownloadingDialog(getActivity(), updateUrl);
+                    } else {
+                        requestFilePermission(context, REQUEST_FILE_PERMISSION);
+                    }
                 }
             }
         });
-        if (shouldForceUpdate(appVersionEntity)) {
-            builder.setCancelable(false);
-        } else {
-            builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss();
-                }
-            });
-        }
-        updateNoticeDialog = builder.create();
-        updateNoticeDialog.show();
+    }
+
+    /**
+     * 添加底部view
+     *
+     * @param headerFooterAdapter
+     * @param recyclerView
+     */
+    private void addFooterView(HeaderFooterAdapter headerFooterAdapter, RecyclerView recyclerView) {
+        View footerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_update_dialog_list_layout, recyclerView);
+        TextView footerTv = (TextView) footerView.findViewById(R.id.footer_textview);
+        headerFooterAdapter.addFooter(footerView);
+        footerTv.setText(getString(R.string.mine_update_alpha_content));
+    }
+
+    /**
+     * 添加头部view
+     *
+     * @param headerFooterAdapter
+     * @param recyclerView
+     * @param appVersionEntity
+     */
+    private void addHeaderView(HeaderFooterAdapter headerFooterAdapter, RecyclerView recyclerView, AppVersionEntity appVersionEntity) {
+        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_update_dialog_list_layout, recyclerView);
+        TextView lastVersionTv = (TextView) headerView.findViewById(R.id.last_version_tv);
+        TextView uploadTimeTv = (TextView) headerView.findViewById(R.id.last_version_uploadtime_tv);
+        headerFooterAdapter.addHeader(headerView);
+        lastVersionTv.setText(appVersionEntity.appVersion);
+        uploadTimeTv.setText(DateUtils.getTimeDateFormatYearDot(appVersionEntity.gmtModified));
     }
 
     /**
@@ -142,13 +239,30 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
      * @return
      */
     public final boolean shouldForceUpdate(@NonNull AppVersionEntity appVersionEntity) {
-        return appVersionEntity != null && appVersionEntity.version > BuildConfig.VERSION_CODE;
+        return appVersionEntity != null && appVersionEntity.upgradeStrategy == UPGRADE_STRATEGY_COMPEL_TYPE;
     }
 
+    /**
+     * 是否非强制更新
+     *
+     * @param appVersionEntity
+     * @return
+     */
     @Override
     public final boolean shouldUpdate(@NonNull AppVersionEntity appVersionEntity) {
+        return appVersionEntity != null && appVersionEntity.upgradeStrategy != UPGRADE_STRATEGY_COMPEL_TYPE;
+    }
+
+    /**
+     * 是否有最新版本
+     *
+     * @param appVersionEntity
+     * @return
+     */
+    public boolean isUpdateApp(@NonNull AppVersionEntity appVersionEntity) {
         return appVersionEntity != null
-                && !TextUtils.equals(appVersionEntity.versionShort, BuildConfig.VERSION_NAME);
+                && !TextUtils.equals(appVersionEntity.appVersion, BuildConfig.VERSION_NAME)
+                && appVersionEntity.upgradeStrategy != UPGRADE_STRATEGY_NO_TYPE;
     }
 
     private ProgressDialog getUpdateProgressDialog() {
@@ -157,7 +271,7 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
             updateProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
             updateProgressDialog.setCancelable(false);
             updateProgressDialog.setCanceledOnTouchOutside(false);
-            updateProgressDialog.setTitle("下载中...");
+            updateProgressDialog.setTitle(getString(R.string.mine_downloading));
         }
         return updateProgressDialog;
     }
@@ -189,6 +303,9 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
             if (totalBytes > 0) {
                 getUpdateProgressDialog().setMax(totalBytes);
             }
+            if (updateNoticeDialog != null && updateNoticeDialog.isShowing()) {
+                updateNoticeDialog.dismiss();
+            }
             getUpdateProgressDialog().setProgress(soFarBytes);
             getUpdateProgressDialog().show();
         }
@@ -207,6 +324,7 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
             getUpdateProgressDialog().dismiss();
             if (task != null && !TextUtils.isEmpty(task.getPath())) {
                 installApk(new File(task.getPath()));
+                FileUtils.deleteFolderOtherFile(new File(getApkSavePath()), new File(task.getPath()));
             }
         }
 
@@ -221,42 +339,56 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
             }
             if (e instanceof FileDownloadHttpException) {
                 int code = ((FileDownloadHttpException) e).getCode();
-                showTopSnackBar(String.format("%s:%s", code, "下载异常!"));
+                showTopSnackBar(String.format("%s:%s", code, getString(R.string.mine_download_error)));
             } else if (e instanceof FileDownloadOutOfSpaceException) {
                 new AlertDialog.Builder(getActivity())
-                        .setTitle("提示")
-                        .setMessage("存储空间严重不足,去清理?")
-                        .setPositiveButton("确认", new DialogInterface.OnClickListener() {
+                        .setTitle(getString(R.string.task_remind))
+                        .setMessage(getString(R.string.mine_isclear_cache))
+                        .setPositiveButton(getString(R.string.task_confirm), new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();
                             }
                         }).show();
             } else {
-                showTopSnackBar(String.format("下载异常!" + StringUtils.throwable2string(e)));
+                showTopSnackBar(String.format(getString(R.string.mine_download_error) + StringUtils.throwable2string(e)));
             }
             getUpdateProgressDialog().dismiss();
         }
 
         @Override
         protected void warn(BaseDownloadTask task) {
-            log("--------->warn");
         }
     };
 
     private void startDownloadApk(String apkUrl) {
         if (TextUtils.isEmpty(apkUrl)) return;
+        log("apkUrl ----  " + apkUrl);
         if (getUpdateProgressDialog().isShowing()) return;
         if (Environment.isExternalStorageEmulated()) {
-            String ROOTPATH = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator;
+            String path = String.format("%s/%s.apk", getApkSavePath(), Md5Utils.md5(apkUrl, apkUrl));
+            log("path ----  " + path);
             FileDownloader
                     .getImpl()
                     .create(apkUrl)
-                    .setPath(ROOTPATH + Md5Utils.md5(apkUrl, apkUrl) + ".apk")
+                    .setPath(path)
                     .setListener(apkDownloadListener).start();
         } else {
-            showTopSnackBar("sd卡不可用!");
+            showTopSnackBar(getString(R.string.str_sd_unavailable));
         }
+    }
+
+    /**
+     * 获取安装包地址
+     *
+     * @return
+     */
+    private String getApkSavePath() {
+        StringBuilder pathBuilder = new StringBuilder(Environment.getExternalStorageDirectory().getAbsolutePath());
+        pathBuilder.append(File.separator);
+        pathBuilder.append(DownloadConfig.FILE_DOWNLOAD_APK_DIR);
+        log("pathBuilder ----  " + pathBuilder.toString());
+        return pathBuilder.toString();
     }
 
     /**
@@ -279,10 +411,4 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements
         }
     }
 
-    @CallSuper
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        pauseDownloadApk();
-    }
 }

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp0_5"
+        android:layout_marginTop="@dimen/dp10"
+        android:background="@color/alpha_divider_color" />
+
+    <TextView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/footer_textview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:paddingBottom="@dimen/dp20"
+        android:paddingTop="@dimen/dp20"
+        android:text="升级是小阿的信仰，我们下次见！"
+        android:textSize="@dimen/alpha_font_size_mini" />
+</LinearLayout>

@@ -20,11 +20,15 @@ import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.GroupEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.utils.GroupAndContactUtils;
+import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.ClearEditText;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -45,6 +49,7 @@ public class GroupActionFragment extends BaseFragment {
     GroupAdapter groupAdapter;
     HeaderFooterAdapter<GroupAdapter> headerFooterAdapter;
     private final List<GroupEntity> groupEntities = new ArrayList<>();
+    private final Map<String, String> groupEntitiesPinyinMap = new HashMap<>();
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
     @BindView(R.id.header_comm_search_input_et)
@@ -135,6 +140,16 @@ public class GroupActionFragment extends BaseFragment {
                     public void onSuccess(Call<ResEntity<List<GroupEntity>>> call, Response<ResEntity<List<GroupEntity>>> response) {
                         groupEntities.clear();
                         groupEntities.addAll(response.body().result);
+
+                        groupEntitiesPinyinMap.clear();
+                        for (GroupEntity groupEntity : groupEntities) {
+                            if (groupEntity == null) {
+                                continue;
+                            }
+                            String pinyin = GroupAndContactUtils.makePinyin(getContext(), groupEntity.name, "");
+                            groupEntitiesPinyinMap.put(groupEntity.id, pinyin);
+                        }
+
                         groupAdapter.bindData(true, groupEntities);
                     }
                 });
@@ -144,7 +159,7 @@ public class GroupActionFragment extends BaseFragment {
         List<GroupEntity> filterGroupEntities = new ArrayList<>();
         for (GroupEntity groupEntity : groupEntities) {
             if (groupEntity != null && !TextUtils.isEmpty(groupEntity.name)) {
-                if (groupEntity.name.contains(name)) {
+                if (groupEntity.name.contains(name) || StringUtils.containsIgnoreCase(groupEntitiesPinyinMap.get(groupEntity.id), name)) {
                     filterGroupEntities.add(groupEntity);
                 }
             }
