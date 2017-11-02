@@ -43,12 +43,17 @@ import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.ToastUtils;
 import com.icourt.api.RequestUtils;
 import com.kaopiz.kprogresshud.KProgressHUD;
+import com.sensorsdata.analytics.android.sdk.ScreenAutoTracker;
+import com.sensorsdata.analytics.android.sdk.SensorsDataTrackViewOnClick;
 import com.trello.rxlifecycle2.LifecycleProvider;
 import com.trello.rxlifecycle2.LifecycleTransformer;
 import com.trello.rxlifecycle2.RxLifecycle;
 import com.trello.rxlifecycle2.android.ActivityEvent;
 import com.trello.rxlifecycle2.android.RxLifecycleAndroid;
 import com.umeng.analytics.MobclickAgent;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.lang.ref.WeakReference;
 import java.util.Queue;
@@ -74,7 +79,7 @@ public class BaseActivity
         IContextObservable,
         View.OnClickListener,
         IContextResourcesImp,
-        LifecycleProvider<ActivityEvent> {
+        LifecycleProvider<ActivityEvent>, ScreenAutoTracker {
     Queue<WeakReference<Call>> contextCallQueue = new ConcurrentLinkedQueue<>();
     private final BehaviorSubject<ActivityEvent> lifecycleSubject = BehaviorSubject.create();
     public static final String KEY_ACTIVITY_RESULT = "ActivityResult";
@@ -461,6 +466,7 @@ public class BaseActivity
         return defaultString;
     }
 
+    @SensorsDataTrackViewOnClick
     @CallSuper
     @Override
     public void onClick(View v) {
@@ -489,7 +495,9 @@ public class BaseActivity
     @UiThread
     @Override
     public void showLoadingDialog(@Nullable String notice) {
-        if (isDestroyOrFinishing()) return;
+        if (isDestroyOrFinishing()) {
+            return;
+        }
         KProgressHUD currSVProgressHUD = getSvProgressHUD();
         currSVProgressHUD.setLabel(notice);
         if (!currSVProgressHUD.isShowing()) {
@@ -582,9 +590,15 @@ public class BaseActivity
      * @return 当前已经显示的fragment
      */
     protected final Fragment addOrShowFragment(@NonNull Fragment targetFragment, Fragment currentFragment, @IdRes int containerViewId) {
-        if (isDestroyOrFinishing()) return currentFragment;
-        if (targetFragment == null) return currentFragment;
-        if (targetFragment == currentFragment) return currentFragment;
+        if (isDestroyOrFinishing()) {
+            return currentFragment;
+        }
+        if (targetFragment == null) {
+            return currentFragment;
+        }
+        if (targetFragment == currentFragment) {
+            return currentFragment;
+        }
         FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction transaction = fm.beginTransaction();
         if (!targetFragment.isAdded()) { // 如果当前fragment添加，则添加到Fragment管理器中
@@ -876,5 +890,28 @@ public class BaseActivity
         return null;
     }
 
+    /**
+     * 返回当前页面的Url
+     * 用作下个页面的referrer
+     *
+     * @return String
+     */
+    @Override
+    public String getScreenUrl() {
+        return "sensorsdata://page/"+getStatisticalPageName();
+    }
 
+    /**
+     * 返回自定义属性集合
+     * 我们内置了一个属性:$screen_name,代表当前页面名称, 默认情况下,该属性会采集当前Activity的CanonicalName,即:
+     * activity.getClass().getCanonicalName(), 如果想自定义页面名称, 可以在Map里put该key进行覆盖。
+     * 注意:screen_name的前面必须要要加"$"符号
+     *
+     * @return JSONObject
+     * @throws JSONException JSONException
+     */
+    @Override
+    public JSONObject getTrackProperties() throws JSONException {
+        return null;
+    }
 }

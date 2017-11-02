@@ -62,6 +62,8 @@ public class SenCeUtils {
                 eventTypeList.add(SensorsDataAPI.AutoTrackEventType.APP_CLICK);
                 SensorsDataAPI.sharedInstance(context)
                         .enableAutoTrack(eventTypeList);
+                //初始化 SDK 之后，开启自动采集 Fragment 页面浏览事件
+                SensorsDataAPI.sharedInstance().trackFragmentAppViewScreen();
             } catch (Exception e) {
                 e.printStackTrace();
                 BugUtils.bugSync(BUG_TAG_SENCE_INIT_EXCEPTION, e);

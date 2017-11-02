@@ -59,6 +59,7 @@ import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.ToastUtils;
 import com.icourt.api.RequestUtils;
 import com.kaopiz.kprogresshud.KProgressHUD;
+import com.sensorsdata.analytics.android.sdk.SensorsDataTrackViewOnClick;
 import com.trello.rxlifecycle2.LifecycleProvider;
 import com.trello.rxlifecycle2.LifecycleTransformer;
 import com.trello.rxlifecycle2.RxLifecycle;
@@ -538,6 +539,7 @@ public abstract class BaseDialogFragment extends DialogFragment
         LogUtils.d(log);
     }
 
+    @SensorsDataTrackViewOnClick
     @Override
     public void onClick(View v) {
 
