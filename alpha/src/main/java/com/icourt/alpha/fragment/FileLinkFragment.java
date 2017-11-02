@@ -22,7 +22,6 @@ import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.SystemUtils;
-import com.icourt.alpha.utils.UrlUtils;
 import com.icourt.alpha.widget.dialog.AlertListDialog;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.icourt.api.RequestUtils;
@@ -148,7 +147,6 @@ public class FileLinkFragment extends BaseFragment {
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
         String fileFullPath = getArguments().getString(KEY_SEA_FILE_FROM_FILE_PATH, "");
-        fileFullPath = UrlUtils.encodeUrl(fileFullPath);
         callEnqueue(getApi().fileShareLinkQuery(
                 getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID, ""),
                 fileFullPath,
