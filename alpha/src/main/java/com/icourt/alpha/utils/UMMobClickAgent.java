@@ -8,6 +8,8 @@ package com.icourt.alpha.utils;
  * version 2.0.0
  */
 
+//TODO  放到constants包下面去
+@Deprecated
 public class UMMobClickAgent {
 
     public static final String main_chat_tab_click_id = "main_chat_tab_click";//首页享聊tab

@@ -21,6 +21,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.http.observer.BaseObserver;
 import com.icourt.alpha.interfaces.callback.AppUpdateCallBack;
+import com.icourt.alpha.utils.SenCeUtils;
 import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
@@ -302,8 +303,8 @@ public class SetingActivity extends BaseAppUpdateActivity {
      */
     private void loginOut() {
         //神策退出
-       /* SensorsDataAPI.sharedInstance(getContext())
-                .logout();*/
+        SenCeUtils.logout(getContext());
+
         MobclickAgent.onEvent(getContext(), UMMobClickAgent.login_out_click_id);
         //撤销微信授权
         if (!mShareAPI.isAuthorize(getActivity(), SHARE_MEDIA.WEIXIN)) {
