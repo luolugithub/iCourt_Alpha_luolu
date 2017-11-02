@@ -99,13 +99,20 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements UpdateAp
         checkAppUpdate(new AppUpdateCallBack() {
             @Override
             public void onSuccess(Call<ResEntity<AppVersionEntity>> call, Response<ResEntity<AppVersionEntity>> response) {
-                if (response.body().result == null) return;
+                if (response.body().result == null) {
+                    appCheckUpdateCompleted();
+                    return;
+                }
                 AppVersionEntity appVersionEntity = response.body().result;
                 if (!TextUtils.equals(appVersionEntity.appVersion, SpUtils.getInstance().getStringData(UPDATE_APP_VERSION_KEY, ""))) {
                     //upgradeStrategy!=-1则显示更新对话框
                     if (appVersionEntity.upgradeStrategy != -1) {
                         showAppUpdateDialog(getActivity(), appVersionEntity, title);
+                    } else {
+                        appCheckUpdateCompleted();
                     }
+                } else {
+                    appCheckUpdateCompleted();
                 }
             }
 
@@ -114,6 +121,7 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements UpdateAp
                 showTopSnackBar(t.getMessage());
                 bugSync("检查最新版本失败", t);
                 super.onFailure(call, t);
+                appCheckUpdateCompleted();
             }
         });
     }
@@ -182,6 +190,7 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements UpdateAp
                 SpUtils.getInstance().remove(UPDATE_APP_VERSION_KEY);
                 SpUtils.getInstance().putData(UPDATE_APP_VERSION_KEY, appVersionEntity.appVersion);
                 updateNoticeDialog.dismiss();
+                appCheckUpdateCompleted();
             }
         });
         updateTv.setOnClickListener(new View.OnClickListener() {
@@ -189,6 +198,7 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements UpdateAp
             public void onClick(View v) {
                 if (isLookDesc) {
                     updateNoticeDialog.dismiss();
+                    appCheckUpdateCompleted();
                 } else {
                     if (hasFilePermission(context)) {
                         MobclickAgent.onEvent(context, UMMobClickAgent.dialog_update_btn_click_id);
@@ -228,7 +238,7 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements UpdateAp
         TextView uploadTimeTv = (TextView) headerView.findViewById(R.id.last_version_uploadtime_tv);
         headerFooterAdapter.addHeader(headerView);
         lastVersionTv.setText(appVersionEntity.appVersion);
-        uploadTimeTv.setText(DateUtils.getFormatDate(appVersionEntity.gmtModified,DateUtils.DATE_YYYYMMDD_STYLE3));
+        uploadTimeTv.setText(DateUtils.getFormatDate(appVersionEntity.gmtModified, DateUtils.DATE_YYYYMMDD_STYLE3));
     }
 
     /**
@@ -326,6 +336,7 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements UpdateAp
                 installApk(new File(task.getPath()));
                 FileUtils.deleteFolderOtherFile(new File(getApkSavePath()), new File(task.getPath()));
             }
+            appCheckUpdateCompleted();
         }
 
         @Override
@@ -354,6 +365,7 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements UpdateAp
                 showTopSnackBar(String.format(getString(R.string.mine_download_error) + StringUtils.throwable2string(e)));
             }
             getUpdateProgressDialog().dismiss();
+            appCheckUpdateCompleted();
         }
 
         @Override
@@ -411,4 +423,11 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements UpdateAp
         }
     }
 
+
+    /**
+     * 程序更新流程结束（有可能成功了，也有可能失败了，反正就是结束了）
+     */
+    protected void appCheckUpdateCompleted() {
+
+    }
 }
