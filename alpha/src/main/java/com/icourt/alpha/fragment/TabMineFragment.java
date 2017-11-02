@@ -124,7 +124,7 @@ public class TabMineFragment extends BaseFragment {
     @Override
     public void onResume() {
         super.onResume();
-        setDataToView(getLoginUserInfo());
+        getData(false);
     }
 
     /**

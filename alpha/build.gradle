@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.sensorsdata.analytics.android'
 apply plugin: 'com.bugtags.library.plugin'
 apply plugin: 'realm-android'
-//apply plugin: 'com.sensorsdata.analytics.android'
 apply plugin: 'com.jakewharton.butterknife'
 android {
     compileSdkVersion rootProject.ext.android.compileSdkVersion
@@ -176,7 +176,7 @@ android {
             buildConfigField "String", "API_CHAT_URL", rootProject.ext.alphaChatAPIUrl.api_chat_url_release
             buildConfigField "String", "API_SFILE_URL", rootProject.ext.alphaSFileUrl.api_url_release
             buildConfigField "String", "APK_UPDATE_URL", rootProject.ext.alphaApkUpdateUrl.apk_update_url_inner_release_daily
-            versionNameSuffix "_innerrelease_daily_${releaseFormatDayTime()}"
+            versionNameSuffix "_daily_${releaseFormatDayTime()}"
             shrinkResources false   // 移除无用的resource文件
             zipAlignEnabled false        //Zipalign优化
             minifyEnabled false     //混淆
@@ -311,7 +311,7 @@ dependencies {
     compile 'com.umeng.analytics:analytics:latest.integration'
     compile 'com.github.lecho:hellocharts-library:1.5.8@aar'
     compile project(':lib_calendar')
-    //compile 'com.sensorsdata.analytics.android:SensorsAnalyticsSDK:1.8.8'
+    compile 'com.sensorsdata.analytics.android:SensorsAnalyticsSDK:1.8.9'
     compile project(path: ':lib_daemon')
     compile files('libs/MiPush_SDK_Client_3_4_3.jar')
     compile(name: 'HMS-SDK-2.4.0.300', ext: 'aar')
