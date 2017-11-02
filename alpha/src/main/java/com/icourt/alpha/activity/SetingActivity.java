@@ -164,7 +164,7 @@ public class SetingActivity extends BaseAppUpdateActivity {
             public void onSuccess(Call<ResEntity<String>> call, Response<ResEntity<String>> response) {
                 dismissLoadingDialog();
                 if (!TextUtils.isEmpty(response.body().message)) {
-                    WebViewActivity.launch(getActivity(), getString(R.string.mine_helper_center), response.body().message);
+                    HelperCenterActivity.launch(getActivity(), getString(R.string.mine_helper_center), response.body().message);
                 } else {
                     showTopSnackBar("获取url为null");
                 }
@@ -195,6 +195,8 @@ public class SetingActivity extends BaseAppUpdateActivity {
                             case 0:
                                 loginOut();
                                 break;
+                            default:
+                                break;
                         }
                     }
                 }).show();
@@ -220,6 +222,8 @@ public class SetingActivity extends BaseAppUpdateActivity {
                                 } else {
                                     requestAcessFilePermission();
                                 }
+                                break;
+                            default:
                                 break;
                         }
                     }

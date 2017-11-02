@@ -228,7 +228,7 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements UpdateAp
         TextView uploadTimeTv = (TextView) headerView.findViewById(R.id.last_version_uploadtime_tv);
         headerFooterAdapter.addHeader(headerView);
         lastVersionTv.setText(appVersionEntity.appVersion);
-        uploadTimeTv.setText(DateUtils.getTimeDateFormatYearDot(appVersionEntity.gmtModified));
+        uploadTimeTv.setText(DateUtils.getFormatDate(appVersionEntity.gmtModified,DateUtils.DATE_YYYYMMDD_STYLE3));
     }
 
     /**

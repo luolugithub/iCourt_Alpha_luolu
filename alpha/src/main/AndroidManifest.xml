@@ -367,6 +367,9 @@
             android:name=".activity.FeedBackActivity"
             android:screenOrientation="portrait" />
         <activity
+            android:name=".activity.HelperCenterActivity"
+            android:screenOrientation="portrait" />
+        <activity
             android:name=".activity.MyCollectedMsgActivity"
             android:screenOrientation="portrait" />
         <activity
