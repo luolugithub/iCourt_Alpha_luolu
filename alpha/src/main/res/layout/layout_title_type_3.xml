@@ -5,7 +5,10 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <!-- 【标题布局 请勿轻易修改】 -->
+    <!-- 过时 不要再用了
+
+
+    【标题布局 请勿轻易修改】 -->
     <RelativeLayout xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="@dimen/alpha_height_title"
@@ -35,11 +38,11 @@
             android:layout_centerInParent="true"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
+            android:layout_toLeftOf="@id/titleAction"
+            android:layout_toRightOf="@id/titleBack"
             android:layout_weight="1"
             android:ellipsize="end"
             android:gravity="center"
-            android:layout_toRightOf="@id/titleBack"
-            android:layout_toLeftOf="@id/titleAction"
             android:maxLines="1"
             android:text="@string/str_title"
             android:textColor="@color/alpha_font_color_title"

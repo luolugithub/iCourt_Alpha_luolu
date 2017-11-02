@@ -332,8 +332,8 @@ public class TabMineFragment extends BaseFragment {
                         if (response.body().result != null) {
                             if (todayDuractionTv == null) return;
                             UserDataEntity userDataEntity = response.body().result;
-                            todayDuractionTv.setText(DateUtils.getHmIntegral(userDataEntity.timingCountToday));
-                            monthDuractionTv.setText(DateUtils.getHmIntegral(userDataEntity.timingCountMonth));
+                            todayDuractionTv.setText(DateUtils.getHHmmIntegral(userDataEntity.timingCountToday));
+                            monthDuractionTv.setText(DateUtils.getHHmmIntegral(userDataEntity.timingCountMonth));
                             doneTaskTv.setText(String.valueOf(userDataEntity.taskMonthConutDone));
 
                             todayDuractionTv.setTextColor(getDoneTextColor(userDataEntity.timingCountToday));

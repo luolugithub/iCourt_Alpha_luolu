@@ -249,7 +249,7 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
                     if (fileVersionEntityCreate != null) {
                         fileCreateInfoTv.setText(String.format("%s 创建于 %s",
                                 StringUtils.getEllipsizeText(fileVersionEntityCreate.user_info != null ? fileVersionEntityCreate.user_info.name : "", 8),
-                                DateUtils.getyyyyMMddHHmm(fileVersionEntityCreate.ctime * 1_000)));
+                                DateUtils.getFormatDate(fileVersionEntityCreate.ctime * 1_000, DateUtils.DATE_YYYYMMDD_HHMM_STYLE1)));
                     }
                     break;
                 case 2:
@@ -257,13 +257,13 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
                     if (fileVersionEntityCreate != null) {
                         fileCreateInfoTv.setText(String.format("%s 创建于 %s",
                                 StringUtils.getEllipsizeText(fileVersionEntityCreate.user_info != null ? fileVersionEntityCreate.user_info.name : "", 8),
-                                DateUtils.getyyyyMMddHHmm(fileVersionEntityCreate.ctime * 1_000)));
+                                DateUtils.getFormatDate(fileVersionEntityCreate.ctime * 1_000, DateUtils.DATE_YYYYMMDD_HHMM_STYLE1)));
                     }
                     fileVersionEntityUpdate = fileVersionEntities.get(1);
                     if (fileVersionEntityUpdate != null) {
                         fileUpdateInfoTv.setText(String.format("%s 更新于 %s",
                                 StringUtils.getEllipsizeText(fileVersionEntityUpdate.user_info != null ? fileVersionEntityUpdate.user_info.name : "", 8),
-                                DateUtils.getyyyyMMddHHmm(fileVersionEntityUpdate.ctime * 1_000)));
+                                DateUtils.getFormatDate(fileVersionEntityUpdate.ctime * 1_000, DateUtils.DATE_YYYYMMDD_HHMM_STYLE1)));
                     }
                     break;
                 default:
@@ -271,13 +271,13 @@ public class FileDetailDialogFragment extends FileDetailsBaseDialogFragment
                     if (fileVersionEntityCreate != null) {
                         fileCreateInfoTv.setText(String.format("%s 更新于 %s",
                                 StringUtils.getEllipsizeText(fileVersionEntityCreate.user_info != null ? fileVersionEntityCreate.user_info.name : "", 8),
-                                DateUtils.getyyyyMMddHHmm(fileVersionEntityCreate.ctime * 1_000)));
+                                DateUtils.getFormatDate(fileVersionEntityCreate.ctime * 1_000, DateUtils.DATE_YYYYMMDD_HHMM_STYLE1)));
                     }
                     fileVersionEntityUpdate = fileVersionEntities.get(fileVersionEntities.size() - 1);
                     if (fileVersionEntityUpdate != null) {
                         fileUpdateInfoTv.setText(String.format("%s 更新于 %s",
                                 StringUtils.getEllipsizeText(fileVersionEntityUpdate.user_info != null ? fileVersionEntityUpdate.user_info.name : "", 8),
-                                DateUtils.getyyyyMMddHHmm(fileVersionEntityUpdate.ctime * 1_000)));
+                                DateUtils.getFormatDate(fileVersionEntityUpdate.ctime * 1_000, DateUtils.DATE_YYYYMMDD_HHMM_STYLE1)));
                     }
                     break;
             }

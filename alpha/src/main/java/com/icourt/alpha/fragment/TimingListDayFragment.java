@@ -133,7 +133,7 @@ public class TimingListDayFragment extends BaseTimingListFragment {
      * @param timeMillis
      */
     private void showSumTime(long timeMillis) {
-        String hm = DateUtils.getHmIntegral(timeMillis);
+        String hm = DateUtils.getHHmmIntegral(timeMillis);
         timingCountTotal2Tv.setText(hm);
     }
 

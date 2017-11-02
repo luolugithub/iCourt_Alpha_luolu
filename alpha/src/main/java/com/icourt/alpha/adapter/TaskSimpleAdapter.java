@@ -137,7 +137,7 @@ public class TaskSimpleAdapter extends MultiSelectRecyclerAdapter<TaskEntity.Tas
         if (hourOfDay == TIME_HOUR_23 && minute == TIME_MIN_59 && second == TIME_MIN_59) {
             return "";
         } else {
-            return DateUtils.getHHmm(millis);
+            return DateUtils.getFormatDate(millis, DateUtils.DATE_HHMM_STYLE1);
         }
     }
 

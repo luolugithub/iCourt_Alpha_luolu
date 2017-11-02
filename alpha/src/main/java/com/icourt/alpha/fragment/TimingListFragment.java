@@ -192,8 +192,8 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-        String weekStartTime = DateUtils.getyyyy_MM_dd(startTimeMillis);
-        String weekEndTime = DateUtils.getyyyy_MM_dd(endTimeMillis);
+        String weekStartTime = DateUtils.getFormatDate(startTimeMillis, DateUtils.DATE_YYYYMMDD_STYLE1);
+        String weekEndTime = DateUtils.getFormatDate(endTimeMillis, DateUtils.DATE_YYYYMMDD_STYLE1);
 
         int pageSize;
         if (queryType == TimingConfig.TIMING_QUERY_BY_DAY || queryType == TimingConfig.TIMING_QUERY_BY_WEEK) {

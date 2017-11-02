@@ -138,6 +138,7 @@ public class GroupContactBean
         dest.writeString(this.accid);
         dest.writeString(this.userId);
         dest.writeString(this.name);
+        dest.writeString(this.nameCharacter);
         dest.writeString(this.title);
         dest.writeString(this.phone);
         dest.writeString(this.email);
@@ -150,6 +151,7 @@ public class GroupContactBean
         this.accid = in.readString();
         this.userId = in.readString();
         this.name = in.readString();
+        this.nameCharacter = in.readString();
         this.title = in.readString();
         this.phone = in.readString();
         this.email = in.readString();

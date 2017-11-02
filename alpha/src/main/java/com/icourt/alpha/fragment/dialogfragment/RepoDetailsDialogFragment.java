@@ -327,7 +327,7 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
                         if (fileChangedHistoryEntityFirst != null) {
                             fileCreateInfoTv.setText(String.format("%s 更新于 %s",
                                     StringUtils.getEllipsizeText(fileChangedHistoryEntityFirst.operator_name, 8),
-                                    DateUtils.getyyyyMMddHHmm(fileChangedHistoryEntityFirst.date)));
+                                    DateUtils.getFormatDate(fileChangedHistoryEntityFirst.date, DateUtils.DATE_YYYYMMDD_HHMM_STYLE1)));
                         }
                         break;
                     default: {
@@ -335,7 +335,7 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
                         if (fileChangedHistoryEntityFirst != null) {
                             fileCreateInfoTv.setText(String.format("%s 更新于 %s",
                                     StringUtils.getEllipsizeText(fileChangedHistoryEntityFirst.operator_name, 8),
-                                    DateUtils.getyyyyMMddHHmm(fileChangedHistoryEntityFirst.date)));
+                                    DateUtils.getFormatDate(fileChangedHistoryEntityFirst.date, DateUtils.DATE_YYYYMMDD_HHMM_STYLE1)));
                         }
 
                         if (fileVersionEntities.size() > 1) {
@@ -343,7 +343,7 @@ public class RepoDetailsDialogFragment extends BaseDialogFragment
                             if (fileChangedHistoryEntitySecond != null) {
                                 fileUpdateInfoTv.setText(String.format("%s 更新于 %s",
                                         StringUtils.getEllipsizeText(fileChangedHistoryEntitySecond.operator_name, 8),
-                                        DateUtils.getyyyyMMddHHmm(fileChangedHistoryEntitySecond.date)));
+                                        DateUtils.getFormatDate(fileChangedHistoryEntitySecond.date, DateUtils.DATE_YYYYMMDD_HHMM_STYLE1)));
                             }
                         }
                     }

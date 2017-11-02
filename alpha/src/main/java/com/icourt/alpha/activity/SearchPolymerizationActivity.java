@@ -261,6 +261,8 @@ public class SearchPolymerizationActivity extends BaseActivity implements BaseRe
                         }
                     }
                     break;
+                default:
+                    break;
                 }
 
                 e.onNext(result);

@@ -596,7 +596,7 @@ public class TaskDetailActivity extends BaseActivity
                             mis = 60000;
                         }
                         if (taskItemEntity != null) {
-                            taskTime.setText(DateUtils.getHmIntegral(taskItemEntity.timingSum + mis));
+                            taskTime.setText(DateUtils.getHHmmIntegral(taskItemEntity.timingSum + mis));
                             taskItemEntity.timingSum += mis;
                         }
                     }
@@ -914,9 +914,9 @@ public class TaskDetailActivity extends BaseActivity
                 titleAction.setImageResource(R.mipmap.header_icon_star_line);
             }
             if (taskItemEntity.timingSum > 0 && taskItemEntity.timingSum / 1000 / 60 <= 0) {
-                taskTime.setText(DateUtils.getHmIntegral(60000));
+                taskTime.setText(DateUtils.getHHmmIntegral(60000));
             } else {
-                taskTime.setText(DateUtils.getHmIntegral(taskItemEntity.timingSum));
+                taskTime.setText(DateUtils.getHHmmIntegral(taskItemEntity.timingSum));
             }
 
             SpannableString checkTextForegroundColorSpan = null;

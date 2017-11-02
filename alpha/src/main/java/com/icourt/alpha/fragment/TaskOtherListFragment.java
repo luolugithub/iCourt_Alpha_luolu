@@ -347,7 +347,7 @@ public class TaskOtherListFragment extends BaseTaskFragment implements OnItemCli
         List<TaskEntity.TaskItemEntity> datedTaskEntities = new ArrayList<>();
         for (TaskEntity.TaskItemEntity taskItemEntity : taskItemEntities) {
             if (taskItemEntity.dueTime > 0) {
-                if (TextUtils.equals(DateUtils.getTimeDateFormatYear(taskItemEntity.dueTime), DateUtils.getTimeDateFormatYear(DateUtils.millis())) || DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime) < 0) {
+                if (TextUtils.equals(DateUtils.getFormatDate(taskItemEntity.dueTime, DateUtils.DATE_YYYYMMDD_STYLE2), DateUtils.getFormatDate(DateUtils.millis(), DateUtils.DATE_YYYYMMDD_STYLE2)) || DateUtils.getDayDiff(DateUtils.millis(), taskItemEntity.dueTime) < 0) {
                     //今天到期
                     taskItemEntity.groupName = getString(R.string.task_today_due);
                     todayTaskEntities.add(taskItemEntity);

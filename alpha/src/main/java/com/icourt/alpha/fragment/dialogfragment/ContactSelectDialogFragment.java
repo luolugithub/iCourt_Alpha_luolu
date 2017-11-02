@@ -55,6 +55,7 @@ import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
+import io.realm.Case;
 import io.realm.RealmResults;
 
 import static com.icourt.alpha.constants.SFileConfig.PERMISSION_R;
@@ -275,7 +276,7 @@ public class ContactSelectDialogFragment extends BaseDialogFragment {
         if (TextUtils.isEmpty(name)) return;
         try {
             ContactDbService contactDbService = new ContactDbService(getLoginUserId());
-            RealmResults<ContactDbModel> result = contactDbService.contains("name", name);
+            RealmResults<ContactDbModel> result = contactDbService.contains("name", name, "nameCharacter", name, Case.INSENSITIVE);
             if (result != null) {
                 List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(result));
                 filterRobot(contactBeen);

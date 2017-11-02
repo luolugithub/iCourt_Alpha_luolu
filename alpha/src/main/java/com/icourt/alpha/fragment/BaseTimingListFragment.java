@@ -138,8 +138,8 @@ public abstract class BaseTimingListFragment extends BaseFragment {
             default:
                 break;
         }
-        String startTimeStr = DateUtils.getyyyy_MM_dd(startTime);
-        String endTimeStr = DateUtils.getyyyy_MM_dd(endTime);
+        String startTimeStr = DateUtils.getFormatDate(startTime, DateUtils.DATE_YYYYMMDD_STYLE1);
+        String endTimeStr = DateUtils.getFormatDate(endTime, DateUtils.DATE_YYYYMMDD_STYLE1);
         callEnqueue(
                 getApi().getTimingStatistic(type, startTimeStr, endTimeStr),
                 new SimpleCallBack<TimingStatisticEntity>() {

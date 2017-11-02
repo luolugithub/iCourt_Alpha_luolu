@@ -108,8 +108,8 @@ public class TimingSelectWeekFragment extends BaseFragment {
                 TimingSelectEntity timingSelectEntity = new TimingSelectEntity();
                 timingSelectEntity.startTimeMillis = weekStartTime;
                 timingSelectEntity.endTimeMillis = weekEndTime;
-                timingSelectEntity.startTimeStr = DateUtils.getyyyy_MM_dd(weekStartTime);
-                timingSelectEntity.endTimeStr = DateUtils.getyyyy_MM_dd(weekEndTime);
+                timingSelectEntity.startTimeStr = DateUtils.getFormatDate(weekStartTime, DateUtils.DATE_YYYYMMDD_STYLE1);
+                timingSelectEntity.endTimeStr = DateUtils.getFormatDate(weekEndTime, DateUtils.DATE_YYYYMMDD_STYLE1);
                 tempMenus.add(timingSelectEntity);
                 instance.add(Calendar.DAY_OF_YEAR, 1);
             }

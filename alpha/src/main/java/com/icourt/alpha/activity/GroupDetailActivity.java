@@ -26,6 +26,7 @@ import com.google.gson.JsonParseException;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.IMContactAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.db.dbmodel.ContactDbModel;
@@ -157,6 +158,12 @@ public class GroupDetailActivity extends BaseActivity
         groupMemberRecyclerView.setLayoutManager(linearLayoutManager);
         groupMemberRecyclerView.setAdapter(contactAdapter = new IMContactAdapter(Const.VIEW_TYPE_GRID));
         contactAdapter.setOnItemClickListener(this);
+        contactAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                groupMemberNumTv.setText(String.format("成员(%s)", contactAdapter.getItemCount()));
+            }
+        });
     }
 
     @Override
@@ -201,7 +208,6 @@ public class GroupDetailActivity extends BaseActivity
                             }
                             //查询本地uid对应的头像
                             queryMembersByUids(response.body().result.members);
-                            groupMemberNumTv.setText(String.format("成员(%s)", groupDetailEntity.members != null ? groupDetailEntity.members.size() : 0));
                         }
                     }
 
