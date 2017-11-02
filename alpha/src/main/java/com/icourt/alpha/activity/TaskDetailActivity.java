@@ -581,7 +581,7 @@ public class TaskDetailActivity extends BaseActivity
                         isStart = true;
                         taskStartIamge.setImageResource(R.drawable.orange_side_dot_bg);
                         taskTiemingImage.setImageResource(R.mipmap.task_detail_timing);
-                        taskTime.setText(DateUtils.getTimingStr(event.timingSecond));
+                        taskTime.setText(DateUtils.getHHmmss(event.timingSecond));
                     }
                 }
                 break;

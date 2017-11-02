@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/alpha_background_window"
@@ -7,14 +8,16 @@
 
     <include layout="@layout/layout_title_type_0" />
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
+            android:layout_weight="1"
+            android:gravity="center_horizontal"
             android:orientation="vertical">
 
             <LinearLayout
@@ -29,6 +32,33 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/dp20"
                     android:src="@mipmap/about_logo" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="65dp"
+                android:layout_marginRight="65dp"
+                android:lineSpacingExtra="10dp"
+                android:text="Alpha，集律所管理、法律大数据和专业服务为一体的智能办案系统，将可视化、大数据和人工智能三大前沿技术融入每一个模块，提高律师专业判断的准确度，实时反馈团队成员的参与度，增强客户享受法律服务的满意度。"
+                android:textColor="#606060"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="30dp"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/about_verson_textview"
@@ -48,40 +78,84 @@
                     android:textSize="12sp" />
             </LinearLayout>
 
-            <TextView
+            <FrameLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="65dp"
-                android:layout_marginRight="65dp"
-                android:layout_marginTop="@dimen/dp20"
-                android:lineSpacingExtra="10dp"
-                android:text="Alpha，集律所管理、法律大数据和专业服务为一体的智能办案系统，将可视化、大数据和人工智能三大前沿技术融入每一个模块，提高律师专业判断的准确度，实时反馈团队成员的参与度，增强客户享受法律服务的满意度。"
-                android:textColor="#606060"
-                android:textSize="13sp" />
-        </LinearLayout>
+                android:layout_marginBottom="@dimen/dp30">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
-            android:layout_marginBottom="30dp"
-            android:gravity="center_horizontal"
-            android:orientation="vertical">
+                <LinearLayout
+                    android:id="@+id/about_check_is_update_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/dp5"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/about_check_is_update_view"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
-                android:background="@drawable/orange_circle_bg"
-                android:paddingBottom="5dp"
-                android:paddingLeft="30dp"
-                android:paddingRight="30dp"
-                android:paddingTop="5dp"
-                android:text="检查更新"
-                android:textColor="@android:color/white"
-                android:textSize="13dp" />
+                    <android.support.v7.widget.CardView
+                        android:id="@+id/about_check_is_update_view"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:cardBackgroundColor="@color/alpha_font_color_orange"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="2dp"
+                        app:cardPreventCornerOverlap="true"
+                        app:cardUseCompatPadding="true"
+                        app:contentPadding="@dimen/dp5">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingBottom="5dp"
+                            android:paddingLeft="30dp"
+                            android:paddingRight="30dp"
+                            android:paddingTop="5dp"
+                            android:text="升级最新版"
+                            android:textColor="@android:color/white"
+                            android:textSize="13dp" />
+
+
+                    </android.support.v7.widget.CardView>
+
+                    <TextView
+                        android:id="@+id/about_new_version_content_view"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingBottom="5dp"
+                        android:paddingLeft="30dp"
+                        android:paddingRight="30dp"
+                        android:paddingTop="5dp"
+                        android:text="新版本介绍"
+                        android:textColor="@color/alpha_font_color_gray"
+                        android:textSize="13dp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/about_new_version_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingBottom="5dp"
+                    android:paddingLeft="30dp"
+                    android:paddingRight="30dp"
+                    android:paddingTop="5dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="已经是最新版本"
+                        android:textColor="@color/alpha_font_color_gray"
+                        android:textSize="13dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="更新日志"
+                        android:layout_marginLeft="@dimen/dp5"
+                        android:textColor="@color/alpha_font_color_orange"
+                        android:textSize="13dp" />
+                </LinearLayout>
+            </FrameLayout>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -91,5 +165,5 @@
                 android:textSize="13dp" />
         </LinearLayout>
 
-    </RelativeLayout>
+    </LinearLayout>
 </LinearLayout>

@@ -13,9 +13,9 @@ import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.entity.bean.ProjectEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.utils.DateUtils;
 
 import java.util.List;
-import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Response;
@@ -55,7 +55,7 @@ public class ProjectListAdapter extends BaseArrayRecyclerAdapter<ProjectEntity> 
         nameView.setText(projectEntity.name);
         taskView.setText((projectEntity.allTask - projectEntity.unfinishTask) + "/" + projectEntity.allTask);
         if (projectEntity.sumTime > 0) {
-            timeView.setText(toTime(projectEntity.sumTime / 1000));
+            timeView.setText(DateUtils.getHHmm(projectEntity.sumTime / 1000));
         } else {
             timeView.setText("00:00");
         }
@@ -93,12 +93,6 @@ public class ProjectListAdapter extends BaseArrayRecyclerAdapter<ProjectEntity> 
                     break;
             }
         }
-    }
-
-    public String toTime(long times) {
-        long hour = times / 3600;
-        long minute = times % 3600 / 60;
-        return String.format(Locale.CHINA, "%02d:%02d", hour, minute);
     }
 
     @Override

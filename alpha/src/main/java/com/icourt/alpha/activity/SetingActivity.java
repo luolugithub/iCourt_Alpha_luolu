@@ -105,13 +105,13 @@ public class SetingActivity extends BaseAppUpdateActivity {
     protected void getData(boolean isRefresh) {
         checkAppUpdate(new AppUpdateCallBack() {
             @Override
-            public void onSuccess(Call<AppVersionEntity> call, Response<AppVersionEntity> response) {
+            public void onSuccess(Call<ResEntity<AppVersionEntity>> call, Response<ResEntity<AppVersionEntity>> response) {
                 if (settingAboutCountView == null) return;
-                settingAboutCountView.setVisibility(shouldUpdate(response.body()) ? View.VISIBLE : View.INVISIBLE);
+                settingAboutCountView.setVisibility(isUpdateApp(response.body().result) ? View.VISIBLE : View.INVISIBLE);
             }
 
             @Override
-            public void onFailure(Call<AppVersionEntity> call, Throwable t) {
+            public void onFailure(Call<ResEntity<AppVersionEntity>> call, Throwable t) {
                 if (t instanceof HttpException) {
                     HttpException hx = (HttpException) t;
                     if (hx.code() == 401) {

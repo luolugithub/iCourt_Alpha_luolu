@@ -19,4 +19,12 @@
     <string name="mine_use_true_mail">请使用有效的邮箱地址</string>
     <string name="mine_use_true_phone">请使用有效的中国大陆手机号</string>
     <string name="mine_not_find_email_app">未找到邮件发送的app!</string>
+
+    <string name="mine_close">关闭</string>
+    <string name="mine_update_log">更新日志</string>
+    <string name="mine_find_new_version">发现新版本</string>
+    <string name="mine_update_alpha_content">升级是小阿的信仰，我们下次见！</string>
+    <string name="mine_downloading">下载中...</string>
+    <string name="mine_download_error">下载异常</string>
+    <string name="mine_isclear_cache">存储空间严重不足,去清理?</string>
 </resources>

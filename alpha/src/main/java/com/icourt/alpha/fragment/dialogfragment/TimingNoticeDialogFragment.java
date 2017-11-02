@@ -21,6 +21,7 @@ import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.TimeEntity;
 import com.icourt.alpha.entity.event.ServerTimingEvent;
 import com.icourt.alpha.entity.event.TimingEvent;
+import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
@@ -106,7 +107,7 @@ public class TimingNoticeDialogFragment extends BaseDialogFragment {
             noticeTimingTitleTv.setText(TextUtils.isEmpty(itemEntity.name) ? "未录入工作描述" : itemEntity.name);
         }
         if (TimerManager.getInstance().hasTimer()) {
-            noticeTimingTv.setText(toTime(TimerManager.getInstance().getTimingSeconds()));
+            noticeTimingTv.setText(DateUtils.getHHmmss(TimerManager.getInstance().getTimingSeconds()));
         }
         EventBus.getDefault().register(this);
     }
@@ -118,7 +119,9 @@ public class TimingNoticeDialogFragment extends BaseDialogFragment {
         if (itemEntity == null) return;
         switch (event.action) {
             case TimingEvent.TIMING_UPDATE_PROGRESS:
-                noticeTimingTv.setText(toTime(event.timingSecond));
+                noticeTimingTv.setText(DateUtils.getHHmmss(event.timingSecond));
+                break;
+            default:
                 break;
         }
     }
@@ -150,13 +153,6 @@ public class TimingNoticeDialogFragment extends BaseDialogFragment {
                 }
             }
         }
-    }
-
-    public String toTime(long times) {
-        long hour = times / 3600;
-        long minute = times % 3600 / 60;
-        long second = times % 60;
-        return String.format("%02d:%02d:%02d", hour, minute, second);
     }
 
     @OnClick({R.id.notice_timing_stop_iv,

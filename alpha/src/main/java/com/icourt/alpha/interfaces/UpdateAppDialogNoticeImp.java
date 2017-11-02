@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 
 import com.icourt.alpha.entity.bean.AppVersionEntity;
 import com.icourt.alpha.http.callback.BaseCallBack;
+import com.icourt.alpha.http.httpmodel.ResEntity;
 
 /**
  * Description  文档参考 https://fir.im/docs/version_detection
@@ -37,14 +38,14 @@ public interface UpdateAppDialogNoticeImp {
      *
      * @param callBack
      */
-    void checkAppUpdate(@NonNull BaseCallBack<AppVersionEntity> callBack);
+    void checkAppUpdate(@NonNull BaseCallBack<ResEntity<AppVersionEntity>> callBack);
 
     /**
      * 检查更新 有更新 将自动调用showAppUpdateDialog(CharSequence newVersinInfo)
      *
      * @param context
      */
-    void checkAppUpdate(@NonNull Context context);
+    void checkAppUpdate(@NonNull Context context,String title);
 
     /**
      * app 更新提示
@@ -52,7 +53,7 @@ public interface UpdateAppDialogNoticeImp {
      * @param context
      * @param appVersionEntity 新版本特性描述
      */
-    void showAppUpdateDialog(@NonNull Context context, @NonNull AppVersionEntity appVersionEntity);
+    void showAppUpdateDialog(@NonNull Context context, @NonNull AppVersionEntity appVersionEntity,String title);
 
     /**
      * 本地是否包含apk文件

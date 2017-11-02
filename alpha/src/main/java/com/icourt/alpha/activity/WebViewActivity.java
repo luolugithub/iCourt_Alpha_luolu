@@ -330,8 +330,8 @@ public class WebViewActivity extends BaseActivity implements DownloadListener {
         ImageView titleActionImage = getTitleActionImage();
         if (titleActionImage != null) {
             titleActionImage.setImageResource(R.mipmap.browser_open);
+            titleActionImage.setVisibility(TextUtils.isEmpty(title) ? View.VISIBLE : View.INVISIBLE);
         }
-        titleActionImage.setVisibility(TextUtils.isEmpty(title) ? View.VISIBLE : View.INVISIBLE);
         WebSettings webSettings = webView.getSettings();
         webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
         webSettings.setAppCacheEnabled(false);

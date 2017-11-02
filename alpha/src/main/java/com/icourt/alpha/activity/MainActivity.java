@@ -327,7 +327,7 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                     refreshToken();
                     break;
                 case TYPE_CHECK_APP_UPDATE:
-                    checkAppUpdate(getContext());
+                    checkAppUpdate(getContext(), getString(R.string.mine_find_new_version));
                     break;
                 case TYPE_CHECK_TIMING_UPDATE:
                     TimerManager.getInstance().timerQuerySync();
@@ -452,6 +452,7 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
         if (BuildConfig.BUILD_TYPE_INT > 0) {
             mHandler.addCheckAppUpdateTask();
         }
+        mHandler.addCheckAppUpdateTask();
         mHandler.addTokenRefreshTask();
         mHandler.addCheckTimingTask();
     }
@@ -512,16 +513,16 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
         if (!SystemUtils.isEnableNotification(getContext())
                 || !NotificationManagerCompat.from(getContext()).areNotificationsEnabled()) {
             new AlertDialog.Builder(getContext())
-                    .setTitle("提示")
-                    .setMessage("为了您能收到消息提醒,请打开通知设置开关!")
-                    .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    .setTitle(getString(R.string.task_remind))
+                    .setMessage(getString(R.string.permission_notifaction_switch))
+                    .setPositiveButton(getString(R.string.str_ok), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             bugSync("通知开关设置", "未打开");
                             SystemUtils.launchPhoneSettings(getContext());
                         }
                     })
-                    .setNegativeButton("取消", null)
+                    .setNegativeButton(getString(R.string.str_cancel), null)
                     .show();
         }
     }
@@ -1026,12 +1027,12 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                     timingAnim = getTimingAnimation(fromDegrees, toDegrees);
                     tabTimingIcon.startAnimation(timingAnim);
                 }
-                tabTimingTv.setText(toTime(event.timingSecond));
+                tabTimingTv.setText(DateUtils.getHHmmss(event.timingSecond));
                 break;
             case TimingEvent.TIMING_STOP:
                 dismissOverTimingRemindDialogFragment(true);
                 dismissTimingDialogFragment();
-                tabTimingTv.setText("开始计时");
+                tabTimingTv.setText(getString(R.string.task_start_timing));
                 tabTimingIcon.setImageResource(R.mipmap.ic_time_start);
                 tabTimingIcon.clearAnimation();
                 timingAnim = null;
@@ -1075,19 +1076,6 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
         anim.setInterpolator(new LinearInterpolator());
         anim.setRepeatCount(-1);
         return anim;
-    }
-
-    /**
-     * 时间格式化 秒--->小时分钟
-     *
-     * @param times
-     * @return
-     */
-    public String toTime(long times) {
-        long hour = times / 3600;
-        long minute = times % 3600 / 60;
-        long second = times % 60;
-        return String.format("%02d:%02d:%02d", hour, minute, second);
     }
 
     /**
