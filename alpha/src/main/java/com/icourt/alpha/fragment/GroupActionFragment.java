@@ -140,22 +140,14 @@ public class GroupActionFragment extends BaseFragment {
                     public void onSuccess(Call<ResEntity<List<GroupEntity>>> call, Response<ResEntity<List<GroupEntity>>> response) {
                         groupEntities.clear();
                         groupEntities.addAll(response.body().result);
-
-                        groupEntitiesPinyinMap.clear();
-                        for (GroupEntity groupEntity : groupEntities) {
-                            if (groupEntity == null) {
-                                continue;
-                            }
-                            String pinyin = GroupAndContactUtils.makePinyin(getContext(), groupEntity.name, "");
-                            groupEntitiesPinyinMap.put(groupEntity.id, pinyin);
-                        }
-
                         groupAdapter.bindData(true, groupEntities);
                     }
                 });
     }
 
     protected void queryByName(String name) {
+        makeSurePinyinDetected();
+
         List<GroupEntity> filterGroupEntities = new ArrayList<>();
         for (GroupEntity groupEntity : groupEntities) {
             if (groupEntity != null && !TextUtils.isEmpty(groupEntity.name)) {
@@ -165,6 +157,18 @@ public class GroupActionFragment extends BaseFragment {
             }
         }
         groupAdapter.bindData(true, filterGroupEntities);
+    }
+
+    private void makeSurePinyinDetected() {
+        if (groupEntities.size() > 0 && groupEntitiesPinyinMap.isEmpty()) {
+            for (GroupEntity groupEntity : groupEntities) {
+                if (groupEntity == null) {
+                    continue;
+                }
+                String pinyin = GroupAndContactUtils.makePinyin(getContext(), groupEntity.name, "");
+                groupEntitiesPinyinMap.put(groupEntity.id, pinyin);
+            }
+        }
     }
 
     @Override
