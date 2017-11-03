@@ -128,10 +128,17 @@ public class TaskListFragment extends BaseTaskFragment implements
     Unbinder unbinder;
     @Nullable
     @BindView(R.id.recyclerView)
-    EmptyRecyclerView recyclerView;
+    RecyclerView recyclerView;
     @Nullable
     @BindView(R.id.refreshLayout)
     SmartRefreshLayout refreshLayout;
+
+    @BindView(R.id.empty_ll)
+    LinearLayout emptyLl;
+    @BindView(R.id.contentEmptyImage)
+    ImageView emptyIv;
+    @BindView(R.id.contentEmptyText)
+    TextView emptyTv;
 
     //新任务的相关布局
     @BindView(R.id.new_task_cardview)
@@ -248,7 +255,7 @@ public class TaskListFragment extends BaseTaskFragment implements
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = super.onCreateView(R.layout.fragment_project_mine, inflater, container, savedInstanceState);
+        View view = super.onCreateView(R.layout.fragment_task_list, inflater, container, savedInstanceState);
         unbinder = ButterKnife.bind(this, view);
         return view;
     }
@@ -296,14 +303,14 @@ public class TaskListFragment extends BaseTaskFragment implements
             isCanLoadMore = (stateType != TaskConfig.TASK_STATETYPE_UNFINISH);
         }
 
-        recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, getEmptyContentId(stateType));
+        emptyIv.setBackgroundResource(R.mipmap.bg_no_task);
+        emptyTv.setText(getEmptyContentId(stateType));
         recyclerView.setLayoutManager(linearLayoutManager = new LinearLayoutManager(getContext()));
-        recyclerView.getRecyclerView().setNestedScrollingEnabled(false);
+        recyclerView.setNestedScrollingEnabled(false);
         taskAdapter = new TaskAdapter();
-        View headerView = LayoutInflater.from(getActivity()).inflate(R.layout.header_search_comm, recyclerView.getRecyclerView(), false);
+        View headerView = LayoutInflater.from(getActivity()).inflate(R.layout.header_search_comm, recyclerView, false);
         View rlCommSearch = headerView.findViewById(R.id.rl_comm_search);
         registerClick(rlCommSearch);
-//        taskAdapter.addHeaderView(headerView);
         View view = taskAdapter.addHeader(headerView);
         recyclerView.setAdapter(taskAdapter);
         taskAdapter.setOnItemClickListener(this);
@@ -381,7 +388,7 @@ public class TaskListFragment extends BaseTaskFragment implements
                         case TaskConfig.TASK_STATETYPE_FINISHED:
                             if (taskAdapter != null) {
                                 taskAdapter.removeItem(event.entity);
-                                recyclerView.enableEmptyView(taskAdapter.getData());
+                                enableEmptyView(taskAdapter.getData());
                             }
                             break;
                         //已删除
@@ -390,7 +397,7 @@ public class TaskListFragment extends BaseTaskFragment implements
                                 if (event.entity.valid) {
                                     //从已删除列表中彻底删除
                                     taskAdapter.removeItem(event.entity);
-                                    recyclerView.enableEmptyView(taskAdapter.getData());
+                                    enableEmptyView(taskAdapter.getData());
                                 } else {//添加到已删除
                                     taskAdapter.addItem(event.entity);
                                 }
@@ -427,6 +434,14 @@ public class TaskListFragment extends BaseTaskFragment implements
             default:
 
                 break;
+        }
+    }
+
+    private void enableEmptyView(List list) {
+        if (list == null || list.size() == 0) {
+            emptyLl.setVisibility(View.VISIBLE);
+        } else {
+            emptyLl.setVisibility(View.GONE);
         }
     }
 
@@ -558,7 +573,7 @@ public class TaskListFragment extends BaseTaskFragment implements
      * @param childPosition 任务所在的位置
      */
     private void updateItemViewBackgrond(String taskId, int childPosition) {
-        RecyclerView.ViewHolder viewHolder = recyclerView.getRecyclerView().findViewHolderForAdapterPosition(childPosition);
+        RecyclerView.ViewHolder viewHolder = recyclerView.findViewHolderForAdapterPosition(childPosition);
         if (viewHolder != null) {
             childItemView = viewHolder.itemView;
             if (childItemView != null) {
@@ -678,7 +693,7 @@ public class TaskListFragment extends BaseTaskFragment implements
                         public void accept(List<TaskEntity.TaskItemEntity> searchPolymerizationEntities) throws Exception {
                             taskAdapter.bindData(true, searchPolymerizationEntities);
                             goFirstTask();
-                            recyclerView.enableEmptyView(taskAdapter.getData());
+                            enableEmptyView(taskAdapter.getData());
                             if (tabTaskFragment != null) {
                                 if (tabTaskFragment.isAwayScroll && stateType == TaskConfig.TASK_STATETYPE_UNFINISH) {
                                     if (newTaskEntities.size() > 1) {
@@ -705,7 +720,7 @@ public class TaskListFragment extends BaseTaskFragment implements
                 goFirstTask();
             }
             refreshLayout.setEnableLoadmore(enableLoadMore(taskEntity.items));
-            recyclerView.enableEmptyView(taskAdapter.getData());
+            enableEmptyView(taskAdapter.getData());
             getNewTasksCount();
             if (linearLayoutManager.getStackFromEnd()) {
                 linearLayoutManager.setStackFromEnd(false);
@@ -896,7 +911,7 @@ public class TaskListFragment extends BaseTaskFragment implements
                             public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
                                 dismissLoadingDialog();
                                 taskAdapter.clearData();
-                                recyclerView.enableEmptyView(taskAdapter.getData());
+                                enableEmptyView(taskAdapter.getData());
                             }
 
                             @Override
@@ -1010,7 +1025,7 @@ public class TaskListFragment extends BaseTaskFragment implements
     protected void taskRevertBack(TaskEntity.TaskItemEntity itemEntity) {
         if (taskAdapter != null) {
             taskAdapter.removeItem(itemEntity);
-            recyclerView.enableEmptyView(taskAdapter.getData());
+            enableEmptyView(taskAdapter.getData());
         }
     }
 
