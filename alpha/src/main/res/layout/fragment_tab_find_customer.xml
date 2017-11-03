@@ -35,9 +35,9 @@
                 android:id="@id/titleAction"
                 android:layout_width="38dp"
                 android:layout_height="match_parent"
+                android:layout_marginRight="@dimen/dp10"
                 android:background="?attr/selectableItemBackground"
                 android:padding="10dp"
-                android:layout_marginRight="@dimen/dp10"
                 android:scaleType="fitCenter"
                 android:src="@mipmap/header_icon_add" />
         </LinearLayout>
@@ -47,18 +47,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <com.scwang.smartrefresh.layout.SmartRefreshLayout
-            android:id="@id/refreshLayout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <com.zhaol.refreshlayout.EmptyRecyclerView
-                android:id="@id/recyclerView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@android:color/white" />
-
-        </com.scwang.smartrefresh.layout.SmartRefreshLayout>
+        <include layout="@layout/layout_refresh_recyclerview2" />
 
         <com.gjiazhe.wavesidebar.WaveSideBar
             android:id="@+id/recyclerIndexBar"

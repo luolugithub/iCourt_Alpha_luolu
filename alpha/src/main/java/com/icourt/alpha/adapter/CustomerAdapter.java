@@ -1,12 +1,12 @@
 package com.icourt.alpha.adapter;
 
 import android.text.TextUtils;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.asange.recyclerviewadapter.BaseViewHolder;
 import com.icourt.alpha.R;
-import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseAdapter;
 import com.icourt.alpha.entity.bean.CustomerEntity;
 
 /**
@@ -16,16 +16,8 @@ import com.icourt.alpha.entity.bean.CustomerEntity;
  * date createTime：2017/4/21
  * version 1.0.0
  */
-public class CustomerAdapter extends BaseArrayRecyclerAdapter<CustomerEntity> {
+public class CustomerAdapter extends BaseAdapter<CustomerEntity> {
 
-    private boolean isShowCustomerNum;
-
-    public void setShowCustomerNum(boolean isShowCustomerNum) {
-        if (isShowCustomerNum != this.isShowCustomerNum) {
-            this.isShowCustomerNum = isShowCustomerNum;
-            notifyDataSetChanged();
-        }
-    }
 
     @Override
     public int bindView(int viewtype) {
@@ -33,11 +25,12 @@ public class CustomerAdapter extends BaseArrayRecyclerAdapter<CustomerEntity> {
     }
 
     @Override
-    public void onBindHoder(ViewHolder holder, CustomerEntity customerEntity, int position) {
-        if (customerEntity == null) return;
+    public void onBindHolder(BaseViewHolder holder, CustomerEntity customerEntity, int position) {
+        if (customerEntity == null) {
+            return;
+        }
         ImageView iv_customer_icon = holder.obtainView(R.id.iv_customer_icon);
         TextView tv_customer_name = holder.obtainView(R.id.tv_customer_name);
-        TextView customer_num_tv = holder.obtainView(R.id.customer_num_tv);
 
 
         if (!TextUtils.isEmpty(customerEntity.contactType)) {
@@ -54,11 +47,5 @@ public class CustomerAdapter extends BaseArrayRecyclerAdapter<CustomerEntity> {
             }
         }
         tv_customer_name.setText(customerEntity.name);
-        boolean showCustomerNumTv = (isShowCustomerNum && position == getItemCount() - 1);
-        customer_num_tv.setVisibility(showCustomerNumTv
-                ? View.VISIBLE : View.GONE);
-        if (showCustomerNumTv) {
-            customer_num_tv.setText(String.format("%s 位成员", getItemCount()));
-        }
     }
 }

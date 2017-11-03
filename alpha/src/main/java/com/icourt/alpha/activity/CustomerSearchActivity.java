@@ -21,9 +21,10 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.asange.recyclerviewadapter.BaseViewHolder;
+import com.asange.recyclerviewadapter.OnItemClickListener;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.CustomerAdapter;
-import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.constants.Const;
@@ -52,7 +53,7 @@ import io.realm.RealmResults;
  * date createTime：2017/4/21
  * version 1.0.0
  */
-public class CustomerSearchActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
+public class CustomerSearchActivity extends BaseActivity implements OnItemClickListener {
 
     public static final int SEARCH_LIAISON_TYPE = 0;//搜索联络人
     public static final int SEARCH_CUSTOMER_TYPE = 1;//搜索联系人
@@ -72,6 +73,7 @@ public class CustomerSearchActivity extends BaseActivity implements BaseRecycler
     CustomerDbService customerDbService;
     @BindView(R.id.contentEmptyText)
     TextView contentEmptyText;
+
 
     @IntDef({SEARCH_LIAISON_TYPE,
             SEARCH_CUSTOMER_TYPE})
@@ -152,6 +154,8 @@ public class CustomerSearchActivity extends BaseActivity implements BaseRecycler
                         }
                     }
                     break;
+                    default:
+                        break;
                 }
             }
 
@@ -219,11 +223,13 @@ public class CustomerSearchActivity extends BaseActivity implements BaseRecycler
     @OnClick({R.id.tv_search_cancel})
     @Override
     public void onClick(View v) {
-        super.onClick(v);
         switch (v.getId()) {
             case R.id.tv_search_cancel:
                 SystemUtils.hideSoftKeyBoard(getActivity(), etContactName, true);
                 finish();
+                break;
+            default:
+                super.onClick(v);
                 break;
         }
     }
@@ -237,8 +243,8 @@ public class CustomerSearchActivity extends BaseActivity implements BaseRecycler
     }
 
     @Override
-    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        CustomerEntity customerEntity = customerAdapter.getData(customerAdapter.getRealPos(position));
+    public void onItemClick(com.asange.recyclerviewadapter.BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
+        CustomerEntity customerEntity = customerAdapter.getItem(i);
         if (type == SEARCH_CUSTOMER_TYPE) {
             if (!TextUtils.isEmpty(customerEntity.contactType)) {
                 //公司
@@ -249,10 +255,14 @@ public class CustomerSearchActivity extends BaseActivity implements BaseRecycler
                 }
             }
         } else if (type == SEARCH_LIAISON_TYPE) {
-            if (customer_type == CUSTOMER_COMPANY_TYPE)
-                SelectLiaisonActivity.launchSetResultFromLiaison(this, Const.SELECT_ENTERPRISE_LIAISONS_TAG_ACTION, customerEntity);
-            else if (customer_type == CUSTOMER_PERSON_TYPE)
-                SelectLiaisonActivity.launchSetResultFromLiaison(this, Const.SELECT_LIAISONS_TAG_ACTION, customerEntity);
+            if (customer_type == CUSTOMER_COMPANY_TYPE) {
+                SelectLiaisonActivity.launchSetResultFromLiaison(this,
+                        Const.SELECT_ENTERPRISE_LIAISONS_TAG_ACTION,
+                        customerEntity);
+            } else if (customer_type == CUSTOMER_PERSON_TYPE) {
+                SelectLiaisonActivity.launchSetResultFromLiaison(this,
+                        Const.SELECT_LIAISONS_TAG_ACTION, customerEntity);
+            }
             finish();
         }
     }

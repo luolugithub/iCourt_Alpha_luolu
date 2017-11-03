@@ -12,9 +12,10 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.asange.recyclerviewadapter.BaseViewHolder;
+import com.asange.recyclerviewadapter.OnItemClickListener;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.CustomerAdapter;
-import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.CustomerEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
@@ -38,10 +39,12 @@ import retrofit2.Response;
  * date createTime：2017/4/21
  * version 1.0.0
  */
-public class MyCollectedCustomersActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
+public class MyCollectedCustomersActivity extends BaseActivity implements OnItemClickListener {
 
     public static void launch(@NonNull Context context) {
-        if (context == null) return;
+        if (context == null) {
+            return;
+        }
         Intent intent = new Intent(context, MyCollectedCustomersActivity.class);
         context.startActivity(intent);
     }
@@ -123,15 +126,22 @@ public class MyCollectedCustomersActivity extends BaseActivity implements BaseRe
         }
     }
 
+
     @Override
-    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        CustomerEntity customerEntity = (CustomerEntity) adapter.getItem(adapter.getRealPos(position));
+    public void onItemClick(com.asange.recyclerviewadapter.BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
+        CustomerEntity customerEntity = (CustomerEntity) baseRecyclerAdapter.getItem(i);
         if (!TextUtils.isEmpty(customerEntity.contactType)) {
             //公司
             if (TextUtils.equals(customerEntity.contactType.toUpperCase(), "C")) {
-                CustomerCompanyDetailActivity.launch(getContext(), customerEntity.pkid, customerEntity.name, true);
+                CustomerCompanyDetailActivity.launch(getContext(),
+                        customerEntity.pkid,
+                        customerEntity.name,
+                        true);
             } else if (TextUtils.equals(customerEntity.contactType.toUpperCase(), "P")) {
-                CustomerPersonDetailActivity.launch(getContext(), customerEntity.pkid, customerEntity.name, true);
+                CustomerPersonDetailActivity.launch(getContext(),
+                        customerEntity.pkid,
+                        customerEntity.name,
+                        true);
             }
         }
     }

@@ -95,8 +95,13 @@ public class AtMeFragment extends BaseFragment {
     }
 
     private long getEndlyId() {
-        long msg_id = myAtedAdapter.getData().size() > 0
-                ? myAtedAdapter.getItemId(myAtedAdapter.getData().size() - 1) : 0;
+        long msg_id = 0;
+        if (!myAtedAdapter.getData().isEmpty()) {
+            IMMessageCustomBody imMessageCustomBody = myAtedAdapter.getData().get(myAtedAdapter.getData().size() - 1);
+            if (imMessageCustomBody != null) {
+                msg_id = imMessageCustomBody.id;
+            }
+        }
         return msg_id;
     }
 

@@ -3,12 +3,16 @@ package com.icourt.alpha.fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
+import com.asange.recyclerviewadapter.BaseViewHolder;
+import com.asange.recyclerviewadapter.OnItemClickListener;
 import com.gjiazhe.wavesidebar.WaveSideBar;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.CustomerCompanyCreateActivity;
@@ -19,7 +23,7 @@ import com.icourt.alpha.activity.CustomerSearchActivity;
 import com.icourt.alpha.activity.MyCollectedCustomersActivity;
 import com.icourt.alpha.adapter.CustomerAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.db.convertor.ListConvertor;
@@ -39,7 +43,6 @@ import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 import com.umeng.analytics.MobclickAgent;
-import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -65,18 +68,17 @@ import retrofit2.Response;
  * date createTime：2017/4/17
  * version 1.0.0
  */
-public class TabCustomerFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
+public class TabCustomerFragment extends BaseFragment implements OnItemClickListener {
     private static final String STRING_TOP = "↑︎";
 
     @BindView(R.id.titleAction)
     ImageView titleAction;
     @BindView(R.id.recyclerView)
-    EmptyRecyclerView recyclerView;
+    RecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
     SmartRefreshLayout refreshLayout;
     Unbinder unbinder;
     CustomerAdapter customerAdapter;
-    HeaderFooterAdapter<CustomerAdapter> headerFooterAdapter;
     @BindView(R.id.recyclerIndexBar)
     WaveSideBar recyclerIndexBar;
     SuspensionDecoration mDecoration;
@@ -98,25 +100,25 @@ public class TabCustomerFragment extends BaseFragment implements BaseRecyclerAda
     @Override
     protected void initView() {
         EventBus.getDefault().register(this);
-        recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_user, R.string.empty_list_customer);
         customerDbService = new CustomerDbService(getLoginUserId());
         linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
 
-        headerFooterAdapter = new HeaderFooterAdapter<>(customerAdapter = new CustomerAdapter());
-        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_customer_search, recyclerView.getRecyclerView());
+        customerAdapter = new CustomerAdapter();
+        View headerView = customerAdapter.addHeader(R.layout.header_customer_search, recyclerView);
         View header_customer_collected = headerView.findViewById(R.id.header_customer_collected);
         registerClick(header_customer_collected);
         View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
         registerClick(rl_comm_search);
-        headerFooterAdapter.addHeader(headerView);
         customerAdapter.setOnItemClickListener(this);
+
+        final TextView footerView = (TextView) customerAdapter.addFooter(R.layout.footer_textview, recyclerView);
 
         mDecoration = new SuspensionDecoration(getActivity(), null);
         mDecoration.setColorTitleBg(0xFFf4f4f4);
         mDecoration.setColorTitleFont(0xFF4a4a4a);
         mDecoration.setTitleFontSize(DensityUtil.sp2px(getContext(), 16));
-        mDecoration.setHeaderViewCount(headerFooterAdapter.getHeaderCount());
+        mDecoration.setHeaderViewCount(customerAdapter.getHeaderCount());
         recyclerView.addItemDecoration(mDecoration);
         recyclerIndexBar.setOnSelectIndexItemListener(new WaveSideBar.OnSelectIndexItemListener() {
             @Override
@@ -129,14 +131,22 @@ public class TabCustomerFragment extends BaseFragment implements BaseRecyclerAda
                     CustomerEntity item = customerAdapter.getItem(i);
                     if (item != null && TextUtils.equals(item.getSuspensionTag(), index)) {
                         linearLayoutManager
-                                .scrollToPositionWithOffset(i + headerFooterAdapter.getHeaderCount(), 0);
+                                .scrollToPositionWithOffset(i + customerAdapter.getHeaderCount(), 0);
                         return;
                     }
                 }
             }
         });
 
-        recyclerView.setAdapter(headerFooterAdapter);
+        recyclerView.setAdapter(customerAdapter);
+        customerAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                if (footerView != null) {
+                    footerView.setText(String.format("%s 位成员", customerAdapter.getData().size()));
+                }
+            }
+        });
 
 
         refreshLayout.setOnRefreshListener(new OnRefreshListener() {
@@ -162,8 +172,9 @@ public class TabCustomerFragment extends BaseFragment implements BaseRecyclerAda
                 List<CustomerEntity> customerEntities = ListConvertor.convertList(iConvertModels);
                 IndexUtils.setSuspensions(getContext(), customerEntities);
                 try {
-                    if (customerEntities != null)
+                    if (customerEntities != null) {
                         Collections.sort(customerEntities, new PinyinComparator<CustomerEntity>());
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                     bugSync("排序异常", e);
@@ -192,10 +203,8 @@ public class TabCustomerFragment extends BaseFragment implements BaseRecyclerAda
                                 bugSync("排序异常", e);
                             }
                             customerAdapter.bindData(true, response.body().result);
-                            customerAdapter.setShowCustomerNum(true);
                             updateIndexBar(response.body().result);
                             insert2Db(response.body().result);
-                            recyclerView.enableEmptyView(response.body().result);
                         }
                     }
 
@@ -224,10 +233,16 @@ public class TabCustomerFragment extends BaseFragment implements BaseRecyclerAda
                         dialog.dismiss();
                         switch (position) {
                             case 0:
-                                CustomerPersonCreateActivity.launch(getContext(), null, CustomerPersonCreateActivity.CREATE_CUSTOMER_ACTION);
+                                CustomerPersonCreateActivity.launch(getContext(),
+                                        null,
+                                        CustomerPersonCreateActivity.CREATE_CUSTOMER_ACTION);
                                 break;
                             case 1:
-                                CustomerCompanyCreateActivity.launch(getContext(), null, CustomerCompanyCreateActivity.CREATE_CUSTOMER_ACTION);
+                                CustomerCompanyCreateActivity.launch(getContext(),
+                                        null,
+                                        CustomerCompanyCreateActivity.CREATE_CUSTOMER_ACTION);
+                                break;
+                            default:
                                 break;
                         }
                     }
@@ -286,9 +301,16 @@ public class TabCustomerFragment extends BaseFragment implements BaseRecyclerAda
         }
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void updateCustEvent(UpdateCustomerEvent event) {
+        if (event != null) {
+            getData(true);
+        }
+    }
+
     @Override
-    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        CustomerEntity customerEntity = (CustomerEntity) adapter.getItem(adapter.getRealPos(position));
+    public void onItemClick(com.asange.recyclerviewadapter.BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
+        CustomerEntity customerEntity = (CustomerEntity) baseRecyclerAdapter.getItem(i);
         if (!TextUtils.isEmpty(customerEntity.contactType)) {
             MobclickAgent.onEvent(getContext(), UMMobClickAgent.look_client_click_id);
             //公司
@@ -297,13 +319,6 @@ public class TabCustomerFragment extends BaseFragment implements BaseRecyclerAda
             } else if (TextUtils.equals(customerEntity.contactType.toUpperCase(), "P")) {
                 CustomerPersonDetailActivity.launch(getContext(), customerEntity.pkid, customerEntity.name, true);
             }
-        }
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void updateCustEvent(UpdateCustomerEvent event) {
-        if (event != null) {
-            getData(true);
         }
     }
 }

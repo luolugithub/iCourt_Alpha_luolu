@@ -1,23 +1,18 @@
 package com.icourt.alpha.adapter;
 
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.asange.recyclerviewadapter.BaseViewHolder;
 import com.bumptech.glide.Glide;
 import com.icourt.alpha.R;
-import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
-import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.FileUtils;
 import com.icourt.alpha.utils.GlideUtils;
-import com.icourt.alpha.utils.LoginInfoUtils;
-
-import java.util.List;
 
 import static com.icourt.alpha.constants.Const.MSG_TYPE_ALPHA;
 import static com.icourt.alpha.constants.Const.MSG_TYPE_AT;
@@ -36,7 +31,7 @@ import static com.icourt.alpha.constants.Const.MSG_TYPE_VOICE;
  * date createTime：2017/4/17
  * version 1.0.0
  */
-public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> {
+public class ImUserMessageAdapter extends ContactBaseAdapter<IMMessageCustomBody> {
     private static final int VIEW_TYPE_TEXT = 0;
     private static final int VIEW_TYPE_FILE = 1;
     private static final int VIEW_TYPE_FILE_IMG = 2;
@@ -45,10 +40,6 @@ public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMMessageCust
     private static final int VIEW_TYPE_SYS = 5;
     private static final int VIEW_TYPE_LINK = 6;
 
-    private String loginToken;
-    AlphaUserInfo alphaUserInfo;
-    private List<GroupContactBean> contactBeanList;//本地联系人
-
     /**
      * 获取本地头像
      *
@@ -56,25 +47,13 @@ public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMMessageCust
      * @return
      */
     public String getUserIcon(String accid) {
-        if (contactBeanList != null) {
-            GroupContactBean groupContactBean = new GroupContactBean();
-            groupContactBean.accid = accid;
-            int indexOf = contactBeanList.indexOf(groupContactBean);
-            if (indexOf >= 0) {
-                groupContactBean = contactBeanList.get(indexOf);
-                return groupContactBean.pic;
-            }
+        GroupContactBean contactByAccid = getContactByAccid(accid);
+        if (contactByAccid != null) {
+            return contactByAccid.pic;
         }
         return "";
     }
 
-    public ImUserMessageAdapter(@NonNull List<GroupContactBean> contactBeanList) {
-        alphaUserInfo = LoginInfoUtils.getLoginUserInfo();
-        if (alphaUserInfo != null) {
-            this.loginToken = alphaUserInfo.getToken();
-        }
-        this.contactBeanList = contactBeanList;
-    }
 
     @Override
     public int bindView(int viewtype) {
@@ -96,14 +75,8 @@ public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMMessageCust
     }
 
     @Override
-    public long getItemId(int position) {
-        IMMessageCustomBody item = getItem(position);
-        return item != null ? item.id : super.getItemId(position);
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        IMMessageCustomBody item = getItem(position);
+    public int getViewType(int index) {
+        IMMessageCustomBody item = getItem(index);
         if (item != null) {
             switch (item.show_type) {
                 case MSG_TYPE_TXT:
@@ -123,15 +96,18 @@ public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMMessageCust
                 case MSG_TYPE_ALPHA:
                 case MSG_TYPE_VOICE:
                     break;
+                default:
+                    break;
             }
         }
-        return super.getItemViewType(position);
+        return super.getViewType(index);
     }
 
-
     @Override
-    public void onBindHoder(ViewHolder holder, IMMessageCustomBody imFileEntity, int position) {
-        if (imFileEntity == null) return;
+    public void onBindHolder(BaseViewHolder holder, IMMessageCustomBody imFileEntity, int position) {
+        if (imFileEntity == null) {
+            return;
+        }
         setCommUserInfo(holder, imFileEntity);
 
         switch (holder.getItemViewType()) {
@@ -158,6 +134,8 @@ public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMMessageCust
             case VIEW_TYPE_LINK:
                 setViewLink(holder, imFileEntity);
                 break;
+            default:
+                break;
         }
     }
 
@@ -167,9 +145,13 @@ public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMMessageCust
      * @param holder
      * @param imFileEntity
      */
-    private void setViewLink(ViewHolder holder, IMMessageCustomBody imFileEntity) {
-        if (holder == null) return;
-        if (imFileEntity == null) return;
+    private void setViewLink(BaseViewHolder holder, IMMessageCustomBody imFileEntity) {
+        if (holder == null) {
+            return;
+        }
+        if (imFileEntity == null) {
+            return;
+        }
         TextView msg_link_title_tv = holder.obtainView(R.id.msg_link_title_tv);
         ImageView msg_link_thumb_iv = holder.obtainView(R.id.msg_link_thumb_iv);
         TextView msg_link_url_tv = holder.obtainView(R.id.msg_link_url_tv);
@@ -213,9 +195,13 @@ public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMMessageCust
      * @param holder
      * @param imFileEntity
      */
-    private void setCommUserInfo(ViewHolder holder, IMMessageCustomBody imFileEntity) {
-        if (holder == null) return;
-        if (imFileEntity == null) return;
+    private void setCommUserInfo(BaseViewHolder holder, IMMessageCustomBody imFileEntity) {
+        if (holder == null) {
+            return;
+        }
+        if (imFileEntity == null) {
+            return;
+        }
         ImageView file_from_user_iv = holder.obtainView(R.id.file_from_user_iv);
         TextView file_from_user_tv = holder.obtainView(R.id.file_from_user_tv);
         TextView file_from_time_tv = holder.obtainView(R.id.file_from_time_tv);
@@ -233,9 +219,13 @@ public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMMessageCust
      * @param holder
      * @param imFileEntity
      */
-    private void setViewFileCommFile(ViewHolder holder, IMMessageCustomBody imFileEntity) {
-        if (holder == null) return;
-        if (imFileEntity == null) return;
+    private void setViewFileCommFile(BaseViewHolder holder, IMMessageCustomBody imFileEntity) {
+        if (holder == null) {
+            return;
+        }
+        if (imFileEntity == null) {
+            return;
+        }
         ImageView file_type_iv = holder.obtainView(R.id.file_type_iv);
         TextView file_title_tv = holder.obtainView(R.id.file_title_tv);
         TextView file_size_tv = holder.obtainView(R.id.file_size_tv);
@@ -254,10 +244,14 @@ public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMMessageCust
      * @param holder
      * @param imFileEntity
      */
-    private void setViewTypeWithImg(ViewHolder holder, IMMessageCustomBody imFileEntity) {
+    private void setViewTypeWithImg(BaseViewHolder holder, IMMessageCustomBody imFileEntity) {
         ImageView file_img = holder.obtainView(R.id.file_img);
-        if (file_img == null) return;
-        if (imFileEntity == null) return;
+        if (file_img == null) {
+            return;
+        }
+        if (imFileEntity == null) {
+            return;
+        }
         if (GlideUtils.canLoadImage(file_img.getContext())) {
             String picUrl = "";
             if (imFileEntity.ext != null) {
@@ -279,7 +273,7 @@ public class ImUserMessageAdapter extends BaseArrayRecyclerAdapter<IMMessageCust
     }
 
     @Override
-    public void onViewRecycled(ViewHolder holder) {
+    public void onViewRecycled(BaseViewHolder holder) {
         if (holder != null) {
             if (holder.getItemViewType() == VIEW_TYPE_FILE_IMG) {
                 ImageView file_img = holder.obtainView(R.id.file_img);

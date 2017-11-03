@@ -60,14 +60,6 @@ public class MyAtedAdapter extends ContactBaseAdapter<IMMessageCustomBody> imple
     }
 
 
-    @Override
-    public long getItemId(int position) {
-        IMMessageCustomBody item = getItem(position);
-        if (item != null) {
-            return item.id;
-        }
-        return super.getItemId(position);
-    }
 
     @Override
     public boolean bindData(boolean isRefresh, @NonNull List<IMMessageCustomBody> datas) {

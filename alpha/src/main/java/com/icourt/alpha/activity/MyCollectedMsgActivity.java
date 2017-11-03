@@ -12,17 +12,14 @@ import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
+import com.asange.recyclerviewadapter.BaseViewHolder;
+import com.asange.recyclerviewadapter.OnItemClickListener;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.ImUserMessageAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.constants.Const;
-import com.icourt.alpha.db.convertor.IConvertModel;
-import com.icourt.alpha.db.convertor.ListConvertor;
-import com.icourt.alpha.db.dbmodel.ContactDbModel;
-import com.icourt.alpha.db.dbservice.ContactDbService;
 import com.icourt.alpha.entity.bean.FilterDropEntity;
-import com.icourt.alpha.entity.bean.GroupContactBean;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.entity.event.MessageEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
@@ -39,20 +36,12 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.functions.Consumer;
-import io.reactivex.schedulers.Schedulers;
-import io.realm.RealmResults;
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -63,14 +52,12 @@ import retrofit2.Response;
  * date createTime：2017/4/19
  * version 1.0.0
  */
-public class MyCollectedMsgActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener, TopMiddlePopup.OnItemClickListener {
+public class MyCollectedMsgActivity extends BaseActivity implements OnItemClickListener, TopMiddlePopup.OnItemClickListener {
 
     ImUserMessageAdapter imUserMessageAdapter;
     TopMiddlePopup topMiddlePopup;
     int select_position = 0;
 
-    //本地同步的联系人
-    protected final List<GroupContactBean> localContactList = new ArrayList<>();
     private final List<FilterDropEntity> dropEntities = Arrays.asList(
             new FilterDropEntity("所有", "0", 10),//待定
             new FilterDropEntity("消息", "0", Const.MSG_TYPE_TXT),
@@ -119,7 +106,7 @@ public class MyCollectedMsgActivity extends BaseActivity implements BaseRecycler
         recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, R.string.my_center_null_collect_text);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.addItemDecoration(ItemDecorationUtils.getCommFull10Divider(getContext(), false));
-        recyclerView.setAdapter(imUserMessageAdapter = new ImUserMessageAdapter(localContactList));
+        recyclerView.setAdapter(imUserMessageAdapter = new ImUserMessageAdapter());
         imUserMessageAdapter.setOnItemClickListener(this);
         refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
             @Override
@@ -134,7 +121,6 @@ public class MyCollectedMsgActivity extends BaseActivity implements BaseRecycler
 
         });
         refreshLayout.autoRefresh();
-        getLocalContacts();
         topMiddlePopup.setOnDismissListener(new PopupWindow.OnDismissListener() {
             @Override
             public void onDismiss() {
@@ -162,13 +148,20 @@ public class MyCollectedMsgActivity extends BaseActivity implements BaseRecycler
                     }
                 }
                 break;
+            default:
+                super.onClick(v);
+                break;
         }
-        super.onClick(v);
     }
 
     private long getEndlyId() {
-        long msg_id = imUserMessageAdapter.getData().size() > 0
-                ? imUserMessageAdapter.getItemId(imUserMessageAdapter.getData().size() - 1) : 0;
+        long msg_id = 0;
+        if (!imUserMessageAdapter.getData().isEmpty()) {
+            IMMessageCustomBody imMessageCustomBody = imUserMessageAdapter.getData().get(imUserMessageAdapter.getData().size() - 1);
+            if (imMessageCustomBody != null) {
+                msg_id = imMessageCustomBody.id;
+            }
+        }
         return msg_id;
     }
 
@@ -200,54 +193,6 @@ public class MyCollectedMsgActivity extends BaseActivity implements BaseRecycler
         });
     }
 
-    /**
-     * 获取本地联系人
-     */
-    private void getLocalContacts() {
-        queryAllContactFromDbAsync(new Consumer<List<GroupContactBean>>() {
-            @Override
-            public void accept(List<GroupContactBean> groupContactBeen) throws Exception {
-                if (groupContactBeen != null && !groupContactBeen.isEmpty()) {
-                    localContactList.clear();
-                    localContactList.addAll(groupContactBeen);
-                    imUserMessageAdapter.notifyDataSetChanged();
-                }
-            }
-        });
-    }
-
-    /**
-     * 异步查询本地联系人
-     */
-    protected final void queryAllContactFromDbAsync(@NonNull Consumer<List<GroupContactBean>> consumer) {
-        if (consumer == null) return;
-        Observable.create(new ObservableOnSubscribe<List<GroupContactBean>>() {
-            @Override
-            public void subscribe(ObservableEmitter<List<GroupContactBean>> e) throws Exception {
-                ContactDbService threadContactDbService = null;
-                try {
-                    if (!e.isDisposed()) {
-                        threadContactDbService = new ContactDbService(getLoginUserId());
-                        RealmResults<ContactDbModel> contactDbModels = threadContactDbService.queryAll();
-                        if (contactDbModels != null) {
-                            List<GroupContactBean> contactBeen = ListConvertor.convertList(new ArrayList<IConvertModel<GroupContactBean>>(contactDbModels));
-                            e.onNext(contactBeen);
-                        }
-                        e.onComplete();
-                    }
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                } finally {
-                    if (threadContactDbService != null) {
-                        threadContactDbService.releaseService();
-                    }
-                }
-            }
-        }).compose(this.<List<GroupContactBean>>bindToLifecycle())
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(consumer);
-    }
 
     private void enableLoadMore(List result) {
         if (refreshLayout != null) {
@@ -265,7 +210,9 @@ public class MyCollectedMsgActivity extends BaseActivity implements BaseRecycler
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(MessageEvent event) {
-        if (event == null) return;
+        if (event == null) {
+            return;
+        }
         switch (event.action) {
             case MessageEvent.ACTION_MSG_CANCEL_COLLECT:
                 List<IMMessageCustomBody> data = imUserMessageAdapter.getData();
@@ -275,20 +222,11 @@ public class MyCollectedMsgActivity extends BaseActivity implements BaseRecycler
                     imUserMessageAdapter.removeItem(targetBody);
                 }
                 break;
+            default:
+                break;
         }
     }
 
-    @Override
-    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        IMMessageCustomBody item = imUserMessageAdapter.getItem(adapter.getRealPos(position));
-        if (item == null) return;
-        if (item.show_type == Const.MSG_TYPE_LINK) {
-            if (item.ext == null) return;
-            WebViewActivity.launch(this, item.ext.url);
-        } else {
-            FileDetailsActivity.launch(getContext(), item, ChatMsgClassfyActivity.MSG_CLASSFY_MY_COLLECTEED);
-        }
-    }
 
     @Override
     protected void onDestroy() {
@@ -304,7 +242,23 @@ public class MyCollectedMsgActivity extends BaseActivity implements BaseRecycler
             select_position = position;
             setTitle(filterDropEntity.name);
             topMiddlePopup.getAdapter().setSelectedPos(select_position);
-            // TODO: 17/9/12 获取各种状态列表 
+            // TODO: 17/9/12 获取各种状态列表
+        }
+    }
+
+    @Override
+    public void onItemClick(com.asange.recyclerviewadapter.BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
+        IMMessageCustomBody item = imUserMessageAdapter.getItem(i);
+        if (item == null) {
+            return;
+        }
+        if (item.show_type == Const.MSG_TYPE_LINK) {
+            if (item.ext == null) {
+                return;
+            }
+            WebViewActivity.launch(this, item.ext.url);
+        } else {
+            FileDetailsActivity.launch(getContext(), item, ChatMsgClassfyActivity.MSG_CLASSFY_MY_COLLECTEED);
         }
     }
 }

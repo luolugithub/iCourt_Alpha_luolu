@@ -12,10 +12,11 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.asange.recyclerviewadapter.BaseViewHolder;
+import com.asange.recyclerviewadapter.OnItemClickListener;
 import com.gjiazhe.wavesidebar.WaveSideBar;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.CustomerAdapter;
-import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.constants.Const;
@@ -55,7 +56,7 @@ import retrofit2.Response;
  * version 2.0.0
  */
 
-public class SelectLiaisonActivity extends BaseActivity implements BaseRecyclerAdapter.OnItemClickListener {
+public class SelectLiaisonActivity extends BaseActivity implements OnItemClickListener {
     private static final int SEARCH_LIAISON_REQUEST_CODE = 1;
     private static final String STRING_TOP = "↑︎";
     @BindView(R.id.titleBack)
@@ -169,10 +170,17 @@ public class SelectLiaisonActivity extends BaseActivity implements BaseRecyclerA
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.rl_comm_search:
-                if (TextUtils.equals(action, Const.SELECT_LIAISONS_TAG_ACTION))
-                    CustomerSearchActivity.launchResult(this, v, CustomerSearchActivity.SEARCH_LIAISON_TYPE, CustomerSearchActivity.CUSTOMER_PERSON_TYPE, SEARCH_LIAISON_REQUEST_CODE);
-                else if (TextUtils.equals(action, Const.SELECT_ENTERPRISE_LIAISONS_TAG_ACTION))
-                    CustomerSearchActivity.launchResult(this, v, CustomerSearchActivity.SEARCH_LIAISON_TYPE, CustomerSearchActivity.CUSTOMER_COMPANY_TYPE, SEARCH_LIAISON_REQUEST_CODE);
+                if (TextUtils.equals(action, Const.SELECT_LIAISONS_TAG_ACTION)) {
+                    CustomerSearchActivity.launchResult(this,
+                            v,
+                            CustomerSearchActivity.SEARCH_LIAISON_TYPE,
+                            CustomerSearchActivity.CUSTOMER_PERSON_TYPE, SEARCH_LIAISON_REQUEST_CODE);
+                } else if (TextUtils.equals(action, Const.SELECT_ENTERPRISE_LIAISONS_TAG_ACTION)) {
+                    CustomerSearchActivity.launchResult(this,
+                            v,
+                            CustomerSearchActivity.SEARCH_LIAISON_TYPE,
+                            CustomerSearchActivity.CUSTOMER_COMPANY_TYPE, SEARCH_LIAISON_REQUEST_CODE);
+                }
                 break;
             default:
                 super.onClick(v);
@@ -272,15 +280,6 @@ public class SelectLiaisonActivity extends BaseActivity implements BaseRecyclerA
         }
     }
 
-    @Override
-    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        CustomerEntity entity = (CustomerEntity) adapter.getItem(adapter.getRealPos(position));
-        if (TextUtils.equals(action, Const.SELECT_LIAISONS_TAG_ACTION))
-            CustomerPersonCreateActivity.launchSetResultFromLiaison(this, action, entity);
-        else if (TextUtils.equals(action, Const.SELECT_ENTERPRISE_LIAISONS_TAG_ACTION))
-            CustomerCompanyCreateActivity.launchSetResultFromLiaison(this, action, entity);
-        finish();
-    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -288,13 +287,25 @@ public class SelectLiaisonActivity extends BaseActivity implements BaseRecyclerA
             if (requestCode == SEARCH_LIAISON_REQUEST_CODE) {
                 String action = data.getAction();
                 CustomerEntity entity = (CustomerEntity) data.getSerializableExtra("customerEntity");
-                if (TextUtils.equals(action, Const.SELECT_LIAISONS_TAG_ACTION))
+                if (TextUtils.equals(action, Const.SELECT_LIAISONS_TAG_ACTION)) {
                     CustomerPersonCreateActivity.launchSetResultFromLiaison(this, action, entity);
-                else if (TextUtils.equals(action, Const.SELECT_ENTERPRISE_LIAISONS_TAG_ACTION))
+                } else if (TextUtils.equals(action, Const.SELECT_ENTERPRISE_LIAISONS_TAG_ACTION)) {
                     CustomerCompanyCreateActivity.launchSetResultFromLiaison(this, action, entity);
+                }
                 this.finish();
             }
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onItemClick(com.asange.recyclerviewadapter.BaseRecyclerAdapter adapter, BaseViewHolder baseViewHolder, View view, int i) {
+        CustomerEntity entity = (CustomerEntity) adapter.getItem(i);
+        if (TextUtils.equals(action, Const.SELECT_LIAISONS_TAG_ACTION)) {
+            CustomerPersonCreateActivity.launchSetResultFromLiaison(this, action, entity);
+        } else if (TextUtils.equals(action, Const.SELECT_ENTERPRISE_LIAISONS_TAG_ACTION)) {
+            CustomerCompanyCreateActivity.launchSetResultFromLiaison(this, action, entity);
+        }
+        finish();
     }
 }
