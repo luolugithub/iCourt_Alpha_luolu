@@ -30,6 +30,7 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.widget.filter.EmojiFilter;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -166,7 +167,7 @@ public class UpdateUserInfoActivity extends BaseActivity {
                 leftImageView.setImageResource(R.mipmap.setting_user_name);
                 updateStateLayout.setVisibility(View.GONE);
                 myCenterUpdateEdittext.setInputType(InputType.TYPE_CLASS_TEXT);
-                myCenterUpdateEdittext.setFilters(new InputFilter[]{new InputFilter.LengthFilter(UPDATE_NAME_MAX_LENGTH)});
+                myCenterUpdateEdittext.setFilters(new InputFilter[]{new InputFilter.LengthFilter(UPDATE_NAME_MAX_LENGTH),new EmojiFilter()});
                 myCenterUpdateEdittext.setGravity(Gravity.TOP);
                 myCenterUpdateEdittext.setSingleLine(false);
                 myCenterUpdateEdittext.setHorizontallyScrolling(false);

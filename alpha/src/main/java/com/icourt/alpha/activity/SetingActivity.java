@@ -16,10 +16,13 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.base.BaseAppUpdateActivity;
+import com.icourt.alpha.constants.DownloadConfig;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
+import com.icourt.alpha.entity.bean.AppVersionFirEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.http.observer.BaseObserver;
+import com.icourt.alpha.interfaces.callback.AppUpdateByFirCallBack;
 import com.icourt.alpha.interfaces.callback.AppUpdateCallBack;
 import com.icourt.alpha.utils.SenCeUtils;
 import com.icourt.alpha.utils.SpUtils;
@@ -104,25 +107,35 @@ public class SetingActivity extends BaseAppUpdateActivity {
 
     @Override
     protected void getData(boolean isRefresh) {
-        checkAppUpdate(new AppUpdateCallBack() {
-            @Override
-            public void onSuccess(Call<ResEntity<AppVersionEntity>> call, Response<ResEntity<AppVersionEntity>> response) {
-                if (settingAboutCountView == null) return;
-                settingAboutCountView.setVisibility(isUpdateApp(response.body().result) ? View.VISIBLE : View.INVISIBLE);
-            }
-
-            @Override
-            public void onFailure(Call<ResEntity<AppVersionEntity>> call, Throwable t) {
-                if (t instanceof HttpException) {
-                    HttpException hx = (HttpException) t;
-                    if (hx.code() == 401) {
-                        showTopSnackBar("fir token 更改");
-                        return;
-                    }
+        if (DownloadConfig.isRelease()) {
+            checkAppUpdate(new AppUpdateCallBack() {
+                @Override
+                public void onSuccess(Call<ResEntity<AppVersionEntity>> call, Response<ResEntity<AppVersionEntity>> response) {
+                    if (settingAboutCountView == null) return;
+                    settingAboutCountView.setVisibility(isUpdateApp(response.body().result) ? View.VISIBLE : View.INVISIBLE);
                 }
-                super.onFailure(call, t);
-            }
-        });
+            });
+        } else {
+            checkAppUpdate(new AppUpdateByFirCallBack() {
+                @Override
+                public void onSuccess(Call<AppVersionFirEntity> call, Response<AppVersionFirEntity> response) {
+                    if (settingAboutCountView == null) return;
+                    settingAboutCountView.setVisibility(shouldUpdate(response.body()) ? View.VISIBLE : View.INVISIBLE);
+                }
+
+                @Override
+                public void onFailure(Call<AppVersionFirEntity> call, Throwable t) {
+                    if (t instanceof HttpException) {
+                        HttpException hx = (HttpException) t;
+                        if (hx.code() == 401) {
+                            showTopSnackBar("fir token 更改");
+                            return;
+                        }
+                    }
+                    super.onFailure(call, t);
+                }
+            });
+        }
     }
 
     @OnClick({R.id.setting_clear_cache_layout,

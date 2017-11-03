@@ -20,15 +20,18 @@ import com.icourt.alpha.activity.SetingActivity;
 import com.icourt.alpha.activity.TaskMonthFinishActivity;
 import com.icourt.alpha.activity.UserInfoActivity;
 import com.icourt.alpha.base.BaseFragment;
+import com.icourt.alpha.constants.DownloadConfig;
 import com.icourt.alpha.constants.TimingConfig;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
+import com.icourt.alpha.entity.bean.AppVersionFirEntity;
 import com.icourt.alpha.entity.bean.GroupBean;
 import com.icourt.alpha.entity.bean.UserDataEntity;
 import com.icourt.alpha.entity.event.ServerTimingEvent;
 import com.icourt.alpha.entity.event.TimingEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.interfaces.callback.AppUpdateByFirCallBack;
 import com.icourt.alpha.interfaces.callback.AppUpdateCallBack;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.GlideUtils;
@@ -291,33 +294,65 @@ public class TabMineFragment extends BaseFragment {
      * 检测版本
      */
     private void checkVersion() {
-
-        callEnqueue(getApi().getNewVersionAppInfo(), new AppUpdateCallBack() {
-            @Override
-            public void onSuccess(Call<ResEntity<AppVersionEntity>> call, Response<ResEntity<AppVersionEntity>> response) {
-                if (settingAboutCountView == null) {
-                    return;
-                }
-                settingAboutCountView.setVisibility(shouldUpdate(response.body().result) ? View.VISIBLE : View.INVISIBLE);
-            }
-
-            @Override
-            public void onFailure(Call<ResEntity<AppVersionEntity>> call, Throwable t) {
-                if (t instanceof HttpException) {
-                    HttpException hx = (HttpException) t;
-                    if (hx.code() == 401) {
-                        showTopSnackBar("fir token 更改");
+        if (DownloadConfig.isRelease()) {
+            callEnqueue(getApi().getNewVersionAppInfo(), new AppUpdateCallBack() {
+                @Override
+                public void onSuccess(Call<ResEntity<AppVersionEntity>> call, Response<ResEntity<AppVersionEntity>> response) {
+                    if (settingAboutCountView == null) {
                         return;
                     }
+                    settingAboutCountView.setVisibility(shouldUpdate(response.body().result) ? View.VISIBLE : View.INVISIBLE);
                 }
-                super.onFailure(call, t);
-            }
-        });
+
+                @Override
+                public void onFailure(Call<ResEntity<AppVersionEntity>> call, Throwable t) {
+                    if (t instanceof HttpException) {
+                        HttpException hx = (HttpException) t;
+                        if (hx.code() == 401) {
+                            showTopSnackBar("fir token 更改");
+                            return;
+                        }
+                    }
+                    super.onFailure(call, t);
+                }
+            });
+        }else{
+            callEnqueue(getApi().getNewVersionAppInfo(BuildConfig.APK_UPDATE_URL), new AppUpdateByFirCallBack() {
+                @Override
+                public void onSuccess(Call<AppVersionFirEntity> call, Response<AppVersionFirEntity> response) {
+                    if (settingAboutCountView == null) {
+                        return;
+                    }
+                    settingAboutCountView.setVisibility(shouldUpdate(response.body()) ? View.VISIBLE : View.INVISIBLE);
+                }
+
+                @Override
+                public void onFailure(Call<AppVersionFirEntity> call, Throwable t) {
+                    if (t instanceof HttpException) {
+                        HttpException hx = (HttpException) t;
+                        if (hx.code() == 401) {
+                            showTopSnackBar("fir token 更改");
+                            return;
+                        }
+                    }
+                    super.onFailure(call, t);
+                }
+            });
+        }
     }
 
-    public final boolean shouldUpdate(@NonNull AppVersionEntity appVersionEntity) {
-        return appVersionEntity != null
-                && !TextUtils.equals(appVersionEntity.appVersion, BuildConfig.VERSION_NAME);
+    public final boolean shouldUpdate(@NonNull Object object) {
+        if (object instanceof AppVersionEntity) {
+            AppVersionEntity appVersionEntity = (AppVersionEntity) object;
+            return appVersionEntity != null
+                    && !TextUtils.equals(appVersionEntity.appVersion, BuildConfig.VERSION_NAME)
+                    && appVersionEntity.upgradeStrategy != DownloadConfig.UPGRADE_STRATEGY_NO_TYPE;
+        } else if (object instanceof AppVersionFirEntity) {
+            AppVersionFirEntity appVersionFirEntity = (AppVersionFirEntity) object;
+            return appVersionFirEntity != null
+                    && !TextUtils.equals(appVersionFirEntity.versionShort, BuildConfig.VERSION_NAME);
+        }
+        return false;
     }
 
     /**

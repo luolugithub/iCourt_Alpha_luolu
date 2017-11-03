@@ -85,7 +85,14 @@ http://wiki.alphalawyer.cn/pages/viewpage.action?pageId=5603882
 # 代码规范
  以阿里巴巴为准,不做过多文案描述  
  插件: Alibaba Java Coding Guidelines  
- 插件使用相关博客:http://www.cnblogs.com/plokmju/p/7670481.html  
+ 插件使用相关博客:http://www.cnblogs.com/plokmju/p/7670481.html
+
+# 推荐插件
+1. Alibaba Java Coding Guidelines
+2. EventBus3 Intellij Plugin
+3. MarkDownSupport
+4. AndroidCodeGenerator
+5. Android ButterKnife Zelezny
  
    
 # 日志跟踪tag
