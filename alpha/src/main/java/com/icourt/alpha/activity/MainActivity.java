@@ -192,6 +192,11 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
      */
     private Guide guide;
 
+    /**
+     * 用来判断Activity是否在界面上显示了
+     */
+    private boolean isShowing;
+
     @BindView(R.id.main_fl_content)
     FrameLayout mainFlContent;
     @BindView(R.id.tab_news)
@@ -507,9 +512,16 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
     @Override
     protected void onResume() {
         super.onResume();
+        isShowing = true;
         checkNotificationisEnable();
         getPermission();
         mHandler.addCheckTimingTask();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        isShowing = false;
     }
 
     /**
@@ -1194,6 +1206,10 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
     public void showOverTimingRemindDialogFragment(String content) {
         //如果界面即将销毁，那么就不执行下去
         if (isDestroyOrFinishing()) {
+            return;
+        }
+        //当前Activity不可见，就不显示。
+        if (!isShowing) {
             return;
         }
         //如果没有正在计时，不执行下去

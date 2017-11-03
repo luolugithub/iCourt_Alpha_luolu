@@ -14,6 +14,7 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.baseadapter.BaseRefreshFragmentAdapter;
 import com.icourt.alpha.constants.TimingConfig;
+import com.icourt.alpha.entity.bean.TimingSelectEntity;
 import com.icourt.alpha.entity.bean.TimingStatisticEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.widget.manager.TimerDateManager;
@@ -124,6 +125,12 @@ public class TimingListDayFragment extends BaseTimingListFragment {
         int differentDays = DateUtils.differentDays(calendar.getTimeInMillis(), startTimeMillis);
         viewPager.setCurrentItem(differentDays, false);
         selectedDayTime = calendar.getTimeInMillis() + viewPager.getCurrentItem() * TimeUnit.DAYS.toMillis(1);
+        getTimingStatistic(TimingConfig.TIMING_QUERY_BY_DAY, DateUtils.getDayStartTime(selectedDayTime), DateUtils.getDayEndTime(selectedDayTime));
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
         getTimingStatistic(TimingConfig.TIMING_QUERY_BY_DAY, DateUtils.getDayStartTime(selectedDayTime), DateUtils.getDayEndTime(selectedDayTime));
     }
 
