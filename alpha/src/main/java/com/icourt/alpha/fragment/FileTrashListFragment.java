@@ -3,6 +3,7 @@ package com.icourt.alpha.fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,7 +14,6 @@ import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.SFileTrashAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
@@ -23,8 +23,8 @@ import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.JsonUtils;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
-import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.util.Arrays;
 
@@ -49,7 +49,7 @@ public class FileTrashListFragment extends SeaFileBaseFragment
 
     @BindView(R.id.recyclerView)
     @Nullable
-    EmptyRecyclerView recyclerView;
+    RecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
     SmartRefreshLayout refreshLayout;
     Unbinder unbinder;
@@ -57,8 +57,9 @@ public class FileTrashListFragment extends SeaFileBaseFragment
     protected static final String KEY_SEA_FILE_DIR_PATH = "seaFileDirPath";//目录路径
     protected static final String KEY_SEA_FILE_REPO_PERMISSION = "seaFileRepoPermission";//repo的权限
     SFileTrashAdapter folderDocumentAdapter;
-    TextView emptyView;
     String scanStat;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
 
     public static FileTrashListFragment newInstance(
             String fromRepoId,
@@ -87,7 +88,7 @@ public class FileTrashListFragment extends SeaFileBaseFragment
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = super.onCreateView(R.layout.layout_refresh_recyclerview, inflater, container, savedInstanceState);
+        View view = super.onCreateView(R.layout.layout_refresh_recyclerview3, inflater, container, savedInstanceState);
         unbinder = ButterKnife.bind(this, view);
         return view;
     }
@@ -98,14 +99,12 @@ public class FileTrashListFragment extends SeaFileBaseFragment
         recyclerView.setAdapter(folderDocumentAdapter = new SFileTrashAdapter(
                 false,
                 TextUtils.equals(getRepoPermission(), PERMISSION_RW)));
-        emptyView = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_folder_document_num, recyclerView.getRecyclerView());
-        emptyView.setText(R.string.empty_list_repo_recycle_bin);
-        recyclerView.setEmptyView(emptyView);
+        contentEmptyText.setText(R.string.empty_list_repo_recycle_bin);
         folderDocumentAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override
             protected void updateUI() {
-                if (refreshLayout != null) {
-                    recyclerView.enableEmptyView(folderDocumentAdapter.getData());
+                if (contentEmptyText != null) {
+                    contentEmptyText.setVisibility(folderDocumentAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
                 }
             }
         });
@@ -114,12 +113,12 @@ public class FileTrashListFragment extends SeaFileBaseFragment
         folderDocumentAdapter.setOnItemChildClickListener(this);
         refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
             @Override
-            public void onRefresh(com.scwang.smartrefresh.layout.api.RefreshLayout refreshlayout) {
+            public void onRefresh(RefreshLayout refreshlayout) {
                 getData(true);
             }
 
             @Override
-            public void onLoadmore(com.scwang.smartrefresh.layout.api.RefreshLayout refreshlayout) {
+            public void onLoadmore(RefreshLayout refreshlayout) {
                 getData(false);
             }
         });
@@ -181,7 +180,9 @@ public class FileTrashListFragment extends SeaFileBaseFragment
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         final FolderDocumentEntity item = folderDocumentAdapter.getItem(position);
-        if (item == null) return;
+        if (item == null) {
+            return;
+        }
         if (item.isDir()) {
             showToast(R.string.sfile_recycle_bin_folder_not_clickable);
         } else {
@@ -196,7 +197,9 @@ public class FileTrashListFragment extends SeaFileBaseFragment
      */
     private void fileRevert(int position) {
         final FolderDocumentEntity item = folderDocumentAdapter.getItem(position);
-        if (item == null) return;
+        if (item == null) {
+            return;
+        }
         Call<JsonObject> jsonObjectCall;
         if (item.isDir()) {
             jsonObjectCall = getSFileApi().folderRevert(
