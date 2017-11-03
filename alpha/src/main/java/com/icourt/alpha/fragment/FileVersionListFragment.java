@@ -4,18 +4,21 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.asange.recyclerviewadapter.BaseViewHolder;
+import com.asange.recyclerviewadapter.OnItemChildClickListener;
+import com.asange.recyclerviewadapter.OnItemClickListener;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.FileDownloadActivity;
 import com.icourt.alpha.adapter.FileVersionAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.FileVersionCommits;
@@ -28,8 +31,8 @@ import com.icourt.alpha.widget.comparators.LongFieldEntityComparator;
 import com.icourt.alpha.widget.comparators.ORDER;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
-import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,20 +55,22 @@ import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
  * date createTime：2017/8/15
  * version 2.1.0
  */
-public class FileVersionListFragment extends SeaFileBaseFragment implements BaseRecyclerAdapter.OnItemClickListener, BaseRecyclerAdapter.OnItemChildClickListener {
+public class FileVersionListFragment extends SeaFileBaseFragment implements OnItemClickListener, OnItemChildClickListener {
 
     protected static final String KEY_SEA_FILE_FROM_REPO_ID = "seaFileFromRepoId";//原仓库id
     protected static final String KEY_SEA_FILE_FROM_FILE_PATH = "seaFileFromFilePath";//原文件路径
     protected static final String KEY_SEA_FILE_REPO_PERMISSION = "seaFileRepoPermission";//repo的权限
 
     @BindView(R.id.recyclerView)
-    EmptyRecyclerView recyclerView;
+    RecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
     SmartRefreshLayout refreshLayout;
     Unbinder unbinder;
     String fromRepoId, fromRepoFilePath;
     FileVersionAdapter fileVersionAdapter;
     OnFragmentDataChangeListener onFragmentDataChangeListener;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
 
     /**
      * @param fromRepoId
@@ -113,7 +118,7 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = super.onCreateView(R.layout.layout_refresh_recyclerview, inflater, container, savedInstanceState);
+        View view = super.onCreateView(R.layout.layout_refresh_recyclerview3, inflater, container, savedInstanceState);
         unbinder = ButterKnife.bind(this, view);
         return view;
     }
@@ -124,18 +129,13 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
         fromRepoFilePath = getArguments().getString(KEY_SEA_FILE_FROM_FILE_PATH, "");
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        final TextView emptyView = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_folder_document_num, recyclerView.getRecyclerView());
-        emptyView.setText("");
-        recyclerView.setEmptyView(emptyView);
-
-
+        contentEmptyText.setText(R.string.empty_list_repo_file_historical_version);
         recyclerView.setAdapter(fileVersionAdapter = new FileVersionAdapter(TextUtils.equals(getRepoPermission(), PERMISSION_RW)));
         fileVersionAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override
             protected void updateUI() {
-                if (refreshLayout != null) {
-                    recyclerView.enableEmptyView(fileVersionAdapter.getData());
-                    emptyView.setText(R.string.empty_list_repo_file_historical_version);
+                if (contentEmptyText != null) {
+                    contentEmptyText.setVisibility(fileVersionAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
                 }
             }
         });
@@ -144,7 +144,7 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
         refreshLayout.setOnRefreshListener(new OnRefreshListener() {
 
             @Override
-            public void onRefresh(com.scwang.smartrefresh.layout.api.RefreshLayout refreshlayout) {
+            public void onRefresh(RefreshLayout refreshlayout) {
                 getData(true);
             }
         });
@@ -169,7 +169,9 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
                             int size = response.body().commits.size();
                             for (int i = 0; i < size; i++) {
                                 FileVersionEntity fileVersionEntity = response.body().commits.get(i);
-                                if (fileVersionEntity == null) continue;
+                                if (fileVersionEntity == null) {
+                                    continue;
+                                }
                                 fileVersionEntity.version = size - i;
                             }
                             //通知数据更新
@@ -218,35 +220,15 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
     }
 
 
-    @Override
-    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        FileVersionEntity item = fileVersionAdapter.getItem(position);
-        if (item == null) return;
-        item.seaFileFullPath = fromRepoFilePath;
-        FileDownloadActivity.launch(
-                getContext(),
-                item,
-                SFileConfig.FILE_FROM_REPO);
-    }
-
-    @Override
-    public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        FileVersionEntity item = fileVersionAdapter.getItem(position);
-        if (item == null) return;
-        switch (view.getId()) {
-            case R.id.file_restore_iv:
-                showRestoreConfirmDialog(item);
-                break;
-        }
-    }
-
     /**
      * 回滚确认对话框
      *
      * @param item
      */
     private void showRestoreConfirmDialog(final FileVersionEntity item) {
-        if (item == null) return;
+        if (item == null) {
+            return;
+        }
         new BottomActionDialog(getContext(),
                 null,
                 Arrays.asList(getString(R.string.sfile_backspace_confirm)),
@@ -266,7 +248,9 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
      * @param item
      */
     private void restoreFile(final FileVersionEntity item) {
-        if (item == null) return;
+        if (item == null) {
+            return;
+        }
         showLoadingDialog(R.string.str_executing);
         callEnqueue(getSFileApi().fileRetroversion(
                 getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID),
@@ -277,7 +261,7 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
                     @Override
                     public void onSuccess(Call<JsonObject> call, Response<JsonObject> response) {
                         dismissLoadingDialog();
-                        if (JsonUtils.getBoolValue(response.body(),"success")) {
+                        if (JsonUtils.getBoolValue(response.body(), "success")) {
                             showToast(R.string.sfile_backspace_success);
                             getData(true);
                         } else {
@@ -303,5 +287,31 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements Base
                         showToast(noticeStr);
                     }
                 });
+    }
+
+    @Override
+    public void onItemChildClick(com.asange.recyclerviewadapter.BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
+        FileVersionEntity item = fileVersionAdapter.getItem(i);
+        if (item == null) {
+            return;
+        }
+        switch (view.getId()) {
+            case R.id.file_restore_iv:
+                showRestoreConfirmDialog(item);
+                break;
+        }
+    }
+
+    @Override
+    public void onItemClick(com.asange.recyclerviewadapter.BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
+        FileVersionEntity item = fileVersionAdapter.getItem(i);
+        if (item == null) {
+            return;
+        }
+        item.seaFileFullPath = fromRepoFilePath;
+        FileDownloadActivity.launch(
+                getContext(),
+                item,
+                SFileConfig.FILE_FROM_REPO);
     }
 }

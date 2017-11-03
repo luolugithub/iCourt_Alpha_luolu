@@ -1,11 +1,13 @@
 package com.icourt.alpha.adapter;
 
+import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.asange.recyclerviewadapter.BaseViewHolder;
 import com.icourt.alpha.R;
-import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseAdapter;
 import com.icourt.alpha.entity.bean.FileVersionEntity;
 import com.icourt.alpha.utils.DateUtils;
 
@@ -16,7 +18,7 @@ import com.icourt.alpha.utils.DateUtils;
  * date createTime：2017/8/15
  * version 2.1.0
  */
-public class FileVersionAdapter extends BaseArrayRecyclerAdapter<FileVersionEntity> {
+public class FileVersionAdapter extends BaseAdapter<FileVersionEntity> {
     boolean canRevert;
 
     public FileVersionAdapter(boolean canRevert) {
@@ -29,8 +31,10 @@ public class FileVersionAdapter extends BaseArrayRecyclerAdapter<FileVersionEnti
     }
 
     @Override
-    public void onBindHoder(ViewHolder holder, FileVersionEntity fileVersionEntity, int position) {
-        if (fileVersionEntity == null) return;
+    public void onBindHolder(BaseViewHolder holder, @Nullable FileVersionEntity fileVersionEntity, int i) {
+        if (fileVersionEntity == null) {
+            return;
+        }
         TextView file_version_tv = holder.obtainView(R.id.file_version_tv);
         TextView file_title_tv = holder.obtainView(R.id.file_title_tv);
         TextView file_desc_tv = holder.obtainView(R.id.file_desc_tv);
