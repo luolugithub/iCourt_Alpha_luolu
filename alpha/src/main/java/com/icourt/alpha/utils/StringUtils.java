@@ -268,23 +268,23 @@ public class StringUtils {
     /**
      * 获取匹配+86手机号/电话号的正则
      * 所有连续的 7 - 13 位阿拉伯数字
-     * （注意：这里匹配出来的号码是后面有可能包含一个其他非数字的字符串，所以有可能要进行截取）
+     * （注意：这里匹配出来的号码是前后有可能包含其他非数字的字符串，所以有可能要进行判断截取）
      *
      * @return
      */
     public static String get86PhonePattern() {
-        return "\\+86\\s?[0-9]{7,13}\\D?";
+        return "\\+86\\s?[0-9]{7,13}";
     }
 
     /**
      * 获取匹配手机号/电话号的正则
      * 所有连续的 7 - 13 位阿拉伯数字
-     * （注意：这里匹配出来的号码是前后有可能包含一个其他非数字的字符串，所以有可能要再次进行截取）
+     * （注意：这里匹配出来的号码是前后有可能包含其他非数字的字符串，所以有可能要再次进行判断截取）
      *
      * @return
      */
     public static String getPhonePattern() {
-        return "\\D?[0-9]{7,13}\\D?";
+        return "[0-9]{7,13}";
     }
 
     /**
@@ -294,7 +294,7 @@ public class StringUtils {
      * @return
      */
     public static String getConstantMobilePattern() {
-        return ".*[0-9]{5}.*";
+        return "[0-9]{5}";
     }
 
     /**
@@ -304,6 +304,48 @@ public class StringUtils {
      */
     public static String getNumberPattern() {
         return "[0-9]";
+    }
+
+    /**
+     *
+     * 检查给定字符的下一个字符是否是数字, 如果参数不合理，返回false
+     *
+     * @param input 输入字符串
+     * @param pos   给定的字符的position
+     */
+    public static boolean nextCharIsNumber(CharSequence input, int pos) {
+        if (input == null || pos < 0 || pos >= input.length()) {
+            return false;
+        }
+        if (pos < input.length()){
+            char c = input.charAt(pos);
+            if (c >= '0' && c <= '9') {
+                return true;
+            }
+        }
+        return false;
+
+    }
+
+    /**
+     *
+     * 检查给定字符的上一个字符是否是数字, 如果参数不合理，返回false
+     *
+     * @param input 输入字符串
+     * @param pos   给定的字符的position
+     */
+    public static boolean prevCharIsNumber(CharSequence input, int pos) {
+        if (input == null || pos < 0 || pos >= input.length()) {
+            return false;
+        }
+        if (pos > 0){
+            char c = input.charAt(pos - 1);
+            if (c >= '0' && c <= '9') {
+                return true;
+            }
+        }
+        return false;
+
     }
 
 }

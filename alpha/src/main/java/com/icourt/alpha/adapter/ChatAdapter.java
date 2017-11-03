@@ -250,6 +250,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
 
             case TYPE_CENTER_SYS:
                 return R.layout.adapter_item_chat_sys;
+            default:
         }
         return R.layout.adapter_item_chat_left_txt;
     }
@@ -289,6 +290,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
                                     return TYPE_LEFT_DING_IMAGE;
                                 case MSG_TYPE_LINK:
                                     return TYPE_LEFT_DING_LINK;
+                                default:
                             }
                         }
                         return TYPE_LEFT_DING_TXT;
@@ -300,6 +302,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
                         return TYPE_LEFT_LINK;
                     case Const.MSG_TYPE_IMAGE:
                         return TYPE_LEFT_IMAGE;
+                    default:
                 }
             } else {
                 switch (item.show_type) {
@@ -319,6 +322,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
                                     return TYPE_RIGHT_DING_IMAGE;
                                 case MSG_TYPE_LINK:
                                     return TYPE_RIGHT_DING_LINK;
+                                default:
                             }
                         }
                         return TYPE_RIGHT_DING_TXT;
@@ -330,6 +334,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
                         return TYPE_RIGHT_LINK;
                     case Const.MSG_TYPE_IMAGE:
                         return TYPE_RIGHT_IMAGE;
+                    default:
                 }
             }
         }
@@ -406,6 +411,8 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
 
             case TYPE_CENTER_SYS:
                 setTypeCenterSys(holder, imMessageCustomBody, position);
+                break;
+            default:
                 break;
         }
     }
@@ -593,12 +600,11 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
                 int start = mobile86Mathcer.start();
                 int end = mobile86Mathcer.end();
 
-                String group = mobile86Mathcer.group();
                 //+86的手机号要判断结尾是不是数字，如果不是数字，就把字符串最后一个给删了。
-                String endStr = group.subSequence(group.length() - 1, group.length()).toString();
-                if (!endStr.matches(StringUtils.getNumberPattern())) {
-                    end = end - 1;
+                if (StringUtils.nextCharIsNumber(content, end)) {
+                    continue;
                 }
+
                 addItemClickSpan(textView.getContext(), TouchableBaseSpan.TYPE_PHONE, style, start, end, null);
             }
 
@@ -609,17 +615,9 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
                 int start = moblieMatcher.start();
                 int end = moblieMatcher.end();
 
-                String group = moblieMatcher.group();
-
                 //普通手机号要判断开头是不是数字，如果不是数字，把字符串第一个删除。
-                String startStr = group.subSequence(0, 1).toString();
-                if (!startStr.matches(StringUtils.getNumberPattern())) {
-                    start = start + 1;
-                }
-                //普通手机号要判断结尾是不是数字，如果不是数字，把字符串最后一个删除。
-                String endStr = group.subSequence(group.length() - 1, group.length()).toString();
-                if (!endStr.matches(StringUtils.getNumberPattern())) {
-                    end = end - 1;
+                if (StringUtils.prevCharIsNumber(content, start) || StringUtils.nextCharIsNumber(content, end)) {
+                    continue;
                 }
                 addItemClickSpan(textView.getContext(), TouchableBaseSpan.TYPE_PHONE, style, start, end, null);
             }
@@ -636,6 +634,9 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
                         while (constanMatcher.find()) {
                             int start = constanMatcher.start();
                             int end = constanMatcher.end();
+                            if (StringUtils.prevCharIsNumber(content, start) || StringUtils.nextCharIsNumber(content, end)) {
+                                continue;
+                            }
                             addItemClickSpan(textView.getContext(), TouchableBaseSpan.TYPE_PHONE, style, start, end, mobileEntityMap.get(moblie));
                         }
                     }
