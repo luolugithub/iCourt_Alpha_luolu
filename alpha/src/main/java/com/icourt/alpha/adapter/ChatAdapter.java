@@ -624,7 +624,7 @@ public class ChatAdapter extends BaseArrayRecyclerAdapter<IMMessageCustomBody> i
 
             //再匹配一些固定号码
             Pattern constantMobliePattern = Pattern.compile(StringUtils.getConstantMobilePattern());
-            if (constantMobliePattern.matcher(content).matches() && mobileEntityMap != null) {//先判断号码里是不是有5位连续数字，再进行匹配
+            if (constantMobliePattern.matcher(content).find() && mobileEntityMap != null) {//先判断号码里是不是有5位连续数字，再进行匹配
                 Set<String> strings = mobileEntityMap.keySet();
                 for (String moblie : strings) {
                     //如果字符串里包含号码，才进行Clickable的添加。
