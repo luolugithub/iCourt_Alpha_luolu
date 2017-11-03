@@ -13,9 +13,10 @@ public interface OnUpdateTaskListener {
     /**
      * 修改检查项
      *
-     * @param checkItemCount
+     * @param doneItemCount
+     * @param totalCount
      */
-    void onUpdateCheckItem(String checkItemCount);
+    void onUpdateCheckItem(int doneItemCount, int totalCount);
 
     /**
      * 修改文档
