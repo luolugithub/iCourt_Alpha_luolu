@@ -6,18 +6,20 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.asange.recyclerviewadapter.BaseViewHolder;
+import com.asange.recyclerviewadapter.OnItemChildClickListener;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.FileChangedHistoryAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.constants.DownloadConfig;
@@ -39,7 +41,6 @@ import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
-import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -62,7 +63,7 @@ import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
  * date createTime：2017/8/17
  * version 2.1.0
  */
-public class FileChangeHistoryFragment extends BaseDialogFragment implements BaseRecyclerAdapter.OnItemChildClickListener {
+public class FileChangeHistoryFragment extends BaseDialogFragment implements OnItemChildClickListener {
     FileChangedHistoryAdapter fileChangedHistoryAdapter;
     int page = 0;
 
@@ -75,11 +76,13 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
     OnFragmentDataChangeListener onFragmentDataChangeListener;
     @BindView(R.id.recyclerView)
     @Nullable
-    EmptyRecyclerView recyclerView;
+    RecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
     SmartRefreshLayout refreshLayout;
     Unbinder unbinder;
     Handler mHandler = new Handler();
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
 
     public static FileChangeHistoryFragment newInstance(
             @SFileConfig.REPO_TYPE int repoType,
@@ -127,7 +130,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = super.onCreateView(R.layout.layout_refresh_recyclerview, inflater, container, savedInstanceState);
+        View view = super.onCreateView(R.layout.layout_refresh_recyclerview3, inflater, container, savedInstanceState);
         unbinder = ButterKnife.bind(this, view);
         return view;
     }
@@ -135,11 +138,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
     @Override
     protected void initView() {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        TextView footerView = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_folder_document_num, recyclerView.getRecyclerView());
-        footerView.setText(R.string.empty_list_repo_change_history);
-        recyclerView.setEmptyView(footerView);
-
-
+        contentEmptyText.setText(R.string.empty_list_repo_change_history);
         recyclerView.setAdapter(fileChangedHistoryAdapter = new FileChangedHistoryAdapter(
                 TextUtils.equals(getRepoPermission(), PERMISSION_RW)));
         fileChangedHistoryAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
@@ -151,8 +150,8 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                             0,
                             fileChangedHistoryAdapter.getData());
                 }
-                if (refreshLayout != null) {
-                    recyclerView.enableEmptyView(fileChangedHistoryAdapter.getData());
+                if (contentEmptyText != null) {
+                    contentEmptyText.setVisibility(fileChangedHistoryAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
                 }
             }
         });
@@ -246,8 +245,8 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
             @Override
             public void onSuccess(Call<ResEntity<List<FileChangedHistoryEntity>>> call, Response<ResEntity<List<FileChangedHistoryEntity>>> response) {
                 page += 1;
-                fileChangedHistoryAdapter.bindData(isRefresh, response.body().result);
                 stopRefresh();
+                fileChangedHistoryAdapter.bindData(isRefresh, response.body().result);
                 enableLoadMore(response.body().result);
             }
 
@@ -291,15 +290,6 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
         super.onDestroyView();
         mHandler.removeCallbacksAndMessages(null);
         unbinder.unbind();
-    }
-
-    @Override
-    public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        switch (view.getId()) {
-            case R.id.file_restore_iv:
-                showRevokeConfirmDialog(position);
-                break;
-        }
     }
 
     /**
@@ -740,5 +730,14 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements Bas
                         //super.defNotify(noticeStr);
                     }
                 });
+    }
+
+    @Override
+    public void onItemChildClick(com.asange.recyclerviewadapter.BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
+        switch (view.getId()) {
+            case R.id.file_restore_iv:
+                showRevokeConfirmDialog(i);
+                break;
+        }
     }
 }
