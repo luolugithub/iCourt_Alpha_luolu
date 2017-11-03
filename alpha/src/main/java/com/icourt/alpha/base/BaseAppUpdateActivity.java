@@ -22,9 +22,11 @@ import com.icourt.alpha.adapter.VersionDescAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.constants.DownloadConfig;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
+import com.icourt.alpha.entity.bean.AppVersionFirEntity;
 import com.icourt.alpha.http.callback.BaseCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.UpdateAppDialogNoticeImp;
+import com.icourt.alpha.interfaces.callback.AppUpdateByFirCallBack;
 import com.icourt.alpha.interfaces.callback.AppUpdateCallBack;
 import com.icourt.alpha.utils.ApkUtils;
 import com.icourt.alpha.utils.DateUtils;
@@ -45,6 +47,7 @@ import com.umeng.analytics.MobclickAgent;
 import java.io.File;
 
 import retrofit2.Call;
+import retrofit2.HttpException;
 import retrofit2.Response;
 
 /**
@@ -64,9 +67,7 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements UpdateAp
     //TODO 用基类的权限
     public static final int REQUEST_FILE_PERMISSION = 9999;
 
-    private static final int UPGRADE_STRATEGY_NO_TYPE = -1;//无更新
-    private static final int UPGRADE_STRATEGY_UNCOMPEL_TYPE = 1;//非强制升级
-    private static final int UPGRADE_STRATEGY_COMPEL_TYPE = 2;//强制升级
+
 
     @CallSuper
     @Override
@@ -86,44 +87,52 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements UpdateAp
     }
 
     @Override
-    public final void checkAppUpdate(@NonNull BaseCallBack<ResEntity<AppVersionEntity>> callBack) {
+    public final void checkAppUpdate(@NonNull BaseCallBack callBack) {
         if (callBack == null) return;
-        callEnqueue(
-                getApi().getNewVersionAppInfo(),
-                callBack);
+        if (DownloadConfig.isRelease()) {
+            callEnqueue(
+                    getApi().getNewVersionAppInfo(),
+                    callBack);
+        } else {
+            checkAppUpdateByFir(callBack);
+        }
     }
 
     @Override
     public final void checkAppUpdate(@NonNull final Context context, final String title) {
         if (context == null) return;
-        checkAppUpdate(new AppUpdateCallBack() {
-            @Override
-            public void onSuccess(Call<ResEntity<AppVersionEntity>> call, Response<ResEntity<AppVersionEntity>> response) {
-                if (response.body().result == null) {
-                    appCheckUpdateCompleted();
-                    return;
-                }
-                AppVersionEntity appVersionEntity = response.body().result;
-                if (!TextUtils.equals(appVersionEntity.appVersion, SpUtils.getInstance().getStringData(UPDATE_APP_VERSION_KEY, ""))) {
-                    //upgradeStrategy!=-1则显示更新对话框
-                    if (appVersionEntity.upgradeStrategy != -1) {
-                        showAppUpdateDialog(getActivity(), appVersionEntity, title);
+        if (DownloadConfig.isRelease()) {
+            checkAppUpdate(new AppUpdateCallBack() {
+                @Override
+                public void onSuccess(Call<ResEntity<AppVersionEntity>> call, Response<ResEntity<AppVersionEntity>> response) {
+                    if (response.body().result == null) {
+                        appCheckUpdateCompleted();
+                        return;
+                    }
+                    AppVersionEntity appVersionEntity = response.body().result;
+                    if (!TextUtils.equals(appVersionEntity.appVersion, SpUtils.getInstance().getStringData(UPDATE_APP_VERSION_KEY, ""))) {
+                        //upgradeStrategy!=-1则显示更新对话框
+                        if (appVersionEntity.upgradeStrategy != -1) {
+                            showAppUpdateDialog(getActivity(), appVersionEntity, title);
+                        } else {
+                            appCheckUpdateCompleted();
+                        }
                     } else {
                         appCheckUpdateCompleted();
                     }
-                } else {
+                }
+
+                @Override
+                public void onFailure(Call<ResEntity<AppVersionEntity>> call, Throwable t) {
+                    showTopSnackBar(t.getMessage());
+                    bugSync("检查最新版本失败", t);
+                    super.onFailure(call, t);
                     appCheckUpdateCompleted();
                 }
-            }
-
-            @Override
-            public void onFailure(Call<ResEntity<AppVersionEntity>> call, Throwable t) {
-                showTopSnackBar(t.getMessage());
-                bugSync("检查最新版本失败", t);
-                super.onFailure(call, t);
-                appCheckUpdateCompleted();
-            }
-        });
+            });
+        } else {
+            checkAppUpdateByFir(context, title);
+        }
     }
 
     @Override
@@ -139,8 +148,12 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements UpdateAp
 
     @Override
     public final void showAppUpdateDialog(@NonNull final Context context, @NonNull final AppVersionEntity appVersionEntity, String title) {
-        if (isDestroyOrFinishing()) return;
-        if (updateNoticeDialog != null && updateNoticeDialog.isShowing()) return;
+        if (isDestroyOrFinishing()) {
+            return;
+        }
+        if (updateNoticeDialog != null && updateNoticeDialog.isShowing()) {
+            return;
+        }
         showUpdateDescDialog(context, appVersionEntity, false);
     }
 
@@ -151,7 +164,9 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements UpdateAp
      * @param isLookDesc
      */
     public void showUpdateDescDialog(@NonNull final Context context, @NonNull final AppVersionEntity appVersionEntity, final boolean isLookDesc) {
-        if (appVersionEntity == null) return;
+        if (appVersionEntity == null) {
+            return;
+        }
 
         updateNoticeDialog = new AlertDialog.Builder(this).create();
         updateNoticeDialog.show();
@@ -212,6 +227,75 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements UpdateAp
         });
     }
 
+    public void checkAppUpdateByFir(@NonNull BaseCallBack<AppVersionFirEntity> callBack) {
+        if (callBack == null) return;
+        getApi().getNewVersionAppInfo(BuildConfig.APK_UPDATE_URL)
+                .enqueue(callBack);
+    }
+
+    public void checkAppUpdateByFir(@NonNull Context context, String title) {
+        if (context == null) return;
+        checkAppUpdateByFir(new AppUpdateByFirCallBack() {
+            @Override
+            public void onSuccess(Call<AppVersionFirEntity> call, Response<AppVersionFirEntity> response) {
+                showAppUpdateDialogByFir(getActivity(), response.body());
+            }
+
+            @Override
+            public void onFailure(Call<AppVersionFirEntity> call, Throwable t) {
+                if (t instanceof HttpException) {
+                    HttpException hx = (HttpException) t;
+                    if (hx.code() == 401) {
+                        showTopSnackBar("fir token 更改");
+                        return;
+                    }
+                }
+                super.onFailure(call, t);
+            }
+        });
+    }
+
+    /**
+     * 基于fir更新：显示对话框
+     *
+     * @param context
+     * @param appVersionFirEntity
+     */
+    public void showAppUpdateDialogByFir(@NonNull final Context context, @NonNull final AppVersionFirEntity appVersionFirEntity) {
+        if (isDestroyOrFinishing()) {return;}
+        if (updateNoticeDialog != null && updateNoticeDialog.isShowing()) {return;}
+        if (!shouldUpdate(appVersionFirEntity)) {return;}
+        AlertDialog.Builder builder = new AlertDialog.Builder(context)
+                .setTitle("更新提醒")
+                .setMessage(TextUtils.isEmpty(appVersionFirEntity.changelog) ? "有一个新版本,请立即更新吧" : appVersionFirEntity.changelog); //设置内容
+        builder.setPositiveButton("更新", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (hasFilePermission(context)) {
+                    MobclickAgent.onEvent(context, UMMobClickAgent.dialog_update_btn_click_id);
+                    getUpdateProgressDialog().setMax(appVersionFirEntity.binary != null ? (int) appVersionFirEntity.binary.fsize : 1_000);
+                    String updateUrl = UrlUtils.appendParam(appVersionFirEntity.install_url, "versionShort", appVersionFirEntity.versionShort);
+                    showAppDownloadingDialog(getActivity(), updateUrl);
+                } else {
+                    requestFilePermission(context, REQUEST_FILE_PERMISSION);
+                }
+            }
+        });
+        if (shouldForceUpdate(appVersionFirEntity)) {
+            builder.setCancelable(false);
+        } else {
+            builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
+        }
+        updateNoticeDialog = builder.create();
+        updateNoticeDialog.show();
+    }
+
+
     /**
      * 添加底部view
      *
@@ -249,7 +333,7 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements UpdateAp
      * @return
      */
     public final boolean shouldForceUpdate(@NonNull AppVersionEntity appVersionEntity) {
-        return appVersionEntity != null && appVersionEntity.upgradeStrategy == UPGRADE_STRATEGY_COMPEL_TYPE;
+        return appVersionEntity != null && appVersionEntity.upgradeStrategy == DownloadConfig.UPGRADE_STRATEGY_COMPEL_TYPE;
     }
 
     /**
@@ -260,7 +344,29 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements UpdateAp
      */
     @Override
     public final boolean shouldUpdate(@NonNull AppVersionEntity appVersionEntity) {
-        return appVersionEntity != null && appVersionEntity.upgradeStrategy != UPGRADE_STRATEGY_COMPEL_TYPE;
+        return appVersionEntity != null && appVersionEntity.upgradeStrategy != DownloadConfig.UPGRADE_STRATEGY_COMPEL_TYPE;
+    }
+
+    /**
+     * 是否强制更新
+     * VERSION_CODE 如果大于本地版本 就强制更新
+     *
+     * @param appVersionFirEntity
+     * @return
+     */
+    public final boolean shouldForceUpdate(@NonNull AppVersionFirEntity appVersionFirEntity) {
+        return appVersionFirEntity != null && appVersionFirEntity.version > BuildConfig.VERSION_CODE;
+    }
+
+    /**
+     * 是否非强制更新
+     *
+     * @param appVersionFirEntity
+     * @return
+     */
+    public final boolean shouldUpdate(@NonNull AppVersionFirEntity appVersionFirEntity) {
+        return appVersionFirEntity != null
+                && !TextUtils.equals(appVersionFirEntity.versionShort, BuildConfig.VERSION_NAME);
     }
 
     /**
@@ -272,7 +378,7 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements UpdateAp
     public boolean isUpdateApp(@NonNull AppVersionEntity appVersionEntity) {
         return appVersionEntity != null
                 && !TextUtils.equals(appVersionEntity.appVersion, BuildConfig.VERSION_NAME)
-                && appVersionEntity.upgradeStrategy != UPGRADE_STRATEGY_NO_TYPE;
+                && appVersionEntity.upgradeStrategy != DownloadConfig.UPGRADE_STRATEGY_NO_TYPE;
     }
 
     private ProgressDialog getUpdateProgressDialog() {
@@ -374,9 +480,12 @@ public class BaseAppUpdateActivity extends BaseUmengActivity implements UpdateAp
     };
 
     private void startDownloadApk(String apkUrl) {
-        if (TextUtils.isEmpty(apkUrl)) return;
-        log("apkUrl ----  " + apkUrl);
-        if (getUpdateProgressDialog().isShowing()) return;
+        if (TextUtils.isEmpty(apkUrl)) {
+            return;
+        }
+        if (getUpdateProgressDialog().isShowing()) {
+            return;
+        }
         if (Environment.isExternalStorageEmulated()) {
             String path = String.format("%s/%s.apk", getApkSavePath(), Md5Utils.md5(apkUrl, apkUrl));
             log("path ----  " + path);

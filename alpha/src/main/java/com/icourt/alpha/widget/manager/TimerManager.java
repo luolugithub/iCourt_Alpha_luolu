@@ -505,10 +505,10 @@ public class TimerManager {
 
             stopTimingTask();
 
-            EventBus.getDefault().post(timingSingle);
-
             SpUtils.getInstance().putData(String.format(KEY_TIMER, getUid()), "");
             SpUtils.getInstance().remove(String.format(KEY_TIMER_TASK_ID, getUid()));
+
+            EventBus.getDefault().post(timingSingle);
         }
     }
 

@@ -30,6 +30,7 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.widget.filter.EmojiFilter;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -166,7 +167,7 @@ public class UpdateUserInfoActivity extends BaseActivity {
                 leftImageView.setImageResource(R.mipmap.setting_user_name);
                 updateStateLayout.setVisibility(View.GONE);
                 myCenterUpdateEdittext.setInputType(InputType.TYPE_CLASS_TEXT);
-                myCenterUpdateEdittext.setFilters(new InputFilter[]{new InputFilter.LengthFilter(UPDATE_NAME_MAX_LENGTH)});
+                myCenterUpdateEdittext.setFilters(new InputFilter[]{new InputFilter.LengthFilter(UPDATE_NAME_MAX_LENGTH),new EmojiFilter()});
                 myCenterUpdateEdittext.setGravity(Gravity.TOP);
                 myCenterUpdateEdittext.setSingleLine(false);
                 myCenterUpdateEdittext.setHorizontallyScrolling(false);
@@ -175,7 +176,7 @@ public class UpdateUserInfoActivity extends BaseActivity {
                 break;
         }
         String value = getValue();
-        myCenterUpdateEdittext.setText(value);
+        myCenterUpdateEdittext.setText(value.trim());
         setRightLayoutVisible(value);
         setNameEditMaxLength();
         myCenterUpdateEdittext.setSelection(value.length());
@@ -221,6 +222,12 @@ public class UpdateUserInfoActivity extends BaseActivity {
      */
     private void setRightLayoutVisible(CharSequence content) {
         if (!TextUtils.isEmpty(content)) {
+            String info = content.toString().trim();
+            if (TextUtils.isEmpty(info)) {
+                setSaveViewState(false);
+                updateRightLayout.setVisibility(View.INVISIBLE);
+                return;
+            }
             updateRightLayout.setVisibility(View.VISIBLE);
             myCenterUpdateClearView.setVisibility(View.VISIBLE);
             switch (getType()) {
@@ -258,7 +265,6 @@ public class UpdateUserInfoActivity extends BaseActivity {
      */
     private void setStatreViewImage(boolean isTrue) {
         myCenterUpdateStateView.setImageResource(isTrue ? R.mipmap.verify_ok : R.mipmap.verify_no);
-        myCenterUpdateErrorHintText.setVisibility(isTrue ? View.GONE : View.VISIBLE);
     }
 
     /**
@@ -280,7 +286,15 @@ public class UpdateUserInfoActivity extends BaseActivity {
                 finish();
                 break;
             case R.id.titleAction:
-                updateInfo(alphaUserInfo.getUserId(), myCenterUpdateEdittext.getText().toString().trim());
+                if (!TextUtils.isEmpty(myCenterUpdateEdittext.getText())) {
+                    String content = myCenterUpdateEdittext.getText().toString();
+                    if (content.contains("+86") && !content.contains(" ")) {
+                        String part1 = content.subSequence(0, 3).toString();
+                        String part2 = content.subSequence(3, content.length()).toString();
+                        content = String.format("%s %s", part1, part2);
+                    }
+                    updateInfo(alphaUserInfo.getUserId(), content.trim());
+                }
                 break;
             case R.id.my_center_update_clear_view:
                 myCenterUpdateEdittext.setText("");

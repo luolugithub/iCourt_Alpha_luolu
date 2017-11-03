@@ -15,8 +15,11 @@ import android.widget.TextView;
 import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.R;
 import com.icourt.alpha.base.BaseAppUpdateActivity;
+import com.icourt.alpha.constants.DownloadConfig;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
+import com.icourt.alpha.entity.bean.AppVersionFirEntity;
 import com.icourt.alpha.http.httpmodel.ResEntity;
+import com.icourt.alpha.interfaces.callback.AppUpdateByFirCallBack;
 import com.icourt.alpha.interfaces.callback.AppUpdateCallBack;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
@@ -58,6 +61,7 @@ public class AboutActivity extends BaseAppUpdateActivity {
     @BindView(R.id.about_new_version_layout)
     LinearLayout aboutNewVersionLayout;
     AppVersionEntity appVersionEntity;
+    AppVersionFirEntity appVersionFirEntity;
 
     public static void launch(@NonNull Context context) {
         if (context == null) return;
@@ -86,26 +90,49 @@ public class AboutActivity extends BaseAppUpdateActivity {
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
-        checkAppUpdate(new AppUpdateCallBack() {
-            @Override
-            public void onSuccess(Call<ResEntity<AppVersionEntity>> call, Response<ResEntity<AppVersionEntity>> response) {
-                appVersionEntity = response.body().result;
-                if (isUpdateApp(appVersionEntity)) {
-                    aboutCheckIsUpdateLayout.setVisibility(View.VISIBLE);
-                    aboutNewVersionLayout.setVisibility(View.GONE);
-                } else {
-                    aboutCheckIsUpdateLayout.setVisibility(View.GONE);
-                    aboutNewVersionLayout.setVisibility(View.VISIBLE);
+        if (DownloadConfig.isRelease()) {
+            checkAppUpdate(new AppUpdateCallBack() {
+                @Override
+                public void onSuccess(Call<ResEntity<AppVersionEntity>> call, Response<ResEntity<AppVersionEntity>> response) {
+                    appVersionEntity = response.body().result;
+                    if (isUpdateApp(appVersionEntity)) {
+                        aboutCheckIsUpdateLayout.setVisibility(View.VISIBLE);
+                        aboutNewVersionLayout.setVisibility(View.GONE);
+                    } else {
+                        aboutCheckIsUpdateLayout.setVisibility(View.GONE);
+                        aboutNewVersionLayout.setVisibility(View.VISIBLE);
+                    }
                 }
-            }
 
-            @Override
-            public void onFailure(Call<ResEntity<AppVersionEntity>> call, Throwable t) {
-                showTopSnackBar(t.getMessage());
-                bugSync("检查最新版本失败", t);
-                super.onFailure(call, t);
-            }
-        });
+                @Override
+                public void onFailure(Call<ResEntity<AppVersionEntity>> call, Throwable t) {
+                    showTopSnackBar(t.getMessage());
+                    bugSync("检查最新版本失败", t);
+                    super.onFailure(call, t);
+                }
+            });
+        } else {
+            checkAppUpdate(new AppUpdateByFirCallBack() {
+                @Override
+                public void onSuccess(Call<AppVersionFirEntity> call, Response<AppVersionFirEntity> response) {
+                    appVersionFirEntity = response.body();
+                    if (shouldUpdate(appVersionFirEntity)) {
+                        aboutCheckIsUpdateLayout.setVisibility(View.VISIBLE);
+                        aboutNewVersionLayout.setVisibility(View.GONE);
+                    } else {
+                        aboutCheckIsUpdateLayout.setVisibility(View.GONE);
+                        aboutNewVersionLayout.setVisibility(View.VISIBLE);
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<AppVersionFirEntity> call, Throwable t) {
+                    showTopSnackBar(t.getMessage());
+                    bugSync("检查最新版本失败", t);
+                    super.onFailure(call, t);
+                }
+            });
+        }
     }
 
     @OnClick({R.id.about_check_is_update_view,
@@ -115,17 +142,27 @@ public class AboutActivity extends BaseAppUpdateActivity {
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.about_check_is_update_view:
-                if (appVersionEntity == null) return;
+
                 if (hasFilePermission(getContext())) {
                     MobclickAgent.onEvent(getContext(), UMMobClickAgent.dialog_update_btn_click_id);
-                    showAppDownloadingDialog(getActivity(), appVersionEntity.upgradeUrl);
+                    if (DownloadConfig.isRelease() && appVersionEntity != null) {
+                        showAppDownloadingDialog(getActivity(), appVersionEntity.upgradeUrl);
+                    } else {
+                        if (appVersionFirEntity != null) {
+                            showAppDownloadingDialog(getContext(), appVersionFirEntity.install_url);
+                        }
+                    }
                 } else {
                     requestFilePermission(context, REQUEST_FILE_PERMISSION);
                 }
                 break;
             case R.id.about_new_version_content_view://新版本介绍
             case R.id.about_new_version_layout://更新日志
-                showUpdateDescDialog(this, appVersionEntity, true);
+                if (DownloadConfig.isRelease()) {
+                    showUpdateDescDialog(this, appVersionEntity, true);
+                } else {
+                    showAppUpdateDialogByFir(getContext(), appVersionFirEntity);
+                }
                 break;
             default:
                 super.onClick(view);

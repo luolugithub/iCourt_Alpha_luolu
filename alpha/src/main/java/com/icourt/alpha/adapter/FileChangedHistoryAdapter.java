@@ -1,12 +1,14 @@
 package com.icourt.alpha.adapter;
 
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.asange.recyclerviewadapter.BaseViewHolder;
 import com.icourt.alpha.R;
-import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseAdapter;
 import com.icourt.alpha.entity.bean.FileChangedHistoryEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.GlideUtils;
@@ -18,7 +20,7 @@ import com.icourt.alpha.utils.GlideUtils;
  * date createTime：2017/8/17
  * version 2.1.0
  */
-public class FileChangedHistoryAdapter extends BaseArrayRecyclerAdapter<FileChangedHistoryEntity> {
+public class FileChangedHistoryAdapter extends BaseAdapter<FileChangedHistoryEntity> {
     boolean canRevert;
 
     public FileChangedHistoryAdapter(boolean canRevert) {
@@ -31,8 +33,10 @@ public class FileChangedHistoryAdapter extends BaseArrayRecyclerAdapter<FileChan
     }
 
     @Override
-    public void onBindHoder(ViewHolder holder, FileChangedHistoryEntity fileChangedHistoryEntity, int position) {
-        if (fileChangedHistoryEntity == null) return;
+    public void onBindHolder(BaseViewHolder holder, @Nullable FileChangedHistoryEntity fileChangedHistoryEntity, int i) {
+        if (fileChangedHistoryEntity == null) {
+            return;
+        }
         ImageView file_action_user_icon_iv = holder.obtainView(R.id.file_action_user_icon_iv);
         ImageView file_restore_iv = holder.obtainView(R.id.file_restore_iv);
         TextView file_action_title_tv = holder.obtainView(R.id.file_action_title_tv);
@@ -46,8 +50,8 @@ public class FileChangedHistoryAdapter extends BaseArrayRecyclerAdapter<FileChan
         file_time_tv.setText(DateUtils.getStandardFormatTime(fileChangedHistoryEntity.date));
         holder.bindChildClick(file_restore_iv);
         file_restore_iv.setVisibility(canRevert && canRestore(fileChangedHistoryEntity) ? View.VISIBLE : View.GONE);
-
     }
+
 
     /**
      * 是否可以撤销
@@ -56,7 +60,9 @@ public class FileChangedHistoryAdapter extends BaseArrayRecyclerAdapter<FileChan
      * @return
      */
     private boolean canRestore(FileChangedHistoryEntity fileChangedHistoryEntity) {
-        if (fileChangedHistoryEntity == null) return false;
+        if (fileChangedHistoryEntity == null) {
+            return false;
+        }
         String actionTypeEnglish = fileChangedHistoryEntity.op_type;
         if (TextUtils.equals(actionTypeEnglish, "delete")) {
             return true;

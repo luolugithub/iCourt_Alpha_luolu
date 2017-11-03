@@ -70,7 +70,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -338,11 +337,7 @@ public class TaskDetailActivity extends BaseActivity
             R.id.task_time})
     @Override
     public void onClick(View v) {
-        SystemUtils.hideSoftKeyBoard(this);
-        mainContent.setFocusable(true);
-        mainContent.setFocusableInTouchMode(true);
-        mainContent.requestFocus();
-        mainContent.findFocus();
+        requestContentFocus();
         switch (v.getId()) {
             //关注
             case R.id.titleAction:
@@ -477,6 +472,23 @@ public class TaskDetailActivity extends BaseActivity
                 super.onClick(v);
                 break;
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        requestContentFocus();
+        super.onBackPressed();
+    }
+
+    /**
+     * 整体请求获取焦点，是为了检查项失去焦点可以自动保存
+     */
+    private void requestContentFocus() {
+        SystemUtils.hideSoftKeyBoard(this);
+        mainContent.setFocusable(true);
+        mainContent.setFocusableInTouchMode(true);
+        mainContent.requestFocus();
+        mainContent.findFocus();
     }
 
     /**
@@ -919,27 +931,9 @@ public class TaskDetailActivity extends BaseActivity
                 taskTime.setText(DateUtils.getHHmmIntegral(taskItemEntity.timingSum));
             }
 
-            SpannableString checkTextForegroundColorSpan = null;
-            if (taskItemEntity.itemCount > 0) {
-                String checkTargetStr = String.format("%s/%s", taskItemEntity.doneItemCount, taskItemEntity.itemCount);
-                String checkOriginStr = getString(R.string.task_check) + " " + checkTargetStr;
-                checkTextForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(checkOriginStr, checkTargetStr, 0xFFCACACA);
-            } else {
-                checkTextForegroundColorSpan = new SpannableString(getString(R.string.task_check));
-            }
-
-            SpannableString attachTextForegroundColorSpan = null;
-            if (taskItemEntity.attachmentCount > 0) {
-                String attachTargetStr = String.valueOf(taskItemEntity.attachmentCount);
-                String attachOriginStr = getString(R.string.task_attachment) + " " + attachTargetStr;
-                attachTextForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(attachOriginStr, attachTargetStr, 0xFFCACACA);
-            } else {
-                attachTextForegroundColorSpan = new SpannableString(getString(R.string.task_attachment));
-            }
-
             tabTitles.put(0, getString(R.string.task_detail));
-            tabTitles.put(1, checkTextForegroundColorSpan);
-            tabTitles.put(2, attachTextForegroundColorSpan);
+            tabTitles.put(1, getCheckItemTabText(taskItemEntity.doneItemCount, taskItemEntity.itemCount));
+            tabTitles.put(2, getAttachmentTabText(taskItemEntity.attachmentCount));
             baseFragmentAdapter.bindTitle(true, Arrays.asList(tabTitles.get(0, ""),
                     tabTitles.get(1, ""),
                     tabTitles.get(2, "")));
@@ -1005,6 +999,43 @@ public class TaskDetailActivity extends BaseActivity
                 viewpager.addOnPageChangeListener(onPageChangeListener);
             }
         }
+    }
+
+    /**
+     * 获取检查项的tab描述
+     *
+     * @param doneItemCount
+     * @param itemCount
+     * @return
+     */
+    private SpannableString getCheckItemTabText(int doneItemCount, int itemCount) {
+        SpannableString checkTextForegroundColorSpan;
+        if (itemCount > 0) {
+            String checkTargetStr = String.format("%s/%s", doneItemCount, itemCount);
+            String checkOriginStr = getString(R.string.task_check) + " " + checkTargetStr;
+            checkTextForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(checkOriginStr, checkTargetStr, 0xFFCACACA);
+        } else {
+            checkTextForegroundColorSpan = new SpannableString(getString(R.string.task_check));
+        }
+        return checkTextForegroundColorSpan;
+    }
+
+    /**
+     * 获取附件的tab描述
+     *
+     * @param attachmentCount
+     * @return
+     */
+    private SpannableString getAttachmentTabText(int attachmentCount) {
+        SpannableString attachTextForegroundColorSpan;
+        if (attachmentCount > 0) {
+            String attachTargetStr = String.valueOf(attachmentCount);
+            String attachOriginStr = getString(R.string.task_attachment) + " " + attachTargetStr;
+            attachTextForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(attachOriginStr, attachTargetStr, 0xFFCACACA);
+        } else {
+            attachTextForegroundColorSpan = new SpannableString(getString(R.string.task_attachment));
+        }
+        return attachTextForegroundColorSpan;
     }
 
     /**
@@ -1393,20 +1424,16 @@ public class TaskDetailActivity extends BaseActivity
     }
 
     @Override
-    public void onUpdateCheckItem(String checkItemCount) {
-        getData(true);
+    public void onUpdateCheckItem(int doneItemCount, int totalCount) {
+        tabTitles.put(1, getCheckItemTabText(doneItemCount, totalCount));
+        baseFragmentAdapter.bindTitle(true, Arrays.asList(tabTitles.get(0, ""),
+                tabTitles.get(1, ""),
+                tabTitles.get(2, "")));
     }
 
     @Override
     public void onUpdateDocument(int documentCount) {
-        if (documentCount > 0) {
-            String attachTargetStr = String.valueOf(documentCount);
-            String attachOriginStr = getString(R.string.task_attachment) + " " + attachTargetStr;
-            SpannableString attachTextForegroundColorSpan = SpannableUtils.getTextForegroundColorSpan(attachOriginStr, attachTargetStr, 0xFFCACACA);
-            tabTitles.put(2, attachTextForegroundColorSpan);
-        } else {
-            tabTitles.put(2, getString(R.string.task_attachment));
-        }
+        tabTitles.put(2, getAttachmentTabText(documentCount));
         baseFragmentAdapter.bindTitle(true, Arrays.asList(tabTitles.get(0, ""),
                 tabTitles.get(1, ""),
                 tabTitles.get(2, "")));

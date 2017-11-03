@@ -24,17 +24,34 @@ public abstract class SFileCallBack<T> extends SimpleCallBack2<T> {
     public void onFailure(Call<T> call, Throwable t) {
         if (t instanceof HttpException) {
             HttpException httpException = (HttpException) t;
-            if (httpException.code() == 403 || httpException.code() == 401) {
-                if (LoginInfoUtils.isUserLogin()
-                        && retryCount < MAX_RETRY_COUNT) {
-                    SFileTokenUtils.syncServerSFileToken();
-                    retryCount++;
-                }
-            } else {
-                super.onFailure(call, t);
+            switch (httpException.code()) {
+                case 401:
+                    syncServerSFileToken();
+                    break;
+                case 403:
+                    defNotify("无操作权限");
+                    syncServerSFileToken();
+                    break;
+                case 404:
+                    defNotify("文件或文件夹路径不存在");
+                    break;
+                default:
+                    super.onFailure(call, t);
+                    break;
             }
         } else {
             super.onFailure(call, t);
+        }
+    }
+
+    /**
+     * 同步seafile token
+     */
+    private void syncServerSFileToken() {
+        if (LoginInfoUtils.isUserLogin()
+                && retryCount < MAX_RETRY_COUNT) {
+            SFileTokenUtils.syncServerSFileToken();
+            retryCount++;
         }
     }
 }

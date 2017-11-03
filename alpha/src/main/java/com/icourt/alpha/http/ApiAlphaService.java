@@ -3,6 +3,7 @@ package com.icourt.alpha.http;
 import com.google.gson.JsonElement;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
+import com.icourt.alpha.entity.bean.AppVersionFirEntity;
 import com.icourt.alpha.entity.bean.CommentEntity;
 import com.icourt.alpha.entity.bean.ContactDeatilBean;
 import com.icourt.alpha.entity.bean.CustomerEntity;
@@ -58,6 +59,7 @@ import retrofit2.http.PUT;
 import retrofit2.http.PartMap;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
+import retrofit2.http.Url;
 
 /**
  * @author xuanyouwu
@@ -79,6 +81,16 @@ public interface ApiAlphaService {
      */
     @GET("ilaw/api/v2/versions/update")
     Call<ResEntity<AppVersionEntity>> getNewVersionAppInfo();
+
+    /**
+     * 获取新版本app
+     * 文档参考 https://fir.im/docs/version_detection
+     *
+     * @param url fir地址
+     * @return
+     */
+    @GET
+    Call<AppVersionFirEntity> getNewVersionAppInfo(@Url String url);
 
     /**
      * 修改律师电话信息
@@ -1577,6 +1589,7 @@ public interface ApiAlphaService {
     /**
      * 逸创云客服单点登录接口(帮助中心)
      * 文档地址：https://dev.alphalawyer.cn/ilaw/swagger/index.html#!/version-control-api/getLastestUpgradeVersionUsingGET
+     *
      * @return
      */
     @GET("ilaw/api/v1/ssologin/help")
@@ -1584,11 +1597,23 @@ public interface ApiAlphaService {
 
     /**
      * 获取律所资料库下面的资料库
+     * 文档地址：https://devwaf.alphalawyer.cn/ilaw/swagger/index.html#!/documents-api/findOfficeLibraryListUsingGET
+     * permissionType 不传代表所以律所权限【真实】的资料库
      *
      * @return
      */
     @GET("ilaw/api/v2/documents/my/officeLibs")
     Call<ResEntity<List<RepoEntity>>> getOfficeLibs(@Query("permissionType") String permissionType);
+
+    /**
+     * 获取律所资料库下面的资料库
+     * 文档地址：https://devwaf.alphalawyer.cn/ilaw/swagger/index.html#!/documents-api/findOfficeLibraryListUsingGET
+     * permissionType 不传代表所以律所权限【真实】的资料库
+     *
+     * @return
+     */
+    @GET("ilaw/api/v2/documents/my/officeLibs")
+    Observable<ResEntity<List<RepoEntity>>> getOfficeLibsObservable(@Query("permissionType") String permissionType);
 
     /**
      * 获取计时模块，日、周、月、年的统计时间

@@ -192,6 +192,11 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
      */
     private Guide guide;
 
+    /**
+     * 用来判断Activity是否在界面上显示了
+     */
+    private boolean isShowing;
+
     @BindView(R.id.main_fl_content)
     FrameLayout mainFlContent;
     @BindView(R.id.tab_news)
@@ -303,11 +308,18 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
          * 添加超时提醒
          */
         public void addOverTimingRemind(String remindContent) {
-            this.removeMessages(TYPE_OVER_TIMING_REMIND);
+            removeOverTimingRemind();
             Message obtain = Message.obtain();
             obtain.what = TYPE_OVER_TIMING_REMIND;
             obtain.obj = remindContent;
             this.sendMessageDelayed(obtain, 1_00);
+        }
+
+        /**
+         * 移除超时提醒
+         */
+        public void removeOverTimingRemind() {
+            this.removeMessages(TYPE_OVER_TIMING_REMIND);
         }
 
         /**
@@ -500,9 +512,16 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
     @Override
     protected void onResume() {
         super.onResume();
+        isShowing = true;
         checkNotificationisEnable();
         getPermission();
         mHandler.addCheckTimingTask();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        isShowing = false;
     }
 
     /**
@@ -905,7 +924,7 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
                         //计时超长的通知（这个通知每2小时通知一次）
                         case ServerTimingEvent.TIMING_SYNC_TOO_LONG:
                             //使用handler来发送超时提醒，为了防止一次性收到多个超时提醒，导致弹出多个提示窗。
-                            if (StringUtils.equals(event.id, TimerManager.getInstance().getTimerId(), false)) {
+                            if (TimerManager.getInstance().isTimer(event.id)) {
                                 mHandler.addOverTimingRemind(event.content);
                             }
                             break;
@@ -1044,6 +1063,8 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
         if (TimeUnit.SECONDS.toHours(TimerManager.getInstance().getTimingSeconds()) >= 2) {
             if (TimerManager.getInstance().isBubbleRemind() && TimerManager.getInstance().isOverTimingRemind()) {
                 mHandler.addOverTimingRemind(getOverTimingRemindContent(TimerManager.getInstance().getTimingSeconds()));
+            } else {
+                dismissOverTimingRemindDialogFragment(true);
             }
         } else {
             dismissOverTimingRemindDialogFragment(true);
@@ -1165,7 +1186,7 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
             mFragTransaction.remove(fragment);
         }
         //show方法源码是commit提交，会产生：Can not perform this action after onSaveInstanceState 异常
-//      TimingNoticeDialogFragment.newInstance(timer).show(mFragTransaction, tag);
+        //TimingNoticeDialogFragment.newInstance(timer).show(mFragTransaction, tag);
         mFragTransaction.add(TimingNoticeDialogFragment.newInstance(timer), tag);
         mFragTransaction.commitAllowingStateLoss();
     }
@@ -1183,7 +1204,16 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
      * 显示 持续计时过久时的提醒覆层
      */
     public void showOverTimingRemindDialogFragment(String content) {
-        if (isDestroyOrFinishing()) {//如果界面即将销毁，那么就不执行下去
+        //如果界面即将销毁，那么就不执行下去
+        if (isDestroyOrFinishing()) {
+            return;
+        }
+        //当前Activity不可见，就不显示。
+        if (!isShowing) {
+            return;
+        }
+        //如果没有正在计时，不执行下去
+        if (!TimerManager.getInstance().hasTimer()) {
             return;
         }
         //如果没有显示任务列表新任务的下一步按钮
@@ -1216,6 +1246,7 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
         if (isDestroyOrFinishing()) {
             return;
         }
+        mHandler.removeOverTimingRemind();
         String tag = OverTimingRemindDialogFragment.class.getSimpleName();
         OverTimingRemindDialogFragment fragment = (OverTimingRemindDialogFragment) getSupportFragmentManager().findFragmentByTag(tag);
         if (fragment != null) {

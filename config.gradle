@@ -34,18 +34,18 @@ ext {
 
     //神策数据接收的 URL
     sensorsDataAPIServer = [
-            server_url_debug  : "\"https://shenceadmin.alphalawyer.cn:8006/sa?project=default\"",//开发
-            server_url_test   : "\"https://shenceadmin.alphalawyer.cn:8006/sa?project=default\"",//内测
-            server_url_preview: "\"https://shenceadmin.alphalawyer.cn:8006/sa?project=default\"",//预览
-            server_url_release: "\"https://shenceadmin.alphalawyer.cn:8006/sa?project=production\""//正式
+            server_url_debug  : "\"https://shence.alphalawyer.cn/sa?project=default\"",//开发
+            server_url_test   : "\"https://shence.alphalawyer.cn/sa?project=default\"",//内测
+            server_url_preview: "\"https://shence.alphalawyer.cn/sa?project=default\"",//预览
+            server_url_release: "\"https://shence.alphalawyer.cn/sa?project=production\""//正式
     ]
 
     //神策配置分发的 URL
     sensorsDataAPIConfigure = [
-            configure_url_debug  : "\"https://shenceadmin.alphalawyer.cn:8006/config/?project=default\"",//开发
-            configure_url_test   : "\"https://shenceadmin.alphalawyer.cn:8006/config/?project=default\"",//内测
-            configure_url_preview: "\"https://shenceadmin.alphalawyer.cn:8006/config/?project=default\"",//预览
-            configure_url_release: "\"https://shenceadmin.alphalawyer.cn:8006/config/?project=production\""//正式
+            configure_url_debug  : "\"https://shence.alphalawyer.cn//config/?project=default\"",//开发
+            configure_url_test   : "\"https://shence.alphalawyer.cn//config/?project=default\"",//内测
+            configure_url_preview: "\"https://shence.alphalawyer.cn//config/?project=default\"",//预览
+            configure_url_release: "\"https://shence.alphalawyer.cn//config/?project=production\""//正式
     ]
 
     alphaApkUpdateUrl = [

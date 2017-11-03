@@ -1,5 +1,5 @@
-#alpha android客户端  
-#入职流程
+# alpha android客户端
+# 入职流程
 http://wiki.alphalawyer.cn/pages/viewpage.action?pageId=5603882
 #接入流程  
  1. 申请企业邮箱(eg. youxuan@icourt.cc),负责人(HR 韩时雨);用企业邮箱注册gitlab,并让管理员(吴佑炫)邀请  
@@ -12,13 +12,13 @@ http://wiki.alphalawyer.cn/pages/viewpage.action?pageId=5603882
  8. 查看app gradle环境与打包,安装好app,试用并测试和熟悉功能与业务;
  9. 接口文档地址:https://dev.alphalawyer.cn/ilaw/swagger/index.html#/ 
  
-#merge requests  
+# merge requests
    分支名称规则： br_dev_版本号(2.1.0)_模块名称(chat)_个人名字简写(xyw)  eg.  br_dev_2.1.0_chat_xyw   
    默认情况:都从dev分支开;不能独立操作test,master分支  
    插件:GitLab Projects  
    【注意】:开分支必须申请与讨论(版本与影响范围)  
    版本备注:(补充)  
-#fir账号
+# fir账号
  内部：wangchu@icourt.cc   q****  
  外部：104421133@qq.com    a*****  
  外部：it@icourt.cc        z****** （包内的更新token和id都引用的是1044账号的token和id）  
@@ -27,7 +27,7 @@ http://wiki.alphalawyer.cn/pages/viewpage.action?pageId=5603882
  蒲公英正式: xuanyouwu@163.com axuan******
 
 
-#上线打包日志  
+# 上线打包日志
  2017/7/22 v2.0.1 内部包 (fir账号：wangchu@icourt.cc)
  2017/7/26 v2.0.3 内部包 (fir账号：wangchu@icourt.cc)
 
@@ -42,15 +42,23 @@ http://wiki.alphalawyer.cn/pages/viewpage.action?pageId=5603882
  alpha-BaiDu-innerrelease_daily-v2.1.0_2017-10-19 23/16.apk  
  alpha-BaiDu-release-v2.2.0_2017-10-24 21/33_v220_jiagu_sign.apk
 
-#打包配置  
+# 打包配置
  已在gradle与Hconst中配置完成;  
  暂时不混淆代码,采用360加固服务;  
  http主要有四个环境  
  1. debug     开发版   https://dev.alphalawyer.cn/  
  2. innertest 内测版   https://test.alphalawyer.cn/  
  3. preview   预览版   https://pre.alphalawyer.cn／  
- 4. release   正式版   https://alphalawyer.cn/  
- 
+ 4. release   正式版   https://alphalawyer.cn/
+
+# 版本命名规范
+ 1. debug            开发版         命名规范:v2.2.0_debug
+ 2. innertest        内测版         命名规范:v2.2.0_test
+ 3. preview          预览版         命名规范:v2.2.0_preview
+ 4. release          正式版         命名规范:v2.2.0
+ 5. daily            每日更新版本    命名规范:v2.2.0_daily_2017_10_30
+ 6. inner_release    内部版本       命名规范:v2.2.0_inner_release
+
  云信配置 com.netease.nim.appKey
  1. 云信开发版 b0888ddeed001121372f4c050e1de737
  2. 云信开内测版 4767e87cb6cb9c86946956cc3ecf605c
@@ -74,13 +82,20 @@ http://wiki.alphalawyer.cn/pages/viewpage.action?pageId=5603882
   正式: 用户名:admin 密码:v*****  
   集成文档:https://github.com/sensorsdata/sa-sdk-android   
   
-#代码规范
+# 代码规范
  以阿里巴巴为准,不做过多文案描述  
  插件: Alibaba Java Coding Guidelines  
- 插件使用相关博客:http://www.cnblogs.com/plokmju/p/7670481.html  
+ 插件使用相关博客:http://www.cnblogs.com/plokmju/p/7670481.html
+
+# 推荐插件
+1. Alibaba Java Coding Guidelines
+2. EventBus3 Intellij Plugin
+3. MarkDownSupport
+4. AndroidCodeGenerator
+5. Android ButterKnife Zelezny
  
    
-#日志跟踪tag
+# 日志跟踪tag
 1. 自定义LogUtils
 2. 网络"http"
 3. 性能检测StrictMode
@@ -88,5 +103,5 @@ http://wiki.alphalawyer.cn/pages/viewpage.action?pageId=5603882
 5. fragment生命周期:  ===========>fragmentOnXXX() 如:===========>fragmentOnResume:HomePageFragment{839ccb9 #0 id=0x7f0e0190 android:switcher:2131624336:0}  
 
 
-#网易云通信状态码
+# 网易云通信状态码
   http://dev.netease.im/docs/product/%E9%80%9A%E7%94%A8/%E7%8A%B6%E6%80%81%E7%A0%81  

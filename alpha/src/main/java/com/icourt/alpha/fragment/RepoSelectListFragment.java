@@ -252,10 +252,12 @@ public class RepoSelectListFragment extends RepoBaseFragment implements OnItemCl
                 listCall = getSFileApi().documentRootQueryObservable(1, pageSize, officeAdminId, null, "shared");
                 break;
             case REPO_LAWFIRM:
-                listCall = getSFileApi().documentRootQueryObservable();
+                listCall = sendObservable(getApi().getOfficeLibsObservable(null));
                 break;
             case REPO_PROJECT:
                 listCall = getSFileApi().documentRootQueryObservable(1, pageSize, null, officeAdminId, "shared");
+                break;
+            default:
                 break;
         }
         if (listCall == null) return;

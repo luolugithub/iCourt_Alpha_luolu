@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.scwang.smartrefresh.layout.SmartRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@id/refreshLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:isHeightMatchParent="false">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <!-- 公用标准刷新布局  -->
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <TextView
+            android:id="@id/contentEmptyText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:gravity="center"
+            android:maxLines="3"
+            android:padding="15dp"
+            android:text="没有找到匹配的结果"
+            android:textSize="14dp"
+            android:visibility="gone" />
+    </FrameLayout>
+
+</com.scwang.smartrefresh.layout.SmartRefreshLayout>

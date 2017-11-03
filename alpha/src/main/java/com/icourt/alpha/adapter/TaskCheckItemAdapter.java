@@ -23,6 +23,7 @@ import com.icourt.alpha.utils.SystemUtils;
 public class TaskCheckItemAdapter extends MultiSelectRecyclerAdapter<TaskCheckItemEntity.ItemEntity> {
 
     OnLoseFocusListener onLoseFocusListener;
+
     boolean valid, isFinish;
 
     public void setOnLoseFocusListener(OnLoseFocusListener onLoseFocusListener) {
@@ -97,9 +98,28 @@ public class TaskCheckItemAdapter extends MultiSelectRecyclerAdapter<TaskCheckIt
         }
     }
 
+    /**
+     * 获取已完成的检查项数量
+     *
+     * @return
+     */
+    public int getFinshedItemCount() {
+        int count = 0;
+        if (getData() != null) {
+            for (int i = 0; i < getData().size(); i++) {
+                TaskCheckItemEntity.ItemEntity itemEntity = getData().get(i);
+                if (itemEntity.state) {
+                    count += 1;
+                }
+            }
+        }
+        return count;
+    }
+
     public interface OnLoseFocusListener {
         /**
          * 取消焦点
+         *
          * @param itemEntity
          * @param position
          * @param name

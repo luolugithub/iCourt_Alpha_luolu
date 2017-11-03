@@ -183,10 +183,12 @@ public interface ApiSFileService {
 
     /**
      * 获取律所律所资料库
+     * 注意:::  返回的权限不准确
      *
      * @return
      */
     @GET("api2/repos/public/")
+    @Deprecated
     Observable<List<RepoEntity>> documentRootQueryObservable();
 
     /**
@@ -269,8 +271,8 @@ public interface ApiSFileService {
      */
     @POST("api/v2.1/repos/{seaFileRepoId}/dir/")
     Call<FolderDocumentEntity> folderCreate(@Path("seaFileRepoId") String seaFileRepoId,
-                                  @Query("p") String p,
-                                  @Body RequestBody body);
+                                            @Query("p") String p,
+                                            @Body RequestBody body);
 
     /**
      * 删除文件夹

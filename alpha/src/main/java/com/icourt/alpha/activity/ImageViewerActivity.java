@@ -127,10 +127,19 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
      *
      * @param seaFileRepoId
      * @param seaFileFullPath
-     * @param size
+     * @param size            -1 代表原图
      * @return
      */
     protected String getSFileImageUrl(String seaFileRepoId, String seaFileFullPath, int size) {
+        if (size == -1) {
+            //原图不传size参数
+            return String.format("%silaw/api/v2/documents/thumbnailImage?repoId=%s&seafileToken=%s&p=%s",
+                    BuildConfig.API_URL,
+                    seaFileRepoId,
+                    SFileTokenUtils.getSFileToken(),
+                    UrlUtils.encodeUrl(seaFileFullPath))
+                    .toString();
+        }
         return String.format("%silaw/api/v2/documents/thumbnailImage?repoId=%s&seafileToken=%s&size=%s&p=%s",
                 BuildConfig.API_URL,
                 seaFileRepoId,
@@ -175,7 +184,7 @@ public class ImageViewerActivity extends ImageViewBaseActivity {
          */
         public String getOriginalImageUrl(ISeaFile iSeaFile) {
             if (iSeaFile == null) return null;
-            return getSFileImageUrl(iSeaFile.getSeaFileRepoId(), iSeaFile.getSeaFileFullPath(), Integer.MAX_VALUE);
+            return getSFileImageUrl(iSeaFile.getSeaFileRepoId(), iSeaFile.getSeaFileFullPath(), -1);
         }
 
         /**

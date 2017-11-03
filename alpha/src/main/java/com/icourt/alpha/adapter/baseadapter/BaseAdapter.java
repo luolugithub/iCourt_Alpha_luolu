@@ -63,9 +63,6 @@ public abstract class BaseAdapter<T>
 
     @Override
     public int getRealAdapterCount() {
-        if (getData().isEmpty()) {
-            return 0;
-        }
         return getData().size();
     }
 
