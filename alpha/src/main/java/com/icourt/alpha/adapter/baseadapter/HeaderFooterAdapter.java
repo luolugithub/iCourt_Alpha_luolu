@@ -20,12 +20,14 @@ import java.util.List;
  * date createTime：16/6/9
  * version
  */
+
 /**
  * 新版本 @see {@link BaseAdapter}
+ *
  * @param <T>
  */
 @Deprecated
-public class HeaderFooterAdapter<T extends RecyclerView.Adapter> extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements IDataEmptyAdapter{
+public class HeaderFooterAdapter<T extends RecyclerView.Adapter> extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements IDataEmptyAdapter {
 
     private final T mBase;
 
@@ -190,6 +192,6 @@ public class HeaderFooterAdapter<T extends RecyclerView.Adapter> extends Recycle
         if (mBase == null) {
             return 0;
         }
-        return getItemCount();
+        return mBase.getItemCount();
     }
 }

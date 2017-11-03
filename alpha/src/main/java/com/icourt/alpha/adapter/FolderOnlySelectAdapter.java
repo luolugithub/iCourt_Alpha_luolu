@@ -1,10 +1,12 @@
 package com.icourt.alpha.adapter;
 
+import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.CheckedTextView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.asange.recyclerviewadapter.BaseViewHolder;
 import com.icourt.alpha.R;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
@@ -45,8 +47,8 @@ public class FolderOnlySelectAdapter extends FolderDocumentAdapter {
     }
 
     @Override
-    public void onBindHoder(ViewHolder holder, FolderDocumentEntity folderDocumentEntity, int position) {
-        super.onBindHoder(holder, folderDocumentEntity, position);
+    public void onBindHolder(BaseViewHolder holder, @Nullable FolderDocumentEntity folderDocumentEntity, int i) {
+        super.onBindHolder(holder, folderDocumentEntity, i);
         TextView document_desc_tv = holder.obtainView(R.id.document_desc_tv);
         ImageView document_expand_iv = holder.obtainView(R.id.document_expand_iv);
         CheckedTextView folder_document_ctv = holder.obtainView(R.id.folder_document_ctv);

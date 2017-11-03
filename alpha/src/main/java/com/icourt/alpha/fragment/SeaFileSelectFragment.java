@@ -11,9 +11,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.asange.recyclerviewadapter.BaseViewHolder;
+import com.asange.recyclerviewadapter.OnItemClickListener;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.FolderOnlySelectAdapter;
-import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
 import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseFragment;
@@ -44,8 +45,7 @@ import retrofit2.Response;
  * date createTime：2017/9/11
  * version 2.1.0
  */
-public class SeaFileSelectFragment extends BaseFragment
-        implements BaseRecyclerAdapter.OnItemClickListener {
+public class SeaFileSelectFragment extends BaseFragment implements OnItemClickListener {
     public static final String KEY_SEAFILE_SELECT_PARAM = "key_seafile_select_param";
     private static final int MAX_SELECT_NUM = 10;
     @BindView(R.id.refreshLayout)
@@ -194,7 +194,9 @@ public class SeaFileSelectFragment extends BaseFragment
         if (datas != null) {
             for (int i = 0; i < datas.size(); i++) {
                 FolderDocumentEntity folderDocumentEntity = datas.get(i);
-                if (folderDocumentEntity == null) continue;
+                if (folderDocumentEntity == null) {
+                    continue;
+                }
                 folderDocumentEntity.repoId = iSeaFileSelectParams.getDstRepoId();
                 folderDocumentEntity.parent_dir = iSeaFileSelectParams.getDstRepoDirPath();
             }
@@ -215,10 +217,13 @@ public class SeaFileSelectFragment extends BaseFragment
         unbinder.unbind();
     }
 
+
     @Override
-    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        FolderDocumentEntity item = folderDocumentAdapter.getItem(position);
-        if (item == null) return;
+    public void onItemClick(com.asange.recyclerviewadapter.BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
+        FolderDocumentEntity item = folderDocumentAdapter.getItem(i);
+        if (item == null) {
+            return;
+        }
         if (item.isDir()) {
             //请求父容器
             if (onFragmentCallBackListener != null) {

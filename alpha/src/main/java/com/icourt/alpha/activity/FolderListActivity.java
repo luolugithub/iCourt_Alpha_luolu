@@ -10,6 +10,7 @@ import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.KeyEvent;
@@ -22,13 +23,16 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.asange.recyclerviewadapter.BaseViewHolder;
+import com.asange.recyclerviewadapter.OnItemChildClickListener;
+import com.asange.recyclerviewadapter.OnItemClickListener;
+import com.asange.recyclerviewadapter.OnItemLongClickListener;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.FolderDocumentAdapter;
 import com.icourt.alpha.adapter.FolderDocumentWrapAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseDialogFragment;
 import com.icourt.alpha.constants.Const;
@@ -56,7 +60,6 @@ import com.icourt.alpha.widget.filter.SFileNameFilter;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
-import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -94,10 +97,8 @@ import static com.icourt.alpha.widget.comparators.FileSortComparator.FILE_SORT_T
  * version 2.1.0
  */
 public class FolderListActivity extends FolderBaseActivity
-        implements BaseRecyclerAdapter.OnItemClickListener,
-        BaseRecyclerAdapter.OnItemLongClickListener,
-        BaseRecyclerAdapter.OnItemChildClickListener,
-        OnDialogFragmentDismissListener {
+        implements
+        OnDialogFragmentDismissListener, OnItemLongClickListener, OnItemClickListener, OnItemChildClickListener {
 
     private static final int REQUEST_CODE_CHOOSE_FILE = 1002;
     @BindView(R.id.titleBack)
@@ -111,17 +112,13 @@ public class FolderListActivity extends FolderBaseActivity
     @BindView(R.id.titleView)
     AppBarLayout titleView;
     @BindView(R.id.recyclerView)
-    EmptyRecyclerView recyclerView;
+    RecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
     SmartRefreshLayout refreshLayout;
     FolderDocumentWrapAdapter folderDocumentAdapter;
-    HeaderFooterAdapter<FolderDocumentWrapAdapter> headerFooterAdapter;
     @BindView(R.id.bottom_bar_select_num_tv)
     TextView bottomBarSelectNumTv;
     private ArrayList<FolderDocumentEntity> selectedFolderDocuments = new ArrayList<>();
-    View headerView;
-    TextView footerView;
-
 
     @BindView(R.id.titleEditCancelView)
     CheckedTextView titleEditCancelView;
@@ -216,15 +213,21 @@ public class FolderListActivity extends FolderBaseActivity
         linearLayoutManager.setAutoMeasureEnabled(true);
         recyclerView.setLayoutManager(linearLayoutManager);
 
-        headerFooterAdapter = new HeaderFooterAdapter<>(
-                folderDocumentAdapter = new FolderDocumentWrapAdapter(
-                        SFileConfig.getSFileLayoutType(getSeaFileRepoId(), VIEW_TYPE_ITEM),
-                        false,
-                        selectedFolderDocuments));
-        addHeadView();
+        folderDocumentAdapter = new FolderDocumentWrapAdapter(
+                SFileConfig.getSFileLayoutType(getSeaFileRepoId(), VIEW_TYPE_ITEM),
+                false,
+                selectedFolderDocuments);
 
-        addFooterView();
+        View headerView = folderDocumentAdapter.addHeader(R.layout.header_search_folder_document, recyclerView);
+        headerSearchDirectionIv = headerView.findViewById(R.id.header_search_direction_iv);
+        registerClick(headerSearchDirectionIv);
+        registerClick(headerView.findViewById(R.id.header_search_sort_iv));
+        registerClick(headerView.findViewById(R.id.header_comm_search_ll));
 
+
+        final TextView footerView = (TextView) folderDocumentAdapter.addFooter(R.layout.footer_folder_document_num, recyclerView);
+        footerView.setText("");
+        recyclerView.setAdapter(folderDocumentAdapter);
 
         folderDocumentAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override
@@ -233,6 +236,9 @@ public class FolderListActivity extends FolderBaseActivity
                     int dirNum = 0, fileNum = 0;
                     for (int i = 0; i < folderDocumentAdapter.getItemCount(); i++) {
                         List<FolderDocumentEntity> items = folderDocumentAdapter.getItem(i);
+                        if (items == null) {
+                            continue;
+                        }
                         for (int j = 0; j < items.size(); j++) {
                             FolderDocumentEntity folderDocumentEntity = items.get(j);
                             if (folderDocumentEntity != null) {
@@ -257,7 +263,6 @@ public class FolderListActivity extends FolderBaseActivity
             }
         });
 
-        recyclerView.setAdapter(headerFooterAdapter);
 
         folderDocumentAdapter.setOnItemLongClickListener(this);
         folderDocumentAdapter.setOnItemClickListener(this);
@@ -299,21 +304,6 @@ public class FolderListActivity extends FolderBaseActivity
         return totals;
     }
 
-
-    private void addHeadView() {
-        headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_folder_document, recyclerView.getRecyclerView());
-        headerSearchDirectionIv = headerView.findViewById(R.id.header_search_direction_iv);
-        registerClick(headerSearchDirectionIv);
-        registerClick(headerView.findViewById(R.id.header_search_sort_iv));
-        registerClick(headerView.findViewById(R.id.header_comm_search_ll));
-        headerFooterAdapter.addHeader(headerView);
-    }
-
-    private void addFooterView() {
-        footerView = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_folder_document_num, recyclerView.getRecyclerView());
-        headerFooterAdapter.addFooter(footerView);
-        footerView.setText("");
-    }
 
     @Override
     protected void onResume() {
@@ -375,7 +365,9 @@ public class FolderListActivity extends FolderBaseActivity
             }
             for (int i = 0; i < sparseArray.size(); i++) {
                 List<FolderDocumentEntity> folderDocumentEntities = sparseArray.get(i, new ArrayList<FolderDocumentEntity>());
-                if (folderDocumentEntities.isEmpty()) continue;
+                if (folderDocumentEntities.isEmpty()) {
+                    continue;
+                }
                 result.add(folderDocumentEntities);
             }
         }
@@ -415,7 +407,9 @@ public class FolderListActivity extends FolderBaseActivity
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onFileRenameEvent(FileRenameEvent event) {
-        if (event == null) return;
+        if (event == null) {
+            return;
+        }
         if (TextUtils.equals(event.seaFileRepoId, getSeaFileRepoId())) {
             //更新其中的路径
             getIntent().putExtra(KEY_SEA_FILE_DIR_PATH, getSeaFileDirPath().replaceFirst(event.oldFullPath, event.newFullPath));
@@ -454,6 +448,8 @@ public class FolderListActivity extends FolderBaseActivity
                         break;
                     case VIEW_TYPE_GRID:
                         folderDocumentAdapter.setAdapterViewType(VIEW_TYPE_ITEM);
+                        break;
+                    default:
                         break;
                 }
                 //内存保存
@@ -671,7 +667,9 @@ public class FolderListActivity extends FolderBaseActivity
      * @param filePath 文件路径
      */
     private void uploadFile(String filePath) {
-        if (TextUtils.isEmpty(filePath)) return;
+        if (TextUtils.isEmpty(filePath)) {
+            return;
+        }
         File file = new File(filePath);
         if (!file.exists()) {
             showTopSnackBar(R.string.sfile_not_exist);
@@ -688,7 +686,9 @@ public class FolderListActivity extends FolderBaseActivity
     private void uploadFiles(final List<String> filePaths) {
         if (filePaths != null
                 && !filePaths.isEmpty()) {
-            if (isDestroyOrFinishing()) return;
+            if (isDestroyOrFinishing()) {
+                return;
+            }
             final ArrayList<String> filePathsArray = new ArrayList<>(filePaths);
 
             //1.检验文件名称合法性
@@ -804,93 +804,17 @@ public class FolderListActivity extends FolderBaseActivity
         bottomBarDeleteTv.setEnabled(canAction);
     }
 
-    @Override
-    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        if (adapter instanceof FolderDocumentAdapter) {
-            FolderDocumentAdapter folderDocumentAdapter = (FolderDocumentAdapter) adapter;
-            if (folderDocumentAdapter.isSelectable()) {
-                toggleSelect(folderDocumentAdapter, position);
-            } else {
-                final FolderDocumentEntity item = folderDocumentAdapter.getItem(position);
-                if (item == null) return;
-                if (item.isDir()) {
-                    FolderListActivity.launch(getContext(),
-                            getRepoType(),
-                            SFileConfig.convert2filePermission(item.permission),
-                            getSeaFileRepoId(),
-                            item.name,
-                            String.format("%s%s/", getSeaFileDirPath(), item.name),
-                            isEncrypted);
-                } else {
-                    //图片 直接预览 (加密的资料库 缩略图显示不了)
-                    if (!isEncrypted && IMUtils.isPIC(item.name)) {
-                        List<FolderDocumentEntity> allData = getAllData();
-                        ArrayList<FolderDocumentEntity> imageDatas = new ArrayList<>();
-
-                        for (int i = 0; i < allData.size(); i++) {
-                            FolderDocumentEntity folderDocumentEntity = allData.get(i);
-                            if (folderDocumentEntity == null) continue;
-                            if (IMUtils.isPIC(folderDocumentEntity.name)) {
-                                imageDatas.add(folderDocumentEntity);
-                            }
-                        }
-                        int indexOf = imageDatas.indexOf(item);
-                        ImageViewerActivity.launch(
-                                getContext(),
-                                SFileConfig.FILE_FROM_REPO,
-                                imageDatas,
-                                indexOf);
-                    } else {
-                        FileDownloadActivity.launch(
-                                getContext(),
-                                item,
-                                SFileConfig.FILE_FROM_REPO);
-                    }
-                }
-            }
-        }
-    }
-
-
-    @Override
-    public boolean onItemLongClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        if (adapter instanceof FolderDocumentAdapter) {
-            FolderDocumentAdapter folderDocumentAdapter = (FolderDocumentAdapter) adapter;
-            FolderDocumentEntity item = folderDocumentAdapter.getItem(position);
-            if (item == null) return false;
-            //有可读写权限
-            boolean showFolderActionMenu = !folderDocumentAdapter.isSelectable()
-                    && TextUtils.equals(item.permission, PERMISSION_RW);
-            if (showFolderActionMenu) {
-                showFolderActionMenu(adapter, position);
-            }
-        }
-        return true;
-    }
-
-    @Override
-    public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        if (adapter instanceof FolderDocumentAdapter) {
-            switch (view.getId()) {
-                case R.id.document_expand_iv:
-                    showFolderActionMenu(adapter, position);
-                    break;
-                case R.id.document_detail_iv:
-                    FolderDocumentAdapter folderDocumentAdapter = (FolderDocumentAdapter) adapter;
-                    lookDetails(folderDocumentAdapter.getItem(position));
-                    break;
-            }
-        }
-    }
 
     /**
      * 展示文件夹/文件复制移动等操作菜单
      *
      * @param position
      */
-    private void showFolderActionMenu(BaseRecyclerAdapter adapter, int position) {
+    private void showFolderActionMenu(com.asange.recyclerviewadapter.BaseRecyclerAdapter adapter, int position) {
         final FolderDocumentEntity item = (FolderDocumentEntity) adapter.getItem(position);
-        if (item == null) return;
+        if (item == null) {
+            return;
+        }
         ArrayList<String> menus = new ArrayList<>();
         if (item.isDir()) {
             //非我的资料库 不能展示查看文件夹详情与共享
@@ -970,7 +894,9 @@ public class FolderListActivity extends FolderBaseActivity
     }
 
     private void lookDetails(final FolderDocumentEntity item) {
-        if (item == null) return;
+        if (item == null) {
+            return;
+        }
         if (item.isDir()) {
             FolderDetailDialogFragment.show(
                     getRepoType(),
@@ -991,7 +917,9 @@ public class FolderListActivity extends FolderBaseActivity
 
     protected final void showFolderTargetListDialogFragment(@Const.FILE_ACTION_TYPE int folderActionType,
                                                             ArrayList<FolderDocumentEntity> folderDocumentEntities) {
-        if (folderDocumentEntities == null || folderDocumentEntities.isEmpty()) return;
+        if (folderDocumentEntities == null || folderDocumentEntities.isEmpty()) {
+            return;
+        }
         String tag = FolderTargetListDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
@@ -1015,7 +943,9 @@ public class FolderListActivity extends FolderBaseActivity
      * @param items
      */
     private void deleteFolderOrDocuments(final ArrayList<FolderDocumentEntity> items) {
-        if (items == null || items.isEmpty()) return;
+        if (items == null || items.isEmpty()) {
+            return;
+        }
         seaFileDelete(getSeaFileRepoId(), getSeaFileDirPath(), items, new BaseObserver<JsonObject>() {
             @Override
             public void onNext(@io.reactivex.annotations.NonNull JsonObject jsonObject) {
@@ -1088,7 +1018,93 @@ public class FolderListActivity extends FolderBaseActivity
 
     @Override
     public void onDialogFragmentDismiss(BaseDialogFragment baseDialogFragment) {
-        if (isDestroyOrFinishing()) return;
+        if (isDestroyOrFinishing()) {
+            return;
+        }
         getData(true);
+    }
+
+    @Override
+    public boolean onItemLongClick(com.asange.recyclerviewadapter.BaseRecyclerAdapter adapter, BaseViewHolder baseViewHolder, View view, int position) {
+        if (adapter instanceof FolderDocumentAdapter) {
+            FolderDocumentAdapter folderDocumentAdapter = (FolderDocumentAdapter) adapter;
+            FolderDocumentEntity item = folderDocumentAdapter.getItem(position);
+            if (item == null) {
+                return false;
+            }
+            //有可读写权限
+            boolean showFolderActionMenu = !folderDocumentAdapter.isSelectable()
+                    && TextUtils.equals(item.permission, PERMISSION_RW);
+            if (showFolderActionMenu) {
+                showFolderActionMenu(adapter, position);
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public void onItemClick(com.asange.recyclerviewadapter.BaseRecyclerAdapter adapter, BaseViewHolder baseViewHolder, View view, int pos) {
+        if (adapter instanceof FolderDocumentAdapter) {
+            FolderDocumentAdapter folderDocumentAdapter = (FolderDocumentAdapter) adapter;
+            if (folderDocumentAdapter.isSelectable()) {
+                toggleSelect(folderDocumentAdapter, pos);
+            } else {
+                final FolderDocumentEntity item = folderDocumentAdapter.getItem(pos);
+                if (item == null) {
+                    return;
+                }
+                if (item.isDir()) {
+                    FolderListActivity.launch(getContext(),
+                            getRepoType(),
+                            SFileConfig.convert2filePermission(item.permission),
+                            getSeaFileRepoId(),
+                            item.name,
+                            String.format("%s%s/", getSeaFileDirPath(), item.name),
+                            isEncrypted);
+                } else {
+                    //图片 直接预览 (加密的资料库 缩略图显示不了)
+                    if (!isEncrypted && IMUtils.isPIC(item.name)) {
+                        List<FolderDocumentEntity> allData = getAllData();
+                        ArrayList<FolderDocumentEntity> imageDatas = new ArrayList<>();
+
+                        for (int i = 0; i < allData.size(); i++) {
+                            FolderDocumentEntity folderDocumentEntity = allData.get(i);
+                            if (folderDocumentEntity == null) {
+                                continue;
+                            }
+                            if (IMUtils.isPIC(folderDocumentEntity.name)) {
+                                imageDatas.add(folderDocumentEntity);
+                            }
+                        }
+                        int indexOf = imageDatas.indexOf(item);
+                        ImageViewerActivity.launch(
+                                getContext(),
+                                SFileConfig.FILE_FROM_REPO,
+                                imageDatas,
+                                indexOf);
+                    } else {
+                        FileDownloadActivity.launch(
+                                getContext(),
+                                item,
+                                SFileConfig.FILE_FROM_REPO);
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onItemChildClick(com.asange.recyclerviewadapter.BaseRecyclerAdapter adapter, BaseViewHolder baseViewHolder, View view, int i) {
+        if (adapter instanceof FolderDocumentAdapter) {
+            switch (view.getId()) {
+                case R.id.document_expand_iv:
+                    showFolderActionMenu(adapter, i);
+                    break;
+                case R.id.document_detail_iv:
+                    FolderDocumentAdapter folderDocumentAdapter = (FolderDocumentAdapter) adapter;
+                    lookDetails(folderDocumentAdapter.getItem(i));
+                    break;
+            }
+        }
     }
 }

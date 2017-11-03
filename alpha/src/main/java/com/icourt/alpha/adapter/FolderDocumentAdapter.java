@@ -1,11 +1,13 @@
 package com.icourt.alpha.adapter;
 
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.CheckedTextView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.asange.recyclerviewadapter.BaseViewHolder;
 import com.icourt.alpha.R;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.constants.SFileConfig;
@@ -27,7 +29,7 @@ import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
  * date createTime：2017/8/10
  * version 2.1.0
  */
-public class FolderDocumentAdapter extends SeaFileImageBaseAdapter<FolderDocumentEntity> {
+public class FolderDocumentAdapter extends SeaFileImageBaseAdapter2<FolderDocumentEntity> {
     private ArrayList<FolderDocumentEntity> selectedFolderDocuments;
     @Const.AdapterViewType
     int adapterViewType;
@@ -66,22 +68,23 @@ public class FolderDocumentAdapter extends SeaFileImageBaseAdapter<FolderDocumen
     }
 
     @Override
-    public int getItemViewType(int position) {
-        return adapterViewType;
-    }
-
-
-    @Override
-    public void onBindHoder(ViewHolder holder, FolderDocumentEntity folderDocumentEntity, int position) {
-        if (folderDocumentEntity == null) return;
+    public void onBindHolder(BaseViewHolder holder, @Nullable FolderDocumentEntity folderDocumentEntity, int i) {
+        if (folderDocumentEntity == null) {
+            return;
+        }
         switch (holder.getItemViewType()) {
             case VIEW_TYPE_GRID:
-                setGridItemData(holder, folderDocumentEntity, position);
+                setGridItemData(holder, folderDocumentEntity, i);
                 break;
             case VIEW_TYPE_ITEM:
-                setItemData(holder, folderDocumentEntity, position);
+                setItemData(holder, folderDocumentEntity, i);
                 break;
         }
+    }
+
+    @Override
+    public int getViewType(int index) {
+        return adapterViewType;
     }
 
     /**
@@ -103,7 +106,7 @@ public class FolderDocumentAdapter extends SeaFileImageBaseAdapter<FolderDocumen
      * @param folderDocumentEntity
      * @param position
      */
-    protected void setGridItemData(ViewHolder holder, FolderDocumentEntity folderDocumentEntity, int position) {
+    protected void setGridItemData(BaseViewHolder holder, FolderDocumentEntity folderDocumentEntity, int position) {
         CheckedTextView folder_document_ctv = holder.obtainView(R.id.folder_document_ctv);
         ImageView document_type_iv = holder.obtainView(R.id.document_type_iv);
         TextView document_title_tv = holder.obtainView(R.id.document_title_tv);
@@ -117,7 +120,7 @@ public class FolderDocumentAdapter extends SeaFileImageBaseAdapter<FolderDocumen
         } else {
             if (IMUtils.isPIC(folderDocumentEntity.name)) {
                 document_pic_iv.setVisibility(View.VISIBLE);
-                loadSFileImage(folderDocumentEntity,document_pic_iv);
+                loadSFileImage(folderDocumentEntity, document_pic_iv);
             } else {
                 document_pic_iv.setVisibility(View.GONE);
                 document_type_iv.setImageResource(getSFileTypeIcon(folderDocumentEntity.name));
@@ -129,8 +132,10 @@ public class FolderDocumentAdapter extends SeaFileImageBaseAdapter<FolderDocumen
         folder_mask_view.setVisibility(isSelected(folderDocumentEntity) ? View.VISIBLE : View.GONE);
     }
 
-    protected void setItemData(ViewHolder holder, FolderDocumentEntity folderDocumentEntity, int position) {
-        if (folderDocumentEntity == null) return;
+    protected void setItemData(BaseViewHolder holder, FolderDocumentEntity folderDocumentEntity, int position) {
+        if (folderDocumentEntity == null) {
+            return;
+        }
         CheckedTextView folder_document_ctv = holder.obtainView(R.id.folder_document_ctv);
         ImageView document_type_iv = holder.obtainView(R.id.document_type_iv);
         TextView document_title_tv = holder.obtainView(R.id.document_title_tv);

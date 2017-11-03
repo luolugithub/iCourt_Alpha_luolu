@@ -1,11 +1,13 @@
 package com.icourt.alpha.adapter;
 
+import android.support.annotation.Nullable;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
+import com.asange.recyclerviewadapter.BaseViewHolder;
 import com.icourt.alpha.R;
-import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseAdapter;
 import com.icourt.alpha.constants.Const;
 import com.icourt.alpha.entity.bean.FolderDocumentEntity;
 
@@ -22,7 +24,7 @@ import static com.icourt.alpha.constants.Const.VIEW_TYPE_ITEM;
  * version 2.1.0
  */
 public class FolderDocumentWrapAdapter
-        extends BaseArrayRecyclerAdapter<List<FolderDocumentEntity>> {
+        extends BaseAdapter<List<FolderDocumentEntity>> {
     @Const.AdapterViewType
     int adapterViewType;
     boolean selectable;
@@ -67,7 +69,7 @@ public class FolderDocumentWrapAdapter
     }
 
     @Override
-    public void onBindHoder(ViewHolder holder, List<FolderDocumentEntity> folderDocumentEntities, int position) {
+    public void onBindHolder(BaseViewHolder holder, @Nullable List<FolderDocumentEntity> folderDocumentEntities, int i) {
         if (folderDocumentEntities == null) return;
         RecyclerView recyclerView = holder.obtainView(R.id.recyclerView);
         recyclerView.setNestedScrollingEnabled(false);
