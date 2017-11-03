@@ -1,11 +1,13 @@
 package com.icourt.alpha.adapter;
 
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.asange.recyclerviewadapter.BaseViewHolder;
 import com.icourt.alpha.R;
-import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseAdapter;
 import com.icourt.alpha.entity.bean.SFileShareUserInfo;
 import com.icourt.alpha.utils.GlideUtils;
 
@@ -18,7 +20,7 @@ import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
  * date createTime：2017/8/16
  * version 2.1.0
  */
-public class FileInnerShareAdapter extends BaseArrayRecyclerAdapter<SFileShareUserInfo> {
+public class FileInnerShareAdapter extends BaseAdapter<SFileShareUserInfo> {
     boolean canEdit;
 
     public FileInnerShareAdapter(boolean canEdit) {
@@ -31,8 +33,10 @@ public class FileInnerShareAdapter extends BaseArrayRecyclerAdapter<SFileShareUs
     }
 
     @Override
-    public void onBindHoder(ViewHolder holder, SFileShareUserInfo sFileShareUserInfo, int position) {
-        if (sFileShareUserInfo == null) return;
+    public void onBindHolder(BaseViewHolder holder, @Nullable SFileShareUserInfo sFileShareUserInfo, int i) {
+        if (sFileShareUserInfo == null) {
+            return;
+        }
         ImageView user_icon_iv = holder.obtainView(R.id.user_icon_iv);
 
         GlideUtils.loadUser(
@@ -49,5 +53,6 @@ public class FileInnerShareAdapter extends BaseArrayRecyclerAdapter<SFileShareUs
         user_action_tv.setText(TextUtils.equals(sFileShareUserInfo.permission, PERMISSION_RW) ? "可读写" : "只读");
         holder.bindChildClick(user_action_tv);
         user_action_tv.setCompoundDrawablesWithIntrinsicBounds(0, 0, canEdit ? R.mipmap.arrow_bottom : 0, 0);
+
     }
 }

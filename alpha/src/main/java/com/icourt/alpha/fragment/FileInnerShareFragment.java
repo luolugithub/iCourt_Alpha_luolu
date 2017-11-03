@@ -5,17 +5,19 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.asange.recyclerviewadapter.BaseViewHolder;
+import com.asange.recyclerviewadapter.OnItemChildClickListener;
 import com.google.gson.JsonObject;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.FileInnerShareAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.constants.SFileConfig;
 import com.icourt.alpha.entity.bean.GroupContactBean;
@@ -29,7 +31,6 @@ import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.widget.dialog.BottomActionDialog;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
-import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,15 +54,14 @@ import static com.icourt.alpha.constants.SFileConfig.PERMISSION_RW;
  */
 public class FileInnerShareFragment extends BaseFragment
         implements OnFragmentCallBackListener,
-        BaseRecyclerAdapter.OnItemChildClickListener {
+        OnItemChildClickListener {
 
     @BindView(R.id.recyclerView)
-    EmptyRecyclerView recyclerView;
+    RecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
     SmartRefreshLayout refreshLayout;
     Unbinder unbinder;
     FileInnerShareAdapter fileInnerShareAdapter;
-    HeaderFooterAdapter<FileInnerShareAdapter> headerFooterAdapter;
 
 
     protected static final String KEY_SEA_FILE_FROM_REPO_ID = "seaFileFromRepoId";//原仓库id
@@ -95,7 +95,7 @@ public class FileInnerShareFragment extends BaseFragment
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = super.onCreateView(R.layout.layout_refresh_recyclerview, inflater, container, savedInstanceState);
+        View view = super.onCreateView(R.layout.layout_refresh_recyclerview2, inflater, container, savedInstanceState);
         unbinder = ButterKnife.bind(this, view);
         return view;
     }
@@ -104,21 +104,19 @@ public class FileInnerShareFragment extends BaseFragment
     protected void initView() {
         boolean hasEditPermission = TextUtils.equals(getRepoPermission(), PERMISSION_RW);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        headerFooterAdapter = new HeaderFooterAdapter<>(fileInnerShareAdapter
-                = new FileInnerShareAdapter(hasEditPermission));
+        fileInnerShareAdapter = new FileInnerShareAdapter(hasEditPermission);
         fileInnerShareAdapter.setOnItemChildClickListener(this);
         //有编辑的权限
         if (hasEditPermission) {
-            View footerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_add_attachment, recyclerView.getRecyclerView());
+            View footerView = fileInnerShareAdapter.addFooter(R.layout.footer_add_attachment, recyclerView);
             TextView attachmentTv = footerView.findViewById(R.id.add_attachment_view);
             if (attachmentTv != null) {
                 attachmentTv.setText(R.string.sfile_add_share_member);
             }
             registerClick(attachmentTv);
-            headerFooterAdapter.addFooter(footerView);
         }
 
-        recyclerView.setAdapter(headerFooterAdapter);
+        recyclerView.setAdapter(fileInnerShareAdapter);
         refreshLayout.setOnRefreshListener(new OnRefreshListener() {
             @Override
             public void onRefresh(com.scwang.smartrefresh.layout.api.RefreshLayout refreshlayout) {
@@ -170,8 +168,12 @@ public class FileInnerShareFragment extends BaseFragment
         List<SFileShareUserInfo> data = fileInnerShareAdapter.getData();
         ArrayList<String> uids = new ArrayList<>();
         for (SFileShareUserInfo sFileShareUserInfo : data) {
-            if (sFileShareUserInfo == null) continue;
-            if (sFileShareUserInfo.userInfo == null) continue;
+            if (sFileShareUserInfo == null) {
+                continue;
+            }
+            if (sFileShareUserInfo.userInfo == null) {
+                continue;
+            }
             uids.add(sFileShareUserInfo.userInfo.userId);
         }
         ContactSelectDialogFragment.newInstanceWithUids(uids, true)
@@ -212,7 +214,9 @@ public class FileInnerShareFragment extends BaseFragment
      * @param users
      */
     private void shareFile2User(final String permission, List<String> users) {
-        if (users == null || users.isEmpty()) return;
+        if (users == null || users.isEmpty()) {
+            return;
+        }
         showLoadingDialog(R.string.str_executing);
         for (int i = 0; i < users.size(); i++) {
             String s = users.get(i);
@@ -249,7 +253,9 @@ public class FileInnerShareFragment extends BaseFragment
             StringBuilder uidBuilder = new StringBuilder();
             for (int i = 0; i < contactBeens.size(); i++) {
                 GroupContactBean contactBean = contactBeens.get(i);
-                if (contactBean == null) continue;
+                if (contactBean == null) {
+                    continue;
+                }
                 if (uidBuilder.length() > 0) {
                     uidBuilder.append(",");
                 }
@@ -310,8 +316,12 @@ public class FileInnerShareFragment extends BaseFragment
      * @param item
      */
     private void changeUserPermission(String per, SFileShareUserInfo item) {
-        if (item == null) return;
-        if (item.userInfo == null) return;
+        if (item == null) {
+            return;
+        }
+        if (item.userInfo == null) {
+            return;
+        }
         if (TextUtils.equals(per, item.permission)) {
             return;
         }
@@ -337,17 +347,6 @@ public class FileInnerShareFragment extends BaseFragment
                 });
     }
 
-    @Override
-    public void onItemChildClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
-        final SFileShareUserInfo item = fileInnerShareAdapter.getItem(fileInnerShareAdapter.getRealPos(position));
-        if (item == null) return;
-        if (item.userInfo == null) return;
-        switch (view.getId()) {
-            case R.id.user_action_tv:
-                showBottomChangePermissionDialog(item);
-                break;
-        }
-    }
 
     /**
      * 展示底部改变用户权限的对话框
@@ -355,7 +354,9 @@ public class FileInnerShareFragment extends BaseFragment
      * @param item
      */
     private void showBottomChangePermissionDialog(final SFileShareUserInfo item) {
-        if (item == null) return;
+        if (item == null) {
+            return;
+        }
         new BottomActionDialog(getContext(),
                 null,
                 Arrays.asList(
@@ -376,8 +377,28 @@ public class FileInnerShareFragment extends BaseFragment
                             case 2:
                                 deleteUserSharedFile(item.userInfo.name);
                                 break;
+                            default:
+                                break;
                         }
                     }
                 }).show();
+    }
+
+    @Override
+    public void onItemChildClick(com.asange.recyclerviewadapter.BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
+        final SFileShareUserInfo item = fileInnerShareAdapter.getItem(i);
+        if (item == null) {
+            return;
+        }
+        if (item.userInfo == null) {
+            return;
+        }
+        switch (view.getId()) {
+            case R.id.user_action_tv:
+                showBottomChangePermissionDialog(item);
+                break;
+            default:
+                break;
+        }
     }
 }
