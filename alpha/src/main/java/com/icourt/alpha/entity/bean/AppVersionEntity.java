@@ -30,7 +30,7 @@ public class AppVersionEntity implements Serializable {
     public String osType;//终端类型：1代表Android；2代表IOS
     public String appVersion;//版本 ,
     public String buildVersion;//Build版本
-    public int upgradeStrategy;//升级策略  1、常规可选升级；2、强制更新
+    public int upgradeStrategy;//升级策略  1、常规可选升级；2、强制更新  -1、不更新
     public String upgradeUrl;//升级包地址
     public String createUserId;//创建人ID
     public long gmtCreate;//创建时间

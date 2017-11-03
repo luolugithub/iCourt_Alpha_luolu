@@ -5,6 +5,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.text.Editable;
 import android.text.InputFilter;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.View;
@@ -61,6 +62,7 @@ public abstract class SFileEditBaseActivity
         super.initView();
         titleAction.setEnabled(false);
         setTitleActionTextView("完成");
+        inputNameEt.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
         inputNameEt.setFilters(new InputFilter[]{new InputFilter.LengthFilter(getMaxInputLimitNum())});
         inputNameEt.addTextChangedListener(this);
         inputNameEt.setOnEditorActionListener(new InputActionNextFilter() {
