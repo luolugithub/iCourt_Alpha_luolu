@@ -14,6 +14,7 @@ import com.zhaol.refreshlayout.EmptyRecyclerView;
  * date createTime：2017/4/11
  * version 1.0.0
  */
+@Deprecated
 public class RefreshViewEmptyObserver extends DataChangeAdapterObserver {
 
     private EmptyRecyclerView recyclerView;
