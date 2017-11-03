@@ -40,7 +40,8 @@
             android:background="@null"
             android:gravity="center_vertical"
             android:padding="10dp"
-            android:text="asdasdasdasdasdasdasdasd"
+            android:imeOptions="actionNone"
+            android:inputType="textNoSuggestions"
             android:textColor="@color/alpha_font_color_black"
             android:textSize="16dp" />
 

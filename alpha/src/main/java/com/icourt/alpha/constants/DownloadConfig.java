@@ -3,6 +3,7 @@ package com.icourt.alpha.constants;
 import android.os.Environment;
 import android.text.TextUtils;
 
+import com.icourt.alpha.BuildConfig;
 import com.icourt.alpha.entity.bean.ISeaFile;
 import com.icourt.alpha.utils.BugUtils;
 import com.icourt.alpha.utils.FileUtils;
@@ -30,6 +31,10 @@ public class DownloadConfig {
     public static final String FILE_DOWNLOAD_APK_DIR = FILE_DOWNLOAD_ROOT_DIR + File.separator + "new_apk";
 
 
+    public static final int UPGRADE_STRATEGY_NO_TYPE = -1;//无更新
+    public static final int UPGRADE_STRATEGY_UNCOMPEL_TYPE = 1;//非强制升级
+    public static final int UPGRADE_STRATEGY_COMPEL_TYPE = 2;//强制升级
+
     /**
      * 获取app 安装包的下载目录
      *
@@ -46,6 +51,16 @@ public class DownloadConfig {
             BugUtils.bugSync("getAppDownloadDir exception", e);
         }
         return null;
+    }
+
+    /**
+     * 判断是否为正式环境
+     *
+     * @return
+     */
+    public static boolean isRelease() {
+        //TODO:上线改为5
+        return BuildConfig.BUILD_TYPE_INT == 0;
     }
 
     /**

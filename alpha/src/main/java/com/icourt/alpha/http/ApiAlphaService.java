@@ -3,6 +3,7 @@ package com.icourt.alpha.http;
 import com.google.gson.JsonElement;
 import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.icourt.alpha.entity.bean.AppVersionEntity;
+import com.icourt.alpha.entity.bean.AppVersionFirEntity;
 import com.icourt.alpha.entity.bean.CommentEntity;
 import com.icourt.alpha.entity.bean.ContactDeatilBean;
 import com.icourt.alpha.entity.bean.CustomerEntity;
@@ -89,7 +90,7 @@ public interface ApiAlphaService {
      * @return
      */
     @GET
-    Call<AppVersionEntity> getNewVersionAppInfo(@Url String url);
+    Call<AppVersionFirEntity> getNewVersionAppInfo(@Url String url);
 
     /**
      * 修改律师电话信息
