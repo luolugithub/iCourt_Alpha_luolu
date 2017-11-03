@@ -120,6 +120,7 @@ public class RepoListFragment extends RepoBaseFragment implements OnItemClickLis
     protected void initView() {
         repoType = SFileConfig.convert2RepoType(getArguments().getInt(KEY_REPO_TYPE));
 
+        recyclerView.setBackgroundColor(getContextColor(R.color.alpha_background_window));
         recyclerView.setClipToPadding(false);
         recyclerView.setPadding(0, DensityUtil.dip2px(getContext(), 20), 0, 0);
 
