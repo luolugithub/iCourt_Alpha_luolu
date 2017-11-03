@@ -160,6 +160,7 @@ public class LoginBaseActivity extends BaseUmengActivity {
 
                             //神策统计
                             SenCeUtils.login(getApplicationContext(), result.getUserId());
+                            SenCeUtils.setLoginInfo(getApplicationContext(), result);
 
                             //登陆云信im
                             loginChatEase(response.body().result);

@@ -5,7 +5,10 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.icourt.alpha.BuildConfig;
+import com.icourt.alpha.entity.bean.AlphaUserInfo;
 import com.sensorsdata.analytics.android.sdk.SensorsDataAPI;
+
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +45,8 @@ public class SenCeUtils {
                 //   SensorsDataAPI.DebugMode.DEBUG_ONLY - 打开 Debug 模式，校验数据，但不进行数据导入
                 //   SensorsDataAPI.DebugMode.DEBUG_AND_TRACK - 打开 Debug 模式，校验数据，并将数据导入到 Sensors Analytics 中
                 // 注意！请不要在正式发布的 App 中使用 Debug 模式！
-                final SensorsDataAPI.DebugMode SA_DEBUG_MODE = SensorsDataAPI.DebugMode.DEBUG_AND_TRACK;
+                final SensorsDataAPI.DebugMode SA_DEBUG_MODE =
+                        BuildConfig.IS_DEBUG ? SensorsDataAPI.DebugMode.DEBUG_AND_TRACK : SensorsDataAPI.DebugMode.DEBUG_OFF;
 
                 // 初始化 SDK
                 SensorsDataAPI.sharedInstance(
@@ -64,6 +68,8 @@ public class SenCeUtils {
                         .enableAutoTrack(eventTypeList);
                 //初始化 SDK 之后，开启自动采集 Fragment 页面浏览事件
                 SensorsDataAPI.sharedInstance().trackFragmentAppViewScreen();
+                //日志输出控制
+                SensorsDataAPI.sharedInstance().enableLog(BuildConfig.IS_DEBUG);
             } catch (Exception e) {
                 e.printStackTrace();
                 BugUtils.bugSync(BUG_TAG_SENCE_INIT_EXCEPTION, e);
@@ -80,8 +86,35 @@ public class SenCeUtils {
     public static final void login(@NonNull Context context, @NonNull String userId) {
         if (context != null
                 && !TextUtils.isEmpty(userId)) {
-            SensorsDataAPI.sharedInstance(context)
-                    .login(userId);
+            try {
+                SensorsDataAPI.sharedInstance(context)
+                        .login(userId);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * 设置用户信息
+     *
+     * @param context
+     * @param alphaUserInfo
+     */
+    public static final void setLoginInfo(@NonNull Context context, @NonNull AlphaUserInfo alphaUserInfo) {
+        if (context != null
+                && alphaUserInfo != null) {
+            try {
+                JSONObject properties = new JSONObject();
+                properties.put("userId", alphaUserInfo.getUserId());
+                properties.put("Phone", alphaUserInfo.getPhone());
+                properties.put("$name", alphaUserInfo.getName());
+                // 设定用户属性
+                SensorsDataAPI.sharedInstance(context)
+                        .profileSet(properties);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -92,8 +125,29 @@ public class SenCeUtils {
      */
     public static final void logout(@NonNull Context context) {
         if (context != null) {
-            SensorsDataAPI.sharedInstance(context)
-                    .logout();
+            try {
+                SensorsDataAPI.sharedInstance(context)
+                        .logout();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * 记录事件
+     *
+     * @param context
+     * @param eventName
+     */
+    public static final void track(@NonNull Context context, @NonNull String eventName) {
+        if (context != null) {
+            try {
+                SensorsDataAPI.sharedInstance(context)
+                        .track(eventName);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 }

@@ -562,5 +562,10 @@
         <service
             android:name=".service.RemoteService"
             android:process="com.icourt.alpha.service.LocalService" />
+
+        <!-- 神策数据 指定 Android ID 作为 匿名 ID -->
+        <meta-data
+            android:name="com.sensorsdata.analytics.android.AndroidId"
+            android:value="true" />
     </application>
 </manifest>

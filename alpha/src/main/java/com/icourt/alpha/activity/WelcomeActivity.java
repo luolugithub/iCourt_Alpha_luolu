@@ -15,6 +15,7 @@ import com.icourt.alpha.http.AlphaClient;
 import com.icourt.alpha.service.LocalService;
 import com.icourt.alpha.service.RemoteService;
 import com.icourt.alpha.utils.SFileTokenUtils;
+import com.icourt.alpha.utils.SenCeUtils;
 import com.netease.nimlib.sdk.NimIntent;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
 
@@ -57,6 +58,12 @@ public class WelcomeActivity extends BaseActivity implements Animation.Animation
         alpha.setFillAfter(true);
         alpha.setAnimationListener(this);
         activityWelcomeView.startAnimation(alpha);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        SenCeUtils.track(getContext(), "startApp");
     }
 
     @Override
