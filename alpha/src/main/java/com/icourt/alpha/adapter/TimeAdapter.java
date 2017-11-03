@@ -135,7 +135,7 @@ public class TimeAdapter extends BaseArrayRecyclerAdapter<TimeEntity.ItemEntity>
         TextView divider_time = holder.obtainView(R.id.divider_time);
         TextView divider_time_count = holder.obtainView(R.id.divider_time_count);
         timer_title_tv.setText(TextUtils.isEmpty(timeEntity.name) ? "未录入工作描述" : timeEntity.name);
-        if (timeEntity.state == TimeEntity.ItemEntity.TIMER_STATE_START) {
+        if (timeEntity.state == TimeEntity.ItemEntity.TIMER_STATE_START && TimerManager.getInstance().isTimer(timeEntity.pkId)) {
             //说明是正在计时
             long useTime = TimerManager.getInstance().getTimingSeconds();
             if (useTime < 0) {

@@ -79,7 +79,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
             manifestPlaceholders = [NIM_APPKEY: rootProject.ext.nimAppKey.debugAppKey]
 
-            def debugType = 0; //0:debug  1:test  2:preview 3:release
+            def debugType = 1; //0:debug  1:test  2:preview 3:release
             if (debugType == 1) {
                 //测试用
                 buildConfigField "String", "API_URL", rootProject.ext.alphaAPIUrl.api_url_test
