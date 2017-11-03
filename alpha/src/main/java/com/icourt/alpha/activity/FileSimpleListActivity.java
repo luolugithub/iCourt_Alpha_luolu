@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
@@ -34,7 +35,6 @@ import com.icourt.alpha.widget.filter.SFileNameFilter;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
-import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -71,7 +71,7 @@ public class FileSimpleListActivity extends FolderBaseActivity
     private static final int REQUEST_CODE_CHOOSE_FILE = 1002;
 
     @BindView(R.id.recyclerView)
-    EmptyRecyclerView recyclerView;
+    RecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
     SmartRefreshLayout refreshLayout;
     Unbinder unbinder;
@@ -157,7 +157,7 @@ public class FileSimpleListActivity extends FolderBaseActivity
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         headerFooterAdapter = new HeaderFooterAdapter<>(folderAdapter = new FolderAdapter());
 
-        footerView = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_folder_document_num, recyclerView.getRecyclerView());
+        footerView = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_folder_document_num, recyclerView);
         headerFooterAdapter.addFooter(footerView);
         footerView.setText("");
 
