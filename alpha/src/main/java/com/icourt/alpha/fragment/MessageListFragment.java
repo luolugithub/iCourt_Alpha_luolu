@@ -14,6 +14,8 @@ import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.asange.recyclerviewadapter.BaseViewHolder;
@@ -61,6 +63,7 @@ import com.netease.nimlib.sdk.msg.constant.MsgTypeEnum;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.msg.model.RecentContact;
 import com.netease.nimlib.sdk.team.model.Team;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -99,6 +102,15 @@ public class MessageListFragment extends BaseRecentContactFragment
         OnItemClickListener,
         OnItemLongClickListener {
 
+    @BindView(R.id.contentEmptyImage)
+    ImageView contentEmptyImage;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
+    @BindView(R.id.empty_layout)
+    LinearLayout emptyLayout;
+    @BindView(R.id.refreshLayout)
+    SmartRefreshLayout refreshLayout;
+
     public static MessageListFragment newInstance() {
         return new MessageListFragment();
     }
@@ -108,15 +120,13 @@ public class MessageListFragment extends BaseRecentContactFragment
 
     @BindView(R.id.login_status_tv)
     TextView loginStatusTv;
-    @BindView(R.id.contentEmptyText)
-    TextView contentEmptyText;
     private int totalUnReadCount;
     private DataChangeAdapterObserver dataChangeAdapterObserver = new DataChangeAdapterObserver() {
         @Override
         protected void updateUI() {
-            if (imSessionAdapter != null && contentEmptyText != null) {
+            if (imSessionAdapter != null && emptyLayout != null) {
                 List<IMSessionEntity> data = imSessionAdapter.getData();
-                contentEmptyText.setVisibility(data.isEmpty() ? View.VISIBLE : View.GONE);
+                emptyLayout.setVisibility(data.isEmpty() ? View.VISIBLE : View.GONE);
                 int unReadCount = 0;
                 for (IMSessionEntity sessionEntity : data) {
                     if (sessionEntity != null && sessionEntity.recentContact != null) {
@@ -511,6 +521,8 @@ public class MessageListFragment extends BaseRecentContactFragment
         imSessionAdapter.setOnItemClickListener(this);
         imSessionAdapter.setOnItemLongClickListener(this);
 
+        refreshLayout.setEnableRefresh(false);
+
     }
 
 
@@ -614,9 +626,7 @@ public class MessageListFragment extends BaseRecentContactFragment
     @Override
     public void onResume() {
         super.onResume();
-
         getData(true);
-
         SyncDataService.startSyncContact(getActivity());
         SyncDataService.startSysnClient(getActivity());
 
@@ -665,6 +675,7 @@ public class MessageListFragment extends BaseRecentContactFragment
                 .setCallback(new RequestCallbackWrapper<List<RecentContact>>() {
                     @Override
                     public void onResult(int code, List<RecentContact> recents, Throwable exception) {
+                        stopRefresh();
                         log("----------code:" + code + "  recents:" + recents + " exception:" + exception);
                         if (code == ResponseCode.RES_SUCCESS && recents != null) {
                             filterMessage(recents);//过滤消息
@@ -674,6 +685,12 @@ public class MessageListFragment extends BaseRecentContactFragment
                 });
     }
 
+    private void stopRefresh() {
+        if (refreshLayout != null) {
+            refreshLayout.finishRefresh();
+            refreshLayout.finishLoadmore();
+        }
+    }
 
     /**
      * 1.包装消息通知列表
@@ -940,4 +957,5 @@ public class MessageListFragment extends BaseRecentContactFragment
         }
         return true;
     }
+
 }

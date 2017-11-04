@@ -16,23 +16,6 @@
         android:visibility="gone" />
 
 
-    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:orientation="vertical">
-
-
-        <android.support.v7.widget.RecyclerView
-            android:id="@id/recyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@android:color/white" />
-
-        <include
-            layout="@layout/layout_empty_tv"
-            android:visibility="gone" />
-
-    </FrameLayout>
+    <include layout="@layout/layout_refresh_recyclerview5"/>
 
 </LinearLayout>

@@ -52,7 +52,6 @@ import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
 import com.umeng.analytics.MobclickAgent;
-import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -308,6 +307,7 @@ public class TaskListFragment extends BaseTaskFragment implements
         emptyTv.setText(getEmptyContentId(stateType));
         recyclerView.setLayoutManager(linearLayoutManager = new LinearLayoutManager(getContext()));
         recyclerView.setNestedScrollingEnabled(false);
+        recyclerView.setBackgroundColor(getContextColor(R.color.alpha_background_window));
         taskAdapter = new TaskAdapter();
         View headerView = LayoutInflater.from(getActivity()).inflate(R.layout.header_search_comm, recyclerView, false);
         View rlCommSearch = headerView.findViewById(R.id.rl_comm_search);
