@@ -183,6 +183,7 @@ public class TaskOtherListFragment extends BaseTaskFragment implements OnItemCli
         recyclerView.setLayoutManager(linearLayoutManager);
         refreshLayout.setEnableLoadmore(false);
         taskAdapter = new TaskAdapter();
+        recyclerView.setBackgroundColor(getContextColor(R.color.alpha_background_window));
         View headerView = getActivity().getLayoutInflater().inflate(R.layout.header_search_comm, (ViewGroup) recyclerView.getParent(), false);
         View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
         registerClick(rl_comm_search);
