@@ -6,17 +6,5 @@
 
     <include layout="@layout/layout_title_type_0" />
 
-    <com.scwang.smartrefresh.layout.SmartRefreshLayout
-        android:id="@id/refreshLayout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <com.zhaol.refreshlayout.EmptyRecyclerView
-            android:id="@id/recyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginTop="@dimen/dp10"
-            android:background="@android:color/white"
-             />
-    </com.scwang.smartrefresh.layout.SmartRefreshLayout>
+    <include layout="@layout/layout_refresh_recyclerview5" />
 </LinearLayout>

@@ -8,10 +8,13 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.asange.recyclerviewadapter.BaseRecyclerAdapter;
 import com.asange.recyclerviewadapter.BaseViewHolder;
 import com.asange.recyclerviewadapter.OnItemClickListener;
 import com.icourt.alpha.R;
@@ -23,11 +26,11 @@ import com.icourt.alpha.entity.event.MessageEvent;
 import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.ActionConstants;
+import com.icourt.alpha.utils.DensityUtil;
 import com.icourt.alpha.utils.ItemDecorationUtils;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
-import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -60,6 +63,12 @@ public class ChatMsgClassfyActivity extends BaseActivity implements OnItemClickL
     private static final String KEY_CLASSFY_TYPE = "KEY_CLASSFY_TYPE";
     private static final String KEY_ID = "KEY_ID";
     private static final String KEY_CHAT_TYPE = " KEY_CHAT_TYPE";
+    @BindView(R.id.contentEmptyImage)
+    ImageView contentEmptyImage;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
+    @BindView(R.id.empty_layout)
+    LinearLayout emptyLayout;
 
 
     @IntDef({
@@ -80,11 +89,6 @@ public class ChatMsgClassfyActivity extends BaseActivity implements OnItemClickL
         initView();
     }
 
-    @Override
-    protected void onDestroy() {
-        EventBus.getDefault().unregister(this);
-        super.onDestroy();
-    }
 
     /**
      * 聊天钉的消息
@@ -128,7 +132,7 @@ public class ChatMsgClassfyActivity extends BaseActivity implements OnItemClickL
     @BindView(R.id.titleView)
     AppBarLayout titleView;
     @BindView(R.id.recyclerView)
-    EmptyRecyclerView recyclerView;
+    RecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
     SmartRefreshLayout refreshLayout;
 
@@ -163,23 +167,28 @@ public class ChatMsgClassfyActivity extends BaseActivity implements OnItemClickL
     @Override
     protected void initView() {
         super.initView();
+        recyclerView.setBackgroundColor(getContextColor(R.color.alpha_background_window));
+        recyclerView.setClipToPadding(false);
+        recyclerView.setPadding(0, DensityUtil.dip2px(getContext(), 20), 0, 0);
+
+        contentEmptyImage.setImageResource(R.mipmap.ic_empty_data);
         EventBus.getDefault().register(this);
         switch (getMsgClassfyType()) {
             case MSG_CLASSFY_CHAT_DING:
                 setTitle("钉的消息");
-                recyclerView.setNoticeEmpty(R.mipmap.ic_empty_data, R.string.empty_list_im_ding_msg);
+                contentEmptyText.setText(R.string.empty_list_im_ding_msg);
                 break;
             case MSG_CLASSFY_CHAT_FILE:
                 setTitle("文件");
-                recyclerView.setNoticeEmpty(R.mipmap.ic_empty_data, R.string.empty_list_im_file_msg);
+                contentEmptyText.setText(R.string.empty_list_im_file_msg);
                 break;
             case MSG_CLASSFY_MY_COLLECTEED:
                 setTitle("我收藏的消息");
-                recyclerView.setNoticeEmpty(R.mipmap.ic_empty_data, R.string.empty_list_im_collected_msg);
+                contentEmptyText.setText(R.string.empty_list_im_collected_msg);
                 break;
             default:
                 setTitle("我收藏的消息");
-                recyclerView.setNoticeEmpty(R.mipmap.ic_empty_data, R.string.empty_list_im_collected_msg);
+                contentEmptyText.setText(R.string.empty_list_im_collected_msg);
                 break;
         }
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -311,11 +320,17 @@ public class ChatMsgClassfyActivity extends BaseActivity implements OnItemClickL
 
 
     @Override
-    public void onItemClick(com.asange.recyclerviewadapter.BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
+    public void onItemClick(BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
         IMMessageCustomBody item = imUserMessageAdapter.getItem(i);
         if (item == null) {
             return;
         }
         FileDetailsActivity.launch(getContext(), item, getMsgClassfyType());
+    }
+
+    @Override
+    protected void onDestroy() {
+        EventBus.getDefault().unregister(this);
+        super.onDestroy();
     }
 }
