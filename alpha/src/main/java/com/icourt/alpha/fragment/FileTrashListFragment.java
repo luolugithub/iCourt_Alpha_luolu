@@ -95,6 +95,7 @@ public class FileTrashListFragment extends SeaFileBaseFragment
 
     @Override
     protected void initView() {
+        recyclerView.setBackgroundColor(getContextColor(R.color.alpha_background_window));
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(folderDocumentAdapter = new SFileTrashAdapter(
                 false,

@@ -128,6 +128,7 @@ public class FileVersionListFragment extends SeaFileBaseFragment implements OnIt
         fromRepoId = getArguments().getString(KEY_SEA_FILE_FROM_REPO_ID, "");
         fromRepoFilePath = getArguments().getString(KEY_SEA_FILE_FROM_FILE_PATH, "");
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setBackgroundColor(getContextColor(R.color.alpha_background_window));
 
         contentEmptyText.setText(R.string.empty_list_repo_file_historical_version);
         recyclerView.setAdapter(fileVersionAdapter = new FileVersionAdapter(TextUtils.equals(getRepoPermission(), PERMISSION_RW)));

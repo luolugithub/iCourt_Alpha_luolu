@@ -137,6 +137,7 @@ public class FileChangeHistoryFragment extends BaseDialogFragment implements OnI
 
     @Override
     protected void initView() {
+        recyclerView.setBackgroundColor(getContextColor(R.color.alpha_background_window));
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         contentEmptyText.setText(R.string.empty_list_repo_change_history);
         recyclerView.setAdapter(fileChangedHistoryAdapter = new FileChangedHistoryAdapter(

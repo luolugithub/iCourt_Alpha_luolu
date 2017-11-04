@@ -103,6 +103,7 @@ public class FileInnerShareFragment extends BaseFragment
     @Override
     protected void initView() {
         boolean hasEditPermission = TextUtils.equals(getRepoPermission(), PERMISSION_RW);
+        recyclerView.setBackgroundColor(getContextColor(R.color.alpha_background_window));
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         fileInnerShareAdapter = new FileInnerShareAdapter(hasEditPermission);
         fileInnerShareAdapter.setOnItemChildClickListener(this);
