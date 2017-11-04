@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,7 +42,6 @@ import com.icourt.alpha.widget.dialog.SortTypeSelectDialog;
 import com.icourt.alpha.widget.filter.SFileNameFilter;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
-import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -79,7 +79,7 @@ public class ProjectFileFragment extends SeaFileBaseFragment
     private static final int REQUEST_CODE_CHOOSE_FILE = 1002;
 
     @BindView(R.id.recyclerView)
-    EmptyRecyclerView recyclerView;
+    RecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
     SmartRefreshLayout refreshLayout;
     Unbinder unbinder;
@@ -123,7 +123,7 @@ public class ProjectFileFragment extends SeaFileBaseFragment
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = super.onCreateView(R.layout.layout_refresh_recyclerview, inflater, container, savedInstanceState);
+        View view = super.onCreateView(R.layout.layout_refresh_recyclerview2, inflater, container, savedInstanceState);
         unbinder = ButterKnife.bind(this, view);
         return view;
     }
@@ -137,7 +137,7 @@ public class ProjectFileFragment extends SeaFileBaseFragment
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         headerFooterAdapter = new HeaderFooterAdapter<>(folderAdapter = new FolderAdapter());
 
-        footerView = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_folder_document_num, recyclerView.getRecyclerView());
+        footerView = (TextView) HeaderFooterAdapter.inflaterView(getContext(), R.layout.footer_folder_document_num, recyclerView);
         headerFooterAdapter.addFooter(footerView);
         footerView.setText("");
 
@@ -390,7 +390,7 @@ public class ProjectFileFragment extends SeaFileBaseFragment
                     public void onComplete() {
                         super.onComplete();
                         dismissLoadingDialog();
-                        if(datas.isEmpty()){
+                        if (datas.isEmpty()) {
                             folderAdapter.bindData(true, datas);
                         }
                     }

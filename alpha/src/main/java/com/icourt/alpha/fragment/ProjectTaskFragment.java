@@ -114,6 +114,7 @@ public class ProjectTaskFragment extends BaseTaskFragment implements OnItemLongC
         contentEmptyText.setText(R.string.empty_list_task_project_task);
         linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
+        recyclerView.setBackgroundResource(R.color.alpha_background_window);
 
         View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
         View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);

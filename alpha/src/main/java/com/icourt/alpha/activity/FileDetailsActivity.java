@@ -226,9 +226,19 @@ public class FileDetailsActivity extends BaseActivity implements BaseRecyclerAda
                             // 我->cl  from me to:cl;
                             //cl ——>我  from cl:to:me
                             boolean isMySend = StringUtils.equalsIgnoreCase(getLoginUserId(), item.from, false);
+
+                            String targetId = isMySend ? item.to : item.from;
+                            GroupContactBean contactBean = new GroupContactBean();
+                            contactBean.accid = targetId;
+                            int i = localContactList.indexOf(contactBean);
+                            String name = item.name;
+                            if (i >= 0) {
+                                contactBean = localContactList.get(i);
+                                name = contactBean.name;
+                            }
                             ChatActivity.launchP2P(getContext(),
-                                    isMySend ? item.to : item.from,
-                                    item.name,
+                                    targetId,
+                                    name,
                                     item.id,
                                     0,
                                     true);
@@ -241,6 +251,8 @@ public class FileDetailsActivity extends BaseActivity implements BaseRecyclerAda
                                     item.id,
                                     0,
                                     true);
+                            break;
+                        default:
                             break;
                     }
                     finish();
