@@ -5,10 +5,14 @@ import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.asange.recyclerviewadapter.BaseRecyclerAdapter;
 import com.asange.recyclerviewadapter.BaseViewHolder;
@@ -32,7 +36,6 @@ import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
 import com.umeng.analytics.MobclickAgent;
-import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -84,6 +87,16 @@ public class TaskOtherListFragment extends BaseTaskFragment implements OnItemCli
      * 查看其他人
      */
     public static final int SELECT_OTHER_TYPE = 2;
+    @BindView(R.id.recyclerView)
+    RecyclerView recyclerView;
+    @BindView(R.id.contentEmptyImage)
+    ImageView contentEmptyImage;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
+    @BindView(R.id.empty_layout)
+    LinearLayout emptyLayout;
+    @BindView(R.id.refreshLayout)
+    SmartRefreshLayout refreshLayout;
 
     @IntDef({MY_ALLOT_TYPE,
             SELECT_OTHER_TYPE})
@@ -115,10 +128,6 @@ public class TaskOtherListFragment extends BaseTaskFragment implements OnItemCli
     private boolean isFirstTimeIntoPage = true;
 
     Unbinder unbinder;
-    @BindView(R.id.recyclerView)
-    EmptyRecyclerView recyclerView;
-    @BindView(R.id.refreshLayout)
-    SmartRefreshLayout refreshLayout;
 
     private LinearLayoutManager linearLayoutManager;
     /**
@@ -165,10 +174,11 @@ public class TaskOtherListFragment extends BaseTaskFragment implements OnItemCli
         finishType = getArguments().getInt(TAG_FINISH_TYPE);
         ids = getArguments().getStringArrayList(TAG_IDS);
         if (startType == TaskOtherListFragment.SELECT_OTHER_TYPE) {
-            recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, R.string.empty_list_task_other_people_task);
+            contentEmptyText.setText(R.string.empty_list_task_other_people_task);
         } else {
-            recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, R.string.empty_list_task);
+            contentEmptyText.setText(R.string.empty_list_task);
         }
+        contentEmptyImage.setImageResource(R.mipmap.bg_no_task);
         linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
         refreshLayout.setEnableLoadmore(false);
@@ -321,7 +331,7 @@ public class TaskOtherListFragment extends BaseTaskFragment implements OnItemCli
                     @Override
                     public void accept(List<TaskEntity.TaskItemEntity> searchPolymerizationEntities) throws Exception {
                         taskAdapter.bindData(isRefresh, searchPolymerizationEntities);
-                        recyclerView.enableEmptyView(searchPolymerizationEntities);
+                        enableEmptyView(searchPolymerizationEntities);
                         goFirstTask();
                     }
                 });
@@ -465,6 +475,14 @@ public class TaskOtherListFragment extends BaseTaskFragment implements OnItemCli
         }
     }
 
+    private void enableEmptyView(List list) {
+        if (list == null || list.size() == 0) {
+            emptyLayout.setVisibility(View.VISIBLE);
+        } else {
+            emptyLayout.setVisibility(View.GONE);
+        }
+    }
+
     /**
      * 停止刷新
      */
@@ -571,5 +589,4 @@ public class TaskOtherListFragment extends BaseTaskFragment implements OnItemCli
             unbinder.unbind();
         }
     }
-
 }

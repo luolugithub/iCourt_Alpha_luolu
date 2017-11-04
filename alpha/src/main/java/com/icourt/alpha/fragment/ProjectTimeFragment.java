@@ -5,10 +5,14 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.google.gson.JsonElement;
 import com.icourt.alpha.R;
@@ -29,7 +33,6 @@ import com.icourt.alpha.widget.manager.TimerManager;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
-import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -55,14 +58,19 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
 
     private static final String KEY_PROJECT_ID = "key_project_id";
     Unbinder unbinder;
-    @Nullable
-    @BindView(R.id.recyclerView)
-    EmptyRecyclerView recyclerView;
-    @BindView(R.id.refreshLayout)
-    SmartRefreshLayout refreshLayout;
 
     String projectId;
     TimeAdapter timeAdapter;
+    @BindView(R.id.recyclerView)
+    RecyclerView recyclerView;
+    @BindView(R.id.contentEmptyImage)
+    ImageView contentEmptyImage;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
+    @BindView(R.id.empty_layout)
+    LinearLayout emptyLayout;
+    @BindView(R.id.refreshLayout)
+    SmartRefreshLayout refreshLayout;
     private int pageIndex = 1;
     private long sumTime;
 
@@ -91,7 +99,8 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
     @Override
     protected void initView() {
         projectId = getArguments().getString(KEY_PROJECT_ID);
-        recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_timing, getString(R.string.project_no_timer));
+        contentEmptyImage.setImageResource(R.mipmap.icon_placeholder_timing);
+        contentEmptyText.setText(R.string.project_no_timer);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setItemAnimator(null);
 
@@ -99,7 +108,7 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
         timeAdapter.setSumTime(sumTime);
         recyclerView.addItemDecoration(new TimerItemDecoration(getActivity(), timeAdapter));
         timeAdapter.setOnItemClickListener(this);
-        recyclerView.getRecyclerView().setBackgroundColor(Color.WHITE);
+        recyclerView.setBackgroundColor(Color.WHITE);
         refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
             @Override
             public void onRefresh(RefreshLayout refreshlayout) {
@@ -134,28 +143,32 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
                         pageIndex,
                         ActionConstants.DEFAULT_PAGE_SIZE),
                 new SimpleCallBack<TimeEntity>() {
-            @Override
-            public void onSuccess(Call<ResEntity<TimeEntity>> call, Response<ResEntity<TimeEntity>> response) {
-                stopRefresh();
-                if (response.body().result != null) {
-                    if (response.body().result.items != null) {
-                        if (response.body().result.items.size() > 0) {
-                            response.body().result.items.add(0, new TimeEntity.ItemEntity());
+                    @Override
+                    public void onSuccess(Call<ResEntity<TimeEntity>> call, Response<ResEntity<TimeEntity>> response) {
+                        stopRefresh();
+                        if (response.body().result != null) {
+                            if (response.body().result.items != null) {
+                                if (isRefresh) {
+                                    if (response.body().result.items.size() > 0) {
+                                        response.body().result.items.add(0, new TimeEntity.ItemEntity());
+                                    }
+                                }
+                                timeAdapter.bindData(isRefresh, response.body().result.items);
+                                pageIndex += 1;
+                                enableLoadMore(response.body().result.items);
+                                if (isRefresh) {
+                                    enableEmptyView(response.body().result.items);
+                                }
+                            }
                         }
-
-                        timeAdapter.bindData(isRefresh, response.body().result.items);
-                        pageIndex += 1;
-                        enableLoadMore(response.body().result.items);
                     }
-                }
-            }
 
-            @Override
-            public void onFailure(Call<ResEntity<TimeEntity>> call, Throwable t) {
-                super.onFailure(call, t);
-                stopRefresh();
-            }
-        });
+                    @Override
+                    public void onFailure(Call<ResEntity<TimeEntity>> call, Throwable t) {
+                        super.onFailure(call, t);
+                        stopRefresh();
+                    }
+                });
     }
 
     /**
@@ -164,19 +177,27 @@ public class ProjectTimeFragment extends BaseFragment implements BaseRecyclerAda
     private void getSumTimeByMatterId() {
         callEnqueue(getApi().getSumTimeByMatterId(projectId),
                 new SimpleCallBack<JsonElement>() {
-            @Override
-            public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
-                if (response.body().result != null) {
-                    timeAdapter.setSumTime(response.body().result.getAsLong());
-                }
-            }
-        });
+                    @Override
+                    public void onSuccess(Call<ResEntity<JsonElement>> call, Response<ResEntity<JsonElement>> response) {
+                        if (response.body().result != null) {
+                            timeAdapter.setSumTime(response.body().result.getAsLong());
+                        }
+                    }
+                });
     }
 
     private void enableLoadMore(List result) {
         if (refreshLayout != null) {
             refreshLayout.setEnableLoadmore(result != null
                     && result.size() >= ActionConstants.DEFAULT_PAGE_SIZE);
+        }
+    }
+
+    private void enableEmptyView(List list) {
+        if (list == null || list.size() == 0) {
+            emptyLayout.setVisibility(View.VISIBLE);
+        } else {
+            emptyLayout.setVisibility(View.GONE);
         }
     }
 

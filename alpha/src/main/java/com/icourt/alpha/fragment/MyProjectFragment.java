@@ -6,9 +6,13 @@ import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.ProjectSearchActivity;
@@ -24,7 +28,6 @@ import com.icourt.alpha.utils.ActionConstants;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
-import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -53,9 +56,14 @@ public class MyProjectFragment extends BaseFragment {
     public static final int TYPE_MY_ATTENTION_PROJECT = 1;//我关注的
     public static final int TYPE_MY_PARTIC_PROJECT = 2;//我参与的
     private static final String KEY_PROJECT_TYPE = "key_project_type";
-    @Nullable
     @BindView(R.id.recyclerView)
-    EmptyRecyclerView recyclerView;
+    RecyclerView recyclerView;
+    @BindView(R.id.contentEmptyImage)
+    ImageView contentEmptyImage;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
+    @BindView(R.id.empty_layout)
+    LinearLayout emptyLayout;
     @BindView(R.id.refreshLayout)
     SmartRefreshLayout refreshLayout;
 
@@ -101,22 +109,23 @@ public class MyProjectFragment extends BaseFragment {
         if (projectType == TYPE_ALL_PROJECT) {
             attorneyType = "";
             myStar = "";
-            recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_project, R.string.empty_list_project);
+            contentEmptyText.setText(R.string.empty_list_project);
         } else if (projectType == TYPE_MY_ATTENTION_PROJECT) {
             attorneyType = "";
             myStar = "1";
             status = -1;
             matterType = "";
-            recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_project, R.string.empty_list_project_follow);
+            contentEmptyText.setText(R.string.empty_list_project_follow);
         } else if (projectType == TYPE_MY_PARTIC_PROJECT) {
             attorneyType = "O";
             myStar = "";
-            recyclerView.setNoticeEmpty(R.mipmap.icon_placeholder_project, R.string.empty_list_project_joined);
+            contentEmptyText.setText(R.string.empty_list_project_joined);
         }
+        contentEmptyImage.setImageResource(R.mipmap.icon_placeholder_project);
         recyclerView.setLayoutManager(linearLayoutManager = new LinearLayoutManager(getContext()));
 
         headerFooterAdapter = new HeaderFooterAdapter<>(projectListAdapter = new ProjectListAdapter());
-        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView.getRecyclerView());
+        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
         View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
         registerClick(rl_comm_search);
         headerFooterAdapter.addHeader(headerView);
@@ -155,7 +164,9 @@ public class MyProjectFragment extends BaseFragment {
      * @param stateType
      * @return
      */
-    private @StringRes int getEmptyContentId(int stateType) {
+    private
+    @StringRes
+    int getEmptyContentId(int stateType) {
         switch (stateType) {
             case Const.PROJECT_STATUS_ING:
                 return R.string.empty_list_project_executing;
@@ -176,7 +187,7 @@ public class MyProjectFragment extends BaseFragment {
             if (type == 100) {//根据状态筛选
                 if (bundle != null) {
                     status = bundle.getInt("status");
-                    recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, getEmptyContentId(status));
+                    contentEmptyText.setText(getEmptyContentId(status));
                 }
             } else if (type == 101) {//根据类型筛选
                 if (bundle != null) {
@@ -232,7 +243,7 @@ public class MyProjectFragment extends BaseFragment {
                         }
 
                         if (isRefresh)
-                            recyclerView.enableEmptyView(response.body().result);
+                            enableEmptyView(response.body().result);
                         stopRefresh();
                         pageIndex += 1;
                         enableLoadMore(response.body().result);
@@ -244,6 +255,14 @@ public class MyProjectFragment extends BaseFragment {
                         stopRefresh();
                     }
                 });
+    }
+
+    private void enableEmptyView(List list) {
+        if (list == null || list.size() == 0) {
+            emptyLayout.setVisibility(View.VISIBLE);
+        } else {
+            emptyLayout.setVisibility(View.GONE);
+        }
     }
 
     private void enableLoadMore(List result) {

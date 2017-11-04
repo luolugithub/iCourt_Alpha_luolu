@@ -4,10 +4,14 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.asange.recyclerviewadapter.BaseRecyclerAdapter;
 import com.asange.recyclerviewadapter.BaseViewHolder;
@@ -32,7 +36,6 @@ import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
 import com.umeng.analytics.MobclickAgent;
-import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -67,12 +70,16 @@ public class ProjectTaskFragment extends BaseTaskFragment implements OnItemLongC
     private static final String PROJECT_DELETE_TASK_PREMISSION = "MAT:matter.task:delete";
     private static final String PROJECT_ADD_TASK_PREMISSION = "MAT:matter.timeLog:add";
     Unbinder unbinder;
-    @Nullable
     @BindView(R.id.recyclerView)
-    EmptyRecyclerView recyclerView;
+    RecyclerView recyclerView;
+    @BindView(R.id.contentEmptyImage)
+    ImageView contentEmptyImage;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
+    @BindView(R.id.empty_layout)
+    LinearLayout emptyLayout;
     @BindView(R.id.refreshLayout)
     SmartRefreshLayout refreshLayout;
-
     /**
      * 用来判断是不是第一次进入该界面，如果是，滚动到一条任务，隐藏搜索栏。
      */
@@ -103,11 +110,12 @@ public class ProjectTaskFragment extends BaseTaskFragment implements OnItemLongC
     @Override
     protected void initView() {
         projectId = getArguments().getString(KEY_PROJECT_ID);
-        recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, R.string.empty_list_task_project_task);
+        contentEmptyImage.setImageResource(R.mipmap.bg_no_task);
+        contentEmptyText.setText(R.string.empty_list_task_project_task);
         linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
 
-        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView.getRecyclerView());
+        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
         View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
         registerClick(rl_comm_search);
 
@@ -200,7 +208,7 @@ public class ProjectTaskFragment extends BaseTaskFragment implements OnItemLongC
                         super.onFailure(call, t);
                         stopRefresh();
                         if (recyclerView != null) {
-                            recyclerView.enableEmptyView(null);
+                            enableEmptyView(null);
                         }
                     }
                 });
@@ -213,7 +221,7 @@ public class ProjectTaskFragment extends BaseTaskFragment implements OnItemLongC
      */
     private void getTaskGroupDatas(final TaskEntity taskEntity) {
         if (taskEntity != null) {
-            recyclerView.enableEmptyView(taskEntity.items);
+            enableEmptyView(taskEntity.items);
             if (taskEntity.items != null) {
                 Observable.create(new ObservableOnSubscribe<List<TaskEntity.TaskItemEntity>>() {
                     @Override
@@ -234,13 +242,13 @@ public class ProjectTaskFragment extends BaseTaskFragment implements OnItemLongC
                                 taskAdapter.setAddTime(isAddTime);
                                 taskAdapter.bindData(true, searchPolymerizationEntities);
                                 goFirstTask();
-                                recyclerView.enableEmptyView(searchPolymerizationEntities);
+                                enableEmptyView(searchPolymerizationEntities);
                                 TimerManager.getInstance().timerQuerySync();
                             }
                         });
             }
         } else {
-            recyclerView.enableEmptyView(null);
+            enableEmptyView(null);
         }
     }
 
@@ -341,6 +349,14 @@ public class ProjectTaskFragment extends BaseTaskFragment implements OnItemLongC
             }
         }
         return allTaskEntities;
+    }
+
+    private void enableEmptyView(List list) {
+        if (list == null || list.size() == 0) {
+            emptyLayout.setVisibility(View.VISIBLE);
+        } else {
+            emptyLayout.setVisibility(View.GONE);
+        }
     }
 
     private void stopRefresh() {

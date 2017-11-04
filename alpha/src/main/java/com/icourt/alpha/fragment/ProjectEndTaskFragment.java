@@ -5,10 +5,14 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.asange.recyclerviewadapter.BaseRecyclerAdapter;
 import com.asange.recyclerviewadapter.BaseViewHolder;
@@ -34,7 +38,6 @@ import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
 import com.umeng.analytics.MobclickAgent;
-import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -62,12 +65,17 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements OnItemCl
     private static final String PROJECT_DELETE_TASK_PREMISSION = "MAT:matter.task:delete";
     private static final String PROJECT_ADD_TASK_PREMISSION = "MAT:matter.timeLog:add";
 
+    Unbinder unbinder;
     @BindView(R.id.recyclerView)
-    EmptyRecyclerView recyclerView;
+    RecyclerView recyclerView;
+    @BindView(R.id.contentEmptyImage)
+    ImageView contentEmptyImage;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
+    @BindView(R.id.empty_layout)
+    LinearLayout emptyLayout;
     @BindView(R.id.refreshLayout)
     SmartRefreshLayout refreshLayout;
-
-    Unbinder unbinder;
 
     private LinearLayoutManager linearLayoutManager;
 
@@ -102,11 +110,12 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements OnItemCl
     @Override
     protected void initView() {
         projectId = getArguments().getString(KEY_PROJECT_ID);
-        recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, R.string.empty_list_task_finished_task);
+        contentEmptyImage.setImageResource(R.mipmap.bg_no_task);
+        contentEmptyText.setText(R.string.empty_list_task_finished_task);
         linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
 
-        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView.getRecyclerView());
+        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_search_comm, recyclerView);
         View rl_comm_search = headerView.findViewById(R.id.rl_comm_search);
         registerClick(rl_comm_search);
         taskAdapter = new TaskAdapter();
@@ -202,7 +211,7 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements OnItemCl
                         TaskEntity taskEntity = response.body().result;
                         if (taskEntity != null) {
                             taskAdapter.bindData(isRefresh, taskEntity.items);
-                            recyclerView.enableEmptyView(taskAdapter.getData());
+                            enableEmptyView(taskAdapter.getData());
                             //第一次进入 隐藏搜索框
                             if (isFirstTimeIntoPage && taskAdapter.getData().size() > 0) {
                                 linearLayoutManager.scrollToPositionWithOffset(taskAdapter.getHeaderCount(), 0);
@@ -244,6 +253,14 @@ public class ProjectEndTaskFragment extends BaseTaskFragment implements OnItemCl
                         }
                     }
                 });
+    }
+
+    private void enableEmptyView(List list) {
+        if (list == null || list.size() == 0) {
+            emptyLayout.setVisibility(View.VISIBLE);
+        } else {
+            emptyLayout.setVisibility(View.GONE);
+        }
     }
 
     private void enableLoadMore(List result) {

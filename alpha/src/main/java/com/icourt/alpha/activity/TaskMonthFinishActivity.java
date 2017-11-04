@@ -62,16 +62,14 @@ public class TaskMonthFinishActivity extends BaseTaskActivity implements OnItemC
 
     TaskAdapter taskAdapter;
     TextView footerView;
+    @BindView(R.id.recyclerView)
+    RecyclerView recyclerView;
     @BindView(R.id.contentEmptyImage)
     ImageView contentEmptyImage;
     @BindView(R.id.contentEmptyText)
     TextView contentEmptyText;
     @BindView(R.id.empty_layout)
     LinearLayout emptyLayout;
-    @BindView(R.id.empty_ll)
-    LinearLayout emptyLl;
-    @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
     SmartRefreshLayout refreshLayout;
     private int pageIndex = 1;
@@ -169,9 +167,11 @@ public class TaskMonthFinishActivity extends BaseTaskActivity implements OnItemC
                     public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                         stopRefresh();
                         taskAdapter.bindData(isRefresh, response.body().result.items);
-                        enableEmptyView(taskAdapter.getData());
                         enableLoadMore(response.body().result.items);
                         pageIndex += 1;
+                        if (isRefresh) {
+                            enableEmptyView(taskAdapter.getData());
+                        }
                     }
 
                     @Override
@@ -195,13 +195,15 @@ public class TaskMonthFinishActivity extends BaseTaskActivity implements OnItemC
             refreshLayout.finishLoadmore();
         }
     }
+
     private void enableEmptyView(List list) {
         if (list == null || list.size() == 0) {
-            emptyLl.setVisibility(View.VISIBLE);
+            emptyLayout.setVisibility(View.VISIBLE);
         } else {
-            emptyLl.setVisibility(View.GONE);
+            emptyLayout.setVisibility(View.GONE);
         }
     }
+
     @Override
     public void onItemClick(BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
         TaskEntity.TaskItemEntity taskItemEntity = taskAdapter.getItem(i);

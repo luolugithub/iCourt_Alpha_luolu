@@ -48,22 +48,7 @@
         </LinearLayout>
     </android.support.v7.widget.CardView>
 
-    <com.scwang.smartrefresh.layout.SmartRefreshLayout
-        android:id="@+id/refreshLayout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        app:isHeightMatchParent="false">
-
-        <com.zhaol.refreshlayout.EmptyRecyclerView
-            android:id="@+id/recyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clipToPadding="false"
-            android:overScrollMode="never" />
-
-    </com.scwang.smartrefresh.layout.SmartRefreshLayout>
+    <include layout="@layout/layout_refresh_recyclerview5" />
 
     <LinearLayout
         android:id="@+id/next_task_layout"
