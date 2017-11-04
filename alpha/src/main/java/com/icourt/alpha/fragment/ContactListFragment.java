@@ -10,15 +10,20 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
+import com.asange.recyclerviewadapter.BaseRecyclerAdapter;
+import com.asange.recyclerviewadapter.BaseViewHolder;
+import com.asange.recyclerviewadapter.OnItemClickListener;
 import com.gjiazhe.wavesidebar.WaveSideBar;
 import com.icourt.alpha.R;
 import com.icourt.alpha.activity.GroupListActivity;
 import com.icourt.alpha.activity.SearchPolymerizationActivity;
-import com.icourt.alpha.adapter.IMContactAdapter;
+import com.icourt.alpha.adapter.ContactAdapter;
 import com.icourt.alpha.adapter.ItemActionAdapter;
-import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
-import com.icourt.alpha.adapter.baseadapter.HeaderFooterAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.db.convertor.ListConvertor;
@@ -39,7 +44,6 @@ import com.icourt.alpha.widget.filter.ListFilter;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
-import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,10 +64,10 @@ import retrofit2.Response;
  * date createTime：2017/4/10
  * version 1.0.0
  */
-public class ContactListFragment extends BaseFragment implements BaseRecyclerAdapter.OnItemClickListener {
+public class ContactListFragment extends BaseFragment implements OnItemClickListener {
     private static final String STRING_TOP = "↑︎";
     @BindView(R.id.recyclerView)
-    EmptyRecyclerView recyclerView;
+    RecyclerView recyclerView;
     @BindView(R.id.recyclerIndexBar)
     WaveSideBar recyclerIndexBar;
     @BindView(R.id.refreshLayout)
@@ -72,11 +76,16 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
     AlphaUserInfo loginUserInfo;
     RecyclerView headerRecyclerView;
     ItemActionAdapter<ItemsEntity> itemsEntityItemActionAdapter;
-    HeaderFooterAdapter<IMContactAdapter> headerFooterAdapter;
-    IMContactAdapter imContactAdapter;
+    ContactAdapter imContactAdapter;
     SuspensionDecoration mDecoration;
     ContactDbService contactDbService;
     LinearLayoutManager linearLayoutManager;
+    @BindView(R.id.contentEmptyImage)
+    ImageView contentEmptyImage;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
+    @BindView(R.id.empty_layout)
+    LinearLayout emptyLayout;
 
     @Nullable
     @Override
@@ -95,9 +104,6 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (unbinder != null) {
-            unbinder.unbind();
-        }
         if (contactDbService != null) {
             contactDbService.releaseService();
         }
@@ -116,26 +122,25 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
         recyclerView.setLayoutManager(linearLayoutManager);
         refreshLayout.setEnableLoadmore(false);
 
-        headerFooterAdapter = new HeaderFooterAdapter<IMContactAdapter>(imContactAdapter = new IMContactAdapter());
+        contentEmptyText.setText(R.string.empty_list_im_group_member);
+        recyclerView.setAdapter(imContactAdapter = new ContactAdapter());
         imContactAdapter.setOnItemClickListener(this);
-        View headerView = HeaderFooterAdapter.inflaterView(getContext(), R.layout.header_contact_search, recyclerView.getRecyclerView());
+        View headerView = imContactAdapter.addHeader(R.layout.header_contact_search, recyclerView);
+
         headerRecyclerView = (RecyclerView) headerView.findViewById(R.id.headerRecyclerView);
         headerRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         headerRecyclerView.setAdapter(itemsEntityItemActionAdapter = new ItemActionAdapter<ItemsEntity>());
         itemsEntityItemActionAdapter.setOnItemClickListener(this);
         itemsEntityItemActionAdapter.bindData(true, Arrays.asList(new ItemsEntity("我加入的讨论组", R.mipmap.ic_members),
                 new ItemsEntity("所有讨论组", R.mipmap.ic_all_group)));
-
-
         headerView.findViewById(R.id.rl_comm_search).setOnClickListener(this);
-        headerFooterAdapter.addHeader(headerView);
 
 
         mDecoration = new SuspensionDecoration(getActivity(), null);
         mDecoration.setColorTitleBg(0xFFF3F3F3);
         mDecoration.setColorTitleFont(0xFFa6a6a6);
         mDecoration.setTitleFontSize(DensityUtil.sp2px(getContext(), 16));
-        mDecoration.setHeaderViewCount(headerFooterAdapter.getHeaderCount());
+        mDecoration.setHeaderViewCount(imContactAdapter.getHeaderCount());
         recyclerView.addItemDecoration(mDecoration);
         recyclerIndexBar.setOnSelectIndexItemListener(new WaveSideBar.OnSelectIndexItemListener() {
             @Override
@@ -148,15 +153,20 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
                     GroupContactBean item = imContactAdapter.getItem(i);
                     if (item != null && TextUtils.equals(item.getSuspensionTag(), index)) {
                         linearLayoutManager
-                                .scrollToPositionWithOffset(i + headerFooterAdapter.getHeaderCount(), 0);
+                                .scrollToPositionWithOffset(i + imContactAdapter.getHeaderCount(), 0);
                         return;
                     }
                 }
             }
         });
-
-        recyclerView.setAdapter(headerFooterAdapter);
-
+        imContactAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                if (emptyLayout != null) {
+                    emptyLayout.setVisibility(imContactAdapter.getData().size() > 0 ? View.GONE : View.VISIBLE);
+                }
+            }
+        });
         refreshLayout.setOnRefreshListener(new OnRefreshListener() {
             @Override
             public void onRefresh(RefreshLayout refreshlayout) {
@@ -295,7 +305,9 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
      * @param data
      */
     private void insertAsynContact(List<GroupContactBean> data) {
-        if (data == null || data.isEmpty()) return;
+        if (data == null || data.isEmpty()) {
+            return;
+        }
         try {
             contactDbService.deleteAll();
             contactDbService.insertOrUpdateAsyn(new ArrayList<IConvertModel<ContactDbModel>>(data));
@@ -305,15 +317,34 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
     }
 
 
+    /**
+     * 展示联系人对话框
+     *
+     * @param data
+     */
+    public void showContactDialogFragment(GroupContactBean data) {
+        if (data == null) {
+            return;
+        }
+        String tag = ContactDialogFragment.class.getSimpleName();
+        FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
+        Fragment fragment = getFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            mFragTransaction.remove(fragment);
+        }
+        ContactDialogFragment.newInstance(data.accid, "联系人资料", StringUtils.equalsIgnoreCase(data.accid, getLoginUserId(), false))
+                .show(mFragTransaction, tag);
+    }
+
     @Override
-    public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
+    public void onItemClick(BaseRecyclerAdapter adapter, BaseViewHolder baseViewHolder, View view, int i) {
         if (adapter == imContactAdapter) {
-            GroupContactBean data = imContactAdapter.getData(adapter.getRealPos(position));
+            GroupContactBean data = imContactAdapter.getItem(i);
             showContactDialogFragment(data);
         } else if (adapter == itemsEntityItemActionAdapter) {
-            ItemsEntity item = itemsEntityItemActionAdapter.getItem(position);
+            ItemsEntity item = itemsEntityItemActionAdapter.getItem(i);
             if (item != null) {
-                switch (position) {
+                switch (i) {
                     case 0:
                         GroupListActivity.launch(getContext(),
                                 GroupListActivity.GROUP_TYPE_MY_JOIN);
@@ -327,21 +358,9 @@ public class ContactListFragment extends BaseFragment implements BaseRecyclerAda
         }
     }
 
-    /**
-     * 展示联系人对话框
-     *
-     * @param data
-     */
-    public void showContactDialogFragment(GroupContactBean data) {
-        if (data == null) return;
-        String tag = ContactDialogFragment.class.getSimpleName();
-        FragmentTransaction mFragTransaction = getChildFragmentManager().beginTransaction();
-        Fragment fragment = getFragmentManager().findFragmentByTag(tag);
-        if (fragment != null) {
-            mFragTransaction.remove(fragment);
-        }
-        ContactDialogFragment.newInstance(data.accid, "联系人资料", StringUtils.equalsIgnoreCase(data.accid, getLoginUserId(), false))
-                .show(mFragTransaction, tag);
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        unbinder.unbind();
     }
-
 }

@@ -4,8 +4,9 @@ import android.text.TextUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.asange.recyclerviewadapter.BaseViewHolder;
 import com.icourt.alpha.R;
-import com.icourt.alpha.adapter.baseadapter.BaseArrayRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.BaseAdapter;
 import com.icourt.alpha.entity.bean.ItemsEntityImp;
 import com.icourt.alpha.utils.GlideUtils;
 
@@ -16,7 +17,7 @@ import com.icourt.alpha.utils.GlideUtils;
  * date createTime：2017/4/12
  * version 1.0.0
  */
-public class ItemActionAdapter<T extends ItemsEntityImp> extends BaseArrayRecyclerAdapter<T> {
+public class ItemActionAdapter<T extends ItemsEntityImp> extends BaseAdapter<T> {
 
     @Override
     public int bindView(int viewtype) {
@@ -24,8 +25,10 @@ public class ItemActionAdapter<T extends ItemsEntityImp> extends BaseArrayRecycl
     }
 
     @Override
-    public void onBindHoder(ViewHolder holder, T t, int position) {
-        if (t == null) return;
+    public void onBindHolder(BaseViewHolder holder, T t, int position) {
+        if (t == null) {
+            return;
+        }
         ImageView iv_icon = holder.obtainView(R.id.iv_icon);
         TextView tv_name = holder.obtainView(R.id.tv_name);
         if (!TextUtils.isEmpty(t.getItemIcon())) {
