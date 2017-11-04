@@ -45,6 +45,7 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.interfaces.OnTasksChangeListener;
 import com.icourt.alpha.utils.ActionConstants;
 import com.icourt.alpha.utils.DateUtils;
+import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.widget.manager.TimerManager;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
@@ -133,7 +134,7 @@ public class TaskListFragment extends BaseTaskFragment implements
     @BindView(R.id.refreshLayout)
     SmartRefreshLayout refreshLayout;
 
-    @BindView(R.id.empty_ll)
+    @BindView(R.id.empty_layout)
     LinearLayout emptyLl;
     @BindView(R.id.contentEmptyImage)
     ImageView emptyIv;
@@ -303,7 +304,7 @@ public class TaskListFragment extends BaseTaskFragment implements
             isCanLoadMore = (stateType != TaskConfig.TASK_STATETYPE_UNFINISH);
         }
 
-        emptyIv.setBackgroundResource(R.mipmap.bg_no_task);
+        emptyIv.setImageDrawable(SystemUtils.getDrawable(getContext(), R.mipmap.bg_no_task));
         emptyTv.setText(getEmptyContentId(stateType));
         recyclerView.setLayoutManager(linearLayoutManager = new LinearLayoutManager(getContext()));
         recyclerView.setNestedScrollingEnabled(false);
