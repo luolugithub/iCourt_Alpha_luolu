@@ -30,7 +30,8 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.LoginInfoUtils;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
-import com.icourt.alpha.widget.filter.EmojiFilter;
+import com.icourt.alpha.widget.filter.InputActionNextFilter;
+import com.icourt.alpha.widget.filter.UserNameFilter;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -87,8 +88,8 @@ public class UpdateUserInfoActivity extends BaseActivity {
     TextView myCenterUpdateErrorHintText;
     @BindView(R.id.my_center_update_name_hint_text)
     TextView myCenterUpdateNameHintText;
-    @BindView(R.id.left_image_view)
-    ImageView leftImageView;
+    @BindView(R.id.left_iv)
+    ImageView leftIv;
 
     @IntDef({UPDATE_PHONE_TYPE,
             UPDATE_EMAIL_TYPE,
@@ -139,7 +140,7 @@ public class UpdateUserInfoActivity extends BaseActivity {
             case UPDATE_PHONE_TYPE:
                 setTitle(R.string.mine_phone);
                 myCenterUpdateHintText.setText(R.string.mine_phone);
-                leftImageView.setImageResource(R.mipmap.setting_phone);
+                leftIv.setImageResource(R.mipmap.setting_phone);
                 updateStateLayout.setVisibility(View.VISIBLE);
                 myCenterUpdateEdittext.setFilters(new InputFilter[]{new InputFilter.LengthFilter(UPDATE_PHONE_MAX_LENGTH)});
                 myCenterUpdateEdittext.setKeyListener(new NumberKeyListener() {
@@ -157,17 +158,17 @@ public class UpdateUserInfoActivity extends BaseActivity {
             case UPDATE_EMAIL_TYPE:
                 setTitle(R.string.mine_mail_address);
                 myCenterUpdateHintText.setText(R.string.mine_mail_address);
-                leftImageView.setImageResource(R.mipmap.setting_email);
+                leftIv.setImageResource(R.mipmap.setting_email);
                 updateStateLayout.setVisibility(View.VISIBLE);
                 myCenterUpdateEdittext.setInputType(InputType.TYPE_TEXT_VARIATION_WEB_EMAIL_ADDRESS);
                 break;
             case UPDATE_NAME_TYPE:
                 setTitle(R.string.mine_name);
                 myCenterUpdateHintText.setText(R.string.mine_name);
-                leftImageView.setImageResource(R.mipmap.setting_user_name);
+                leftIv.setImageResource(R.mipmap.setting_user_name);
                 updateStateLayout.setVisibility(View.GONE);
-                myCenterUpdateEdittext.setInputType(InputType.TYPE_CLASS_TEXT);
-                myCenterUpdateEdittext.setFilters(new InputFilter[]{new InputFilter.LengthFilter(UPDATE_NAME_MAX_LENGTH),new EmojiFilter()});
+                myCenterUpdateEdittext.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+                myCenterUpdateEdittext.setFilters(new InputFilter[]{new InputFilter.LengthFilter(UPDATE_NAME_MAX_LENGTH),new UserNameFilter()});
                 myCenterUpdateEdittext.setGravity(Gravity.TOP);
                 myCenterUpdateEdittext.setSingleLine(false);
                 myCenterUpdateEdittext.setHorizontallyScrolling(false);
@@ -175,11 +176,18 @@ public class UpdateUserInfoActivity extends BaseActivity {
             default:
                 break;
         }
+        myCenterUpdateEdittext.setOnEditorActionListener(new InputActionNextFilter() {
+            @Override
+            public boolean onInputActionNext(TextView v) {
+                SystemUtils.hideSoftKeyBoard(getActivity(), v, true);
+                return super.onInputActionNext(v);
+            }
+        });
         String value = getValue();
         myCenterUpdateEdittext.setText(value.trim());
         setRightLayoutVisible(value);
         setNameEditMaxLength();
-        myCenterUpdateEdittext.setSelection(value.length());
+        myCenterUpdateEdittext.setSelection(myCenterUpdateEdittext.getText().length());
         myCenterUpdateEdittext.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
