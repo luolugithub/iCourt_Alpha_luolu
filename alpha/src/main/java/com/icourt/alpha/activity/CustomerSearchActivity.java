@@ -18,9 +18,12 @@ import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
-import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.asange.recyclerviewadapter.BaseRecyclerAdapter;
 import com.asange.recyclerviewadapter.BaseViewHolder;
 import com.asange.recyclerviewadapter.OnItemClickListener;
 import com.icourt.alpha.R;
@@ -34,7 +37,9 @@ import com.icourt.alpha.db.dbmodel.CustomerDbModel;
 import com.icourt.alpha.db.dbservice.CustomerDbService;
 import com.icourt.alpha.entity.bean.CustomerEntity;
 import com.icourt.alpha.utils.SystemUtils;
+import com.icourt.alpha.view.ClearEditText;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -62,17 +67,27 @@ public class CustomerSearchActivity extends BaseActivity implements OnItemClickL
     public static final int CUSTOMER_COMPANY_TYPE = 2;//企业
 
     CustomerAdapter customerAdapter;
-    @BindView(R.id.et_contact_name)
-    EditText etContactName;
+    @BindView(R.id.et_search_name)
+    ClearEditText etSearchName;
     @BindView(R.id.tv_search_cancel)
     TextView tvSearchCancel;
+    @BindView(R.id.searchLayout)
+    LinearLayout searchLayout;
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
+    @BindView(R.id.contentEmptyImage)
+    ImageView contentEmptyImage;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
+    @BindView(R.id.empty_layout)
+    LinearLayout emptyLayout;
+    @BindView(R.id.refreshLayout)
+    SmartRefreshLayout refreshLayout;
+    @BindView(R.id.search_pb)
+    ProgressBar searchPb;
     @BindView(R.id.softKeyboardSizeWatchLayout)
     SoftKeyboardSizeWatchLayout softKeyboardSizeWatchLayout;
     CustomerDbService customerDbService;
-    @BindView(R.id.contentEmptyText)
-    TextView contentEmptyText;
 
 
     @IntDef({SEARCH_LIAISON_TYPE,
@@ -119,7 +134,7 @@ public class CustomerSearchActivity extends BaseActivity implements OnItemClickL
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_customer_search);
+        setContentView(R.layout.activity_base_search_reyclerview);
         ButterKnife.bind(this);
         initView();
     }
@@ -136,8 +151,8 @@ public class CustomerSearchActivity extends BaseActivity implements OnItemClickL
         customerAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
             @Override
             protected void updateUI() {
-                if (contentEmptyText != null) {
-                    contentEmptyText.setVisibility(customerAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+                if (emptyLayout != null) {
+                    emptyLayout.setVisibility(customerAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
                 }
             }
         });
@@ -150,7 +165,7 @@ public class CustomerSearchActivity extends BaseActivity implements OnItemClickL
                     case RecyclerView.SCROLL_STATE_DRAGGING: {
                         if (softKeyboardSizeWatchLayout != null
                                 && softKeyboardSizeWatchLayout.isSoftKeyboardPop()) {
-                            SystemUtils.hideSoftKeyBoard(getActivity(), etContactName, true);
+                            SystemUtils.hideSoftKeyBoard(getActivity(), etSearchName, true);
                         }
                     }
                     break;
@@ -164,7 +179,7 @@ public class CustomerSearchActivity extends BaseActivity implements OnItemClickL
                 super.onScrolled(recyclerView, dx, dy);
             }
         });
-        etContactName.addTextChangedListener(new TextWatcher() {
+        etSearchName.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -178,19 +193,21 @@ public class CustomerSearchActivity extends BaseActivity implements OnItemClickL
             @Override
             public void afterTextChanged(Editable s) {
                 if (TextUtils.isEmpty(s)) {
+                    cancelAllCall();
                     customerAdapter.clearData();
+                    setViewVisible(emptyLayout, false);
                 } else {
                     getData(true);
                 }
             }
         });
-        etContactName.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        etSearchName.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 switch (actionId) {
                     case EditorInfo.IME_ACTION_SEARCH: {
-                        SystemUtils.hideSoftKeyBoard(getActivity(), etContactName);
-                        if (!TextUtils.isEmpty(etContactName.getText())) {
+                        SystemUtils.hideSoftKeyBoard(getActivity(), v);
+                        if (!TextUtils.isEmpty(v.getText())) {
                             getData(true);
                         }
                     }
@@ -206,7 +223,7 @@ public class CustomerSearchActivity extends BaseActivity implements OnItemClickL
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
         try {
-            RealmResults<CustomerDbModel> name = customerDbService.contains("name", etContactName.getText().toString());
+            RealmResults<CustomerDbModel> name = customerDbService.contains("name", etSearchName.getText().toString());
             if (name == null) {
                 customerAdapter.clearData();
                 return;
@@ -225,7 +242,7 @@ public class CustomerSearchActivity extends BaseActivity implements OnItemClickL
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.tv_search_cancel:
-                SystemUtils.hideSoftKeyBoard(getActivity(), etContactName, true);
+                SystemUtils.hideSoftKeyBoard(getActivity(), etSearchName, true);
                 finish();
                 break;
             default:
@@ -243,7 +260,7 @@ public class CustomerSearchActivity extends BaseActivity implements OnItemClickL
     }
 
     @Override
-    public void onItemClick(com.asange.recyclerviewadapter.BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
+    public void onItemClick(BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
         CustomerEntity customerEntity = customerAdapter.getItem(i);
         if (type == SEARCH_CUSTOMER_TYPE) {
             if (!TextUtils.isEmpty(customerEntity.contactType)) {
