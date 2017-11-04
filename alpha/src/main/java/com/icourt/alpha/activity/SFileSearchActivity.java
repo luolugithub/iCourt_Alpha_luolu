@@ -15,6 +15,7 @@ import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -34,8 +35,8 @@ import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.view.ClearEditText;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
-import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.util.ArrayList;
 
@@ -67,11 +68,17 @@ public class SFileSearchActivity extends BaseActivity
     @BindView(R.id.searchLayout)
     LinearLayout searchLayout;
     @BindView(R.id.recyclerView)
-    EmptyRecyclerView recyclerView;
+    RecyclerView recyclerView;
     @BindView(R.id.softKeyboardSizeWatchLayout)
     SoftKeyboardSizeWatchLayout softKeyboardSizeWatchLayout;
     @BindView(R.id.search_pb)
     ProgressBar searchPb;
+    @BindView(R.id.contentEmptyImage)
+    ImageView contentEmptyImage;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
+    @BindView(R.id.empty_layout)
+    LinearLayout emptyLayout;
 
     public static void launch(Activity context,
                               @Nullable View transitionView) {
@@ -102,7 +109,7 @@ public class SFileSearchActivity extends BaseActivity
             etSearchName.setTransitionName(transitionName);
         }
         etSearchName.setHint(R.string.sfile_search_range);
-        recyclerView.setEmptyContent(R.string.empty_list_repo_search);
+        contentEmptyText.setText(R.string.empty_list_repo_search);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(sFileSearchAdapter = new SFileSearchAdapter());
         sFileSearchAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
@@ -113,7 +120,7 @@ public class SFileSearchActivity extends BaseActivity
         });
         sFileSearchAdapter.setOnItemClickListener(this);
         sFileSearchAdapter.setOnItemChildClickListener(this);
-        recyclerView.getRecyclerView().addOnScrollListener(new RecyclerView.OnScrollListener() {
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
@@ -125,6 +132,8 @@ public class SFileSearchActivity extends BaseActivity
                         }
                     }
                     break;
+                    default:
+                        break;
                 }
             }
 
@@ -149,6 +158,7 @@ public class SFileSearchActivity extends BaseActivity
                 if (TextUtils.isEmpty(s)) {
                     searchPb.setVisibility(View.GONE);
                     sFileSearchAdapter.clearData();
+                    setViewVisible(emptyLayout, false);
                     cancelAllCall();
                 } else {
                     getData(true);
@@ -173,12 +183,12 @@ public class SFileSearchActivity extends BaseActivity
         });
         refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
             @Override
-            public void onRefresh(com.scwang.smartrefresh.layout.api.RefreshLayout refreshlayout) {
+            public void onRefresh(RefreshLayout refreshlayout) {
                 getData(true);
             }
 
             @Override
-            public void onLoadmore(com.scwang.smartrefresh.layout.api.RefreshLayout refreshlayout) {
+            public void onLoadmore(RefreshLayout refreshlayout) {
                 getData(false);
             }
         });

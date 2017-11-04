@@ -17,12 +17,15 @@ import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.IMContactAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.db.convertor.IConvertModel;
 import com.icourt.alpha.db.convertor.ListConvertor;
@@ -35,7 +38,6 @@ import com.icourt.alpha.view.ClearEditText;
 import com.icourt.alpha.view.SoftKeyboardSizeWatchLayout;
 import com.icourt.alpha.widget.filter.ListFilter;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
-import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,11 +66,19 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
     @BindView(R.id.searchLayout)
     LinearLayout searchLayout;
     @BindView(R.id.recyclerView)
-    EmptyRecyclerView recyclerView;
+    RecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
     SmartRefreshLayout refreshLayout;
     @BindView(R.id.softKeyboardSizeWatchLayout)
     SoftKeyboardSizeWatchLayout softKeyboardSizeWatchLayout;
+    @BindView(R.id.search_pb)
+    ProgressBar searchPb;
+    @BindView(R.id.contentEmptyImage)
+    ImageView contentEmptyImage;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
+    @BindView(R.id.empty_layout)
+    LinearLayout emptyLayout;
 
     public static void launch(@NonNull Context context,
                               @Nullable View searchLayout,
@@ -98,7 +108,7 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
     @Override
     protected void initView() {
         super.initView();
-        recyclerView.setEmptyContent(R.string.empty_list_im_search_contact);
+        contentEmptyText.setText(R.string.empty_list_im_search_contact);
         refreshLayout.setEnableRefresh(false);
         refreshLayout.setEnableLoadmore(false);
         contactDbService = new ContactDbService(getLoginUserId());
@@ -109,8 +119,16 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
                 return super.getRealPos(adapterPos);
             }
         });
+        imContactAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                if (emptyLayout != null) {
+                    emptyLayout.setVisibility(imContactAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+                }
+            }
+        });
         imContactAdapter.setOnItemClickListener(this);
-        recyclerView.getRecyclerView().addOnScrollListener(new RecyclerView.OnScrollListener() {
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
@@ -122,6 +140,8 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
                         }
                     }
                     break;
+                    default:
+                        break;
                 }
             }
 
@@ -146,7 +166,7 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
                 if (TextUtils.isEmpty(s)) {
                     imContactAdapter.setKeyWord(null);
                     imContactAdapter.clearData();
-                    setViewVisible(recyclerView.getEmptyView(), false);
+                    setViewVisible(emptyLayout, false);
                 } else {
                     imContactAdapter.setKeyWord(s.toString());
                     getData(true);
@@ -169,7 +189,10 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
                 }
             }
         });
-        etSearchName.setText(getIntent().getStringExtra(KEY_KEYWORD));
+        String keyWord = getIntent().getStringExtra(KEY_KEYWORD);
+        if (!TextUtils.isEmpty(keyWord)) {
+            etSearchName.setText(keyWord);
+        }
         etSearchName.setSelection(etSearchName.getText().length());
     }
 
@@ -186,7 +209,6 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
             fiterRobots(contactBeen);
             filterMySelf(contactBeen);
             imContactAdapter.bindData(true, contactBeen);
-            recyclerView.enableEmptyView(imContactAdapter.getData());
         } catch (Throwable e) {
             e.printStackTrace();
         }
@@ -239,7 +261,13 @@ public class ContactSearchActivity extends BaseActivity implements BaseRecyclerA
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         GroupContactBean data = imContactAdapter.getData(adapter.getRealPos(position));
-        if (data == null) return;
-        ContactDetailActivity.launch(getContext(), data.accid, false, false);
+        if (data == null) {
+            return;
+        }
+        ContactDetailActivity.launch(
+                getContext(),
+                data.accid,
+                false,
+                false);
     }
 }

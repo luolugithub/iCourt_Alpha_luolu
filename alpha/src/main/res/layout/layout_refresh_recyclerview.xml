@@ -7,10 +7,15 @@
     app:isHeightMatchParent="false">
 
     <!-- 公用标准刷新布局  -->
-    <!--  说一万遍 过时 -->
+    <!--  说一万遍 不要动 -->
+    <!--  说一万遍 不要动 -->
+    <!--  说一万遍 不要动 -->
+    <!--  说一万遍 不要动 -->
+    <!--  说一万遍 不要动 -->
 
     <com.zhaol.refreshlayout.EmptyRecyclerView
         android:id="@id/recyclerView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="wrap_content"
+        android:background="@android:color/white" />
 </com.scwang.smartrefresh.layout.SmartRefreshLayout>

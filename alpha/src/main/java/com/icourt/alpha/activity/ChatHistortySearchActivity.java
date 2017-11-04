@@ -17,7 +17,9 @@ import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
@@ -44,7 +46,6 @@ import com.netease.nimlib.sdk.search.model.MsgIndexRecord;
 import com.netease.nimlib.sdk.team.TeamService;
 import com.netease.nimlib.sdk.team.model.Team;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
-import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -82,11 +83,19 @@ public class ChatHistortySearchActivity extends BaseActivity implements BaseRecy
     @BindView(R.id.searchLayout)
     LinearLayout searchLayout;
     @BindView(R.id.recyclerView)
-    EmptyRecyclerView recyclerView;
+    RecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
     SmartRefreshLayout refreshLayout;
     @BindView(R.id.softKeyboardSizeWatchLayout)
     SoftKeyboardSizeWatchLayout softKeyboardSizeWatchLayout;
+    @BindView(R.id.contentEmptyImage)
+    ImageView contentEmptyImage;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
+    @BindView(R.id.empty_layout)
+    LinearLayout emptyLayout;
+    @BindView(R.id.search_pb)
+    ProgressBar searchPb;
 
     public static void launch(@NonNull Context context,
                               @Nullable View searchLayout,
@@ -121,10 +130,10 @@ public class ChatHistortySearchActivity extends BaseActivity implements BaseRecy
         AlphaUserInfo loginUserInfo = getLoginUserInfo();
         contactDbService = new ContactDbService(loginUserInfo == null ? "" : loginUserInfo.getUserId());
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setEmptyContent(R.string.empty_list_im_search_msg);
+        contentEmptyText.setText(R.string.empty_list_im_search_msg);
         recyclerView.setAdapter(searchItemAdapter = new SearchItemAdapter(Integer.MAX_VALUE));
         searchItemAdapter.setOnItemClickListener(this);
-        recyclerView.getRecyclerView().addOnScrollListener(new RecyclerView.OnScrollListener() {
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
@@ -136,6 +145,8 @@ public class ChatHistortySearchActivity extends BaseActivity implements BaseRecy
                         }
                     }
                     break;
+                    default:
+                        break;
                 }
             }
 
@@ -159,7 +170,7 @@ public class ChatHistortySearchActivity extends BaseActivity implements BaseRecy
             public void afterTextChanged(Editable s) {
                 if (TextUtils.isEmpty(s)) {
                     searchItemAdapter.clearData();
-                    setViewVisible(recyclerView.getEmptyView(), false);
+                    setViewVisible(emptyLayout, false);
                 } else {
                     getData(true);
                 }
@@ -192,7 +203,9 @@ public class ChatHistortySearchActivity extends BaseActivity implements BaseRecy
         Observable.create(new ObservableOnSubscribe<List<SearchItemEntity>>() {
             @Override
             public void subscribe(ObservableEmitter<List<SearchItemEntity>> e) throws Exception {
-                if (e.isDisposed()) return;
+                if (e.isDisposed()) {
+                    return;
+                }
 
                 //查询聊天记录
                 List<MsgIndexRecord> msgindexs = NIMClient.getService(MsgService.class).searchAllSessionBlock(keyWord, 4);

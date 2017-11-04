@@ -11,6 +11,10 @@
         android:layout_height="wrap_content">
         <!-- 公用标准刷新布局  -->
         <!--  说一万遍 不要动 -->
+        <!--  说一万遍 不要动 -->
+        <!--  说一万遍 不要动 -->
+        <!--  说一万遍 不要动 -->
+        <!--  说一万遍 不要动 -->
 
         <android.support.v7.widget.RecyclerView
             android:id="@id/recyclerView"

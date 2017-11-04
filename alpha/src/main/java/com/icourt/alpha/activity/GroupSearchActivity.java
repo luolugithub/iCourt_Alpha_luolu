@@ -17,7 +17,9 @@ import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.icourt.alpha.R;
@@ -34,7 +36,6 @@ import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.team.TeamService;
 import com.netease.nimlib.sdk.team.model.Team;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
-import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.util.List;
 
@@ -65,11 +66,19 @@ public class GroupSearchActivity extends BaseActivity implements BaseRecyclerAda
     @BindView(R.id.searchLayout)
     LinearLayout searchLayout;
     @BindView(R.id.recyclerView)
-    EmptyRecyclerView recyclerView;
+    RecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
     SmartRefreshLayout refreshLayout;
     @BindView(R.id.softKeyboardSizeWatchLayout)
     SoftKeyboardSizeWatchLayout softKeyboardSizeWatchLayout;
+    @BindView(R.id.contentEmptyImage)
+    ImageView contentEmptyImage;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
+    @BindView(R.id.empty_layout)
+    LinearLayout emptyLayout;
+    @BindView(R.id.search_pb)
+    ProgressBar searchPb;
 
 
     public static void launch(@NonNull Context context,
@@ -113,13 +122,13 @@ public class GroupSearchActivity extends BaseActivity implements BaseRecyclerAda
     @Override
     protected void initView() {
         super.initView();
-        recyclerView.setEmptyContent(R.string.empty_list_im_search_group);
+        contentEmptyText.setText(R.string.empty_list_im_search_group);
         refreshLayout.setEnableRefresh(false);
         refreshLayout.setEnableLoadmore(false);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(groupAdapter = new GroupAdapter());
         groupAdapter.setOnItemClickListener(this);
-        recyclerView.getRecyclerView().addOnScrollListener(new RecyclerView.OnScrollListener() {
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
@@ -155,7 +164,7 @@ public class GroupSearchActivity extends BaseActivity implements BaseRecyclerAda
                 if (TextUtils.isEmpty(s)) {
                     groupAdapter.setKeyWord(null);
                     groupAdapter.clearData();
-                    setViewVisible(recyclerView.getEmptyView(), false);
+                    setViewVisible(emptyLayout, false);
                 } else {
                     groupAdapter.setKeyWord(s.toString());
                     getData(true);
@@ -192,7 +201,6 @@ public class GroupSearchActivity extends BaseActivity implements BaseRecyclerAda
                     @Override
                     public void onSuccess(Call<ResEntity<List<GroupEntity>>> call, Response<ResEntity<List<GroupEntity>>> response) {
                         groupAdapter.bindData(true, response.body().result);
-                        recyclerView.enableEmptyView(groupAdapter.getData());
                     }
                 });
     }
@@ -232,7 +240,9 @@ public class GroupSearchActivity extends BaseActivity implements BaseRecyclerAda
     @Override
     public void onItemClick(BaseRecyclerAdapter adapter, BaseRecyclerAdapter.ViewHolder holder, View view, int position) {
         GroupEntity item = groupAdapter.getItem(position);
-        if (item == null) return;
+        if (item == null) {
+            return;
+        }
         if (isMyJionedGroup(item.tid)) {
             ChatActivity.launchTEAM(getContext(),
                     item.tid,
