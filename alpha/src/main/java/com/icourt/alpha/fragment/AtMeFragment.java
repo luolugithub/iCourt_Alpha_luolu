@@ -1,18 +1,19 @@
 package com.icourt.alpha.fragment;
 
-import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.icourt.alpha.R;
-import com.icourt.alpha.activity.MyAtedActivity;
 import com.icourt.alpha.adapter.MyAtedAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseFragment;
 import com.icourt.alpha.entity.bean.IMMessageCustomBody;
 import com.icourt.alpha.http.callback.SimpleCallBack;
@@ -21,7 +22,6 @@ import com.icourt.alpha.utils.ActionConstants;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
-import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.util.List;
 
@@ -41,39 +41,45 @@ import retrofit2.Response;
 public class AtMeFragment extends BaseFragment {
 
     @BindView(R.id.recyclerView)
-    EmptyRecyclerView recyclerView;
+    RecyclerView recyclerView;
     @BindView(R.id.refreshLayout)
     SmartRefreshLayout refreshLayout;
     Unbinder unbinder;
+    @BindView(R.id.contentEmptyImage)
+    ImageView contentEmptyImage;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
+    @BindView(R.id.empty_layout)
+    LinearLayout emptyLayout;
+    MyAtedAdapter myAtedAdapter;
 
     public static AtMeFragment newInstance() {
         return new AtMeFragment();
     }
 
 
-    MyAtedAdapter myAtedAdapter;
-
-    public static void launch(@NonNull Context context) {
-        if (context == null) {
-            return;
-        }
-        Intent intent = new Intent(context, MyAtedActivity.class);
-        context.startActivity(intent);
-    }
-
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = super.onCreateView(R.layout.fragment_at_me, inflater, container, savedInstanceState);
+        View view = super.onCreateView(R.layout.layout_refresh_recyclerview5, inflater, container, savedInstanceState);
         unbinder = ButterKnife.bind(this, view);
         return view;
     }
 
     @Override
     protected void initView() {
-        recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, R.string.empty_list_im_at_me_msg);
+        contentEmptyImage.setImageResource(R.mipmap.bg_no_task);
+        contentEmptyText.setText(R.string.empty_list_im_at_me_msg);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(myAtedAdapter = new MyAtedAdapter());
+        myAtedAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                if (emptyLayout != null) {
+                    emptyLayout.setVisibility(myAtedAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+                }
+            }
+        });
         refreshLayout.setOnRefreshLoadmoreListener(new OnRefreshLoadmoreListener() {
             @Override
             public void onRefresh(RefreshLayout refreshlayout) {
