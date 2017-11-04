@@ -522,6 +522,7 @@ public class MessageListFragment extends BaseRecentContactFragment
         imSessionAdapter.setOnItemLongClickListener(this);
 
         refreshLayout.setEnableRefresh(false);
+        refreshLayout.setEnableLoadmore(false);
 
     }
 

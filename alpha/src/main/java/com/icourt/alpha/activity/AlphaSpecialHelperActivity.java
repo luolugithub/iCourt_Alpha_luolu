@@ -128,6 +128,7 @@ public class AlphaSpecialHelperActivity extends ChatBaseActivity {
         });
         getData(true);
         updateTotalUnRead(getIntent().getIntExtra(KEY_TOTAL_UNREAD_NUM, 0));
+        refreshLayout.setEnableLoadmore(false);
     }
 
     @Override
