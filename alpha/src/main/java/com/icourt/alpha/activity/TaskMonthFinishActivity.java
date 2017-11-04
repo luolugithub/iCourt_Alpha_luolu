@@ -7,10 +7,12 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.asange.recyclerviewadapter.BaseRecyclerAdapter;
@@ -32,7 +34,6 @@ import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshLoadmoreListener;
 import com.umeng.analytics.MobclickAgent;
-import com.zhaol.refreshlayout.EmptyRecyclerView;
 
 import java.util.List;
 
@@ -58,14 +59,21 @@ public class TaskMonthFinishActivity extends BaseTaskActivity implements OnItemC
     TextView titleContent;
     @BindView(R.id.titleView)
     AppBarLayout titleView;
-    @BindView(R.id.recyclerView)
-    EmptyRecyclerView recyclerView;
-    @Nullable
-    @BindView(R.id.refreshLayout)
-    SmartRefreshLayout refreshLayout;
 
     TaskAdapter taskAdapter;
     TextView footerView;
+    @BindView(R.id.contentEmptyImage)
+    ImageView contentEmptyImage;
+    @BindView(R.id.contentEmptyText)
+    TextView contentEmptyText;
+    @BindView(R.id.empty_layout)
+    LinearLayout emptyLayout;
+    @BindView(R.id.empty_ll)
+    LinearLayout emptyLl;
+    @BindView(R.id.recyclerView)
+    RecyclerView recyclerView;
+    @BindView(R.id.refreshLayout)
+    SmartRefreshLayout refreshLayout;
     private int pageIndex = 1;
     /**
      * 最后一次操作的任务
@@ -94,7 +102,8 @@ public class TaskMonthFinishActivity extends BaseTaskActivity implements OnItemC
         super.initView();
         setTitle(R.string.task_month_finish_task);
 
-        recyclerView.setNoticeEmpty(R.mipmap.bg_no_task, R.string.empty_list_task);
+        contentEmptyImage.setImageResource(R.mipmap.bg_no_task);
+        contentEmptyText.setText(R.string.empty_list_task);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         recyclerView.setAdapter(taskAdapter = new TaskAdapter());
@@ -160,7 +169,7 @@ public class TaskMonthFinishActivity extends BaseTaskActivity implements OnItemC
                     public void onSuccess(Call<ResEntity<TaskEntity>> call, Response<ResEntity<TaskEntity>> response) {
                         stopRefresh();
                         taskAdapter.bindData(isRefresh, response.body().result.items);
-                        recyclerView.enableEmptyView(taskAdapter.getData());
+                        enableEmptyView(taskAdapter.getData());
                         enableLoadMore(response.body().result.items);
                         pageIndex += 1;
                     }
@@ -186,7 +195,13 @@ public class TaskMonthFinishActivity extends BaseTaskActivity implements OnItemC
             refreshLayout.finishLoadmore();
         }
     }
-
+    private void enableEmptyView(List list) {
+        if (list == null || list.size() == 0) {
+            emptyLl.setVisibility(View.VISIBLE);
+        } else {
+            emptyLl.setVisibility(View.GONE);
+        }
+    }
     @Override
     public void onItemClick(BaseRecyclerAdapter baseRecyclerAdapter, BaseViewHolder baseViewHolder, View view, int i) {
         TaskEntity.TaskItemEntity taskItemEntity = taskAdapter.getItem(i);
