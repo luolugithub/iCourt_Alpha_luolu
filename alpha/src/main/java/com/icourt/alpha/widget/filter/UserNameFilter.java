@@ -7,6 +7,8 @@ import com.icourt.alpha.http.IDefNotify;
 import com.icourt.alpha.utils.BugUtils;
 import com.icourt.alpha.utils.ToastUtils;
 
+import java.util.regex.Pattern;
+
 /**
  * Description  用户名称
  * Company Beijing icourt
@@ -17,7 +19,8 @@ import com.icourt.alpha.utils.ToastUtils;
 public class UserNameFilter extends EmojiFilter {
 
     private static final String noticeStr = "用户名称不能包含emoji";
-
+    private static final String patternStr = "[\n|\t]";
+    private static final Pattern pattern = Pattern.compile(patternStr, Pattern.CASE_INSENSITIVE);
     /**
      * @param source 为即将输入的字符串。source
      * @param start  source的start
@@ -35,7 +38,7 @@ public class UserNameFilter extends EmojiFilter {
                 ToastUtils.showToast(noticeStr);
             }
         });
-        return super.filter(source,start,end,dest,dstart,dend);
+        return pattern.matcher(super.filter(source, start, end, dest, dstart, dend)).replaceAll("");
     }
 
     /**

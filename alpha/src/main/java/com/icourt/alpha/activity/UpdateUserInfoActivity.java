@@ -160,7 +160,7 @@ public class UpdateUserInfoActivity extends BaseActivity {
                 myCenterUpdateHintText.setText(R.string.mine_mail_address);
                 leftIv.setImageResource(R.mipmap.setting_email);
                 updateStateLayout.setVisibility(View.VISIBLE);
-                myCenterUpdateEdittext.setInputType(InputType.TYPE_TEXT_VARIATION_WEB_EMAIL_ADDRESS);
+                myCenterUpdateEdittext.setInputType(InputType.TYPE_TEXT_VARIATION_WEB_EMAIL_ADDRESS|InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
                 break;
             case UPDATE_NAME_TYPE:
                 setTitle(R.string.mine_name);
@@ -242,19 +242,21 @@ public class UpdateUserInfoActivity extends BaseActivity {
                 case UPDATE_EMAIL_TYPE:
                     updateStateLayout.setVisibility(View.VISIBLE);
                     boolean isMail = StringUtils.isMailNO(content.toString());
-                    myCenterUpdateErrorHintText.setText(R.string.mine_use_true_mail);
+                    myCenterUpdateErrorHintText.setVisibility(View.GONE);
                     setStatreViewImage(isMail);
                     setSaveViewState(isMail);
                     break;
                 case UPDATE_PHONE_TYPE:
                     updateStateLayout.setVisibility(View.VISIBLE);
                     boolean isMobile = StringUtils.isMobileNO86(content.toString());
+                    myCenterUpdateErrorHintText.setVisibility(View.VISIBLE);
                     myCenterUpdateErrorHintText.setText(R.string.mine_use_true_phone);
                     setStatreViewImage(isMobile);
                     setSaveViewState(isMobile);
                     break;
                 case UPDATE_NAME_TYPE:
                     updateStateLayout.setVisibility(View.GONE);
+                    myCenterUpdateErrorHintText.setVisibility(View.GONE);
                     setSaveViewState(true);
                     break;
                 default:
