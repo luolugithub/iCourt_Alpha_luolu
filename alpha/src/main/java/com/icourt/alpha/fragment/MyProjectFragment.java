@@ -104,6 +104,7 @@ public class MyProjectFragment extends BaseFragment {
 
     @Override
     protected void initView() {
+        recyclerView.setBackgroundColor(getContextColor(R.color.alpha_background_window));
         projectType = getArguments().getInt(KEY_PROJECT_TYPE);
         EventBus.getDefault().register(this);
         if (projectType == TYPE_ALL_PROJECT) {
