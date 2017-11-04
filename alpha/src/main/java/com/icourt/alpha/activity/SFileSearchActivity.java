@@ -118,6 +118,12 @@ public class SFileSearchActivity extends BaseActivity
                 refreshLayout.setEnableRefresh(sFileSearchAdapter.getItemCount() > 0);
             }
         });
+        sFileSearchAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                setViewVisible(emptyLayout, sFileSearchAdapter.getItemCount() <= 0);
+            }
+        });
         sFileSearchAdapter.setOnItemClickListener(this);
         sFileSearchAdapter.setOnItemChildClickListener(this);
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {

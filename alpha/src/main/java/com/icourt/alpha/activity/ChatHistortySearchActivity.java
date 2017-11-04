@@ -25,6 +25,7 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.SearchItemAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.db.dbmodel.ContactDbModel;
 import com.icourt.alpha.db.dbservice.ContactDbService;
@@ -132,6 +133,14 @@ public class ChatHistortySearchActivity extends BaseActivity implements BaseRecy
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         contentEmptyText.setText(R.string.empty_list_im_search_msg);
         recyclerView.setAdapter(searchItemAdapter = new SearchItemAdapter(Integer.MAX_VALUE));
+        searchItemAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                if (emptyLayout != null) {
+                    emptyLayout.setVisibility(searchItemAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+                }
+            }
+        });
         searchItemAdapter.setOnItemClickListener(this);
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -192,7 +201,10 @@ public class ChatHistortySearchActivity extends BaseActivity implements BaseRecy
                 }
             }
         });
-        etSearchName.setText(getIntent().getStringExtra(KEY_KEYWORD));
+        String keyword = getIntent().getStringExtra(KEY_KEYWORD);
+        if (!TextUtils.isEmpty(keyword)) {
+            etSearchName.setText(keyword);
+        }
         etSearchName.setSelection(etSearchName.getText().length());
     }
 

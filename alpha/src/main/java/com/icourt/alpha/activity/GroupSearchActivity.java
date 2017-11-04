@@ -25,6 +25,7 @@ import android.widget.TextView;
 import com.icourt.alpha.R;
 import com.icourt.alpha.adapter.GroupAdapter;
 import com.icourt.alpha.adapter.baseadapter.BaseRecyclerAdapter;
+import com.icourt.alpha.adapter.baseadapter.adapterObserver.DataChangeAdapterObserver;
 import com.icourt.alpha.base.BaseActivity;
 import com.icourt.alpha.entity.bean.GroupEntity;
 import com.icourt.alpha.http.callback.SimpleCallBack;
@@ -127,6 +128,14 @@ public class GroupSearchActivity extends BaseActivity implements BaseRecyclerAda
         refreshLayout.setEnableLoadmore(false);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(groupAdapter = new GroupAdapter());
+        groupAdapter.registerAdapterDataObserver(new DataChangeAdapterObserver() {
+            @Override
+            protected void updateUI() {
+                if (emptyLayout != null) {
+                    emptyLayout.setVisibility(groupAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+                }
+            }
+        });
         groupAdapter.setOnItemClickListener(this);
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -140,6 +149,8 @@ public class GroupSearchActivity extends BaseActivity implements BaseRecyclerAda
                         }
                     }
                     break;
+                    default:
+                        break;
                 }
             }
 
@@ -164,6 +175,7 @@ public class GroupSearchActivity extends BaseActivity implements BaseRecyclerAda
                 if (TextUtils.isEmpty(s)) {
                     groupAdapter.setKeyWord(null);
                     groupAdapter.clearData();
+                    cancelAllCall();
                     setViewVisible(emptyLayout, false);
                 } else {
                     groupAdapter.setKeyWord(s.toString());
@@ -187,7 +199,10 @@ public class GroupSearchActivity extends BaseActivity implements BaseRecyclerAda
                 }
             }
         });
-        etSearchName.setText(getIntent().getStringExtra(KEY_KEYWORD));
+        String keyword = getIntent().getStringExtra(KEY_KEYWORD);
+        if (!TextUtils.isEmpty(keyword)) {
+            etSearchName.setText(keyword);
+        }
         etSearchName.setSelection(etSearchName.getText().length());
     }
 
