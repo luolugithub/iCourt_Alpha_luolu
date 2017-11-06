@@ -91,7 +91,7 @@ public class TimingListFragment extends BaseFragment implements BaseRecyclerAdap
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = super.onCreateView(R.layout.layout_refresh_recyclerview, inflater, container, savedInstanceState);
+        View view = super.onCreateView(R.layout.fragment_timing_list, inflater, container, savedInstanceState);
         unbinder = ButterKnife.bind(this, view);
         return view;
     }
