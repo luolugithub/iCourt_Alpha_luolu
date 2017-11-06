@@ -103,7 +103,7 @@ public class TaskMonthFinishActivity extends BaseTaskActivity implements OnItemC
         contentEmptyImage.setImageResource(R.mipmap.bg_no_task);
         contentEmptyText.setText(R.string.empty_list_task);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
+        recyclerView.setBackgroundColor(getContextColor(R.color.alpha_background_window));
         recyclerView.setAdapter(taskAdapter = new TaskAdapter());
         taskAdapter.setOnItemClickListener(this);
         taskAdapter.setOnItemChildClickListener(this);
