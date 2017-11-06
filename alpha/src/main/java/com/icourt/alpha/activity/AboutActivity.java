@@ -10,6 +10,7 @@ import android.support.v7.widget.CardView;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.icourt.alpha.BuildConfig;
@@ -62,6 +63,8 @@ public class AboutActivity extends BaseAppUpdateActivity {
     LinearLayout aboutNewVersionLayout;
     AppVersionEntity appVersionEntity;
     AppVersionFirEntity appVersionFirEntity;
+    @BindView(R.id.about_progressbar)
+    ProgressBar aboutProgressbar;
 
     public static void launch(@NonNull Context context) {
         if (context == null) return;
@@ -95,6 +98,7 @@ public class AboutActivity extends BaseAppUpdateActivity {
     @Override
     protected void getData(boolean isRefresh) {
         super.getData(isRefresh);
+        aboutProgressbar.setVisibility(View.VISIBLE);
         if (DownloadConfig.isRelease()) {
             checkAppUpdate(new AppUpdateCallBack() {
                 @Override
@@ -103,8 +107,10 @@ public class AboutActivity extends BaseAppUpdateActivity {
                     if (isUpdateApp(appVersionEntity)) {
                         aboutCheckIsUpdateLayout.setVisibility(View.VISIBLE);
                         aboutNewVersionLayout.setVisibility(View.GONE);
+                        aboutProgressbar.setVisibility(View.GONE);
                     } else {
                         aboutCheckIsUpdateLayout.setVisibility(View.GONE);
+                        aboutProgressbar.setVisibility(View.GONE);
                         aboutNewVersionLayout.setVisibility(View.VISIBLE);
                     }
                 }
@@ -124,8 +130,10 @@ public class AboutActivity extends BaseAppUpdateActivity {
                     if (shouldUpdate(appVersionFirEntity)) {
                         aboutCheckIsUpdateLayout.setVisibility(View.VISIBLE);
                         aboutNewVersionLayout.setVisibility(View.GONE);
+                        aboutProgressbar.setVisibility(View.GONE);
                     } else {
                         aboutCheckIsUpdateLayout.setVisibility(View.GONE);
+                        aboutProgressbar.setVisibility(View.GONE);
                         aboutNewVersionLayout.setVisibility(View.VISIBLE);
                     }
                 }
