@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
+import android.text.InputFilter;
 import android.text.TextUtils;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -18,6 +19,7 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.widget.filter.InputActionNextFilter;
+import com.icourt.alpha.widget.filter.ReturnKeyFilter;
 import com.icourt.api.RequestUtils;
 
 import retrofit2.Call;
@@ -26,9 +28,10 @@ import retrofit2.Response;
 /**
  * Description  改变讨论组名称
  * Company Beijing icourt
- * @author  youxuan  E-mail:xuanyouwu@163.com
- * date createTime：2017/9/27
- * version 2.1.0
+ *
+ * @author youxuan  E-mail:xuanyouwu@163.com
+ *         date createTime：2017/9/27
+ *         version 2.1.0
  */
 public class GroupChangeNameActivity extends EditItemBaseActivity {
 
@@ -54,6 +57,9 @@ public class GroupChangeNameActivity extends EditItemBaseActivity {
         groupDetailEntity = (GroupDetailEntity) getIntent().getSerializableExtra(KEY_GROUP_DATA);
         setTitle("讨论组名称");
         setTitleActionTextView(getContextString(R.string.str_finish));
+        inputNameEt.setFilters(new InputFilter[]{
+                new ReturnKeyFilter(),
+                new InputFilter.LengthFilter(getMaxInputLimitNum())});
         inputNameEt.setText(groupDetailEntity.name);
         inputNameEt.setSelection(inputNameEt.length());
         //禁止换行

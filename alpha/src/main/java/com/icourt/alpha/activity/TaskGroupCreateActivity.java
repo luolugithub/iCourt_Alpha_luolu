@@ -3,6 +3,7 @@ package com.icourt.alpha.activity;
 import android.app.Activity;
 import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.text.InputFilter;
 import android.text.TextUtils;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -15,6 +16,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.widget.filter.InputActionNextFilter;
+import com.icourt.alpha.widget.filter.ReturnKeyFilter;
 import com.icourt.api.RequestUtils;
 
 import retrofit2.Call;
@@ -51,6 +53,9 @@ public class TaskGroupCreateActivity extends EditItemBaseActivity {
         super.initView();
         projectId = getIntent().getStringExtra(KEY_PROJECT_ID);
         setTitle(R.string.task_new_group);
+        inputNameEt.setFilters(new InputFilter[]{
+                new ReturnKeyFilter(),
+                new InputFilter.LengthFilter(getMaxInputLimitNum())});
         inputNameEt.setHint(R.string.task_group_name_hint);
         inputNameEt.setOnEditorActionListener(new InputActionNextFilter() {
             @Override

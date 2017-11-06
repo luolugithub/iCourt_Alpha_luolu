@@ -3,6 +3,7 @@ package com.icourt.alpha.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.text.InputFilter;
 import android.text.TextUtils;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -16,6 +17,7 @@ import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.widget.filter.InputActionNextFilter;
+import com.icourt.alpha.widget.filter.ReturnKeyFilter;
 import com.icourt.api.RequestUtils;
 
 import org.greenrobot.eventbus.EventBus;
@@ -50,6 +52,9 @@ public class TaskRenameActivity extends EditItemBaseActivity {
         super.initView();
         setTitle(R.string.task_rename);
         itemEntity = (TaskEntity.TaskItemEntity) getIntent().getSerializableExtra(KEY_TASK);
+        inputNameEt.setFilters(new InputFilter[]{
+                new ReturnKeyFilter(),
+                new InputFilter.LengthFilter(getMaxInputLimitNum())});
         inputNameEt.setHint(R.string.task_rename);
         inputNameEt.setText(itemEntity.name);
         inputNameEt.setSelection(StringUtils.length(inputNameEt.getText()));

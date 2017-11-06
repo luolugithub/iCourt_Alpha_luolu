@@ -3,6 +3,7 @@ package com.icourt.alpha.activity;
 import android.app.Activity;
 import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.text.InputFilter;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -15,6 +16,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.widget.filter.InputActionNextFilter;
+import com.icourt.alpha.widget.filter.ReturnKeyFilter;
 import com.icourt.api.RequestUtils;
 
 import retrofit2.Call;
@@ -48,6 +50,9 @@ public class TaskGroupRenameActivity extends EditItemBaseActivity {
         super.initView();
         setTitle(getString(R.string.task_edit_group));
         inputNameEt.setHint(R.string.task_group_name_hint);
+        inputNameEt.setFilters(new InputFilter[]{
+                new ReturnKeyFilter(),
+                new InputFilter.LengthFilter(getMaxInputLimitNum())});
         inputNameEt.setOnEditorActionListener(new InputActionNextFilter() {
             @Override
             public boolean onInputActionNext(TextView v) {
