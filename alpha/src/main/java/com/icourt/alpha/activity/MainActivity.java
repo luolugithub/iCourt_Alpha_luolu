@@ -460,10 +460,6 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
         new SimpleViewGestureListener(tabNews, onSimpleViewGestureListener);
         checkedTab(R.id.tab_news, TYPE_FRAGMENT_NEWS);
         mHandler.addCheckSdSpace();
-        if (BuildConfig.BUILD_TYPE_INT > 0) {
-            mHandler.addCheckAppUpdateTask();
-        }
-        mHandler.addCheckAppUpdateTask();
         mHandler.addTokenRefreshTask();
         mHandler.addCheckTimingTask();
     }
@@ -514,6 +510,9 @@ public class MainActivity extends BaseAppUpdateActivity implements OnFragmentCal
         super.onResume();
         isShowing = true;
         checkNotificationisEnable();
+        if (BuildConfig.BUILD_TYPE_INT > 0) {
+            mHandler.addCheckAppUpdateTask();
+        }
         getPermission();
         mHandler.addCheckTimingTask();
     }

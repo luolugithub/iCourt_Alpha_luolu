@@ -75,7 +75,6 @@ public class AboutActivity extends BaseAppUpdateActivity {
         setContentView(R.layout.activity_about_activity);
         ButterKnife.bind(this);
         initView();
-        getData(true);
     }
 
     @Override
@@ -85,6 +84,12 @@ public class AboutActivity extends BaseAppUpdateActivity {
         registerClick(aboutCheckIsUpdateView);
         aboutVersonTextview.setText(BuildConfig.VERSION_NAME);
         aboutVersonReleaseTime.setText("build in " + DateUtils.getFormatDate(Long.valueOf(BuildConfig.APK_RELEASE_TIME), DateUtils.DATE_YYYYMMDD_HHMM_STYLE1));
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getData(true);
     }
 
     @Override
