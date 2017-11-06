@@ -25,30 +25,30 @@ public class DateUtils {
     /**
      * 年月
      */
-    public static final String DATE_YYYYMM_STYLE1 = "yyyy年MM月";
+    public static final String DATE_YYYYMM_STYLE1 = "yyyy年M月";
     /**
      * 年月日
      */
     public static final String DATE_YYYYMMDD_STYLE1 = "yyyy-MM-dd";
-    public static final String DATE_YYYYMMDD_STYLE2 = "yyyy年MM月dd日";
+    public static final String DATE_YYYYMMDD_STYLE2 = "yyyy年M月d日";
     public static final String DATE_YYYYMMDD_STYLE3 = "yyyy.MM.dd";
     public static final String DATE_YYYYMMDD_STYLE4 = "yyyy/MM/dd";
     /**
      * 年月日时分
      */
     public static final String DATE_YYYYMMDD_HHMM_STYLE1 = "yyyy-MM-dd HH:mm";
-    public static final String DATE_YYYYMMDD_HHMM_STYLE2 = "yyyy年MM月dd日 HH:mm";
+    public static final String DATE_YYYYMMDD_HHMM_STYLE2 = "yyyy年M月d日 HH:mm";
     public static final String DATE_YYYYMMDD_HHMM_STYLE3 = "yyyy/MM/dd HH:mm";
     /**
      * 月日
      */
-    public static final String DATE_MMDD_STYLE1 = "MM月dd日";
+    public static final String DATE_MMDD_STYLE1 = "M月d日";
     public static final String DATE_MMDD_STYLE2 = "MM/dd";
     /**
      * 月日时分
      */
     public static final String DATE_MMDD_HHMM_STYLE1 = "MM-dd HH:mm";
-    public static final String DATE_MMDD_HHMM_STYLE2 = "MM月dd日 HH:mm";
+    public static final String DATE_MMDD_HHMM_STYLE2 = "M月d日 HH:mm";
     public static final String DATE_MMDD_HHMM_STYLE3 = "MM/dd HH:mm";
     /**
      * 时分

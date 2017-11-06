@@ -17,11 +17,9 @@ import com.icourt.alpha.entity.bean.TimingSelectEntity;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.widget.manager.TimerDateManager;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
@@ -62,7 +60,6 @@ public class TimingSelectWeekFragment extends BaseFragment {
 
     TimeWheelAdapter adapter;
     Calendar currentMonthDate = Calendar.getInstance();//用来记录当前选中的月的时间戳。
-    private SimpleDateFormat dateFormatForMonth = new SimpleDateFormat("yyyy年MM月", Locale.getDefault());
 
     public static TimingSelectWeekFragment newInstance(long selectedDate) {
         TimingSelectWeekFragment fragment = new TimingSelectWeekFragment();
@@ -138,7 +135,7 @@ public class TimingSelectWeekFragment extends BaseFragment {
     private void setMonthData(Calendar calendar) {
         if (titleContent == null)
             return;
-        titleContent.setText(dateFormatForMonth.format(calendar.getTimeInMillis()));
+        titleContent.setText(DateUtils.getFormatDate(calendar.getTimeInMillis(), DateUtils.DATE_YYYYMM_STYLE1));
     }
 
 

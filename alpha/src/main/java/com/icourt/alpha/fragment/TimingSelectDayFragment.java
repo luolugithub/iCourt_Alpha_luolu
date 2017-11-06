@@ -18,9 +18,7 @@ import com.icourt.alpha.utils.DateUtils;
 import com.jeek.calendar.widget.calendar.OnCalendarClickListener;
 import com.jeek.calendar.widget.calendar.month.MonthCalendarView;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -52,8 +50,6 @@ public class TimingSelectDayFragment extends BaseFragment {
     OnDateSelectedListener onDateSelectedListener;
 
     Calendar selectedDate = Calendar.getInstance();
-
-    private SimpleDateFormat dateFormatForMonth = new SimpleDateFormat("yyyy年MM月", Locale.getDefault());
 
     public static TimingSelectDayFragment newInstance(long selectedDate) {
         TimingSelectDayFragment fragment = new TimingSelectDayFragment();
@@ -174,7 +170,7 @@ public class TimingSelectDayFragment extends BaseFragment {
     }
 
     private void setTitleContent(long timeMillis) {
-        titleContent.setText(dateFormatForMonth.format(timeMillis));
+        titleContent.setText(DateUtils.getFormatDate(timeMillis, DateUtils.DATE_YYYYMM_STYLE1));
     }
 
     public long getSelectedTime() {

@@ -30,7 +30,6 @@ import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.TaskReminderUtils;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -94,8 +93,6 @@ public class DateSelectFragment extends BaseFragment {
     @BindView(R.id.add_reminder_layout)
     LinearLayout addReminderLayout;
     private Calendar currentCalender = Calendar.getInstance(Locale.getDefault());
-    private SimpleDateFormat dateFormatForDisplaying = new SimpleDateFormat("dd-M-yyyy hh:mm:ss a", Locale.getDefault());
-    private SimpleDateFormat dateFormatForMonth = new SimpleDateFormat("yyyy年MMM", Locale.getDefault());
     Date selectedDate;
 
     Calendar selectedCalendar, reminderCalendar;
@@ -181,7 +178,6 @@ public class DateSelectFragment extends BaseFragment {
         taskReminderEntity = (TaskReminderEntity) getArguments().getSerializable("taskReminder");
         taskId = getArguments().getString("taskId");
 
-//        if (selectedCalendar == null) selectedCalendar = Calendar.getInstance();
         if (isUnSetDate()) {
             setNullDueTime();
         } else {
@@ -236,7 +232,7 @@ public class DateSelectFragment extends BaseFragment {
             }
         });
 
-        titleContent.setText(dateFormatForMonth.format(selectedCalendar.getTimeInMillis()));
+        titleContent.setText(DateUtils.getFormatDate(selectedCalendar.getTimeInMillis(), DateUtils.DATE_YYYYMM_STYLE1));
         compactcalendarView.setCurrentDate(selectedCalendar.getTime());
         compactcalendarView.invalidate();
 
@@ -328,10 +324,10 @@ public class DateSelectFragment extends BaseFragment {
 
             @Override
             public void onMonthScroll(Date date) {
-                titleContent.setText(dateFormatForMonth.format(date));
+                titleContent.setText(DateUtils.getFormatDate(date.getTime(), DateUtils.DATE_YYYYMM_STYLE1));
             }
         });
-        titleContent.setText(dateFormatForMonth.format(System.currentTimeMillis()));
+        titleContent.setText(DateUtils.getFormatDate(System.currentTimeMillis(), DateUtils.DATE_YYYYMM_STYLE1));
 
         compactcalendarView.removeAllEvents();
 
@@ -359,7 +355,7 @@ public class DateSelectFragment extends BaseFragment {
     }
 
     private void scrollToToday() {
-        titleContent.setText(dateFormatForMonth.format(System.currentTimeMillis()));
+        titleContent.setText(DateUtils.getFormatDate(System.currentTimeMillis(), DateUtils.DATE_YYYYMM_STYLE1));
         compactcalendarView.setCurrentDate(new Date());
         compactcalendarView.invalidate();
         selectedDate = new Date();
@@ -636,19 +632,6 @@ public class DateSelectFragment extends BaseFragment {
         addEvents(-1, -1);
         addEvents(Calendar.DECEMBER, -1);
         addEvents(Calendar.AUGUST, -1);
-    }
-
-
-    private void logEventsByMonth(CompactCalendarView compactCalendarView) {
-        currentCalender.setTime(new Date());
-        currentCalender.set(Calendar.DAY_OF_MONTH, 1);
-        currentCalender.set(Calendar.MONTH, Calendar.AUGUST);
-        List<String> dates = new ArrayList<>();
-        for (Event e : compactCalendarView.getEventsForMonth(new Date())) {
-            dates.add(dateFormatForDisplaying.format(e.getTimeInMillis()));
-        }
-        log("---------->Events for Aug with simple date formatter: " + dates);
-        log("---------->Events for Aug month using default local and timezone: " + compactCalendarView.getEventsForMonth(currentCalender.getTime()));
     }
 
     private void addEvents(int month, int year) {

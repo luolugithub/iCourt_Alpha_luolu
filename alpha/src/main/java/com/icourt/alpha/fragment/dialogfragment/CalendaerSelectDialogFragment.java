@@ -20,8 +20,6 @@ import com.icourt.alpha.interfaces.OnFragmentCallBackListener;
 import com.icourt.alpha.utils.DateUtils;
 import com.icourt.alpha.utils.DensityUtil;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -61,8 +59,6 @@ public class CalendaerSelectDialogFragment extends BaseDialogFragment {
     @BindView(R.id.bt_ok)
     TextView btOk;
     private Calendar currentCalender = Calendar.getInstance(Locale.getDefault());
-    private SimpleDateFormat dateFormatForDisplaying = new SimpleDateFormat("dd-M-yyyy hh:mm:ss a", Locale.getDefault());
-    private SimpleDateFormat dateFormatForMonth = new SimpleDateFormat("yyyy年MMM", Locale.getDefault());
 
     OnFragmentCallBackListener onFragmentCallBackListener;
 
@@ -120,10 +116,10 @@ public class CalendaerSelectDialogFragment extends BaseDialogFragment {
 
             @Override
             public void onMonthScroll(Date date) {
-                titleContent.setText(dateFormatForMonth.format(date));
+                titleContent.setText(DateUtils.getFormatDate(date.getTime(), DateUtils.DATE_YYYYMM_STYLE1));
             }
         });
-        titleContent.setText(dateFormatForMonth.format(System.currentTimeMillis()));
+        titleContent.setText(DateUtils.getFormatDate(System.currentTimeMillis(), DateUtils.DATE_YYYYMM_STYLE1));
 
         compactcalendarView.removeAllEvents();
         //loadEvents();
@@ -133,7 +129,7 @@ public class CalendaerSelectDialogFragment extends BaseDialogFragment {
 
 
     private void scrollToToday() {
-        titleContent.setText(dateFormatForMonth.format(System.currentTimeMillis()));
+        titleContent.setText(DateUtils.getFormatDate(System.currentTimeMillis(), DateUtils.DATE_YYYYMM_STYLE1));
         compactcalendarView.setCurrentDate(new Date());
         compactcalendarView.invalidate();
         btOk.setEnabled(true);
@@ -192,19 +188,6 @@ public class CalendaerSelectDialogFragment extends BaseDialogFragment {
         addEvents(-1, -1);
         addEvents(Calendar.DECEMBER, -1);
         addEvents(Calendar.AUGUST, -1);
-    }
-
-
-    private void logEventsByMonth(CompactCalendarView compactCalendarView) {
-        currentCalender.setTime(new Date());
-        currentCalender.set(Calendar.DAY_OF_MONTH, 1);
-        currentCalender.set(Calendar.MONTH, Calendar.AUGUST);
-        List<String> dates = new ArrayList<>();
-        for (Event e : compactCalendarView.getEventsForMonth(new Date())) {
-            dates.add(dateFormatForDisplaying.format(e.getTimeInMillis()));
-        }
-        log("---------->Events for Aug with simple date formatter: " + dates);
-        log("---------->Events for Aug month using default local and timezone: " + compactCalendarView.getEventsForMonth(currentCalender.getTime()));
     }
 
     private void addEvents(int month, int year) {

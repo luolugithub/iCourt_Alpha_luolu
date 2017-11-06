@@ -42,12 +42,10 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
@@ -320,7 +318,7 @@ public class TabTimingFragment extends BaseFragment implements BaseRecyclerAdapt
     }
 
     private String getFromatTime(long time) {
-        return new SimpleDateFormat("yyyy-MM-dd", Locale.CHINA).format(time);
+        return DateUtils.getFormatDate(time, DateUtils.DATE_YYYYMMDD_STYLE1);
     }
 
 
