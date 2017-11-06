@@ -129,8 +129,6 @@ public class TaskMonthFinishActivity extends BaseTaskActivity implements OnItemC
                 getData(true);
             }
         });
-
-        getData(true);
     }
 
     private void addFooterView() {

@@ -24,6 +24,7 @@
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dp10"
                 android:src="@mipmap/icon_clear_16" />
 
             <TextView
@@ -70,6 +71,7 @@
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dp10"
                 android:src="@mipmap/icon_helper_16" />
 
             <TextView
@@ -99,7 +101,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="@dimen/alpha_height_divider"
-            android:layout_marginLeft="39dp"
+            android:layout_marginLeft="52dp"
             android:background="@color/alpha_divider_color" />
 
         <LinearLayout
@@ -113,6 +115,7 @@
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dp10"
                 android:src="@mipmap/icon_feedback_16" />
 
             <TextView
@@ -142,7 +145,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="@dimen/alpha_height_divider"
-            android:layout_marginLeft="39dp"
+            android:layout_marginLeft="52dp"
             android:background="@color/alpha_divider_color" />
 
         <LinearLayout
@@ -156,6 +159,7 @@
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dp10"
                 android:src="@mipmap/icon_about_16" />
 
             <TextView
@@ -192,11 +196,14 @@
                 android:src="@mipmap/arrow_right" />
         </LinearLayout>
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/alpha_height_divider"
-            android:layout_marginLeft="39dp"
-            android:background="@color/alpha_divider_color" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:background="@color/white"
+        android:orientation="vertical">
 
         <LinearLayout
             android:id="@+id/setting_loginout_layout"
@@ -209,6 +216,7 @@
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dp10"
                 android:src="@mipmap/icon_loginout_16" />
 
             <TextView
@@ -234,5 +242,4 @@
                 android:src="@mipmap/arrow_right" />
         </LinearLayout>
     </LinearLayout>
-
 </LinearLayout>

@@ -60,7 +60,7 @@ public class DownloadConfig {
      */
     public static boolean isRelease() {
         //TODO:上线改为5
-        return BuildConfig.BUILD_TYPE_INT == 0;
+        return BuildConfig.BUILD_TYPE_INT == 1;
     }
 
     /**
