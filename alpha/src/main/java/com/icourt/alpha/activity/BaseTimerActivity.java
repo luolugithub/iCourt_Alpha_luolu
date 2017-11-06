@@ -22,6 +22,7 @@ import com.icourt.alpha.http.callback.SimpleCallBack;
 import com.icourt.alpha.http.httpmodel.ResEntity;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.widget.filter.LengthListenFilter;
+import com.icourt.alpha.widget.filter.ReturnKeyFilter;
 
 import retrofit2.Call;
 import retrofit2.Response;
@@ -35,12 +36,15 @@ import retrofit2.Response;
  */
 public class BaseTimerActivity extends BaseActivity {
     //计时长度 输入提示
-    protected final InputFilter[] timingNameInputFilters = LengthListenFilter.createSingleInputFilter(new LengthListenFilter(TimingConfig.TIMING_NAME_MAX_LENGTH) {
-        @Override
-        public void onInputOverLength(int maxLength) {
-            showToast(getString(R.string.timing_name_limit_format, String.valueOf(maxLength)));
-        }
-    });
+    protected final InputFilter[] timingNameInputFilters = new InputFilter[]{
+            new ReturnKeyFilter(),
+            new LengthListenFilter(TimingConfig.TIMING_NAME_MAX_LENGTH) {
+                @Override
+                public void onInputOverLength(int maxLength) {
+                    showToast(getString(R.string.timing_name_limit_format, String.valueOf(maxLength)));
+                }
+            }
+    };
     //这个标记位是用来判断是否是进行了删除操作的标记位
     protected boolean isDelete = false;
 

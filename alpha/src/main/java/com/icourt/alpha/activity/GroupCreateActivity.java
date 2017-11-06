@@ -12,6 +12,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
+import android.text.InputFilter;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.CheckedTextView;
@@ -43,6 +44,7 @@ import com.icourt.alpha.utils.StringUtils;
 import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.widget.filter.InputActionNextFilter;
 import com.icourt.alpha.widget.filter.LengthListenFilter;
+import com.icourt.alpha.widget.filter.ReturnKeyFilter;
 import com.icourt.api.RequestUtils;
 
 import java.util.ArrayList;
@@ -145,13 +147,15 @@ public class GroupCreateActivity extends ListenBackActivity implements OnFragmen
             }
         });
 
-        groupNameEt.setFilters(LengthListenFilter.createSingleInputFilter(new LengthListenFilter(ChatConfig.GROUP_NAME_MAX_LENGTH) {
-            @Override
-            public void onInputOverLength(int maxLength) {
-                showToast(getString(R.string.chat_group_name_limit_format, String.valueOf(maxLength)));
-            }
-        }));
-        groupNameEt.setOnEditorActionListener(new InputActionNextFilter(){
+        groupNameEt.setFilters(new InputFilter[]{
+                new ReturnKeyFilter(),
+                new LengthListenFilter(ChatConfig.GROUP_NAME_MAX_LENGTH) {
+                    @Override
+                    public void onInputOverLength(int maxLength) {
+                        showToast(getString(R.string.chat_group_name_limit_format, String.valueOf(maxLength)));
+                    }
+                }});
+        groupNameEt.setOnEditorActionListener(new InputActionNextFilter() {
             @Override
             public boolean onInputActionNext(TextView v) {
                 SystemUtils.hideSoftKeyBoard(getActivity(), v, true);

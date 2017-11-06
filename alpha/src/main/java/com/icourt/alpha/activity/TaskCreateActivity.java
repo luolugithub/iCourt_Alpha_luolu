@@ -11,6 +11,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
+import android.text.InputFilter;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.View;
@@ -44,6 +45,7 @@ import com.icourt.alpha.utils.SystemUtils;
 import com.icourt.alpha.utils.UMMobClickAgent;
 import com.icourt.alpha.widget.filter.InputActionNextFilter;
 import com.icourt.alpha.widget.filter.LengthListenFilter;
+import com.icourt.alpha.widget.filter.ReturnKeyFilter;
 import com.icourt.api.RequestUtils;
 import com.umeng.analytics.MobclickAgent;
 
@@ -181,12 +183,14 @@ public class TaskCreateActivity extends ListenBackActivity
         super.initView();
         setTitle(R.string.task_create_task);
 
-        taskNameEt.setFilters(LengthListenFilter.createSingleInputFilter(new LengthListenFilter(TaskConfig.TASK_NAME_MAX_LENGTH) {
-            @Override
-            public void onInputOverLength(int maxLength) {
-                showToast(getString(R.string.task_name_limit_format, String.valueOf(maxLength)));
-            }
-        }));
+        taskNameEt.setFilters(new InputFilter[]{
+                new ReturnKeyFilter(),
+                new LengthListenFilter(TaskConfig.TASK_NAME_MAX_LENGTH) {
+                    @Override
+                    public void onInputOverLength(int maxLength) {
+                        showToast(getString(R.string.task_name_limit_format, String.valueOf(maxLength)));
+                    }
+                }});
 
         setTitle(R.string.task_new);
         content = getIntent().getStringExtra(KEY_CONTENT);
@@ -308,6 +312,7 @@ public class TaskCreateActivity extends ListenBackActivity
     /**
      * 展示选择项目对话框
      */
+
     public void showProjectSelectDialogFragment(String projectId) {
         String tag = ProjectSelectDialogFragment.class.getSimpleName();
         FragmentTransaction mFragTransaction = getSupportFragmentManager().beginTransaction();
