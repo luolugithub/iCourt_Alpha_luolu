@@ -12,6 +12,7 @@ import com.icourt.alpha.entity.bean.RepoEntity;
 import com.icourt.alpha.http.callback.SFileCallBack;
 import com.icourt.alpha.utils.SpUtils;
 import com.icourt.alpha.utils.StringUtils;
+import com.icourt.alpha.widget.filter.ReturnKeyFilter;
 import com.icourt.alpha.widget.filter.SFileNameFilter;
 
 import org.greenrobot.eventbus.EventBus;
@@ -54,6 +55,7 @@ public class RepoCreateActivity extends SFileEditBaseActivity {
         setTitle("新建资料库");
         inputNameEt.setHint("资料库名称");
         inputNameEt.setFilters(new InputFilter[]{
+                new ReturnKeyFilter(),
                 new InputFilter.LengthFilter(getMaxInputLimitNum()),
                 new SFileNameFilter()});
         inputNameEt.setText(SpUtils.getInstance().getStringData(KEY_CACHE_REPO, ""));
