@@ -6,6 +6,7 @@ import android.content.res.ColorStateList;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.support.annotation.DrawableRes;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.graphics.drawable.DrawableCompat;
@@ -97,6 +98,44 @@ public class GlideUtils {
                     .dontAnimate()
                     .into(imageView);
         }
+    }
+
+    /**
+     * 加载用户
+     *
+     * @param path
+     * @param imageView
+     * @param placeholderDrawable
+     * @param errorDrawable
+     */
+    public static void loadUser(String path,
+                                ImageView imageView,
+                                @DrawableRes int placeholderDrawable,
+                                @DrawableRes int errorDrawable) {
+        if (imageView == null) {
+            return;
+        }
+        if (canLoadImage(imageView.getContext())) {
+            Glide.with(imageView.getContext())
+                    .load(path)
+                    .thumbnail(0.2f)
+                    .transform(new GlideCircleTransform(imageView.getContext()))
+                    .placeholder(placeholderDrawable)
+                    .error(errorDrawable)
+                    .dontAnimate()
+                    .into(imageView);
+        }
+    }
+
+    /**
+     * 加载alpha小助手用户
+     *
+     * @param path
+     * @param imageView
+     */
+    public static void loadAlphaSpecialUser(String path,
+                                            ImageView imageView) {
+        loadUser(path, imageView, R.mipmap.alpha_assistant_20, R.mipmap.alpha_assistant_20);
     }
 
     /**

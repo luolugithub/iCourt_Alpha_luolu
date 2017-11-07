@@ -8,12 +8,13 @@
     <android.support.v7.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
         android:layout_marginBottom="10dp"
-        android:layout_marginRight="@dimen/dp20"
         android:layout_marginLeft="@dimen/dp20"
+        android:layout_marginRight="@dimen/dp20"
+        android:layout_marginTop="10dp"
         app:cardBackgroundColor="@color/white"
-        app:cardCornerRadius="6dp">
+        app:cardCornerRadius="6dp"
+        app:cardElevation="0.5dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -71,23 +72,31 @@
                 android:textColor="@color/alpha_font_color_title"
                 android:textSize="@dimen/alpha_font_size_mini" />
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/alpha_height_divider"
-                android:layout_marginBottom="5dp"
-                android:layout_marginTop="5dp"
-                android:background="@color/alpha_divider_color" />
-
-            <TextView
-                android:id="@+id/msg_from_tv"
+            <LinearLayout
+                android:id="@+id/msg_from_ll"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:drawableLeft="@mipmap/message_project_14"
-                android:drawablePadding="5dp"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:textColor="@color/alpha_font_color_black"
-                android:textSize="@dimen/alpha_font_size_mini" />
+                android:orientation="vertical">
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/alpha_height_divider"
+                    android:layout_marginBottom="5dp"
+                    android:layout_marginTop="5dp"
+                    android:background="@color/alpha_divider_color" />
+
+                <TextView
+                    android:id="@+id/msg_from_tv"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:drawableLeft="@mipmap/message_project_14"
+                    android:drawablePadding="5dp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textColor="@color/alpha_font_color_black"
+                    android:textSize="@dimen/alpha_font_size_mini" />
+
+            </LinearLayout>
         </LinearLayout>
 
     </android.support.v7.widget.CardView>

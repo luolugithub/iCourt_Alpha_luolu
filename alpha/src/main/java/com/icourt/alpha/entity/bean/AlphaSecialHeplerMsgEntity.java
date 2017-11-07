@@ -1,6 +1,11 @@
 package com.icourt.alpha.entity.bean;
 
+import android.support.annotation.StringDef;
+
 import com.netease.nimlib.sdk.msg.model.IMMessage;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * Description
@@ -87,8 +92,14 @@ public class AlphaSecialHeplerMsgEntity {
     public String id;
     public String matterName;
     public String route;
+
+    @ObjectType
     public String object;
+
     public String type;
+    /**
+     * 使用场景
+     */
     public String scene;
     public String taskName;
     public String pic;
@@ -104,4 +115,26 @@ public class AlphaSecialHeplerMsgEntity {
     public String serveContent;//服务内容
     public String caseProcess;//程序-案由
     public String status;//项目状态
+
+    public static final String OBJECT_TYPE_TASK = "TASK";
+    public static final String OBJECT_TYPE_PROJECT = "MATTER";
+
+    @StringDef({
+            "TASK",
+            "MATTER"})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ObjectType {
+
+    }
+
+
+    /**
+     * 项目成员添加
+     */
+    public static final String SCENE_PROJECT_MEMBER_ADDED = "MATTER_MEMBER_ADDU";
+
+    /**
+     * 项目删除
+     */
+    public static final String SCENE_PROJECT_DELETE = "MATTER_STATUS_DELETE";
 }
