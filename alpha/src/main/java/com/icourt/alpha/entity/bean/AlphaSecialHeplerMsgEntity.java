@@ -1,78 +1,208 @@
 package com.icourt.alpha.entity.bean;
 
 import android.support.annotation.StringDef;
+import android.text.TextUtils;
 
+import com.icourt.alpha.widget.filter.IFilterEntity;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
- * Description
+ * Description  文档地址：http://wiki.alphalawyer.cn/pages/viewpage.action?pageId=854324
  * Company Beijing icourt
  * author  youxuan  E-mail:xuanyouwu@163.com
  * date createTime：2017/5/13
  * version 1.0.0
  */
-public class AlphaSecialHeplerMsgEntity {
+public class AlphaSecialHeplerMsgEntity implements IFilterEntity {
 
-    public static String MATTER_DETAILS_EDIT = "MATTER_DETAILS_EDIT";//编辑了项目详情
-    public static String MATTER_STATUS_CHANGE = "MATTER_STATUS_CHANGE";//修改了项目状态
-    public static String MATTER_MEMBER_ADDU = "MATTER_MEMBER_ADDU";//邀请你加入项目
-    public static String MATTER_MEMBER_REMOVEU = "MATTER_MEMBER_REMOVEU";//将你移除了项目
-    public static String MATTER_MEMBER_CHANGE = "MATTER_MEMBER_CHANGE";//修改了项目成员
-
-    public static String TASK_DETAILS = "TASK_DETAILS";//编辑
-    public static String TASK_STATUS = "TASK_STATUS";//状态:(新建、完成、重启、删除、恢复)
-    public static String TASK_PRINCIPAL = "TASK_PRINCIPAL";//编辑负责人
-    public static String TASK_DEADLINE = "TASK_DEADLINE";//编辑任务日期
-    public static String TASK_ATTACH = "TASK_ATTACH";//编辑任务附件
     public static String TASK_REPLY = "TASK_REPLY";//回复任务
 
-    public static final String TASK_STATUS_CREATE = "TASK_STATUS_CREATE";//新建了任务
-    public static final String TASK_STATUS_FINISH = "TASK_STATUS_FINISH";//完成了任务
-    public static final String TASK_STATUS_RESTART = "TASK_STATUS_RESTART";//重启了任务
-    public static final String TASK_STATUS_DELETE = "TASK_STATUS_DELETE";//删除了任务
-    public static final String TASK_STATUS_RECOVERY = "TASK_STATUS_RECOVERY";//恢复了任务
-    public static final String TASK_PRINCIPAL_REMOVEU = "TASK_PRINCIPAL_REMOVEU";//将你移出任务
 
-//    TASK_DETAILS_EDIT("TASK","TASK_DETAILS","TASK_DETAILS_EDIT","{0}编辑了任务"),
-//
-//    TASK_STATUS_CREATE("TASK","TASK_STATUS","TASK_STATUS_CREATE","{0}新建了任务"),
-//    TASK_STATUS_FINISH("TASK","TASK_STATUS","TASK_STATUS_FINISH","{0}完成了任务"),
-//    TASK_STATUS_RESTART("TASK","TASK_STATUS","TASK_STATUS_RESTART","{0}重启了任务"),
-//    TASK_STATUS_DELETE("TASK","TASK_STATUS","TASK_STATUS_DELETE","{0}删除了任务"),
-//    TASK_STATUS_RECOVERY("TASK","TASK_STATUS","TASK_STATUS_RECOVERY","{0}恢复了任务"),
-//
-//    TASK_PRINCIPAL_ADDU("TASK"," TASK_PRINCIPAL","TASK_STATUS_RESTART","{0}给你分配了任务"),
-//    TASK_PRINCIPAL_REMOVEU("TASK"," TASK_PRINCIPAL","TASK_PRINCIPAL_REMOVEU","{0}将你移出任务"),
-//    TASK_PRINCIPAL_ADD("TASK"," TASK_PRINCIPAL","TASK_PRINCIPAL_ADD","{0}编辑了任务负责人"),
-//    TASK_PRINCIPAL_EDIT("TASK"," TASK_PRINCIPAL","TASK_PRINCIPAL_EDIT","{0}编辑了任务负责人"),
-//
-//    TASK_DEADLINE_ADD("TASK"," TASK_DEADLINE","TASK_DEADLINE_ADD","{0}指定了任务到期时间"),
-//    TASK_DEADLINE_UPDATE("TASK"," TASK_DEADLINE","TASK_DEADLINE_UPDATE","{0}修改了任务到期时间"),
-//    TASK_DEADLINE_DELETE("TASK"," TASK_DEADLINE","TASK_DEADLINE_DELETE","{0}删除了任务到期时间"),
-//
-//    TASK_ATTACH_UPLOAD("TASK","TASK_ATTACH","TASK_ATTACH_UPLOAD","{0}上传了任务附件"),
-//    TASK_ATTACH_DELETE("TASK","TASK_ATTACH","TASK_ATTACH_DELETE","{0}删除了任务附件"),
-//
-//    TASK_REPLY_ADD("TASK","TASK_REPLY","TASK_REPLY_ADD","{0}回复了任务"),
-//
-//    TGROUP_STATUS_CREATE("TGROUP","TGROUP_STATUS","TGROUP_STATUS_CREATE","{0}新建了任务组"),
-//    TGROUP_STATUS_DELETE("TGROUP","TGROUP_STATUS","TGROUP_STATUS_DELETE","{0}删除了任务组"),
-//    TGROUP_STATUS_RECOVERY("TGROUP","TGROUP_STATUS","TGROUP_STATUS_RECOVERY","{0}恢复了任务组"),
-//    TGROUP_STATUS_FINISH("TGROUP","TGROUP_STATUS","TGROUP_STATUS_FINISH","{0}完成了任务组"),
-//    TGROUP_STATUS_RESTART("TGROUP","TGROUP_STATUS","TGROUP_STATUS_RESTART","{0}重启了任务组"),
-//
-//    TGROUP_DETAILS_EDIT("TGROUP","TGROUP_DETAILS","TGROUP_DETAILS_EDIT","{0}新建了任务组"),
-//
-//    MATTER_DETAILS_EDIT("MATTER","MATTER_DETAILS","MATTER_DETAILS_EDIT","{0}编辑了项目详情"),
-//
-//    MATTER_STATUS_CHANGE("MATTER","MATTER_STATUS","MATTER_STATUS_CHANGE","{0}修改了项目状态"),
-//
-//    MATTER_MEMBER_ADDU("MATTER","MATTER_MEMBER","MATTER_MEMBER_ADDU","{0}邀请你加入项目"),
-//    MATTER_MEMBER_REMOVEU("MATTER","MATTER_MEMBER","MATTER_MEMBER_REMOVEU","{0}将你移除了项目"),
-//    MATTER_MEMBER_CHANGE("MATTER"," MATTER_MEMBER","MATTER_MEMBER_CHANGE","{0}修改了项目成员");
+    /**
+     * 项目成员添加
+     */
+    public static final String SCENE_TASK_REPLY_ADD = "TASK_REPLY_ADD";
+    /**
+     * 上传了任务附件
+     */
+    public static final String SCENE_TASK_ATTACH_UPLOAD = "TASK_ATTACH_UPLOAD";
+    /**
+     * 上传了任务附件
+     */
+    public static final String SCENE_TASK_ATTACH_DELETE = "TASK_ATTACH_DELETE";
+    /**
+     * 删除了任务到期时间
+     */
+    public static final String SCENE_TASK_DEADLINE_DELETE = "TASK_DEADLINE_DELETE";
+    /**
+     * 修改了任务到期时间
+     */
+    public static final String SCENE_TASK_DEADLINE_UPDATE = "TASK_DEADLINE_UPDATE";
+    /**
+     * 指定了任务到期时间
+     */
+    public static final String SCENE_TASK_DEADLINE_ADD = "TASK_DEADLINE_ADD";
+
+    /**
+     * 编辑了任务负责人
+     */
+    public static final String SCENE_TASK_PRINCIPAL_EDIT = "TASK_PRINCIPAL_EDIT";
+    /**
+     * 新增任务负责人
+     */
+    public static final String SCENE_TASK_PRINCIPAL_ADD = "TASK_PRINCIPAL_ADD";
+    /**
+     * 将你移出任务
+     */
+    public static final String SCENE_TASK_PRINCIPAL_REMOVEU = "TASK_PRINCIPAL_REMOVEU";
+    /**
+     * 给你分配了任务
+     */
+    public static final String SCENE_TASK_PRINCIPAL_ADDU = "TASK_PRINCIPAL_ADDU";
+    /**
+     * 任务到期提醒
+     */
+    public static final String SCENE_TASK_REMINDER_ADD = "TASK_REMINDER_ADD";
+    /**
+     * 恢复了任务
+     */
+    public static final String SCENE_TASK_STATUS_RECOVERY = "TASK_STATUS_RECOVERY";
+    /**
+     * 删除了任务
+     */
+    public static final String SCENE_TASK_STATUS_DELETE = "TASK_STATUS_DELETE";
+    /**
+     * 重启了任务
+     */
+    public static final String SCENE_TASK_STATUS_RESTART = "TASK_STATUS_RESTART";
+    /**
+     * 完成了任务
+     */
+    public static final String SCENE_TASK_STATUS_FINISH = "TASK_STATUS_FINISH";
+    /**
+     * 新建了任务
+     */
+    public static final String SCENE_TASK_STATUS_CREATE = "TASK_STATUS_CREATE";
+    /**
+     * 编辑了任务
+     */
+    public static final String SCENE_TASK_DETAILS_EDIT = "TASK_DETAILS_EDIT";
+
+
+    /**
+     * 任务的场景 17
+     */
+    private static final List<String> SCENE_TASK_LIST = new ArrayList<String>(
+            Arrays.asList(
+                    SCENE_TASK_REPLY_ADD,
+                    SCENE_TASK_ATTACH_UPLOAD,
+                    SCENE_TASK_ATTACH_DELETE,
+                    SCENE_TASK_DEADLINE_DELETE,
+                    SCENE_TASK_DEADLINE_UPDATE,
+                    SCENE_TASK_DEADLINE_ADD,
+                    SCENE_TASK_PRINCIPAL_EDIT,
+                    SCENE_TASK_PRINCIPAL_ADD,
+                    SCENE_TASK_PRINCIPAL_REMOVEU,
+                    SCENE_TASK_PRINCIPAL_ADDU,
+                    SCENE_TASK_REMINDER_ADD,
+                    SCENE_TASK_STATUS_RECOVERY,
+                    SCENE_TASK_STATUS_DELETE,
+                    SCENE_TASK_STATUS_RESTART,
+                    SCENE_TASK_STATUS_FINISH,
+                    SCENE_TASK_STATUS_CREATE,
+                    SCENE_TASK_DETAILS_EDIT));
+
+
+    /**
+     * 项目成员添加
+     */
+    public static final String SCENE_PROJECT_MEMBER_ADDED = "MATTER_MEMBER_ADDU";
+    /**
+     * 项目删除
+     */
+    public static final String SCENE_PROJECT_DELETE = "MATTER_STATUS_DELETE";
+    /**
+     * 项目更改成员
+     */
+    public static final String SCENE_PROJECT_MEMBER_CHANGE = "MATTER_MEMBER_CHANGE";
+    /**
+     * 将你移除了项目
+     */
+    public static final String SCENE_PROJECT_MEMBER_REMOVEU = "MATTER_MEMBER_REMOVEU";
+    /**
+     * 修改了项目状态
+     */
+    public static final String SCENE_PROJECT_STATUS_CHANGE = "MATTER_STATUS_CHANGE";
+    /**
+     * 编辑了项目详情
+     */
+    public static final String SCENE_PROJECT_DETAILS_EDIT = "MATTER_DETAILS_EDIT";
+
+
+    /**
+     * 项目的场景 6
+     */
+    private static final List<String> SCENE_PROJECT_LIST = new ArrayList<String>(
+            Arrays.asList(
+                    SCENE_PROJECT_MEMBER_ADDED,
+                    SCENE_PROJECT_DELETE,
+                    SCENE_PROJECT_MEMBER_CHANGE,
+                    SCENE_PROJECT_MEMBER_REMOVEU,
+                    SCENE_PROJECT_STATUS_CHANGE,
+                    SCENE_PROJECT_DETAILS_EDIT));
+
+
+    /**
+     * 重启了任务组
+     */
+    public static final String SCENE_TASK_GROUP_STATUS_RESTART = "TGROUP_STATUS_RESTART";
+    /**
+     * 完成了任务组
+     */
+    public static final String SCENE_TASK_GROUP_STATUS_FINISH = "TGROUP_STATUS_FINISH";
+    /**
+     * 恢复了任务组
+     */
+    public static final String SCENE_TASK_GROUP_STATUS_RECOVERY = "TGROUP_STATUS_RECOVERY";
+    /**
+     * 删除了任务组
+     */
+    public static final String SCENE_TASK_GROUP_STATUS_DELETE = "TGROUP_STATUS_DELETE";
+    /**
+     * 新建了任务组
+     */
+    public static final String SCENE_TASK_GROUP_STATUS_CREATE = "TGROUP_STATUS_CREATE";
+
+
+    /**
+     * 任务组的场景 5
+     */
+    private static final List<String> SCENE_TASK_GROUP_LIST = new ArrayList<String>(
+            Arrays.asList(
+                    SCENE_TASK_GROUP_STATUS_RESTART,
+                    SCENE_TASK_GROUP_STATUS_FINISH,
+                    SCENE_TASK_GROUP_STATUS_RECOVERY,
+                    SCENE_TASK_GROUP_STATUS_DELETE,
+                    SCENE_TASK_GROUP_STATUS_CREATE));
+
+
+    public static final String OBJECT_TYPE_TASK = "TASK";
+    public static final String OBJECT_TYPE_PROJECT = "MATTER";
+
+    @StringDef({
+            OBJECT_TYPE_TASK,
+            OBJECT_TYPE_PROJECT})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ObjectType {
+
+    }
+
 
     /**
      * showType : 200
@@ -116,25 +246,26 @@ public class AlphaSecialHeplerMsgEntity {
     public String caseProcess;//程序-案由
     public String status;//项目状态
 
-    public static final String OBJECT_TYPE_TASK = "TASK";
-    public static final String OBJECT_TYPE_PROJECT = "MATTER";
 
-    @StringDef({
-            "TASK",
-            "MATTER"})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface ObjectType {
+    /**
+     * 考虑到web端任意加类型 所以先过滤
+     *
+     * @param type
+     * @return true 就过滤掉
+     */
+    @Override
+    public boolean isFilter(int type) {
+        //任务项目有效
+        if (TextUtils.equals(OBJECT_TYPE_TASK, object)
+                || TextUtils.equals(OBJECT_TYPE_PROJECT, object)) {
 
+            return !(
+                    SCENE_PROJECT_LIST.contains(scene)
+                            || SCENE_TASK_LIST.contains(scene)
+                            || SCENE_TASK_GROUP_LIST.contains(scene)
+            );
+
+        }
+        return true;
     }
-
-
-    /**
-     * 项目成员添加
-     */
-    public static final String SCENE_PROJECT_MEMBER_ADDED = "MATTER_MEMBER_ADDU";
-
-    /**
-     * 项目删除
-     */
-    public static final String SCENE_PROJECT_DELETE = "MATTER_STATUS_DELETE";
 }

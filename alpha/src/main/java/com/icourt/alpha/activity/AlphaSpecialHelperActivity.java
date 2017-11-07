@@ -248,7 +248,12 @@ public class AlphaSpecialHelperActivity extends ChatBaseActivity {
                     return null;
                 }
             }
-            return JsonUtils.Gson2Bean(s, AlphaSecialHeplerMsgEntity.class);
+            //过滤其他类型
+            AlphaSecialHeplerMsgEntity alphaSecialHeplerMsgEntity = JsonUtils.Gson2Bean(s, AlphaSecialHeplerMsgEntity.class);
+            if (alphaSecialHeplerMsgEntity != null && alphaSecialHeplerMsgEntity.isFilter(0)) {
+                return null;
+            }
+            return alphaSecialHeplerMsgEntity;
         } catch (Exception e) {
             bugSync("AlphaHelper 解析异常2", StringUtils.throwable2string(e)
                     + "\nalphaJSONObject:" + alphaJSONObject);

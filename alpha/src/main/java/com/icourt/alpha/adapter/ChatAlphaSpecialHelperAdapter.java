@@ -130,7 +130,7 @@ public class ChatAlphaSpecialHelperAdapter
             msg_time_tv.setText(alphaSecialHeplerMsgEntity.reply);
             msg_time_tv.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
         } else {
-            if (TextUtils.equals(alphaSecialHeplerMsgEntity.scene, AlphaSecialHeplerMsgEntity.TASK_STATUS_DELETE) || TextUtils.equals(alphaSecialHeplerMsgEntity.scene, AlphaSecialHeplerMsgEntity.TASK_PRINCIPAL_REMOVEU)) {
+            if (TextUtils.equals(alphaSecialHeplerMsgEntity.scene, AlphaSecialHeplerMsgEntity.SCENE_TASK_STATUS_DELETE) || TextUtils.equals(alphaSecialHeplerMsgEntity.scene, AlphaSecialHeplerMsgEntity.SCENE_TASK_PRINCIPAL_REMOVEU)) {
                 msg_title_tv.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
             } else {
                 msg_title_tv.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.mipmap.message_arrow_14, 0);
@@ -201,7 +201,7 @@ public class ChatAlphaSpecialHelperAdapter
         //处理信息来源
         msg_from_tv.setText(alphaSecialHeplerMsgEntity.clientName);
         msg_title_tv.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
-        boolean showArrow = TextUtils.equals(AlphaSecialHeplerMsgEntity.MATTER_MEMBER_REMOVEU, alphaSecialHeplerMsgEntity.scene);
+        boolean showArrow = TextUtils.equals(AlphaSecialHeplerMsgEntity.SCENE_PROJECT_MEMBER_REMOVEU, alphaSecialHeplerMsgEntity.scene);
         msg_title_tv.setCompoundDrawablesWithIntrinsicBounds(0, 0, showArrow ? 0 : R.mipmap.message_arrow_14, 0);
 
 
@@ -259,8 +259,12 @@ public class ChatAlphaSpecialHelperAdapter
      * @param position
      */
     private void addTimeDividerArray(AlphaSecialHeplerMsgEntity imMessageCustomBody, int position) {
-        if (imMessageCustomBody == null) return;
-        if (imMessageCustomBody.imMessage == null) return;
+        if (imMessageCustomBody == null) {
+            return;
+        }
+        if (imMessageCustomBody.imMessage == null) {
+            return;
+        }
 
         //消息时间本身已经有序
 
@@ -302,7 +306,7 @@ public class ChatAlphaSpecialHelperAdapter
         if (TextUtils.equals(msgEntity.scene, AlphaSecialHeplerMsgEntity.SCENE_PROJECT_DELETE)) {
             return;
         }
-        if (TextUtils.equals(msgEntity.scene, AlphaSecialHeplerMsgEntity.MATTER_MEMBER_REMOVEU)) {
+        if (TextUtils.equals(msgEntity.scene, AlphaSecialHeplerMsgEntity.SCENE_PROJECT_MEMBER_REMOVEU)) {
             return;
         }
         if (!TextUtils.isEmpty(msgEntity.route) && msgEntity.route.startsWith("alpha://")) {
@@ -314,11 +318,15 @@ public class ChatAlphaSpecialHelperAdapter
      * 通知消息跳转
      */
     private void notifacionMsgJump(final View view, final AlphaSecialHeplerMsgEntity msgEntity) {
-        if (view == null) return;
-        if (msgEntity == null) return;
-        if (TextUtils.equals(msgEntity.object, "TASK")) {
-            if (!TextUtils.equals(msgEntity.scene, AlphaSecialHeplerMsgEntity.TASK_STATUS_DELETE)
-                    && !TextUtils.equals(msgEntity.scene, AlphaSecialHeplerMsgEntity.TASK_PRINCIPAL_REMOVEU)) {
+        if (view == null) {
+            return;
+        }
+        if (msgEntity == null) {
+            return;
+        }
+        if (TextUtils.equals(msgEntity.object, AlphaSecialHeplerMsgEntity.OBJECT_TYPE_TASK)) {
+            if (!TextUtils.equals(msgEntity.scene, AlphaSecialHeplerMsgEntity.SCENE_TASK_STATUS_DELETE)
+                    && !TextUtils.equals(msgEntity.scene, AlphaSecialHeplerMsgEntity.SCENE_TASK_PRINCIPAL_REMOVEU)) {
                 showLoadingDialog(view.getContext(), null);
                 //有返回权限
                 getApi().taskQueryDetailWithRight(msgEntity.id)
@@ -343,7 +351,7 @@ public class ChatAlphaSpecialHelperAdapter
                         });
 
             }
-        } else if (TextUtils.equals(msgEntity.object, "MATTER")) {
+        } else if (TextUtils.equals(msgEntity.object, AlphaSecialHeplerMsgEntity.OBJECT_TYPE_PROJECT)) {
             showLoadingDialog(view.getContext(), null);
             getApi().permissionQuery(LoginInfoUtils.getLoginUserId(), "MAT", msgEntity.id)
                     .enqueue(new SimpleCallBack<List<String>>() {
